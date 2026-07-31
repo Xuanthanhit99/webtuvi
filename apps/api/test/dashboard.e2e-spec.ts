@@ -1,0 +1,82 @@
+import { INestApplication } from '@nestjs/common';
+import request from 'supertest';
+import { createTestApp, extractCookie } from './utils/test-app';
+
+function uniqueEmail(label: string): string {
+  return `${label}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
+}
+
+async function registerAndGetCookies(app: INestApplication, email: string) {
+  const password = 'Sup3r$ecretPass';
+  const res = await request(app.getHttpServer())
+    .post('/auth/register')
+    .send({ email, displayName: 'Dashboard User', password, confirmPassword: password, acceptedTerms: true })
+    .expect(201);
+  return extractCookie(res.headers['set-cookie'], 'beaconvie_access_token')!;
+}
+
+describe('Dashboard (e2e)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
+    app = await createTestApp();
+  });
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('rejects unauthenticated requests', async () => {
+    const res = await request(app.getHttpServer()).get('/dashboard').expect(401);
+    expect(res.body.error.code).toBe('UNAUTHORIZED');
+  });
+
+  it('returns a minimal, honest response for a brand-new user', async () => {
+    const cookie = await registerAndGetCookies(app, uniqueEmail('dash-new'));
+
+    const res = await request(app.getHttpServer()).get('/dashboard').set('Cookie', cookie).expect(200);
+
+    expect(res.body.data.memoryHighlight).toBeNull();
+    expect(res.body.data.companionPanel.previewMessages).toEqual([]);
+    expect(res.body.data.hero.greeting).toContain('Dashboard User');
+    // Never fabricate memory/report content for a user with none yet.
+    expect(JSON.stringify(res.body.data)).not.toMatch(/report/i);
+  });
+
+  it('reflects real memory and activity once onboarding is completed', async () => {
+    const email = uniqueEmail('dash-complete');
+    const cookie = await registerAndGetCookies(app, email);
+
+    await request(app.getHttpServer()).get('/onboarding').set('Cookie', cookie).expect(200);
+    await request(app.getHttpServer())
+      .post('/onboarding/message')
+      .set('Cookie', cookie)
+      .send({ content: 'Starting a new job next week and feeling nervous about it.' })
+      .expect(201);
+    await request(app.getHttpServer())
+      .post('/onboarding/message')
+      .set('Cookie', cookie)
+      .send({ content: 'Whether I will be good enough at it.' })
+      .expect(201);
+    await request(app.getHttpServer())
+      .post('/onboarding/memory/consent')
+      .set('Cookie', cookie)
+      .send({ accepted: true })
+      .expect(201);
+    await request(app.getHttpServer())
+      .post('/onboarding/discovery/select')
+      .set('Cookie', cookie)
+      .send({ choice: 'skipped' })
+      .expect(201);
+    await request(app.getHttpServer()).post('/onboarding/complete').set('Cookie', cookie).expect(201);
+
+    const res = await request(app.getHttpServer()).get('/dashboard').set('Cookie', cookie).expect(200);
+
+    expect(res.body.data.memoryHighlight).not.toBeNull();
+    expect(res.body.data.memoryHighlight.content).toContain('new job');
+    expect(res.body.data.recentActivity.some((a: { type: string }) => a.type === 'onboarding_completed')).toBe(
+      true,
+    );
+    expect(res.body.data.recentActivity.some((a: { type: string }) => a.type === 'account_created')).toBe(true);
+  });
+});

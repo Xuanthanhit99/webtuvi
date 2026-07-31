@@ -1,0 +1,106 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  DATABASE_URL: postgresql://beaconvie:beaconvie_ci_password@localhost:5432/beaconvie_ci?schema=public
+  REDIS_URL: redis://localhost:6379
+  API_PORT: 4000
+  API_BASE_URL: http://localhost:4000
+  FRONTEND_URL: http://localhost:3000
+  CORS_ORIGINS: http://localhost:3000
+  JWT_ACCESS_SECRET: ci-only-access-secret-not-for-production-use-000000
+  JWT_REFRESH_SECRET: ci-only-refresh-secret-not-for-production-use-000000
+  JWT_ACCESS_EXPIRES_IN: 15m
+  JWT_REFRESH_EXPIRES_IN: 30d
+  AUTH_COOKIE_DOMAIN: localhost
+  AUTH_COOKIE_SECURE: 'false'
+  AUTH_COOKIE_SAME_SITE: lax
+  PASSWORD_RESET_EXPIRES_IN: 1h
+  MAIL_PROVIDER: mailpit
+  MAIL_FROM: 'BeaconVie CI <no-reply@beaconvie.local>'
+  MAILPIT_HOST: localhost
+  MAILPIT_PORT: 1025
+  AUTH_RATE_LIMIT_MAX: 50
+  AUTH_RATE_LIMIT_WINDOW_MS: 900000
+  NEXT_PUBLIC_API_URL: http://localhost:4000
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: beaconvie
+          POSTGRES_PASSWORD: beaconvie_ci_password
+          POSTGRES_DB: beaconvie_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U beaconvie -d beaconvie_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      mailpit:
+        image: axllent/mailpit:latest
+        ports:
+          - '1025:1025'
+          - '8025:8025'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Prisma generate
+        run: pnpm --filter @beaconvie/api prisma:generate
+
+      - name: Prisma migrate deploy
+        run: pnpm --filter @beaconvie/api exec prisma migrate deploy
+
+      - name: Backend unit + e2e tests
+        run: |
+          pnpm --filter @beaconvie/api test
+          pnpm --filter @beaconvie/api test:e2e
+        env:
+          # e2e tests read apps/api/.env.test locally; in CI the job-level env
+          # vars above already point at the CI services, so no .env.test is needed.
+          NODE_ENV: test
+
+      - name: Frontend unit tests
+        run: pnpm --filter @beaconvie/web test
+
+      - name: Build API
+        run: pnpm build:api
+
+      - name: Build Web
+        run: pnpm build:web

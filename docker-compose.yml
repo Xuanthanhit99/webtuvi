@@ -1,0 +1,51 @@
+name: beaconvie
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: beaconvie-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: beaconvie
+      POSTGRES_PASSWORD: beaconvie_dev_password
+      POSTGRES_DB: beaconvie
+    ports:
+      - "5433:5432" # host 5433 to avoid clashing with any other local Postgres on 5432
+    volumes:
+      - beaconvie_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U beaconvie -d beaconvie"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: beaconvie-redis
+    restart: unless-stopped
+    ports:
+      - "6380:6379" # host 6380 to avoid clashing with any other local Redis on 6379
+    volumes:
+      - beaconvie_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: beaconvie-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025" # web UI
+      - "1025:1025" # SMTP
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8025/api/v1/info"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  beaconvie_postgres_data:
+  beaconvie_redis_data:

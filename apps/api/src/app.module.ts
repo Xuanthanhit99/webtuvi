@@ -1,0 +1,52 @@
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { appConfig, AppConfiguration } from './config/configuration';
+import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
+import { PrismaModule } from './prisma/prisma.module';
+import { RedisModule } from './redis/redis.module';
+import { MailModule } from './mail/mail.module';
+import { HealthModule } from './health/health.module';
+import { JwtAuthModule } from './common/guards/jwt-auth.module';
+import { UsersModule } from './users/users.module';
+import { ActivitiesModule } from './activities/activities.module';
+import { AuthModule } from './auth/auth.module';
+import { OnboardingModule } from './onboarding/onboarding.module';
+import { MemoryModule } from './memory/memory.module';
+import { CompanionModule } from './companion/companion.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, load: [appConfig] }),
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const config = configService.get<AppConfiguration>('app')!;
+        return {
+          throttlers: [
+            { name: 'default', ttl: 60_000, limit: 1000 },
+            { name: 'auth', ttl: config.authRateLimit.windowMs, limit: config.authRateLimit.max },
+          ],
+        };
+      },
+    }),
+    JwtAuthModule,
+    PrismaModule,
+    RedisModule,
+    MailModule,
+    HealthModule,
+    UsersModule,
+    ActivitiesModule,
+    AuthModule,
+    MemoryModule,
+    OnboardingModule,
+    CompanionModule,
+    DashboardModule,
+  ],
+})
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestIdMiddleware).forRoutes('*');
+  }
+}

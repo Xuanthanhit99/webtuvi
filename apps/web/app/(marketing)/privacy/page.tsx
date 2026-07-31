@@ -1,0 +1,29 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Privacy Notice' };
+
+export default function PrivacyPage() {
+  return (
+    <div className="mx-auto max-w-reading px-4 py-16 desktop:px-8">
+      <h1 className="mb-6 font-display text-heading-lg text-text-primary">Privacy Notice</h1>
+      <div className="flex flex-col gap-4 text-body-md text-text-secondary">
+        <p>
+          Your conversations and journal entries are private by default. We don&rsquo;t sell your data, and we
+          don&rsquo;t use your conversations to train models without your explicit, specific consent.
+        </p>
+        <p>
+          You can export a copy of everything we hold about you, or delete your account and its data entirely,
+          at any time from Settings.
+        </p>
+        <p>
+          We use essential cookies to keep you signed in securely. We don&rsquo;t set marketing or tracking
+          cookies before you&rsquo;ve had a chance to review this notice.
+        </p>
+        <p className="text-body-sm text-text-disabled">
+          This is a plain-language summary for Sprint 1. A complete legal Privacy Policy will be published
+          before general availability.
+        </p>
+      </div>
+    </div>
+  );
+}

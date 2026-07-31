@@ -1,0 +1,46 @@
+node_modules/
+.pnpm-store/
+
+# build outputs
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# env
+.env
+.env.local
+.env.test
+.env.*.local
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# testing
+coverage/
+playwright-report/
+test-results/
+
+# local database dumps/volumes (Postgres itself runs in Docker, not on disk here)
+*.sqlite
+*.sqlite3
+*.dump
+pgdata/
+
+# misc
+.DS_Store
+Thumbs.db
+*.pem
+
+# prisma
+apps/api/prisma/generated/
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+docs/reference/web-tu-vi.zip

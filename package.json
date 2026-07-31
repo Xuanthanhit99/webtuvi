@@ -1,0 +1,30 @@
+{
+  "name": "beaconvie",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter @beaconvie/web dev",
+    "dev:api": "pnpm --filter @beaconvie/api start:dev",
+    "build": "pnpm --filter @beaconvie/api build && pnpm --filter @beaconvie/web build",
+    "build:api": "pnpm --filter @beaconvie/api build",
+    "build:web": "pnpm --filter @beaconvie/web build",
+    "lint": "pnpm -r --if-present run lint",
+    "typecheck": "pnpm -r --if-present run typecheck",
+    "test": "pnpm --filter @beaconvie/api test && pnpm --filter @beaconvie/web test",
+    "test:api": "pnpm --filter @beaconvie/api test",
+    "test:web": "pnpm --filter @beaconvie/web test",
+    "test:e2e": "pnpm --filter @beaconvie/web test:e2e",
+    "prisma:generate": "pnpm --filter @beaconvie/api prisma:generate",
+    "prisma:migrate": "pnpm --filter @beaconvie/api prisma:migrate",
+    "prisma:seed": "pnpm --filter @beaconvie/api prisma:seed",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2"
+  }
+}

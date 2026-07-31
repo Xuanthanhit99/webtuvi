@@ -1,0 +1,209 @@
+// BeaconVie — Sprint 1 data model.
+// Design notes:
+// - IDs use cuid() for URL-safe, sortable, non-guessable identifiers.
+// - Refresh tokens and password-reset tokens are stored only as hashes, never plaintext.
+// - Companion messages (onboarding + post-onboarding) share one table (`CompanionMessage`),
+//   tagged by `context`, per docs/reference Module 7 §16: onboarding is not a separate AI
+//   pathway, it is the first turns of the same ongoing relationship.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+model User {
+  id                     String    @id @default(cuid())
+  email                  String    @unique
+  passwordHash           String
+  displayName            String
+  status                 UserStatus @default(ACTIVE)
+  emailVerifiedAt         DateTime?
+  onboardingCompletedAt  DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  sessions              UserSession[]
+  passwordResetTokens   PasswordResetToken[]
+  profile               UserProfile?
+  preference            UserPreference?
+  onboardingProgress    OnboardingProgress?
+  activityEvents        ActivityEvent[]
+  memoryNotes           MemoryNote[]
+  companionMessages     CompanionMessage[]
+
+  @@map("users")
+}
+
+/// One row per active refresh-token session ("device"). Refresh tokens rotate on
+/// every use; `familyId` links every rotation of the same original login together so
+/// reuse of an already-rotated token can revoke the whole family (theft response).
+model UserSession {
+  id               String    @id @default(cuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @unique
+  familyId         String
+  userAgent        String?
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  lastUsedAt       DateTime  @default(now())
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("user_sessions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+/// Profile fields are never collected via a required form (docs/reference Module 6 §8,
+/// Module 7 §7) — they are inferred (timezone/locale from the browser) or volunteered
+/// conversationally, and remain editable later in Settings.
+model UserProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pronouns  String?
+  timezone  String?
+  locale    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+enum MemoryPreference {
+  ASK_BEFORE_SAVING
+  SAVE_SELECTED_ONLY
+  DO_NOT_SAVE_YET
+}
+
+enum ReflectionFrequency {
+  DAILY
+  FEW_TIMES_A_WEEK
+  WEEKLY
+  NOT_SURE_YET
+}
+
+model UserPreference {
+  id                  String              @id @default(cuid())
+  userId              String              @unique
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memoryPreference    MemoryPreference    @default(ASK_BEFORE_SAVING)
+  reflectionFrequency ReflectionFrequency @default(NOT_SURE_YET)
+  checkInTime         String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@map("user_preferences")
+}
+
+enum OnboardingStage {
+  WELCOME
+  MEET_COMPANION
+  CONVERSATION
+  REFLECTION
+  DISCOVERY_CHOICE
+  ACTIVATION
+  SUCCESS
+}
+
+enum OnboardingDiscoveryChoice {
+  ACCEPTED
+  SKIPPED
+}
+
+model OnboardingProgress {
+  id              String                      @id @default(cuid())
+  userId          String                      @unique
+  user            User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stage           OnboardingStage             @default(WELCOME)
+  discoveryChoice OnboardingDiscoveryChoice?
+  completedAt     DateTime?
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+
+  @@map("onboarding_progress")
+}
+
+enum MessageRole {
+  USER
+  COMPANION
+}
+
+enum MessageContext {
+  ONBOARDING
+  COMPANION
+}
+
+model CompanionMessage {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      MessageRole
+  content   String
+  context   MessageContext
+  createdAt DateTime        @default(now())
+
+  @@index([userId, createdAt])
+  @@map("companion_messages")
+}
+
+enum MemorySource {
+  ONBOARDING
+  COMPANION
+}
+
+model MemoryNote {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String
+  source    MemorySource
+  createdAt DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@map("memory_notes")
+}
+
+enum ActivityType {
+  ACCOUNT_CREATED
+  ONBOARDING_COMPLETED
+  PREFERENCE_UPDATED
+  MEMORY_CREATED
+}
+
+/// Minimal, non-sensitive metadata only — never store message content or other
+/// personal disclosures here (docs/reference Sprint 1 requirement).
+model ActivityEvent {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      ActivityType
+  metadata  Json?
+  createdAt DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@map("activity_events")
+}
