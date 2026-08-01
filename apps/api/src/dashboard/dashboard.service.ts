@@ -40,15 +40,19 @@ export class DashboardService {
     const now = new Date();
     const tod = timeOfDay(now);
 
-    const [memoryHighlight, companionPreview, recentActivity] = await Promise.all([
+    const [memoryHighlight, latestConversation, recentActivity] = await Promise.all([
       this.memoryService.mostRecent(userId),
-      this.prisma.companionMessage.findMany({
-        where: { userId, context: 'COMPANION' },
-        orderBy: { createdAt: 'desc' },
-        take: 3,
+      // Sprint 2B: previously read companionMessage(context='COMPANION') directly;
+      // now sourced from the real Conversation model (Companion Core) — see
+      // docs/architecture/companion-core.md "Dashboard integration".
+      this.prisma.conversation.findFirst({
+        where: { userId },
+        orderBy: { updatedAt: 'desc' },
+        include: { messages: { orderBy: { createdAt: 'desc' }, take: 3 } },
       }),
       this.activitiesService.recent(userId, 5),
     ]);
+    const companionPreview = latestConversation?.messages ?? [];
 
     const justOnboarded =
       user.onboardingCompletedAt !== null && now.getTime() - user.onboardingCompletedAt.getTime() < ONE_DAY_MS;
@@ -83,7 +87,7 @@ export class DashboardService {
       companionPanel: {
         previewMessages: companionPreview.reverse().map((m) => ({
           id: m.id,
-          role: m.role === 'USER' ? 'user' : 'companion',
+          role: m.role === 'USER' ? ('user' as const) : ('companion' as const),
           content: m.content,
           createdAt: m.createdAt.toISOString(),
         })),

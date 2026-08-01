@@ -41,6 +41,8 @@ model User {
   activityEvents        ActivityEvent[]
   memoryNotes           MemoryNote[]
   companionMessages     CompanionMessage[]
+  conversations         Conversation[]
+  aiUsages              AIUsage[]
 
   @@map("users")
 }
@@ -174,6 +176,13 @@ enum MessageContext {
   COMPANION
 }
 
+/// Sprint 2B note: the post-onboarding rule-based Companion (context=COMPANION)
+/// was replaced in place by the real `Conversation`/`ConversationMessage` model
+/// below — see the Sprint 2B migration, which copies every existing
+/// context=COMPANION row into a `Conversation` per user (data preserved, not
+/// deleted). Onboarding's own conversational turns (context=ONBOARDING) are
+/// untouched and still write here — this table is not being retired, only the
+/// COMPANION half of its use is dormant going forward.
 model CompanionMessage {
   id        String          @id @default(cuid())
   userId    String
@@ -227,4 +236,98 @@ model ActivityEvent {
 
   @@index([userId, createdAt])
   @@map("activity_events")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 2B — Companion Core (real AI conversation layer). Explicitly NOT a
+// Memory Engine: no embeddings, no vector storage, no semantic search here.
+// See docs/architecture/companion-core.md.
+// ---------------------------------------------------------------------------
+
+enum ConversationStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum ConversationRole {
+  SYSTEM
+  USER
+  ASSISTANT
+}
+
+enum AIProviderName {
+  OPENAI
+  ANTHROPIC
+  GEMINI
+  MOCK
+}
+
+model Conversation {
+  id        String             @id @default(cuid())
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  status    ConversationStatus @default(ACTIVE)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  messages  ConversationMessage[]
+  usages    AIUsage[]
+
+  @@index([userId, updatedAt])
+  @@map("conversations")
+}
+
+/// `metadata` carries non-sensitive generation facts only (provider, model,
+/// cancelled/safety-refused flags) — never raw provider request/response
+/// payloads. `content` is the only place message text itself lives.
+model ConversationMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   Conversation     @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           ConversationRole
+  content        String
+  metadata       Json?
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId, createdAt])
+  @@map("conversation_messages")
+}
+
+/// One row per completed (or cancelled) assistant generation — the basis for
+/// cost control's daily/monthly/per-user aggregates. `estimatedCostUsd` is an
+/// estimate from the provider pricing table, not a billing record.
+model AIUsage {
+  id               String        @id @default(cuid())
+  userId           String
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversationId   String?
+  conversation     Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  provider         AIProviderName
+  model            String
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+  estimatedCostUsd Decimal       @db.Decimal(10, 6)
+  createdAt        DateTime      @default(now())
+
+  @@index([userId, createdAt])
+  @@map("ai_usages")
+}
+
+/// AI observability trail — deliberately excludes conversation content, PII,
+/// and any request/response body. See docs/security/ai-safety.md "Observability".
+model ProviderLog {
+  id               String         @id @default(cuid())
+  provider         AIProviderName
+  model            String
+  latencyMs        Int
+  success          Boolean
+  errorCode        String?
+  retryCount       Int            @default(0)
+  streamDurationMs Int?
+  createdAt        DateTime       @default(now())
+
+  @@index([provider, createdAt])
+  @@map("provider_logs")
 }

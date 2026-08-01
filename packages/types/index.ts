@@ -113,6 +113,41 @@ export interface UserPreferenceDto {
   checkInTime: string | null;
 }
 
+// --- Companion Core (Sprint 2B) — real AI conversation layer. Distinct from
+// CompanionMessageDto above, which stays as the Dashboard preview's legacy
+// shape (role 'companion'|'user') for backward compatibility. ---
+
+export type ConversationStatus = 'active' | 'archived';
+
+export interface ConversationDto {
+  id: string;
+  title: string | null;
+  status: ConversationStatus;
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ConversationMessageRole = 'system' | 'user' | 'assistant';
+
+export interface ConversationMessageDto {
+  id: string;
+  role: ConversationMessageRole;
+  content: string;
+  createdAt: string;
+}
+
+export interface ConversationDetailDto {
+  conversation: ConversationDto;
+  messages: ConversationMessageDto[];
+}
+
+export interface SendConversationMessageResultDto {
+  userMessage: ConversationMessageDto;
+  assistantMessage: ConversationMessageDto | null;
+  requiresGeneration: boolean;
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {

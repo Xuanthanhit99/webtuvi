@@ -49,6 +49,17 @@ const envSchema = z.object({
 
   // Optional cap on concurrent active sessions per user; unset = unlimited.
   SESSION_MAX_ACTIVE: z.coerce.number().int().positive().optional(),
+
+  // --- Companion Core (Sprint 2B) ---
+  OPENAI_API_KEY: z.string().optional(),
+  ANTHROPIC_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
+  DEFAULT_AI_PROVIDER: z.enum(['openai', 'anthropic', 'gemini', 'mock']).default('mock'),
+  // Optional: no explicit fallback attempted if unset (the always-last mock
+  // safety net still applies regardless — see ProviderOrchestrator).
+  FALLBACK_PROVIDER: z.enum(['openai', 'anthropic', 'gemini', 'mock']).optional(),
+  AI_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
+  AI_MAX_RETRIES: z.coerce.number().int().min(0).default(2),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
@@ -91,6 +102,13 @@ export function validateEnv(config: Record<string, unknown>): EnvConfig {
     if (!parsed.data.APP_PUBLIC_URL) {
       throw new Error('APP_PUBLIC_URL is required in production (fixed base URL for email links)');
     }
+    if (parsed.data.DEFAULT_AI_PROVIDER === 'mock') {
+      throw new Error('DEFAULT_AI_PROVIDER cannot be "mock" in production — configure a real provider');
+    }
+    requireProviderKey(parsed.data, parsed.data.DEFAULT_AI_PROVIDER, 'DEFAULT_AI_PROVIDER');
+    if (parsed.data.FALLBACK_PROVIDER) {
+      requireProviderKey(parsed.data, parsed.data.FALLBACK_PROVIDER, 'FALLBACK_PROVIDER');
+    }
   } else {
     // Outside production, a non-mailpit provider still needs its credential —
     // fail fast rather than silently dropping emails.
@@ -100,7 +118,30 @@ export function validateEnv(config: Record<string, unknown>): EnvConfig {
     if (parsed.data.EMAIL_PROVIDER === 'postmark' && !parsed.data.POSTMARK_SERVER_TOKEN) {
       throw new Error('POSTMARK_SERVER_TOKEN is required when EMAIL_PROVIDER=postmark');
     }
+    // Same rule for AI providers: 'mock' needs nothing (that's its point — unit
+    // tests/CI/offline dev), but selecting a real provider without its key is
+    // almost always a misconfiguration, not an intentional choice.
+    requireProviderKey(parsed.data, parsed.data.DEFAULT_AI_PROVIDER, 'DEFAULT_AI_PROVIDER');
+    if (parsed.data.FALLBACK_PROVIDER) {
+      requireProviderKey(parsed.data, parsed.data.FALLBACK_PROVIDER, 'FALLBACK_PROVIDER');
+    }
   }
 
   return parsed.data;
+}
+
+function requireProviderKey(
+  data: Pick<EnvConfig, 'OPENAI_API_KEY' | 'ANTHROPIC_API_KEY' | 'GEMINI_API_KEY'>,
+  provider: 'openai' | 'anthropic' | 'gemini' | 'mock',
+  varName: 'DEFAULT_AI_PROVIDER' | 'FALLBACK_PROVIDER',
+): void {
+  if (provider === 'openai' && !data.OPENAI_API_KEY) {
+    throw new Error(`OPENAI_API_KEY is required when ${varName}=openai`);
+  }
+  if (provider === 'anthropic' && !data.ANTHROPIC_API_KEY) {
+    throw new Error(`ANTHROPIC_API_KEY is required when ${varName}=anthropic`);
+  }
+  if (provider === 'gemini' && !data.GEMINI_API_KEY) {
+    throw new Error(`GEMINI_API_KEY is required when ${varName}=gemini`);
+  }
 }

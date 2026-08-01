@@ -62,6 +62,15 @@ export const appConfig = registerAs('app', () => {
       redisPrefix: env.RATE_LIMIT_REDIS_PREFIX,
     },
     sessionMaxActive: env.SESSION_MAX_ACTIVE,
+    ai: {
+      openaiApiKey: env.OPENAI_API_KEY,
+      anthropicApiKey: env.ANTHROPIC_API_KEY,
+      geminiApiKey: env.GEMINI_API_KEY,
+      defaultProvider: env.DEFAULT_AI_PROVIDER,
+      fallbackProvider: env.FALLBACK_PROVIDER,
+      timeoutMs: env.AI_TIMEOUT_MS,
+      maxRetries: env.AI_MAX_RETRIES,
+    },
   };
 });
 
