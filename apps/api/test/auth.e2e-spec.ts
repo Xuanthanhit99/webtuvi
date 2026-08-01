@@ -2,7 +2,8 @@ import { createHash } from 'crypto';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { PrismaService } from '../src/prisma/prisma.service';
-import { createTestApp, extractCookie } from './utils/test-app';
+import { AUTH_RATE_LIMIT_MAX } from '../src/common/rate-limit.constants';
+import { createTestApp, csrfHeaders, extractCookie } from './utils/test-app';
 
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
@@ -145,10 +146,38 @@ describe('Auth (e2e)', () => {
       .send({ email, displayName: 'Logout User', password, confirmPassword: password, acceptedTerms: true })
       .expect(201);
     const refreshCookie = extractCookie(registerRes.headers['set-cookie'], 'beaconvie_refresh_token')!;
+    const accessCookie = extractCookie(registerRes.headers['set-cookie'], 'beaconvie_access_token')!;
+    const headers = csrfHeaders(accessCookie, registerRes.headers['set-cookie']);
 
-    await request(app.getHttpServer()).post('/auth/logout').set('Cookie', refreshCookie).expect(204);
+    await request(app.getHttpServer())
+      .post('/auth/logout')
+      .set({ ...headers, Cookie: `${refreshCookie}; ${headers.Cookie}` })
+      .expect(204);
 
     await request(app.getHttpServer()).post('/auth/refresh').set('Cookie', refreshCookie).expect(401);
+  });
+
+  it('rejects logout without a CSRF token, and rejects a wrong one', async () => {
+    const email = uniqueEmail('logout-csrf');
+    const registerRes = await request(app.getHttpServer())
+      .post('/auth/register')
+      .send({ email, displayName: 'Logout Csrf', password, confirmPassword: password, acceptedTerms: true })
+      .expect(201);
+    const refreshCookie = extractCookie(registerRes.headers['set-cookie'], 'beaconvie_refresh_token')!;
+    const csrfCookie = extractCookie(registerRes.headers['set-cookie'], 'beaconvie_csrf_token')!;
+
+    const missing = await request(app.getHttpServer())
+      .post('/auth/logout')
+      .set('Cookie', refreshCookie)
+      .expect(403);
+    expect(missing.body.error.code).toBe('CSRF_TOKEN_MISSING');
+
+    const invalid = await request(app.getHttpServer())
+      .post('/auth/logout')
+      .set('Cookie', `${refreshCookie}; ${csrfCookie}`)
+      .set('X-CSRF-Token', 'not-the-right-token')
+      .expect(403);
+    expect(invalid.body.error.code).toBe('CSRF_TOKEN_INVALID');
   });
 
   it('forgot-password responds identically whether or not the email exists', async () => {
@@ -220,9 +249,12 @@ describe('Auth (e2e)', () => {
     const email = uniqueEmail('rate-limit');
     let sawTooManyRequests = false;
 
-    // .env.test sets AUTH_RATE_LIMIT_MAX=20 specifically so this test has a fast,
-    // deterministic ceiling to hit without waiting on the real 15-minute window.
-    for (let i = 0; i < 25; i += 1) {
+    // AUTH_RATE_LIMIT_MAX is set high in .env.test (200) so the *other* e2e
+    // specs' register/login calls — sharing the same Redis-backed "auth"
+    // throttler config — don't trip it. This test derives its own ceiling
+    // from that same constant instead of a hard-coded number, so it stays
+    // correct regardless of what that value is.
+    for (let i = 0; i < AUTH_RATE_LIMIT_MAX + 5; i += 1) {
       const res = await request(app.getHttpServer()).post('/auth/forgot-password').send({ email });
       if (res.status === 429) {
         sawTooManyRequests = true;

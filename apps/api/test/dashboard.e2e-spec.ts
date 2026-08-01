@@ -1,18 +1,19 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { createTestApp, extractCookie } from './utils/test-app';
+import { createTestApp, csrfHeaders, extractCookie } from './utils/test-app';
 
 function uniqueEmail(label: string): string {
   return `${label}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@example.com`;
 }
 
-async function registerAndGetCookies(app: INestApplication, email: string) {
+async function registerAndGetHeaders(app: INestApplication, email: string): Promise<Record<string, string>> {
   const password = 'Sup3r$ecretPass';
   const res = await request(app.getHttpServer())
     .post('/auth/register')
     .send({ email, displayName: 'Dashboard User', password, confirmPassword: password, acceptedTerms: true })
     .expect(201);
-  return extractCookie(res.headers['set-cookie'], 'beaconvie_access_token')!;
+  const accessCookie = extractCookie(res.headers['set-cookie'], 'beaconvie_access_token')!;
+  return csrfHeaders(accessCookie, res.headers['set-cookie']);
 }
 
 describe('Dashboard (e2e)', () => {
@@ -32,9 +33,9 @@ describe('Dashboard (e2e)', () => {
   });
 
   it('returns a minimal, honest response for a brand-new user', async () => {
-    const cookie = await registerAndGetCookies(app, uniqueEmail('dash-new'));
+    const headers = await registerAndGetHeaders(app, uniqueEmail('dash-new'));
 
-    const res = await request(app.getHttpServer()).get('/dashboard').set('Cookie', cookie).expect(200);
+    const res = await request(app.getHttpServer()).get('/dashboard').set(headers).expect(200);
 
     expect(res.body.data.memoryHighlight).toBeNull();
     expect(res.body.data.companionPanel.previewMessages).toEqual([]);
@@ -45,32 +46,32 @@ describe('Dashboard (e2e)', () => {
 
   it('reflects real memory and activity once onboarding is completed', async () => {
     const email = uniqueEmail('dash-complete');
-    const cookie = await registerAndGetCookies(app, email);
+    const headers = await registerAndGetHeaders(app, email);
 
-    await request(app.getHttpServer()).get('/onboarding').set('Cookie', cookie).expect(200);
+    await request(app.getHttpServer()).get('/onboarding').set(headers).expect(200);
     await request(app.getHttpServer())
       .post('/onboarding/message')
-      .set('Cookie', cookie)
+      .set(headers)
       .send({ content: 'Starting a new job next week and feeling nervous about it.' })
       .expect(201);
     await request(app.getHttpServer())
       .post('/onboarding/message')
-      .set('Cookie', cookie)
+      .set(headers)
       .send({ content: 'Whether I will be good enough at it.' })
       .expect(201);
     await request(app.getHttpServer())
       .post('/onboarding/memory/consent')
-      .set('Cookie', cookie)
+      .set(headers)
       .send({ accepted: true })
       .expect(201);
     await request(app.getHttpServer())
       .post('/onboarding/discovery/select')
-      .set('Cookie', cookie)
+      .set(headers)
       .send({ choice: 'skipped' })
       .expect(201);
-    await request(app.getHttpServer()).post('/onboarding/complete').set('Cookie', cookie).expect(201);
+    await request(app.getHttpServer()).post('/onboarding/complete').set(headers).expect(201);
 
-    const res = await request(app.getHttpServer()).get('/dashboard').set('Cookie', cookie).expect(200);
+    const res = await request(app.getHttpServer()).get('/dashboard').set(headers).expect(200);
 
     expect(res.body.data.memoryHighlight).not.toBeNull();
     expect(res.body.data.memoryHighlight.content).toContain('new job');

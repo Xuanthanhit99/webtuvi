@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -12,12 +13,20 @@ import { AppLogger } from './common/logger/pino.logger';
 import type { AppConfiguration } from './config/configuration';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
 
   const configService = app.get(ConfigService);
   const config = configService.get<AppConfiguration>('app')!;
 
   app.useLogger(new AppLogger(config.nodeEnv));
+
+  // Only trust X-Forwarded-For when explicitly configured for a known reverse
+  // proxy topology — otherwise req.ip (used by the rate limiter) trusts
+  // whatever the client claims, letting one attacker bypass IP-based limits
+  // by spoofing the header. 'false' (default) = don't trust any proxy hop.
+  const trustProxySetting =
+    config.trustProxy === 'true' ? true : config.trustProxy === 'false' ? false : Number(config.trustProxy);
+  app.set('trust proxy', trustProxySetting);
 
   app.use(helmet());
   app.use(cookieParser());
@@ -25,6 +34,7 @@ async function bootstrap() {
   app.enableCors({
     origin: config.corsOrigins,
     credentials: true,
+    allowedHeaders: ['Content-Type', 'X-CSRF-Token'],
   });
 
   app.useGlobalPipes(
@@ -42,13 +52,20 @@ async function bootstrap() {
   if (config.nodeEnv !== 'production') {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('BeaconVie API')
-      .setDescription('Sprint 1 — Auth, Onboarding, Companion, Dashboard')
-      .setVersion('0.1.0')
+      .setDescription(
+        'Auth, Onboarding, Companion, Dashboard. State-changing requests on authenticated ' +
+          'routes require an X-CSRF-Token header matching the beaconvie_csrf_token cookie — see GET /auth/csrf-token.',
+      )
+      .setVersion('0.2.0')
       .addCookieAuth('beaconvie_access_token', {
         type: 'apiKey',
         in: 'cookie',
         name: 'beaconvie_access_token',
       })
+      .addApiKey(
+        { type: 'apiKey', in: 'header', name: 'X-CSRF-Token' },
+        'csrf',
+      )
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('docs', app, document);

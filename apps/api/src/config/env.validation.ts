@@ -5,6 +5,11 @@ const envSchema = z.object({
   API_PORT: z.coerce.number().int().positive().default(4000),
   API_BASE_URL: z.string().url(),
   FRONTEND_URL: z.string().url(),
+  // Canonical, fixed base URL used to build every link that appears inside an
+  // email (verify-email, reset-password). Kept separate from FRONTEND_URL so a
+  // future FRONTEND_URL change (e.g. adding a marketing subdomain) can't
+  // accidentally widen where email links point — see docs/security/sprint-2a-security.md.
+  APP_PUBLIC_URL: z.string().url().optional(),
   CORS_ORIGINS: z.string().min(1),
 
   DATABASE_URL: z.string().min(1),
@@ -15,19 +20,35 @@ const envSchema = z.object({
   JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
   JWT_REFRESH_EXPIRES_IN: z.string().default('30d'),
 
+  CSRF_SECRET: z.string().min(32, 'CSRF_SECRET must be at least 32 characters'),
+
   AUTH_COOKIE_DOMAIN: z.string().min(1),
   AUTH_COOKIE_SECURE: z.coerce.boolean().default(false),
   AUTH_COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('lax'),
 
   PASSWORD_RESET_EXPIRES_IN: z.string().default('1h'),
 
-  MAIL_PROVIDER: z.enum(['mailpit', 'smtp']).default('mailpit'),
-  MAIL_FROM: z.string().min(1),
+  EMAIL_VERIFICATION_EXPIRES_IN: z.string().default('24h'),
+  EMAIL_VERIFICATION_RESEND_COOLDOWN: z.string().default('60s'),
+
+  EMAIL_PROVIDER: z.enum(['mailpit', 'resend', 'postmark']).default('mailpit'),
+  EMAIL_FROM: z.string().min(1),
   MAILPIT_HOST: z.string().default('localhost'),
   MAILPIT_PORT: z.coerce.number().int().positive().default(1025),
+  RESEND_API_KEY: z.string().optional(),
+  POSTMARK_SERVER_TOKEN: z.string().optional(),
 
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
   AUTH_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900000),
+  RATE_LIMIT_REDIS_PREFIX: z.string().min(1).default('beaconvie:throttle'),
+
+  // Express `trust proxy` setting: 'false' (default, no proxy), 'true' (trust
+  // the nearest hop unconditionally — only safe behind a single known reverse
+  // proxy), or a number of hops to trust from the client side. See main.ts.
+  TRUST_PROXY: z.string().default('false'),
+
+  // Optional cap on concurrent active sessions per user; unset = unlimited.
+  SESSION_MAX_ACTIVE: z.coerce.number().int().positive().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
@@ -54,6 +75,30 @@ export function validateEnv(config: Record<string, unknown>): EnvConfig {
     }
     if (parsed.data.JWT_REFRESH_SECRET.startsWith('replace-with')) {
       throw new Error('JWT_REFRESH_SECRET is still the placeholder value');
+    }
+    if (parsed.data.CSRF_SECRET.startsWith('replace-with')) {
+      throw new Error('CSRF_SECRET is still the placeholder value');
+    }
+    if (parsed.data.EMAIL_PROVIDER === 'mailpit') {
+      throw new Error('EMAIL_PROVIDER cannot be "mailpit" in production — configure resend or postmark');
+    }
+    if (parsed.data.EMAIL_PROVIDER === 'resend' && !parsed.data.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is required when EMAIL_PROVIDER=resend');
+    }
+    if (parsed.data.EMAIL_PROVIDER === 'postmark' && !parsed.data.POSTMARK_SERVER_TOKEN) {
+      throw new Error('POSTMARK_SERVER_TOKEN is required when EMAIL_PROVIDER=postmark');
+    }
+    if (!parsed.data.APP_PUBLIC_URL) {
+      throw new Error('APP_PUBLIC_URL is required in production (fixed base URL for email links)');
+    }
+  } else {
+    // Outside production, a non-mailpit provider still needs its credential —
+    // fail fast rather than silently dropping emails.
+    if (parsed.data.EMAIL_PROVIDER === 'resend' && !parsed.data.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY is required when EMAIL_PROVIDER=resend');
+    }
+    if (parsed.data.EMAIL_PROVIDER === 'postmark' && !parsed.data.POSTMARK_SERVER_TOKEN) {
+      throw new Error('POSTMARK_SERVER_TOKEN is required when EMAIL_PROVIDER=postmark');
     }
   }
 

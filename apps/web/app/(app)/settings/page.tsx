@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { Dropdown } from '@/components/ui/dropdown';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
+import { SessionsPanel } from '@/features/settings/components/sessions-panel';
+import { ChangePasswordForm } from '@/features/settings/components/change-password-form';
 import type { MemoryPreferenceValue } from '@beaconvie/types';
 
 const MEMORY_OPTIONS: { value: MemoryPreferenceValue; label: string }[] = [
@@ -44,8 +46,16 @@ export default function SettingsPage() {
             <dt className="text-text-secondary">Email</dt>
             <dd className="text-text-primary">{user?.email}</dd>
           </div>
+          <div className="flex justify-between">
+            <dt className="text-text-secondary">Email verified</dt>
+            <dd className="text-text-primary">{user?.emailVerifiedAt ? 'Yes' : 'Not yet'}</dd>
+          </div>
         </dl>
       </Card>
+
+      <ChangePasswordForm />
+
+      <SessionsPanel />
 
       <Card>
         <p className="mb-3 text-body-sm font-semibold text-text-secondary">Memory</p>

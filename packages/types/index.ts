@@ -4,8 +4,17 @@ export interface UserDto {
   id: string;
   email: string;
   displayName: string;
+  emailVerifiedAt: string | null;
   onboardingCompletedAt: string | null;
   createdAt: string;
+}
+
+export interface SessionDto {
+  id: string;
+  createdAt: string;
+  lastUsedAt: string;
+  current: boolean;
+  userAgentSummary: string;
 }
 
 export type OnboardingStage =
@@ -74,7 +83,15 @@ export interface DashboardDiscoverySuggestionDto {
 }
 
 export interface DashboardActivityItemDto {
-  type: 'account_created' | 'onboarding_completed' | 'preference_updated' | 'memory_created';
+  type:
+    | 'account_created'
+    | 'onboarding_completed'
+    | 'preference_updated'
+    | 'memory_created'
+    | 'email_verified'
+    | 'password_changed'
+    | 'session_revoked'
+    | 'logout_all';
   label: string;
   createdAt: string;
 }

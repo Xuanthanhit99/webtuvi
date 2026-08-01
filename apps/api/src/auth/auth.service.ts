@@ -1,28 +1,41 @@
-import { randomBytes, createHash } from 'crypto';
-import { randomUUID } from 'crypto';
+import { randomBytes, randomUUID } from 'crypto';
 import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
-import type { User } from '@prisma/client';
+import type { User, UserSession } from '@prisma/client';
 import type { AppConfiguration } from '../config/configuration';
 import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 import { ActivitiesService } from '../activities/activities.service';
+import { EmailVerificationService } from './email-verification.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { parseDurationMs } from '../common/utils/duration.util';
+import { hashToken } from '../common/utils/hash-token.util';
+import { summarizeUserAgent } from '../common/utils/user-agent.util';
 
 export interface IssuedTokens {
   accessToken: string;
   refreshToken: string;
+  sessionId: string;
+}
+
+export interface SessionSummary {
+  id: string;
+  createdAt: string;
+  lastUsedAt: string;
+  current: boolean;
+  userAgentSummary: string;
 }
 
 interface RefreshTokenPayload {
@@ -40,6 +53,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly mailService: MailService,
     private readonly activitiesService: ActivitiesService,
+    private readonly emailVerificationService: EmailVerificationService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
@@ -70,6 +84,7 @@ export class AuthService {
 
     await this.activitiesService.record(user.id, 'ACCOUNT_CREATED');
     void this.mailService.sendWelcomeEmail(user.email, user.displayName);
+    void this.emailVerificationService.sendVerificationForUser(user);
 
     const tokens = await this.issueTokens(user.id, userAgent);
     return { user, tokens };
@@ -139,7 +154,7 @@ export class AuthService {
 
     await this.prisma.userSession.update({
       where: { id: session.id },
-      data: { revokedAt: new Date() },
+      data: { revokedAt: new Date(), lastUsedAt: new Date() },
     });
 
     const tokens = await this.issueTokens(user.id, userAgent, payload.familyId);
@@ -176,10 +191,16 @@ export class AuthService {
       data: { userId: user.id, tokenHash, expiresAt },
     });
 
-    const resetUrl = `${this.config.frontendUrl}/reset-password?token=${rawToken}`;
+    const resetUrl = `${this.config.appPublicUrl}/reset-password?token=${rawToken}`;
     await this.mailService.sendPasswordResetEmail(user.email, resetUrl, this.config.passwordReset.expiresIn);
   }
 
+  /**
+   * Resetting a password revokes every existing session (there is no
+   * authenticated "current" session to preserve at this point in the flow —
+   * the acting browser never held a session cookie in the first place). See
+   * docs/security/sprint-2a-security.md "Session revocation policy".
+   */
   async resetPassword(dto: ResetPasswordDto): Promise<void> {
     const tokenHash = hashToken(dto.token);
     const resetToken = await this.prisma.passwordResetToken.findUnique({ where: { tokenHash } });
@@ -196,8 +217,6 @@ export class AuthService {
     await this.prisma.$transaction([
       this.prisma.user.update({ where: { id: resetToken.userId }, data: { passwordHash } }),
       this.prisma.passwordResetToken.update({ where: { id: resetToken.id }, data: { usedAt: new Date() } }),
-      // Resetting a password revokes every existing session — a compromised
-      // password shouldn't leave old sessions valid.
       this.prisma.userSession.updateMany({
         where: { userId: resetToken.userId, revokedAt: null },
         data: { revokedAt: new Date() },
@@ -205,14 +224,95 @@ export class AuthService {
     ]);
   }
 
+  /**
+   * Requires the current password (defense against a hijacked-but-still-logged-in
+   * browser tab). Revokes every OTHER session — the calling session stays valid
+   * since the user is actively, intentionally using it. See
+   * docs/security/sprint-2a-security.md "Session revocation policy".
+   */
+  async changePassword(userId: string, currentSessionId: string | undefined, dto: ChangePasswordDto): Promise<void> {
+    const user = await this.usersService.findById(userId);
+    if (!user) throw new UnauthorizedException();
+
+    const currentValid = await argon2.verify(user.passwordHash, dto.currentPassword);
+    if (!currentValid) {
+      throw new BadRequestException({
+        code: 'WRONG_PASSWORD',
+        message: 'Your current password doesn’t match.',
+      });
+    }
+
+    const passwordHash = await argon2.hash(dto.newPassword);
+
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: userId }, data: { passwordHash } }),
+      this.prisma.userSession.updateMany({
+        where: {
+          userId,
+          revokedAt: null,
+          ...(currentSessionId ? { id: { not: currentSessionId } } : {}),
+        },
+        data: { revokedAt: new Date() },
+      }),
+    ]);
+
+    await this.activitiesService.record(userId, 'PASSWORD_CHANGED');
+  }
+
+  /** Active (non-revoked, non-expired), most-recently-used first. */
+  async listSessions(userId: string, currentSessionId: string | undefined): Promise<SessionSummary[]> {
+    const sessions = await this.prisma.userSession.findMany({
+      where: { userId, revokedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { lastUsedAt: 'desc' },
+    });
+
+    return sessions.map((session) => this.toSessionSummary(session, currentSessionId));
+  }
+
+  /** A user may only revoke their own session. Revoking the current session clears its cookies immediately. */
+  async revokeSession(userId: string, sessionId: string, currentSessionId: string | undefined): Promise<{ revokedCurrent: boolean }> {
+    const session = await this.prisma.userSession.findUnique({ where: { id: sessionId } });
+    if (!session || session.userId !== userId) {
+      throw new NotFoundException({ code: 'SESSION_NOT_FOUND', message: 'That session was not found.' });
+    }
+
+    if (!session.revokedAt) {
+      await this.prisma.userSession.update({ where: { id: sessionId }, data: { revokedAt: new Date() } });
+      await this.activitiesService.record(userId, 'SESSION_REVOKED');
+    }
+
+    return { revokedCurrent: session.id === currentSessionId };
+  }
+
+  /**
+   * "Sign out everywhere" revokes every session for the user, INCLUDING the
+   * one making this call — an unambiguous "log out of everything" action,
+   * distinct from the single-device /auth/logout. See
+   * docs/security/sprint-2a-security.md "Session revocation policy".
+   */
+  async logoutAll(userId: string): Promise<void> {
+    await this.prisma.userSession.updateMany({
+      where: { userId, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+    await this.activitiesService.record(userId, 'LOGOUT_ALL');
+  }
+
+  private toSessionSummary(session: UserSession, currentSessionId: string | undefined): SessionSummary {
+    return {
+      id: session.id,
+      createdAt: session.createdAt.toISOString(),
+      lastUsedAt: session.lastUsedAt.toISOString(),
+      current: session.id === currentSessionId,
+      userAgentSummary: summarizeUserAgent(session.userAgent),
+    };
+  }
+
   private async issueTokens(userId: string, userAgent: string | undefined, familyId?: string): Promise<IssuedTokens> {
     const user = await this.usersService.findById(userId);
     if (!user) throw new UnauthorizedException();
 
-    const accessToken = this.jwtService.sign(
-      { sub: user.id, email: user.email },
-      { secret: this.config.jwt.accessSecret, expiresIn: this.config.jwt.accessExpiresIn },
-    );
+    await this.enforceMaxActiveSessions(userId);
 
     const resolvedFamilyId = familyId ?? randomUUID();
     const jti = randomUUID();
@@ -221,7 +321,7 @@ export class AuthService {
       { secret: this.config.jwt.refreshSecret, expiresIn: this.config.jwt.refreshExpiresIn },
     );
 
-    await this.prisma.userSession.create({
+    const session = await this.prisma.userSession.create({
       data: {
         userId: user.id,
         refreshTokenHash: hashToken(refreshToken),
@@ -231,7 +331,32 @@ export class AuthService {
       },
     });
 
-    return { accessToken, refreshToken };
+    const accessToken = this.jwtService.sign(
+      { sub: user.id, email: user.email, sid: session.id },
+      { secret: this.config.jwt.accessSecret, expiresIn: this.config.jwt.accessExpiresIn },
+    );
+
+    return { accessToken, refreshToken, sessionId: session.id };
+  }
+
+  /** No-op unless SESSION_MAX_ACTIVE is configured. Evicts the oldest active session to make room for a new one. */
+  private async enforceMaxActiveSessions(userId: string): Promise<void> {
+    const max = this.config.sessionMaxActive;
+    if (!max) return;
+
+    const activeSessions = await this.prisma.userSession.findMany({
+      where: { userId, revokedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { lastUsedAt: 'asc' },
+      select: { id: true },
+    });
+
+    if (activeSessions.length < max) return;
+
+    const toEvict = activeSessions.slice(0, activeSessions.length - max + 1).map((s) => s.id);
+    await this.prisma.userSession.updateMany({
+      where: { id: { in: toEvict } },
+      data: { revokedAt: new Date() },
+    });
   }
 
   private verifyRefreshToken(token: string): RefreshTokenPayload {
@@ -244,8 +369,4 @@ export class AuthService {
       });
     }
   }
-}
-
-function hashToken(token: string): string {
-  return createHash('sha256').update(token).digest('hex');
 }

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import type { CookieOptions, Response } from 'express';
 import type { AppConfiguration } from '../config/configuration';
 import { parseDurationMs } from '../common/utils/duration.util';
+import { CSRF_TOKEN_COOKIE } from '../common/csrf/csrf.constants';
 
 export const ACCESS_TOKEN_COOKIE = 'beaconvie_access_token';
 export const REFRESH_TOKEN_COOKIE = 'beaconvie_refresh_token';
@@ -52,5 +53,21 @@ export class CookieService {
   clearAuthCookies(res: Response): void {
     res.clearCookie(ACCESS_TOKEN_COOKIE, this.baseOptions());
     res.clearCookie(REFRESH_TOKEN_COOKIE, { ...this.baseOptions(), path: '/auth' });
+  }
+
+  /**
+   * Deliberately NOT httpOnly — the frontend must be able to read this value
+   * to echo it back in the X-CSRF-Token header (double-submit pattern). It is
+   * still `secure`/`sameSite`-flagged the same as the auth cookies. See
+   * CsrfService for why a readable cookie doesn't weaken the protection.
+   */
+  setCsrfCookie(res: Response, token: string): void {
+    res.cookie(CSRF_TOKEN_COOKIE, token, {
+      httpOnly: false,
+      secure: this.config.authCookie.secure,
+      sameSite: this.config.authCookie.sameSite,
+      domain: this.config.authCookie.domain,
+      path: '/',
+    });
   }
 }

@@ -34,6 +34,7 @@ model User {
 
   sessions              UserSession[]
   passwordResetTokens   PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
   profile               UserProfile?
   preference            UserPreference?
   onboardingProgress    OnboardingProgress?
@@ -75,6 +76,22 @@ model PasswordResetToken {
 
   @@index([userId])
   @@map("password_reset_tokens")
+}
+
+/// Hash-only, single-use, expiring — same shape as PasswordResetToken. One row
+/// per issued verification email; the most recent row's createdAt is used to
+/// enforce the resend cooldown (Sprint 2A).
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@map("email_verification_tokens")
 }
 
 /// Profile fields are never collected via a required form (docs/reference Module 6 §8,
@@ -192,6 +209,10 @@ enum ActivityType {
   ONBOARDING_COMPLETED
   PREFERENCE_UPDATED
   MEMORY_CREATED
+  EMAIL_VERIFIED
+  PASSWORD_CHANGED
+  SESSION_REVOKED
+  LOGOUT_ALL
 }
 
 /// Minimal, non-sensitive metadata only — never store message content or other

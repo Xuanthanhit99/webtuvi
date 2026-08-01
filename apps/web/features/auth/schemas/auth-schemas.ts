@@ -40,6 +40,25 @@ export const forgotPasswordSchema = z.object({
 
 export type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
+export const resendVerificationSchema = z.object({
+  email: z.string().email('That doesn’t look like a valid email'),
+});
+
+export type ResendVerificationFormValues = z.infer<typeof resendVerificationSchema>;
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Please enter your current password'),
+    newPassword: passwordSchema,
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: 'That password doesn’t match',
+    path: ['confirmNewPassword'],
+  });
+
+export type ChangePasswordFormValues = z.infer<typeof changePasswordSchema>;
+
 export const resetPasswordSchema = z
   .object({
     password: passwordSchema,

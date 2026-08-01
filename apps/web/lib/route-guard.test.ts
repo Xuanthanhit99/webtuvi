@@ -44,4 +44,15 @@ describe('resolveRedirect (protected route behavior)', () => {
     expect(resolveRedirect({ pathname: '/dashboard', hasAccessToken: true, session: null })).toBe('/login');
     expect(resolveRedirect({ pathname: '/login', hasAccessToken: true, session: null })).toBeNull();
   });
+
+  it('never gates /verify-email or /verify-email/pending, regardless of auth state (no redirect loop on the verification flow)', () => {
+    const onboarded = { onboardingCompletedAt: '2026-01-01T00:00:00.000Z' };
+    const notOnboarded = { onboardingCompletedAt: null };
+
+    expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: false, session: null })).toBeNull();
+    expect(resolveRedirect({ pathname: '/verify-email/pending', hasAccessToken: false, session: null })).toBeNull();
+    expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: true, session: notOnboarded })).toBeNull();
+    expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: true, session: onboarded })).toBeNull();
+    expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: true, session: null })).toBeNull();
+  });
 });

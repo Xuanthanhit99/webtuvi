@@ -9,6 +9,7 @@ import type { AuthenticatedUser } from '../decorators/current-user.decorator';
 interface AccessTokenPayload {
   sub: string;
   email: string;
+  sid?: string;
 }
 
 @Injectable()
@@ -32,7 +33,7 @@ export class JwtAuthGuard implements CanActivate {
       const payload = this.jwtService.verify<AccessTokenPayload>(token, {
         secret: config.jwt.accessSecret,
       });
-      request.user = { id: payload.sub, email: payload.email };
+      request.user = { id: payload.sub, email: payload.email, sessionId: payload.sid };
       return true;
     } catch {
       throw new UnauthorizedException('Your session has expired. Please log in again.');

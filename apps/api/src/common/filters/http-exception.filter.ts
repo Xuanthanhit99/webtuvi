@@ -64,8 +64,23 @@ export class HttpExceptionFilter implements ExceptionFilter {
       }
     } else if (exception instanceof Error) {
       this.logger.error(exception.message, exception.stack, requestId);
+    } else if (isRecord(exception) && typeof exception.message === 'string') {
+      // Error-shaped object that fails `instanceof Error` (e.g. constructed in
+      // a different module realm — seen from some native addons). Duck-type
+      // it so we still get a real message/stack instead of a useless "{}".
+      this.logger.error(
+        `[non-instanceof-Error] ${exception.message}`,
+        typeof exception.stack === 'string' ? exception.stack : undefined,
+        requestId,
+      );
     } else {
-      this.logger.error('Unknown exception thrown', undefined, requestId);
+      let serialized: string;
+      try {
+        serialized = JSON.stringify(exception, Object.getOwnPropertyNames(isRecord(exception) ? exception : {}));
+      } catch {
+        serialized = String(exception);
+      }
+      this.logger.error(`Unknown (non-Error) exception thrown: ${serialized}`, undefined, requestId);
     }
 
     if (status >= 500) {

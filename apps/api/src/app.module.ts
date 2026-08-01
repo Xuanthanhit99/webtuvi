@@ -5,9 +5,12 @@ import { appConfig, AppConfiguration } from './config/configuration';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
+import { RedisService } from './redis/redis.service';
+import { RedisThrottlerStorageService } from './common/throttler/redis-throttler-storage.service';
 import { MailModule } from './mail/mail.module';
 import { HealthModule } from './health/health.module';
 import { JwtAuthModule } from './common/guards/jwt-auth.module';
+import { CsrfModule } from './common/csrf/csrf.module';
 import { UsersModule } from './users/users.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { AuthModule } from './auth/auth.module';
@@ -20,18 +23,20 @@ import { DashboardModule } from './dashboard/dashboard.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [appConfig] }),
     ThrottlerModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
+      inject: [ConfigService, RedisService],
+      useFactory: (configService: ConfigService, redisService: RedisService) => {
         const config = configService.get<AppConfiguration>('app')!;
         return {
           throttlers: [
             { name: 'default', ttl: 60_000, limit: 1000 },
             { name: 'auth', ttl: config.authRateLimit.windowMs, limit: config.authRateLimit.max },
           ],
+          storage: new RedisThrottlerStorageService(redisService, configService),
         };
       },
     }),
     JwtAuthModule,
+    CsrfModule,
     PrismaModule,
     RedisModule,
     MailModule,

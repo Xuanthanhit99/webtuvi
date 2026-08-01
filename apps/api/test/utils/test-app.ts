@@ -30,3 +30,19 @@ export function extractCookie(setCookieHeaders: string[] | undefined, name: stri
   const header = setCookieHeaders.find((c) => c.startsWith(`${name}=`));
   return header?.split(';')[0];
 }
+
+/**
+ * Every register/login/refresh response also sets a fresh CSRF cookie
+ * (double-submit pattern — see CsrfGuard/CookieService). Authenticated
+ * mutation requests in tests need to send that cookie's exact value back as
+ * the X-CSRF-Token header alongside the session cookie.
+ */
+export function csrfHeaders(accessCookie: string, setCookieHeaders: string[] | undefined): Record<string, string> {
+  const csrfCookie = extractCookie(setCookieHeaders, 'beaconvie_csrf_token');
+  if (!csrfCookie) throw new Error('No beaconvie_csrf_token cookie found in response — was setAuthCookies called?');
+  const csrfToken = csrfCookie.split('=').slice(1).join('=');
+  return {
+    Cookie: `${accessCookie}; ${csrfCookie}`,
+    'X-CSRF-Token': csrfToken,
+  };
+}

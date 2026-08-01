@@ -15,7 +15,11 @@ export const appConfig = registerAs('app', () => {
     port: env.API_PORT,
     apiBaseUrl: env.API_BASE_URL,
     frontendUrl: env.FRONTEND_URL,
+    // Falls back to FRONTEND_URL in dev/test so local email links keep working
+    // without extra .env setup; production requires it explicitly (env.validation.ts).
+    appPublicUrl: env.APP_PUBLIC_URL ?? env.FRONTEND_URL,
     corsOrigins: env.CORS_ORIGINS.split(',').map((origin) => origin.trim()),
+    trustProxy: env.TRUST_PROXY,
 
     database: {
       url: env.DATABASE_URL,
@@ -29,6 +33,9 @@ export const appConfig = registerAs('app', () => {
       accessExpiresIn: env.JWT_ACCESS_EXPIRES_IN,
       refreshExpiresIn: env.JWT_REFRESH_EXPIRES_IN,
     },
+    csrf: {
+      secret: env.CSRF_SECRET,
+    },
     authCookie: {
       domain: env.AUTH_COOKIE_DOMAIN,
       secure: env.AUTH_COOKIE_SECURE,
@@ -37,16 +44,24 @@ export const appConfig = registerAs('app', () => {
     passwordReset: {
       expiresIn: env.PASSWORD_RESET_EXPIRES_IN,
     },
+    emailVerification: {
+      expiresIn: env.EMAIL_VERIFICATION_EXPIRES_IN,
+      resendCooldown: env.EMAIL_VERIFICATION_RESEND_COOLDOWN,
+    },
     mail: {
-      provider: env.MAIL_PROVIDER,
-      from: env.MAIL_FROM,
+      provider: env.EMAIL_PROVIDER,
+      from: env.EMAIL_FROM,
       mailpitHost: env.MAILPIT_HOST,
       mailpitPort: env.MAILPIT_PORT,
+      resendApiKey: env.RESEND_API_KEY,
+      postmarkServerToken: env.POSTMARK_SERVER_TOKEN,
     },
     authRateLimit: {
       max: env.AUTH_RATE_LIMIT_MAX,
       windowMs: env.AUTH_RATE_LIMIT_WINDOW_MS,
+      redisPrefix: env.RATE_LIMIT_REDIS_PREFIX,
     },
+    sessionMaxActive: env.SESSION_MAX_ACTIVE,
   };
 });
 

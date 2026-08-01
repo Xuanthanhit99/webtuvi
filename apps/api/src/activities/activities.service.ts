@@ -8,6 +8,10 @@ const ACTIVITY_LABELS: Record<ActivityType, string> = {
   ONBOARDING_COMPLETED: 'Onboarding completed',
   PREFERENCE_UPDATED: 'Preference updated',
   MEMORY_CREATED: 'A memory was created',
+  EMAIL_VERIFIED: 'Email verified',
+  PASSWORD_CHANGED: 'Password changed',
+  SESSION_REVOKED: 'A session was signed out',
+  LOGOUT_ALL: 'Signed out of all devices',
 };
 
 @Injectable()
@@ -45,5 +49,13 @@ function mapType(type: ActivityType): DashboardActivityItemDto['type'] {
       return 'preference_updated';
     case 'MEMORY_CREATED':
       return 'memory_created';
+    case 'EMAIL_VERIFIED':
+      return 'email_verified';
+    case 'PASSWORD_CHANGED':
+      return 'password_changed';
+    case 'SESSION_REVOKED':
+      return 'session_revoked';
+    case 'LOGOUT_ALL':
+      return 'logout_all';
   }
 }

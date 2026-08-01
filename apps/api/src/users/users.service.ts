@@ -29,6 +29,7 @@ export class UsersService {
       id: user.id,
       email: user.email,
       displayName: user.displayName,
+      emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
       onboardingCompletedAt: user.onboardingCompletedAt ? user.onboardingCompletedAt.toISOString() : null,
       createdAt: user.createdAt.toISOString(),
     };
