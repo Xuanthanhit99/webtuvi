@@ -1,14 +1,18 @@
 'use client';
 
+import Link from 'next/link';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { preferencesApi } from '@/features/dashboard/api/preferences-api';
 import { useAuth } from '@/providers/auth-provider';
 import { Card } from '@/components/ui/card';
 import { Dropdown } from '@/components/ui/dropdown';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
 import { SessionsPanel } from '@/features/settings/components/sessions-panel';
 import { ChangePasswordForm } from '@/features/settings/components/change-password-form';
+import { ConsentSettings } from '@/features/memory/components/consent-settings';
+import { memoryApi } from '@/features/memory/api/memory-api';
 import type { MemoryPreferenceValue } from '@beaconvie/types';
 
 const MEMORY_OPTIONS: { value: MemoryPreferenceValue; label: string }[] = [
@@ -29,6 +33,21 @@ export default function SettingsPage() {
       toast.success('Preference updated.');
     },
     onError: () => toast.error("Couldn't save that. Please try again."),
+  });
+
+  const createExport = useMutation({
+    mutationFn: () => memoryApi.export.create(),
+    onSuccess: (job) => {
+      const blob = new Blob([JSON.stringify(job.result, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `beaconvie-memory-export-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('Your memory export has downloaded.');
+    },
+    onError: () => toast.error("Couldn't create an export right now. Please try again."),
   });
 
   return (
@@ -58,21 +77,51 @@ export default function SettingsPage() {
       <SessionsPanel />
 
       <Card>
-        <p className="mb-3 text-body-sm font-semibold text-text-secondary">Memory</p>
+        <p className="mb-3 text-body-sm font-semibold text-text-secondary">Onboarding memory (legacy)</p>
         <p className="mb-4 text-body-sm text-text-secondary">
-          Control how BeaconVie decides what to remember from your conversations.
+          Controls only the very first reflections BeaconVie saved during onboarding.
         </p>
         {isLoading || !data ? (
           <Skeleton className="h-11 w-full" />
         ) : (
           <Dropdown
             id="memory-preference"
-            label="Memory preference"
+            label="Onboarding memory preference"
             value={data.memoryPreference}
             options={MEMORY_OPTIONS}
             onChange={(value) => updatePreference.mutate({ memoryPreference: value as MemoryPreferenceValue })}
           />
         )}
+      </Card>
+
+      <Card className="flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-body-sm font-semibold text-text-secondary">Memory</p>
+            <p className="text-body-sm text-text-secondary">
+              Control what BeaconVie is allowed to remember, review what&rsquo;s waiting for your approval, and see, export, or
+              delete everything it has saved.
+            </p>
+          </div>
+          <Link href="/memory">
+            <Button variant="secondary" size="sm">
+              View my memories
+            </Button>
+          </Link>
+        </div>
+
+        <ConsentSettings />
+
+        <div className="flex items-center justify-between border-t border-border-subtle pt-4">
+          <p className="text-body-sm text-text-secondary">
+            Deleting a memory is permanent and immediate — it disappears from your Memory view, Companion, and Dashboard right
+            away. A copy may briefly remain in encrypted backups until the next backup rotation, never used to restore it in the
+            product.
+          </p>
+          <Button variant="secondary" size="sm" onClick={() => createExport.mutate()} loading={createExport.isPending}>
+            Export
+          </Button>
+        </div>
       </Card>
 
       <Card>

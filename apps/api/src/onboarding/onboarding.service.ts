@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import type { CompanionMessage, OnboardingStage } from '@prisma/client';
 import type { OnboardingMessageDto, OnboardingStateDto } from '@beaconvie/types';
 import { PrismaService } from '../prisma/prisma.service';
-import { MemoryService } from '../memory/memory.service';
+import { MemoryCandidateService } from '../memory/candidate/memory-candidate.service';
 import { ActivitiesService } from '../activities/activities.service';
 import * as script from './conversation-script';
 
@@ -10,7 +10,7 @@ import * as script from './conversation-script';
 export class OnboardingService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly memoryService: MemoryService,
+    private readonly memoryCandidateService: MemoryCandidateService,
     private readonly activitiesService: ActivitiesService,
   ) {}
 
@@ -71,9 +71,13 @@ export class OnboardingService {
 
   /**
    * Explicit memory consent (Sprint 1 privacy requirement): the Companion asked
-   * "want me to remember this?" in reflectionMessage() — nothing is written to
-   * MemoryNote unless the user says yes here, and declining doesn't block
-   * finishing onboarding.
+   * "want me to remember this?" in reflectionMessage() — nothing is created
+   * unless the user says yes here, and declining doesn't block finishing
+   * onboarding. Writes directly to the Sprint 3A `Memory` model (never the
+   * legacy `MemoryNote` table — see docs/architecture/memory-engine.md
+   * "Onboarding cutover"); if memory consent currently denies it,
+   * `createDirect` returns `null` and this proceeds exactly as if the user
+   * had declined, consistent with "declining doesn't block finishing."
    */
   async respondToMemoryConsent(userId: string, accepted: boolean): Promise<OnboardingStateDto> {
     const progress = await this.getOrCreateProgress(userId);
@@ -90,11 +94,13 @@ export class OnboardingService {
         where: { userId, context: 'ONBOARDING', role: 'USER' },
         orderBy: { createdAt: 'asc' },
       });
-      await this.memoryService.createNote(
-        userId,
-        script.memoryNoteContent(firstUserMessage?.content ?? ''),
-        'ONBOARDING',
-      );
+      const summary = script.memoryNoteContent(firstUserMessage?.content ?? '');
+      await this.memoryCandidateService.createDirect(userId, {
+        type: 'CUSTOM',
+        title: summary,
+        summary,
+        sourceType: 'ONBOARDING',
+      });
       await this.appendMessage(userId, 'COMPANION', script.MEMORY_SAVED_MESSAGE);
     } else {
       await this.appendMessage(userId, 'COMPANION', script.MEMORY_DECLINED_MESSAGE);

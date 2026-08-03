@@ -1,6 +1,16 @@
 import type { ConversationContext } from '../context/context.types';
 
 /**
+ * Bump this whenever `BASE_RULES` or the fact-assembly logic in
+ * `buildSystemPrompt` changes materially. Recorded on every persisted
+ * assistant `ConversationMessage.metadata` (see stream.service.ts) so a
+ * future behavior shift in stored conversations can be correlated back to a
+ * specific prompt revision instead of being unattributable (Sprint 2B audit
+ * Finding 9).
+ */
+export const PROMPT_VERSION = 'companion-core-v1';
+
+/**
  * The Companion's fixed behavioral contract — see docs/security/ai-safety.md
  * "System prompt rules" for the reasoning behind each rule. This is the
  * single place these rules are defined; nothing else in Companion Core

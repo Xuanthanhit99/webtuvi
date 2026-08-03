@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Send, X } from 'lucide-react';
 import type { ComposerStatus } from '../hooks/use-companion-conversation';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,15 @@ const MAX_LENGTH = 4000;
 export interface ComposerProps {
   status: ComposerStatus;
   errorMessage: string | null;
+  /**
+   * Owned by the parent (via useCompanionConversation), not local state —
+   * it must survive a failed send/stream so the user never loses what they
+   * typed. Only the hook clears it, and only on a definitive success
+   * (completed reply, safety refusal, or cancel) — never synchronously on
+   * submit. See Sprint 2B audit Finding 3.
+   */
+  draft: string;
+  onDraftChange: (value: string) => void;
   onSend: (content: string) => void;
   onCancel: () => void;
   onRetry: () => void;
@@ -21,8 +29,7 @@ export interface ComposerProps {
 /** Retry re-opens the stream against the same still-pending user message — see use-companion-conversation.ts for why this only applies to these three statuses (a client-side cancel persists its own turn and has nothing left to retry). */
 const RETRYABLE_STATUSES: ComposerStatus[] = ['error', 'rate_limited', 'offline'];
 
-export function Composer({ status, errorMessage, onSend, onCancel, onRetry, onDismiss }: ComposerProps) {
-  const [draft, setDraft] = useState('');
+export function Composer({ status, errorMessage, draft, onDraftChange, onSend, onCancel, onRetry, onDismiss }: ComposerProps) {
   const busy = status === 'sending' || status === 'streaming';
   const canRetry = RETRYABLE_STATUSES.includes(status);
 
@@ -30,8 +37,10 @@ export function Composer({ status, errorMessage, onSend, onCancel, onRetry, onDi
     e.preventDefault();
     const trimmed = draft.trim();
     if (!trimmed || busy) return;
+    // No local clearing here — onSend triggers the hook's send(), which only
+    // clears the draft once the turn genuinely completes. If it fails, the
+    // exact text the user typed is still right here, ready to resend.
     onSend(trimmed);
-    setDraft('');
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -102,7 +111,7 @@ export function Composer({ status, errorMessage, onSend, onCancel, onRetry, onDi
         <textarea
           id="companion-composer"
           value={draft}
-          onChange={(e) => setDraft(e.target.value)}
+          onChange={(e) => onDraftChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="What's on your mind?"
           disabled={busy}

@@ -70,6 +70,21 @@ export const appConfig = registerAs('app', () => {
       fallbackProvider: env.FALLBACK_PROVIDER,
       timeoutMs: env.AI_TIMEOUT_MS,
       maxRetries: env.AI_MAX_RETRIES,
+      enableMockProvider: env.AI_ENABLE_MOCK_PROVIDER,
+      rateLimit: {
+        max: env.AI_RATE_LIMIT_MAX,
+        windowMs: env.AI_RATE_LIMIT_WINDOW_MS,
+        ipMax: env.AI_RATE_LIMIT_IP_MAX,
+      },
+      concurrency: {
+        maxPerUser: env.AI_MAX_CONCURRENT_GENERATIONS_PER_USER,
+        lockTtlMs: env.AI_CONCURRENCY_LOCK_TTL_MS,
+      },
+      budget: {
+        dailyRequestLimit: env.AI_DAILY_REQUEST_LIMIT,
+        dailyTokenLimit: env.AI_DAILY_TOKEN_LIMIT,
+        monthlyTokenLimit: env.AI_MONTHLY_TOKEN_LIMIT,
+      },
     },
   };
 });

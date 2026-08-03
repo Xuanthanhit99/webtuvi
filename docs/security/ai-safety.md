@@ -85,7 +85,83 @@ product.
 
 ## Provider-unavailable / all-providers-down behavior
 
-If every provider in the configured chain (including the always-present `mock` fallback) fails before
-emitting any content, the stream ends with a single retryable `error` chunk
-("All AI providers are currently unavailable. Please try again shortly.") rather than a raw exception
-or a silent hang. See `companion-core.md` "Retry and fallback" for the full chain/backoff design.
+If every provider in the configured chain fails before emitting any content, the stream ends with a
+single retryable `error` chunk, `code: 'PROVIDER_UNAVAILABLE'` ("All AI providers are currently
+unavailable. Please try again shortly.") rather than a raw exception or a silent hang. **No assistant
+message is persisted and no `AIUsage` row is written for this** — the user is never shown, and never
+charged for, a reply that didn't actually happen. See `companion-core.md` "Retry and fallback" for the
+full chain/backoff design.
+
+## Mock provider: never reachable in production (Sprint 2B audit Finding 1)
+
+An earlier version of this sprint unconditionally appended the deterministic `MockProvider` to the end
+of every fallback chain, in every environment — including, in principle, production, if every real
+provider happened to fail. That meant a production outage of every configured real provider could have
+silently resolved to a fabricated, canned reply presented as a real one, directly contradicting the
+rule above. This has been closed with two independent, defense-in-depth layers:
+
+1. **Registration gate** (`providers/provider-registry.service.ts`): `MockProvider` is only ever
+   constructed/registered when `NODE_ENV !== 'production'`, or `AI_ENABLE_MOCK_PROVIDER=true` is
+   explicitly set (default `false`). In production, it is simply never in the registry — `has('mock')`
+   returns `false` — so nothing downstream can select it even if misconfigured to try.
+2. **Boot-time validation** (`config/env.validation.ts`): in production, boot fails fast if
+   `DEFAULT_AI_PROVIDER=mock`, `FALLBACK_PROVIDER=mock`, or `AI_ENABLE_MOCK_PROVIDER=true` is set —
+   the dangerous configuration can never even reach the registry.
+3. **No unconditional chain append**: `ProviderOrchestratorService.chain()` no longer appends `'mock'`
+   to the fallback chain by default under any circumstance. `mock` only ever appears in the chain if
+   it was explicitly configured as `DEFAULT_AI_PROVIDER`/`FALLBACK_PROVIDER` *and* it's actually
+   registered — both of which are already excluded in production by (1) and (2) above.
+
+If all configured real providers fail, production now correctly surfaces `PROVIDER_UNAVAILABLE`
+(above) instead of silently falling back to Mock. Outside production, `mock` remains the default and
+is registered automatically — no behavior change for local dev/CI/tests.
+
+## Rate limiting, concurrent-generation limit, and usage budget (Sprint 2B audit Finding 2)
+
+Companion generation was previously unbounded: any authenticated user could send unlimited messages,
+each potentially triggering a real, billed provider call, with no per-user cap. Three independent,
+complementary controls now apply:
+
+- **Request rate limit** (`common/guards/companion-throttler.guard.ts`, applied to
+  `POST /companion/conversations/:id/messages`): a per-user bucket (`AI_RATE_LIMIT_MAX` per
+  `AI_RATE_LIMIT_WINDOW_MS`, default 20/60s) plus a looser secondary per-IP bucket
+  (`AI_RATE_LIMIT_IP_MAX`, default 100/60s) as defense against one IP spread across many accounts.
+  Reuses the Sprint 2A Redis-backed `ThrottlerModule` infrastructure (cross-instance-safe, fails open
+  if Redis is unreachable — same trade-off as the existing auth rate limiter). Exceeding either
+  returns `429` with a normalized `{code: 'RATE_LIMITED', message}` body and a `Retry-After` header.
+- **Concurrent-generation limit** (`companion/concurrency/generation-lock.service.ts`, enforced in
+  `StreamService.generate()`): caps how many generations one user can have in flight at once
+  (`AI_MAX_CONCURRENT_GENERATIONS_PER_USER`, default 1) via an atomic Redis counter. Acquired before
+  a provider is ever called and released in a `finally` block covering every exit path — success,
+  provider error, cancellation, client disconnect, timeout — so a lock is never left held past its
+  turn. A safety-net TTL (`AI_CONCURRENCY_LOCK_TTL_MS`, default 120s) self-expires the counter if a
+  release is ever missed (e.g. a process crash). Rejected attempts get a `stream_error` with
+  `code: 'CONCURRENT_GENERATION'`, no provider call, nothing persisted.
+- **Usage budget** (`companion/cost/cost-control.service.ts`'s `checkBudget`, enforced in
+  `ConversationService.sendMessage` before anything is persisted): a coarse daily/monthly ceiling —
+  `AI_DAILY_REQUEST_LIMIT` (default 50 completed generations/day), `AI_DAILY_TOKEN_LIMIT` (default
+  200,000 tokens/day), `AI_MONTHLY_TOKEN_LIMIT` (default 2,000,000 tokens/month) — read from
+  already-persisted, billable `AIUsage` rows only (never from in-flight or failed attempts, which are
+  tracked separately via `ProviderLog` and never reach `AIUsage`). Exceeding any of these returns `429`
+  with `{code: 'AI_BUDGET_EXCEEDED', message}`, before the user's message is even persisted.
+
+**Counting rules, stated explicitly:**
+- `AIUsage` (billable/final usage) is written exactly once per completed generation, only from
+  `StreamService`'s `'done'` branch — never for a retried attempt, a fallback attempt, or a total
+  chain failure. Retries and per-attempt failures are recorded separately, in `ProviderLog`
+  (observability), which is never read for budget purposes.
+- Neither the rate limit, the concurrency lock, nor the budget check ever falls back to Mock —
+  exceeding any of them is a clean, normalized rejection, not a degraded-but-successful response.
+
+**Residual risk**: the rate limit and budget checks fail open if Redis/Postgres are briefly
+unreachable (consistent with the existing Sprint 2A availability-over-strictness trade-off for rate
+limiting) — a short infrastructure outage could theoretically let a burst of requests through
+unthrottled rather than blocking the whole product. This is an accepted, disclosed trade-off, not an
+oversight.
+
+## Prompt versioning
+
+`prompt/system-prompt.ts` exports `PROMPT_VERSION` (currently `'companion-core-v1'`), recorded in the
+`metadata` of every persisted assistant `ConversationMessage`. Bump it whenever the system prompt's
+rules or fact-assembly logic change materially, so a future behavior shift in stored conversations can
+be correlated back to a specific prompt revision instead of being unattributable.

@@ -27,10 +27,18 @@ export interface ChatResult {
   usage: TokenUsage;
 }
 
+/**
+ * `code` is a normalized, stable identifier for the frontend/observability to
+ * key off of (never the raw provider error string) — e.g. `PROVIDER_UNAVAILABLE`
+ * when the whole fallback chain is exhausted, `GENERATION_INTERRUPTED` when a
+ * mid-stream failure ends a turn without falling back, `CONCURRENT_GENERATION`
+ * when a second generation for the same user is rejected. Optional because not
+ * every error chunk needs one today; add new codes here as they're needed.
+ */
 export type StreamChunk =
   | { type: 'token'; content: string }
   | { type: 'done'; usage: TokenUsage; model: string }
-  | { type: 'error'; message: string; retryable: boolean };
+  | { type: 'error'; message: string; retryable: boolean; code?: string };
 
 /**
  * Thrown by a provider implementation on any failed request. `retryable`

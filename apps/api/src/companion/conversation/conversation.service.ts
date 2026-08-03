@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import type { Conversation, ConversationMessage } from '@prisma/client';
 import type { ConversationDto, ConversationMessageDto } from '@beaconvie/types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SafetyService } from '../safety/safety.service';
+import { CostControlService } from '../cost/cost-control.service';
 
 export interface SendMessageResult {
   userMessage: ConversationMessageDto;
@@ -18,6 +19,7 @@ export class ConversationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly safety: SafetyService,
+    private readonly costControl: CostControlService,
   ) {}
 
   async create(userId: string, title: string | undefined): Promise<ConversationDto> {
@@ -56,9 +58,19 @@ export class ConversationService {
    * a fixed refusal message immediately and signals the caller (controller)
    * that no generation should be triggered — the LLM is never called for a
    * refused message.
+   *
+   * Checked before any of that: the caller's usage budget (daily request/token,
+   * monthly token — see CostControlService.checkBudget). A budget breach never
+   * persists anything and never reaches the safety check or a provider —
+   * it's a clean, normalized 429 (AI_BUDGET_EXCEEDED), not a fabricated reply.
    */
   async sendMessage(userId: string, conversationId: string, content: string): Promise<SendMessageResult> {
     await this.findOwned(userId, conversationId);
+
+    const budget = await this.costControl.checkBudget(userId);
+    if (!budget.allowed) {
+      throw new HttpException({ code: 'AI_BUDGET_EXCEEDED', message: budget.message }, HttpStatus.TOO_MANY_REQUESTS);
+    }
 
     const safetyResult = this.safety.checkInput(content);
 

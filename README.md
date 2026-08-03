@@ -118,7 +118,10 @@ apps/
       onboarding/ Conversational onboarding state machine
       companion/  Minimal rule-based post-onboarding chat
       dashboard/  Aggregation endpoint + decision engine
-      memory/     MemoryNote persistence (no dedicated route — see docs)
+      memory/     Memory Foundation (Sprint 3A) — consent, candidates, CRUD,
+                  versioning, audit, timeline, export; see
+                  docs/architecture/memory-engine.md. MemoryNote (Sprint 1) is
+                  kept read-only for the Dashboard's legacy fallback only.
       users/      Profile + preferences
       common/     Guards, filters, interceptors, shared utils
     prisma/       Schema, migrations, dev seed
@@ -133,21 +136,27 @@ docs/
   reference/      Product Bible, Design Guide, Figma spec (source documents)
 ```
 
-## What's real vs. simplified in Sprint 1
+## What's real vs. simplified
 
 Authentication, onboarding persistence, and the dashboard all run against a real
-database — nothing here is mocked. Two things are deliberately simplified (and
-disclosed, not hidden):
+database — nothing here is mocked. As of Sprint 2B (Companion Core), the
+Companion is backed by a real, configurable AI provider (OpenAI/Anthropic/
+Gemini, selected via `DEFAULT_AI_PROVIDER`) with rate limiting, per-user
+concurrency limits, and budget controls — see
+`docs/architecture/companion-core.md`. A Mock provider exists for local
+development only and is structurally blocked from running in production
+(`NODE_ENV=production`) by `env.validation.ts`. As of Sprint 3A (Memory
+Foundation), Memory has its own consent engine, candidate lifecycle, CRUD,
+versioning, audit trail, timeline, and export — deliberately **not** yet Memory
+*intelligence* (no embeddings, vector search, RAG, or automatic extraction); see
+`docs/architecture/memory-engine.md`.
 
-- **The Companion is rule-based, not an LLM.** There is no AI/LLM provider in
-  Sprint 1's scope. Onboarding and post-onboarding chat use deterministic,
-  templated copy modeled on `docs/reference`'s example scripts. See
-  `docs/architecture/sprint-1-decisions.md`.
+Two things remain deliberately simplified (and disclosed, not hidden):
+
 - **Google/Apple login buttons are visible but disabled** ("Coming soon") — no
-  OAuth credentials are configured for this environment, and Sprint 1's
-  requirements explicitly forbid faking a successful social login.
-
-Journal, Discovery (Tarot/Natal Chart/Eastern Horoscope/Numerology), Reports, and
-Community are out of scope for Sprint 1. Their nav entries and/or landing
-mentions exist, but route to structured "Coming soon" pages — never a dead link
-or a page that pretends to be a working feature.
+  OAuth credentials are configured for this environment, and requirements
+  explicitly forbid faking a successful social login.
+- Journal, Discovery (Tarot/Natal Chart/Eastern Horoscope/Numerology), Reports,
+  and Community remain out of scope. Their nav entries and/or landing mentions
+  exist, but route to structured "Coming soon" pages — never a dead link or a
+  page that pretends to be a working feature.

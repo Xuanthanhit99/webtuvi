@@ -30,6 +30,25 @@ import { DashboardModule } from './dashboard/dashboard.module';
           throttlers: [
             { name: 'default', ttl: 60_000, limit: 1000 },
             { name: 'auth', ttl: config.authRateLimit.windowMs, limit: config.authRateLimit.max },
+            // Companion generation endpoints (Sprint 2B audit Finding 2): one
+            // per-authenticated-user bucket, plus a looser per-IP bucket as a
+            // secondary abuse defense. Routes opt in via CompanionThrottlerGuard
+            // and must skip the unrelated `auth` throttler explicitly (see that
+            // guard's docstring) so its much tighter limit doesn't also apply.
+            {
+              name: 'companion',
+              ttl: config.ai.rateLimit.windowMs,
+              limit: config.ai.rateLimit.max,
+              getTracker: (req: Record<string, unknown>) => {
+                const user = req.user as { id?: string } | undefined;
+                return user?.id ?? String(req.ip ?? 'unknown-ip');
+              },
+            },
+            {
+              name: 'companion-ip',
+              ttl: config.ai.rateLimit.windowMs,
+              limit: config.ai.rateLimit.ipMax,
+            },
           ],
           storage: new RedisThrottlerStorageService(redisService, configService),
         };

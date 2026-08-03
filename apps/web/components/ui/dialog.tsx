@@ -47,7 +47,7 @@ export function Dialog({ open, onClose, title, description, children, variant = 
         </IconButton>
       </div>
       {description && <p className="mb-4 text-body-sm text-text-secondary">{description}</p>}
-      {children}
+      {open && children}
     </dialog>
   );
 }

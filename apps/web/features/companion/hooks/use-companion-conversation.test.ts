@@ -217,6 +217,158 @@ describe('useCompanionConversation', () => {
     expect(MockEventSource.instances).toHaveLength(0);
   });
 
+  describe('draft preservation (Sprint 2B audit Finding 3)', () => {
+    it('restores the draft when sendMessage fails outright (never persisted, nothing to retry against)', async () => {
+      (conversationsApi.get as jest.Mock).mockResolvedValue({ conversation: { id: 'c1' }, messages: [] });
+      (conversationsApi.sendMessage as jest.Mock).mockRejectedValue(new Error('network down'));
+
+      const { result } = renderHook(() => useCompanionConversation('c1'));
+      await waitFor(() => expect(result.current.status).toBe('idle'));
+      act(() => result.current.setDraft('a message that never arrives'));
+
+      await act(async () => {
+        await result.current.send('a message that never arrives', 'c1');
+      });
+
+      expect(result.current.status).toBe('error');
+      expect(result.current.draft).toBe('a message that never arrives');
+    });
+
+    it('restores the draft when the send is rate-limited (429)', async () => {
+      (conversationsApi.get as jest.Mock).mockResolvedValue({ conversation: { id: 'c1' }, messages: [] });
+      (conversationsApi.sendMessage as jest.Mock).mockRejectedValue(new ApiError('Too many requests', 'RATE_LIMITED', 429));
+
+      const { result } = renderHook(() => useCompanionConversation('c1'));
+      await waitFor(() => expect(result.current.status).toBe('idle'));
+      act(() => result.current.setDraft('please send this'));
+
+      await act(async () => {
+        await result.current.send('please send this', 'c1');
+      });
+
+      expect(result.current.status).toBe('rate_limited');
+      expect(result.current.draft).toBe('please send this');
+    });
+
+    it('restores the draft when the provider is unavailable (stream_error after a successful send)', async () => {
+      (conversationsApi.get as jest.Mock).mockResolvedValue({ conversation: { id: 'c1' }, messages: [] });
+      (conversationsApi.sendMessage as jest.Mock).mockResolvedValue({
+        userMessage: { id: 'u1', role: 'user', content: 'Hi', createdAt: '2026-01-01T00:00:00.000Z' },
+        assistantMessage: null,
+        requiresGeneration: true,
+      });
+
+      const { result } = renderHook(() => useCompanionConversation('c1'));
+      await waitFor(() => expect(result.current.status).toBe('idle'));
+      act(() => result.current.setDraft('Hi'));
+
+      await act(async () => {
+        await result.current.send('Hi', 'c1');
+      });
+      // The message was safely persisted server-side (visible in `messages`)
+      // by this point, but the draft is deliberately not cleared until the
+      // stream genuinely completes — see the hook's `openStream` comment.
+      expect(result.current.draft).toBe('Hi');
+
+      act(() =>
+        MockEventSource.latest().emit('stream_error', {
+          message: 'All AI providers are currently unavailable.',
+          code: 'PROVIDER_UNAVAILABLE',
+        }),
+      );
+
+      expect(result.current.status).toBe('error');
+      expect(result.current.draft).toBe('Hi');
+    });
+
+    it('clears the draft once the turn completes successfully', async () => {
+      (conversationsApi.get as jest.Mock).mockResolvedValue({ conversation: { id: 'c1' }, messages: [] });
+      (conversationsApi.sendMessage as jest.Mock).mockResolvedValue({
+        userMessage: { id: 'u1', role: 'user', content: 'Hi', createdAt: '2026-01-01T00:00:00.000Z' },
+        assistantMessage: null,
+        requiresGeneration: true,
+      });
+
+      const { result } = renderHook(() => useCompanionConversation('c1'));
+      await waitFor(() => expect(result.current.status).toBe('idle'));
+      act(() => result.current.setDraft('Hi'));
+      await act(async () => {
+        await result.current.send('Hi', 'c1');
+      });
+
+      act(() =>
+        MockEventSource.latest().emit('done', {
+          message: { id: 'a1', role: 'assistant', content: 'Hi there', createdAt: '2026-01-01T00:00:01.000Z' },
+        }),
+      );
+
+      expect(result.current.status).toBe('idle');
+      expect(result.current.draft).toBe('');
+    });
+
+    it('clears the draft on a safety refusal — nothing left to resend', async () => {
+      (conversationsApi.get as jest.Mock).mockResolvedValue({ conversation: { id: 'c1' }, messages: [] });
+      (conversationsApi.sendMessage as jest.Mock).mockResolvedValue({
+        userMessage: { id: 'u1', role: 'user', content: 'unsafe', createdAt: '2026-01-01T00:00:00.000Z' },
+        assistantMessage: { id: 'a1', role: 'assistant', content: "I can't help with that.", createdAt: '2026-01-01T00:00:01.000Z' },
+        requiresGeneration: false,
+      });
+
+      const { result } = renderHook(() => useCompanionConversation('c1'));
+      await waitFor(() => expect(result.current.status).toBe('idle'));
+      act(() => result.current.setDraft('unsafe'));
+      await act(async () => {
+        await result.current.send('unsafe', 'c1');
+      });
+
+      expect(result.current.status).toBe('safety_refused');
+      expect(result.current.draft).toBe('');
+    });
+
+    it('clears the draft on cancel — the turn is already persisted, nothing to resend', async () => {
+      (conversationsApi.get as jest.Mock).mockResolvedValue({ conversation: { id: 'c1' }, messages: [] });
+      (conversationsApi.sendMessage as jest.Mock).mockResolvedValue({
+        userMessage: { id: 'u1', role: 'user', content: 'Hi', createdAt: '2026-01-01T00:00:00.000Z' },
+        assistantMessage: null,
+        requiresGeneration: true,
+      });
+
+      const { result } = renderHook(() => useCompanionConversation('c1'));
+      await waitFor(() => expect(result.current.status).toBe('idle'));
+      act(() => result.current.setDraft('Hi'));
+      await act(async () => {
+        await result.current.send('Hi', 'c1');
+      });
+
+      act(() => result.current.cancel());
+
+      expect(result.current.status).toBe('cancelled');
+      expect(result.current.draft).toBe('');
+    });
+
+    it('retry() sends exactly one new request (re-opens the stream) without touching sendMessage again', async () => {
+      (conversationsApi.get as jest.Mock).mockResolvedValue({ conversation: { id: 'c1' }, messages: [] });
+      (conversationsApi.sendMessage as jest.Mock).mockResolvedValue({
+        userMessage: { id: 'u1', role: 'user', content: 'Hi', createdAt: '2026-01-01T00:00:00.000Z' },
+        assistantMessage: null,
+        requiresGeneration: true,
+      });
+
+      const { result } = renderHook(() => useCompanionConversation('c1'));
+      await waitFor(() => expect(result.current.status).toBe('idle'));
+      await act(async () => {
+        await result.current.send('Hi', 'c1');
+      });
+      act(() => MockEventSource.latest().emit('stream_error', { message: 'down' }));
+      expect(conversationsApi.sendMessage).toHaveBeenCalledTimes(1);
+
+      act(() => result.current.retry());
+
+      expect(conversationsApi.sendMessage).toHaveBeenCalledTimes(1);
+      expect(MockEventSource.instances).toHaveLength(2);
+    });
+  });
+
   it('retry() re-opens a fresh stream to the same conversation', async () => {
     (conversationsApi.get as jest.Mock).mockResolvedValue({ conversation: { id: 'c1' }, messages: [] });
     (conversationsApi.sendMessage as jest.Mock).mockResolvedValue({

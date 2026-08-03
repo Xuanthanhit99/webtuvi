@@ -36,6 +36,18 @@ env:
   FALLBACK_PROVIDER: mock
   AI_TIMEOUT_MS: 5000
   AI_MAX_RETRIES: 1
+  # Generous, test-friendly ceilings — same reasoning as AUTH_RATE_LIMIT_MAX
+  # above (see apps/api/.env.test.example): the backend e2e suite and the
+  # Playwright flows both send companion messages from the same runner IP
+  # within this job, and this only needs to comfortably exceed that total.
+  AI_RATE_LIMIT_MAX: 200
+  AI_RATE_LIMIT_WINDOW_MS: 60000
+  AI_RATE_LIMIT_IP_MAX: 500
+  AI_MAX_CONCURRENT_GENERATIONS_PER_USER: 1
+  AI_CONCURRENCY_LOCK_TTL_MS: 120000
+  AI_DAILY_REQUEST_LIMIT: 1000
+  AI_DAILY_TOKEN_LIMIT: 200000
+  AI_MONTHLY_TOKEN_LIMIT: 2000000
   NEXT_PUBLIC_API_URL: http://localhost:4000
   NEXT_PUBLIC_APP_URL: http://localhost:3000
 
@@ -88,11 +100,16 @@ jobs:
       - name: Lint
         run: pnpm lint
 
-      - name: Typecheck
-        run: pnpm typecheck
-
+      # Must run before Typecheck: apps/api's TS types depend on the generated
+      # @prisma/client, and pnpm install's postinstall hook generating it
+      # automatically isn't something to rely on here — see Sprint 2B audit
+      # Finding 13 (a fresh checkout's `pnpm typecheck` failed in that audit
+      # session until this was run explicitly first).
       - name: Prisma generate
         run: pnpm --filter @beaconvie/api prisma:generate
+
+      - name: Typecheck
+        run: pnpm typecheck
 
       - name: Prisma validate
         run: pnpm --filter @beaconvie/api exec prisma validate

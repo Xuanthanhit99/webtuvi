@@ -26,4 +26,13 @@ describe('StreamingMessageItem', () => {
     expect(screen.getByText('Companion')).toBeInTheDocument();
     expect(screen.getByText(/Thinking about that/)).toBeInTheDocument();
   });
+
+  it('is aria-hidden so a growing token stream is never individually announced to a screen reader (Sprint 2B audit Finding 5)', () => {
+    const { container, rerender } = render(<StreamingMessageItem text="One" />);
+    const node = container.firstElementChild as HTMLElement;
+    expect(node).toHaveAttribute('aria-hidden', 'true');
+
+    rerender(<StreamingMessageItem text="One two three" />);
+    expect(container.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+  });
 });

@@ -8,10 +8,9 @@ describe('MockProvider', () => {
     provider = new MockProvider();
   });
 
-  it('reports its capabilities without any network dependency', async () => {
+  it('reports its capabilities without any network dependency', () => {
     expect(provider.name).toBe('mock');
     expect(provider.supportsStreaming()).toBe(true);
-    expect(await provider.health()).toBe(true);
   });
 
   it('chat() returns a deterministic non-empty reply with usage figures', async () => {

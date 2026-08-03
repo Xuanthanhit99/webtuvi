@@ -53,10 +53,6 @@ export class MockProvider implements AIProvider {
     return estimateCostUsd('mock', model, usage.promptTokens, usage.completionTokens);
   }
 
-  async health(): Promise<boolean> {
-    return true;
-  }
-
   supportsStreaming(): boolean {
     return true;
   }

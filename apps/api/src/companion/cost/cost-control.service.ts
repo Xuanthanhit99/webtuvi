@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import type { AppConfiguration } from '../../config/configuration';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AIProviderName } from '../providers/provider.types';
 import { estimateCostUsd } from '../providers/pricing';
@@ -11,15 +13,78 @@ export interface UsageSummary {
   estimatedCostUsd: number;
 }
 
+export type BudgetCheckResult =
+  | { allowed: true }
+  | { allowed: false; reason: 'daily_request_limit' | 'daily_token_limit' | 'monthly_token_limit'; message: string };
+
+function startOfDay(): Date {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function startOfMonth(): Date {
+  const date = new Date();
+  date.setDate(1);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
 /**
- * Tracks and estimates cost — recording only, no billing integration and no
- * hard spend cap (not requested for this sprint; see docs/architecture/companion-core.md
- * "Cost control"). `record()` is called once per completed (or cancelled)
- * generation by StreamService.
+ * Tracks, estimates, and (since the Sprint 2B audit) enforces a coarse usage
+ * budget — recording is exact (billable/final `AIUsage` rows, one per
+ * completed generation, written once by `StreamService`), the budget check is
+ * a courser abuse/cost ceiling independent of the short-window rate limit
+ * enforced separately by `CompanionThrottlerGuard`. No billing integration —
+ * `estimatedCostUsd` is an estimate, not an invoice line item.
  */
 @Injectable()
 export class CostControlService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService,
+  ) {}
+
+  /**
+   * Checked once, before a generation is allowed to start
+   * (`ConversationService.sendMessage`) — never after the fact. Reads only
+   * already-persisted `AIUsage` rows (billable/final usage), so a burst of
+   * retries or failed provider attempts within a single generation — which
+   * never reach `record()` — can't push a user over budget on their own.
+   */
+  async checkBudget(userId: string): Promise<BudgetCheckResult> {
+    const budget = this.configService.get<AppConfiguration>('app')!.ai.budget;
+
+    const [dailyRequestCount, daily, monthly] = await Promise.all([
+      this.prisma.aIUsage.count({ where: { userId, createdAt: { gte: startOfDay() } } }),
+      this.dailyUsageForUser(userId),
+      this.monthlyUsageForUser(userId),
+    ]);
+
+    if (dailyRequestCount >= budget.dailyRequestLimit) {
+      return {
+        allowed: false,
+        reason: 'daily_request_limit',
+        message: "You've reached today's limit for Companion replies. Please try again tomorrow.",
+      };
+    }
+    if (daily.totalTokens >= budget.dailyTokenLimit) {
+      return {
+        allowed: false,
+        reason: 'daily_token_limit',
+        message: "You've reached today's usage limit with your Companion. Please try again tomorrow.",
+      };
+    }
+    if (monthly.totalTokens >= budget.monthlyTokenLimit) {
+      return {
+        allowed: false,
+        reason: 'monthly_token_limit',
+        message: "You've reached this month's usage limit with your Companion. Please try again next month.",
+      };
+    }
+
+    return { allowed: true };
+  }
 
   async record(params: {
     userId: string;
@@ -57,16 +122,11 @@ export class CostControlService {
   }
 
   async dailyUsageForUser(userId: string): Promise<UsageSummary> {
-    const since = new Date();
-    since.setHours(0, 0, 0, 0);
-    return this.usageForUser(userId, since);
+    return this.usageForUser(userId, startOfDay());
   }
 
   async monthlyUsageForUser(userId: string): Promise<UsageSummary> {
-    const since = new Date();
-    since.setDate(1);
-    since.setHours(0, 0, 0, 0);
-    return this.usageForUser(userId, since);
+    return this.usageForUser(userId, startOfMonth());
   }
 
   private async summarize(where: Record<string, unknown>): Promise<UsageSummary> {

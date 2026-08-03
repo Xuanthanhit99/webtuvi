@@ -37,13 +37,22 @@ export class ProviderOrchestratorService {
     private readonly observability: ObservabilityService,
   ) {}
 
+  /**
+   * `mock` is deliberately never appended here unconditionally (Sprint 2B
+   * audit Finding 1) — it only ends up in the chain if the caller explicitly
+   * configured `DEFAULT_AI_PROVIDER=mock`/`FALLBACK_PROVIDER=mock` (which
+   * `env.validation.ts` rejects outright in production) *and* it's actually
+   * registered (`ProviderRegistryService` only registers it outside
+   * production, or behind `AI_ENABLE_MOCK_PROVIDER`). If every real provider
+   * in the chain fails, the turn ends in a normalized `PROVIDER_UNAVAILABLE`
+   * error instead of silently falling back to a fabricated reply.
+   */
   private chain(): AIProviderName[] {
     const config = this.configService.get<AppConfiguration>('app')!.ai;
     const chain: AIProviderName[] = [config.defaultProvider];
     if (config.fallbackProvider && config.fallbackProvider !== config.defaultProvider) {
       chain.push(config.fallbackProvider);
     }
-    if (!chain.includes('mock')) chain.push('mock');
     return chain.filter((name) => this.registry.has(name));
   }
 
@@ -106,6 +115,7 @@ export class ProviderOrchestratorService {
           type: 'error',
           message: 'The response was interrupted. Please try again.',
           retryable: true,
+          code: 'GENERATION_INTERRUPTED',
           provider: providerName,
         };
         return;
@@ -117,6 +127,7 @@ export class ProviderOrchestratorService {
       type: 'error',
       message: 'All AI providers are currently unavailable. Please try again shortly.',
       retryable: true,
+      code: 'PROVIDER_UNAVAILABLE',
       provider: chain[chain.length - 1] ?? 'mock',
     };
   }

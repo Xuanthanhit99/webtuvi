@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Trash2 } from 'lucide-react';
+import { ArrowLeft, ArrowDown, Trash2 } from 'lucide-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { conversationsApi } from '../api/conversations-api';
 import { useCompanionConversation } from '../hooks/use-companion-conversation';
+import { useAutoScroll } from '../hooks/use-auto-scroll';
+import { deriveLiveAnnouncement } from '../lib/live-announcement';
 import { ConversationSidebar } from './conversation-sidebar';
 import { MessageItem, StreamingMessageItem } from './message-item';
 import { Composer } from './composer';
@@ -28,7 +30,6 @@ export function CompanionView() {
   const activeId = searchParams.get('c');
   const [showListOnMobile, setShowListOnMobile] = useState(!activeId);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const listRef = useRef<HTMLDivElement>(null);
 
   function selectConversation(id: string | null) {
     router.replace(id ? `/companion?c=${id}` : '/companion', { scroll: false });
@@ -66,12 +67,15 @@ export function CompanionView() {
     },
   });
 
-  const { messages, status, streamingText, errorMessage, isLoadingHistory, send, cancel, retry, reset } =
+  const { messages, status, streamingText, errorMessage, isLoadingHistory, draft, setDraft, send, cancel, retry, reset } =
     useCompanionConversation(activeId);
 
-  useEffect(() => {
-    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages.length, streamingText]);
+  const { containerRef: listRef, hasNewMessage, handleScroll, scrollToBottom } = useAutoScroll({
+    itemCount: messages.length,
+    streamingLength: streamingText.length,
+  });
+
+  const liveAnnouncement = deriveLiveAnnouncement(status);
 
   function handleSelect(id: string) {
     selectConversation(id);
@@ -135,27 +139,60 @@ export function CompanionView() {
               </IconButton>
             </div>
 
-            <div ref={listRef} role="log" aria-live="polite" aria-label="Conversation" className="flex-1 space-y-5 overflow-y-auto pb-4">
-              {isLoadingHistory && (
-                <div className="flex flex-col gap-3">
-                  <Skeleton className="h-16 w-3/4" />
-                  <Skeleton className="ml-auto h-12 w-1/2" />
+            <div className="relative min-h-0 flex-1">
+              <div
+                ref={listRef}
+                onScroll={handleScroll}
+                role="log"
+                aria-label="Conversation"
+                className="h-full space-y-5 overflow-y-auto pb-4"
+              >
+                {isLoadingHistory && (
+                  <div className="flex flex-col gap-3">
+                    <Skeleton className="h-16 w-3/4" />
+                    <Skeleton className="ml-auto h-12 w-1/2" />
+                  </div>
+                )}
+                {!isLoadingHistory && messages.length === 0 && status === 'idle' && (
+                  <p className="text-body-md text-text-secondary">
+                    I&rsquo;m here whenever you&rsquo;re ready. We can start with something small.
+                  </p>
+                )}
+                {messages.map((message) => (
+                  <MessageItem key={message.id} message={message} conversationId={activeId ?? undefined} />
+                ))}
+                {status === 'streaming' && streamingText && <StreamingMessageItem text={streamingText} />}
+              </div>
+
+              {/* Sprint 2B audit Finding 5: a single, dedicated status region — announced
+                  once when generation begins, never per token (the growing text above is
+                  aria-hidden). The completed reply is announced separately and once, by
+                  the `role="log"` region above picking up the new MessageItem on `done`. */}
+              <div role="status" aria-live="polite" className="sr-only">
+                {liveAnnouncement}
+              </div>
+
+              {hasNewMessage && (
+                <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="pointer-events-auto shadow-md"
+                    onClick={() => scrollToBottom()}
+                  >
+                    <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                    New message
+                  </Button>
                 </div>
               )}
-              {!isLoadingHistory && messages.length === 0 && status === 'idle' && (
-                <p className="text-body-md text-text-secondary">
-                  I&rsquo;m here whenever you&rsquo;re ready. We can start with something small.
-                </p>
-              )}
-              {messages.map((message) => (
-                <MessageItem key={message.id} message={message} />
-              ))}
-              {status === 'streaming' && streamingText && <StreamingMessageItem text={streamingText} />}
             </div>
 
             <Composer
               status={status}
               errorMessage={errorMessage}
+              draft={draft}
+              onDraftChange={setDraft}
               onSend={(content) => activeId && void send(content, activeId)}
               onCancel={cancel}
               onRetry={retry}

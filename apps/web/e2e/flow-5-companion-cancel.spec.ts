@@ -34,5 +34,8 @@ test('cancel a streaming reply mid-generation', async ({ page }) => {
   await page.getByRole('button', { name: 'Dismiss' }).click();
   await composer.fill('Are you still there?');
   await page.getByRole('button', { name: /send message/i }).click();
-  await expect(page.getByText('Are you still there?')).toBeVisible();
+  // Scoped to the conversation log — the composer intentionally keeps
+  // showing the just-sent text (disabled) until the turn completes, so a
+  // page-wide search would also match it.
+  await expect(page.getByRole('log', { name: 'Conversation' }).getByText('Are you still there?')).toBeVisible();
 });

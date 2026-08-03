@@ -1,6 +1,13 @@
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, HttpException } from '@nestjs/common';
 import { ConversationService } from './conversation.service';
 import { SafetyService } from '../safety/safety.service';
+import type { CostControlService } from '../cost/cost-control.service';
+
+function makeCostControlMock(allowed = true): CostControlService {
+  return {
+    checkBudget: jest.fn(async () => (allowed ? { allowed: true } : { allowed: false, reason: 'daily_request_limit', message: 'Daily limit reached' })),
+  } as unknown as CostControlService;
+}
 
 function makePrismaMock() {
   const conversations = new Map<string, { id: string; userId: string; title: string | null; status: string; createdAt: Date; updatedAt: Date }>();
@@ -59,7 +66,7 @@ describe('ConversationService', () => {
 
   beforeEach(() => {
     prisma = makePrismaMock();
-    service = new ConversationService(prisma as never, new SafetyService());
+    service = new ConversationService(prisma as never, new SafetyService(), makeCostControlMock());
   });
 
   it('creates a conversation owned by the calling user', async () => {
@@ -110,6 +117,29 @@ describe('ConversationService', () => {
   it('sendMessage rejects sending into a conversation the caller does not own', async () => {
     const conversation = await service.create('user-1', undefined);
     await expect(service.sendMessage('user-2', conversation.id, 'hi')).rejects.toThrow(NotFoundException);
+  });
+
+  it('sendMessage rejects with a normalized 429 when the usage budget is exceeded, persisting nothing', async () => {
+    const overBudgetService = new ConversationService(prisma as never, new SafetyService(), makeCostControlMock(false));
+    const conversation = await overBudgetService.create('user-1', undefined);
+
+    await expect(overBudgetService.sendMessage('user-1', conversation.id, 'hello')).rejects.toThrow(HttpException);
+    const detail = await overBudgetService.getOne('user-1', conversation.id);
+    expect(detail.messages).toHaveLength(0);
+  });
+
+  it('sendMessage HttpException carries the normalized AI_BUDGET_EXCEEDED shape', async () => {
+    const overBudgetService = new ConversationService(prisma as never, new SafetyService(), makeCostControlMock(false));
+    const conversation = await overBudgetService.create('user-1', undefined);
+
+    try {
+      await overBudgetService.sendMessage('user-1', conversation.id, 'hello');
+      throw new Error('expected sendMessage to throw');
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpException);
+      expect((error as HttpException).getStatus()).toBe(429);
+      expect((error as HttpException).getResponse()).toMatchObject({ code: 'AI_BUDGET_EXCEEDED' });
+    }
   });
 
   it('delete removes the conversation and rejects deleting someone else’s', async () => {

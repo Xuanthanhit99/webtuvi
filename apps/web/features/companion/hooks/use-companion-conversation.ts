@@ -30,6 +30,11 @@ export function useCompanionConversation(conversationId: string | null) {
   const [streamingText, setStreamingText] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  // Owned here, not in the Composer, so it survives a failed send/stream and
+  // is only cleared on a genuine, definitive outcome for that specific turn
+  // (a completed reply, a safety refusal, or a deliberate cancel) — never
+  // synchronously on submit. See Sprint 2B audit Finding 3.
+  const [draft, setDraft] = useState('');
   const eventSourceRef = useRef<EventSource | null>(null);
 
   const closeStream = useCallback(() => {
@@ -84,6 +89,7 @@ export function useCompanionConversation(conversationId: string | null) {
         setStreamingText('');
         closeStream();
         setStatus('idle');
+        setDraft('');
       });
 
       source.addEventListener('stream_error', (event) => {
@@ -117,11 +123,19 @@ export function useCompanionConversation(conversationId: string | null) {
         if (!result.requiresGeneration) {
           if (result.assistantMessage) setMessages((prev) => [...prev, result.assistantMessage!]);
           setStatus('safety_refused');
+          setDraft('');
           return;
         }
 
+        // Do NOT clear the draft here — the message is safely persisted
+        // server-side (visible in `messages`), but the turn isn't genuinely
+        // "done" until the stream completes; keeping the submitted text
+        // visible (disabled) through `openStream` doubles as "a recoverable
+        // copy of the submitted text during streaming" per the audit fix.
         openStream(id);
       } catch (error) {
+        // Never clear the draft on a failed send — nothing was persisted,
+        // so the user's typed text would otherwise be lost outright.
         if (error instanceof ApiError && error.status === 429) {
           setStatus('rate_limited');
           setErrorMessage(error.message);
@@ -138,6 +152,10 @@ export function useCompanionConversation(conversationId: string | null) {
     closeStream();
     setStreamingText('');
     setStatus('cancelled');
+    // The cancelled turn is already persisted (StreamService writes a
+    // "(cancelled)"/partial placeholder) — nothing left to resend, so the
+    // draft is cleared the same as any other definitive turn outcome.
+    setDraft('');
   }, [closeStream]);
 
   const retry = useCallback(() => {
@@ -149,5 +167,5 @@ export function useCompanionConversation(conversationId: string | null) {
     setErrorMessage(null);
   }, []);
 
-  return { messages, status, streamingText, errorMessage, isLoadingHistory, send, cancel, retry, reset };
+  return { messages, status, streamingText, errorMessage, isLoadingHistory, draft, setDraft, send, cancel, retry, reset };
 }

@@ -9,7 +9,6 @@ function fakeProvider(name: AIProviderName, behavior: () => AsyncIterable<Stream
     stream: behavior,
     countTokens: () => 1,
     estimateCost: () => 0,
-    health: async () => true,
     supportsStreaming: () => true,
     supportsJson: () => true,
     supportsVision: () => false,
@@ -122,7 +121,41 @@ describe('ProviderOrchestratorService', () => {
     expect(only.type).toBe('error');
     if (only.type === 'error') {
       expect(only.message).toMatch(/unavailable/i);
+      expect(only.code).toBe('PROVIDER_UNAVAILABLE');
     }
+  });
+
+  it('never appends mock to the fallback chain unconditionally — only if it is actually registered', async () => {
+    // No 'mock' entry in the registry at all (simulates ProviderRegistryService
+    // in production, where mock is never constructed/registered — see Finding 1).
+    const providers = { openai: fakeProvider('openai', alwaysFailsBeforeAnyToken) };
+    const orchestrator = buildOrchestrator(providers, { defaultProvider: 'openai', maxRetries: 0 });
+
+    const chunks: (StreamChunk & { provider: AIProviderName })[] = [];
+    for await (const chunk of orchestrator.stream(messages)) chunks.push(chunk);
+
+    // openai is the only provider ever tried; the terminal error never
+    // attributes to 'mock' having been silently tried and failed too.
+    expect(chunks.every((c) => c.provider === 'openai')).toBe(true);
+  });
+
+  it('excludes a configured mock fallback from the chain when the registry has not registered it (production posture)', async () => {
+    // Registry deliberately does not `has('mock')` — mirrors ProviderRegistryService
+    // in production even if FALLBACK_PROVIDER were somehow 'mock' (env.validation.ts
+    // rejects that at boot, but the chain-building itself is independently safe too).
+    const providers = { openai: fakeProvider('openai', alwaysFailsBeforeAnyToken) };
+    const orchestrator = buildOrchestrator(providers, {
+      defaultProvider: 'openai',
+      fallbackProvider: 'mock',
+      maxRetries: 0,
+    });
+
+    const chunks: (StreamChunk & { provider: AIProviderName })[] = [];
+    for await (const chunk of orchestrator.stream(messages)) chunks.push(chunk);
+
+    expect(chunks).toHaveLength(1);
+    expect(chunks[0]!.type).toBe('error');
+    expect(chunks.some((c) => c.provider === 'mock')).toBe(false);
   });
 
   it('retries the same provider on a retryable failure before falling back', async () => {

@@ -138,5 +138,49 @@ boot-time fail-fast check.
 
 Per the sprint's explicit boundaries: no Memory Engine, no embeddings, no vector database, no RAG, no
 AI-generated reports, no Tarot, no Astrology, no Discovery/Community work. `CostControlService`
-records and estimates usage but implements no hard spend cap and no billing integration (not
-requested this sprint).
+records, estimates, **and (since §9 below) enforces** usage against a daily/monthly budget — there is
+still no billing integration (not requested).
+
+## 9. Sprint 2B independent audit remediation
+
+An independent audit (`docs/progress/sprint-2b-audit-report.md`) found two **High** and three
+**Medium** verified findings after this sprint's original close-out above. All five, plus the
+Low/Informational items explicitly called out for cleanup, have been fixed — see the audit report's
+own "Findings fixed" section for the authoritative per-finding status, verification commands, and
+exact test results. Summary:
+
+- **Finding 1 (High) — Mock provider reachable in production fallback.** Fixed:
+  `ProviderRegistryService` only registers `MockProvider` outside production (or behind
+  `AI_ENABLE_MOCK_PROVIDER=true`, itself rejected in production at boot);
+  `ProviderOrchestratorService.chain()` no longer appends `mock` unconditionally; `env.validation.ts`
+  now also rejects `FALLBACK_PROVIDER=mock` and `AI_ENABLE_MOCK_PROVIDER=true` in production (it
+  already rejected `DEFAULT_AI_PROVIDER=mock`). Total provider-chain exhaustion now yields a
+  normalized `PROVIDER_UNAVAILABLE` error — no assistant message is persisted, no `AIUsage` row is
+  written. See `docs/security/ai-safety.md` "Mock provider: never reachable in production".
+- **Finding 2 (High) — No rate limit, concurrency control, or usage budget.** Fixed: a new
+  `CompanionThrottlerGuard` (per-user + per-IP, reusing the Sprint 2A Redis-backed
+  `ThrottlerModule`) guards `POST .../messages`; a new `GenerationLockService` (atomic Redis counter,
+  `try`/`finally` around `StreamService.generate()`) caps concurrent generations per user; a new
+  `CostControlService.checkBudget` enforces daily-request/daily-token/monthly-token ceilings before a
+  message is even persisted. See `docs/architecture/companion-core.md` "Rate limiting, concurrency,
+  and usage budget" and `docs/security/ai-safety.md` for the full design and counting rules.
+- **Finding 3 (Medium) — Composer lost typed text on a failed send.** Fixed: `draft` moved from local
+  Composer state into `useCompanionConversation`; it's cleared only on a genuine successful
+  completion (`done`), a safety refusal, or a deliberate cancel — never synchronously on submit, and
+  never on a failed send/stream.
+- **Finding 4 (Medium) — Auto-scroll fought a user reading older messages.** Fixed: extracted
+  `useAutoScroll` (companion/hooks) tracks whether the user is near the bottom before scrolling; if
+  not, it shows a "New message" affordance instead of forcing the scroll position.
+- **Finding 5 (Medium) — Streaming risked per-token screen-reader announcements.** Fixed:
+  `StreamingMessageItem` is `aria-hidden` (the in-progress text is visual-only); a single dedicated
+  `role="status" aria-live="polite"` region announces "Companion is responding…" once per turn; the
+  completed reply is announced once, naturally, when the `role="log"` conversation region picks up
+  the new persisted message.
+- **Low/Informational cleanup**: removed the unused `AIProvider.health()` method (never called in the
+  request path) and the unused `providers/retry.util.ts` (the orchestrator has its own inline retry
+  logic); added `PROMPT_VERSION` (`prompt/system-prompt.ts`), recorded on every persisted assistant
+  message's `metadata`; reordered `.github/workflows/ci.yml` to run Prisma generate before Typecheck.
+
+No schema changes were required — the budget check reads the existing `AIUsage` table (already
+indexed on `(userId, createdAt)`); the concurrency lock and rate limiter are Redis-only, ephemeral by
+design.

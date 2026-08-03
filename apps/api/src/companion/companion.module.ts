@@ -11,6 +11,7 @@ import { CostControlService } from './cost/cost-control.service';
 import { MockProvider } from './providers/mock.provider';
 import { ProviderRegistryService } from './providers/provider-registry.service';
 import { ProviderOrchestratorService } from './providers/provider-orchestrator.service';
+import { GenerationLockService } from './concurrency/generation-lock.service';
 import { ActivitiesModule } from '../activities/activities.module';
 
 /**
@@ -32,6 +33,7 @@ import { ActivitiesModule } from '../activities/activities.module';
     MockProvider,
     ProviderRegistryService,
     ProviderOrchestratorService,
+    GenerationLockService,
   ],
 })
 export class CompanionModule {}

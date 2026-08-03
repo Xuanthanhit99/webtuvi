@@ -43,6 +43,11 @@ model User {
   companionMessages     CompanionMessage[]
   conversations         Conversation[]
   aiUsages              AIUsage[]
+  memories              Memory[]
+  memoryCandidates      MemoryCandidate[]
+  memoryConsentSetting  MemoryConsentSetting?
+  memoryTypeConsents    MemoryTypeConsent[]
+  memoryAudits          MemoryAudit[]
 
   @@map("users")
 }
@@ -330,4 +335,249 @@ model ProviderLog {
 
   @@index([provider, createdAt])
   @@map("provider_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 3A — Memory Foundation. Structural trust layer only: schema, consent,
+// candidate lifecycle, CRUD, versioning, audit, timeline, export. Explicitly
+// NOT Memory intelligence — no embeddings, no vector search, no RAG, no
+// knowledge graph, no LLM extraction, no importance/duplicate/merge automation.
+// See docs/architecture/memory-engine.md and docs/security/memory-privacy.md.
+//
+// Distinct from Sprint 1's `MemoryNote` (kept, deprecated — see the data
+// migration in this sprint's first migration file) and from
+// `UserPreference.memoryPreference` (Sprint 1's onboarding-level global
+// toggle, left untouched — a separate, older setting for a separate flow).
+// ---------------------------------------------------------------------------
+
+enum MemoryType {
+  IDENTITY
+  PREFERENCE
+  GOAL
+  RELATIONSHIP
+  HABIT
+  ROUTINE
+  ACHIEVEMENT
+  CHALLENGE
+  EMOTION
+  IMPORTANT_EVENT
+  DECISION
+  INTEREST
+  WORK
+  STUDY
+  PET
+  LOCATION_PREFERENCE
+  /// Never enabled implicitly — gated by an explicit MemoryTypeConsent row with mode ALLOW_TYPE. See memory-privacy.md.
+  HEALTH
+  CUSTOM
+}
+
+enum MemoryStatus {
+  CANDIDATE
+  PENDING_CONSENT
+  ACCEPTED
+  REJECTED
+  ARCHIVED
+  EXPIRED
+  DELETED
+}
+
+/// Per (user, type) — and, via MemoryConsentSetting, one global per-user default.
+enum MemoryConsentMode {
+  ASK_EVERY_TIME
+  ALLOW_SELECTED
+  ALLOW_TYPE
+  DENY_TYPE
+  DISABLED
+}
+
+enum MemoryVisibility {
+  PRIVATE
+  COMPANION_ALLOWED
+}
+
+/// How a Memory or MemoryCandidate came to exist — always a real, attributable origin.
+enum MemorySourceType {
+  ONBOARDING
+  COMPANION
+  USER_EXPLICIT
+  MIGRATED_LEGACY
+  SYSTEM_TEST
+}
+
+enum MemoryCandidateStatus {
+  CANDIDATE
+  PENDING_CONSENT
+  ACCEPTED
+  REJECTED
+}
+
+enum MemoryAuditAction {
+  CREATED
+  ACCEPTED
+  REJECTED
+  UPDATED
+  ARCHIVED
+  RESTORED
+  DELETED
+  CONSENT_CHANGED
+  VIEWED
+  EXPORTED
+}
+
+enum MemoryActorType {
+  USER
+  SYSTEM
+  COMPANION
+}
+
+/// One row per user — the global default consent mode applied whenever no
+/// per-type MemoryTypeConsent override exists. Deliberately a single-row-per-user
+/// table (not a nullable-type row in MemoryTypeConsent) so "no override set" is
+/// unambiguous and Postgres NULL-in-unique-index pitfalls never arise.
+model MemoryConsentSetting {
+  id        String            @id @default(cuid())
+  userId    String            @unique
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode      MemoryConsentMode @default(ASK_EVERY_TIME)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@map("memory_consent_settings")
+}
+
+/// Explicit per-type override. Absence of a row for a given type means "use
+/// the global MemoryConsentSetting" — a type is never auto-allowed by default.
+model MemoryTypeConsent {
+  id        String            @id @default(cuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      MemoryType
+  mode      MemoryConsentMode
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@unique([userId, type])
+  @@index([userId])
+  @@map("memory_type_consents")
+}
+
+/// A proposed memory awaiting consent/acceptance. Never becomes a Memory on
+/// its own — only MemoryCandidateService.accept() (consent-checked, atomic
+/// with the first MemoryVersion) creates one. See memory-engine.md "Candidate
+/// lifecycle" for the exhaustive list of legitimate creation paths — there is
+/// no unauthenticated or unattributed way to create one.
+model MemoryCandidate {
+  id                   String                @id @default(cuid())
+  userId               String
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  proposedType         MemoryType
+  proposedTitle        String
+  proposedSummary      String
+  structuredPayload    Json?
+  sourceType           MemorySourceType
+  /// Plain string references, not enforced FKs — Conversation/ConversationMessage
+  /// belong to the Companion module; ownership is verified in application code
+  /// at proposal time (never trusted from the client), not via a DB constraint.
+  sourceConversationId String?
+  sourceMessageId      String?
+  reason               String?
+  status               MemoryCandidateStatus @default(CANDIDATE)
+  /// Set exactly once, when accept() succeeds — makes double-accept structurally idempotent.
+  resultingMemoryId    String?               @unique
+  resolvedAt           DateTime?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@map("memory_candidates")
+}
+
+/// A trusted, structured, user-owned memory. Every row must trace to a real
+/// source (sourceType/sourceConversationId/sourceMessageId) — there is no
+/// "system-generated with no attribution" path. See memory-engine.md.
+model Memory {
+  id                   String            @id @default(cuid())
+  userId               String
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                 MemoryType
+  title                String
+  summary              String
+  /// Type-specific structured detail only — never a duplicate copy of raw
+  /// provider/source payloads. Schemaless by design (Sprint 3A doesn't fix a
+  /// per-type shape); typed columns above cover every field queries need.
+  structuredPayload    Json?
+  status               MemoryStatus      @default(ACCEPTED)
+  /// Snapshot of the MemoryConsentMode that actually authorized this memory
+  /// at acceptance time — an audit-friendly record of "why this was allowed",
+  /// independent of the user's consent settings changing later.
+  consentState         MemoryConsentMode @default(ALLOW_SELECTED)
+  visibility           MemoryVisibility  @default(PRIVATE)
+  sourceType           MemorySourceType
+  sourceConversationId String?
+  sourceMessageId      String?
+  /// Reserved for a future automated-expiry sweep (not implemented this
+  /// sprint — no background jobs are introduced here). Purely a stored field.
+  expiresAt            DateTime?
+  /// Bumped on every user-visible content change; mirrors the latest MemoryVersion.version.
+  version              Int               @default(1)
+  /// Set by Companion context-assembly reads in a later sprint; unused (always null) in Sprint 3A.
+  lastReferencedAt     DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  archivedAt           DateTime?
+  /// Set immediately before the row itself is hard-deleted, purely so a
+  /// same-transaction MemoryAudit(action: DELETED) write can carry an exact
+  /// timestamp — the Memory row does not outlive its own deletedAt.
+  deletedAt            DateTime?
+
+  versions             MemoryVersion[]
+
+  @@index([userId, status, createdAt])
+  @@index([userId, type, createdAt])
+  @@index([userId, createdAt])
+  @@map("memories")
+}
+
+/// One row per user-visible content change (created, updated, restored-with-
+/// different-content). Full content snapshot, unlike MemoryAudit — this IS
+/// memory content and is deleted along with its parent Memory (cascade).
+model MemoryVersion {
+  id                String            @id @default(cuid())
+  memoryId          String
+  memory            Memory            @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  version           Int
+  type              MemoryType
+  title             String
+  summary           String
+  structuredPayload Json?
+  visibility        MemoryVisibility
+  changeReason      String
+  createdAt         DateTime          @default(now())
+
+  @@unique([memoryId, version])
+  @@index([memoryId, createdAt])
+  @@map("memory_versions")
+}
+
+/// Event trail only — never memory content. `memoryId` is a plain indexed
+/// string, deliberately NOT a foreign key: it must remain a valid historical
+/// reference even after the Memory row itself has been hard-deleted (see
+/// memory-privacy.md "Deletion semantics"), which an enforced FK/cascade
+/// could not allow.
+model MemoryAudit {
+  id        String            @id @default(cuid())
+  memoryId  String?
+  userId    String
+  user      User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  actorType MemoryActorType   @default(USER)
+  action    MemoryAuditAction
+  requestId String?
+  /// Safe metadata only (e.g. { type, previousStatus }) — never title, summary, structuredPayload, or any other content field.
+  metadata  Json?
+  createdAt DateTime          @default(now())
+
+  @@index([userId, createdAt])
+  @@index([memoryId, createdAt])
+  @@map("memory_audits")
 }

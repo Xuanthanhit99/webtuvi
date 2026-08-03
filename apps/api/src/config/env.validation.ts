@@ -55,11 +55,36 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
   DEFAULT_AI_PROVIDER: z.enum(['openai', 'anthropic', 'gemini', 'mock']).default('mock'),
-  // Optional: no explicit fallback attempted if unset (the always-last mock
-  // safety net still applies regardless — see ProviderOrchestrator).
+  // Optional: no explicit fallback attempted if unset. Mock is never appended
+  // automatically anymore — see AI_ENABLE_MOCK_PROVIDER and ProviderRegistryService.
   FALLBACK_PROVIDER: z.enum(['openai', 'anthropic', 'gemini', 'mock']).optional(),
   AI_TIMEOUT_MS: z.coerce.number().int().positive().default(30_000),
   AI_MAX_RETRIES: z.coerce.number().int().min(0).default(2),
+  // Explicit opt-in for the deterministic Mock provider to even be
+  // constructed/registered. Outside production this is effectively moot (mock
+  // is registered whenever NODE_ENV !== 'production' regardless of this flag)
+  // — it exists as a second, independent gate alongside the NODE_ENV check
+  // (defense in depth), and production boot fails fast if it's ever true.
+  AI_ENABLE_MOCK_PROVIDER: z.coerce.boolean().default(false),
+
+  // --- Companion Core (Sprint 2B) — rate limiting, concurrency, usage budget ---
+  // Per-authenticated-user request rate limit on Companion generation endpoints.
+  AI_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(20),
+  AI_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+  // Secondary, looser per-IP ceiling (defense against one IP spread across many
+  // accounts) — same window as AI_RATE_LIMIT_WINDOW_MS.
+  AI_RATE_LIMIT_IP_MAX: z.coerce.number().int().positive().default(100),
+  // How many generations one user may have in flight at once.
+  AI_MAX_CONCURRENT_GENERATIONS_PER_USER: z.coerce.number().int().positive().default(1),
+  // Safety-net TTL on the Redis concurrency-lock counter so a crashed/never-released
+  // lock self-expires rather than permanently blocking that user.
+  AI_CONCURRENCY_LOCK_TTL_MS: z.coerce.number().int().positive().default(120_000),
+  // Usage budget — coarse abuse/cost ceilings, independent of the short-window
+  // rate limit above. Checked against durable AIUsage records before a new
+  // generation is allowed to start.
+  AI_DAILY_REQUEST_LIMIT: z.coerce.number().int().positive().default(50),
+  AI_DAILY_TOKEN_LIMIT: z.coerce.number().int().positive().default(200_000),
+  AI_MONTHLY_TOKEN_LIMIT: z.coerce.number().int().positive().default(2_000_000),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
@@ -104,6 +129,12 @@ export function validateEnv(config: Record<string, unknown>): EnvConfig {
     }
     if (parsed.data.DEFAULT_AI_PROVIDER === 'mock') {
       throw new Error('DEFAULT_AI_PROVIDER cannot be "mock" in production — configure a real provider');
+    }
+    if (parsed.data.FALLBACK_PROVIDER === 'mock') {
+      throw new Error('FALLBACK_PROVIDER cannot be "mock" in production — configure a real fallback or leave it unset');
+    }
+    if (parsed.data.AI_ENABLE_MOCK_PROVIDER) {
+      throw new Error('AI_ENABLE_MOCK_PROVIDER cannot be true in production — the Mock provider must never be reachable there');
     }
     requireProviderKey(parsed.data, parsed.data.DEFAULT_AI_PROVIDER, 'DEFAULT_AI_PROVIDER');
     if (parsed.data.FALLBACK_PROVIDER) {

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import type { DashboardViewModelDto } from '@beaconvie/types';
 import { PrismaService } from '../prisma/prisma.service';
 import { MemoryService } from '../memory/memory.service';
+import { MemoryRecordService } from '../memory/record/memory-record.service';
 import { ActivitiesService } from '../activities/activities.service';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -30,6 +31,7 @@ export class DashboardService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly memoryService: MemoryService,
+    private readonly memoryRecordService: MemoryRecordService,
     private readonly activitiesService: ActivitiesService,
   ) {}
 
@@ -40,7 +42,12 @@ export class DashboardService {
     const now = new Date();
     const tod = timeOfDay(now);
 
-    const [memoryHighlight, latestConversation, recentActivity] = await Promise.all([
+    const [recentMemory, legacyMemoryNote, latestConversation, recentActivity] = await Promise.all([
+      // Sprint 3A: the real, accepted Memory model takes priority over the
+      // legacy MemoryNote fallback below — only ever a genuinely accepted
+      // memory, never a candidate/archived/deleted one. See
+      // docs/architecture/memory-engine.md "Dashboard integration".
+      this.memoryRecordService.mostRecentAccepted(userId),
       this.memoryService.mostRecent(userId),
       // Sprint 2B: previously read companionMessage(context='COMPANION') directly;
       // now sourced from the real Conversation model (Companion Core) — see
@@ -52,6 +59,9 @@ export class DashboardService {
       }),
       this.activitiesService.recent(userId, 5),
     ]);
+    const memoryHighlight = recentMemory
+      ? { content: recentMemory.summary, createdAt: recentMemory.createdAt }
+      : legacyMemoryNote;
     const companionPreview = latestConversation?.messages ?? [];
 
     const justOnboarded =

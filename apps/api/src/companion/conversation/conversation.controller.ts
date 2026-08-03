@@ -1,10 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import type { ConversationDetailDto, ConversationDto } from '@beaconvie/types';
 import { ConversationService, type SendMessageResult } from './conversation.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CompanionThrottlerGuard } from '../../common/guards/companion-throttler.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 
 @ApiTags('companion')
@@ -32,6 +34,8 @@ export class ConversationController {
   }
 
   @Post(':id/messages')
+  @UseGuards(CompanionThrottlerGuard)
+  @SkipThrottle({ auth: true })
   @ApiOperation({
     summary: 'Send a user message. If it passes the safety check, open GET .../messages/stream next to generate the reply.',
   })

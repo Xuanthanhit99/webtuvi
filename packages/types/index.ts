@@ -148,6 +148,127 @@ export interface SendConversationMessageResultDto {
   requiresGeneration: boolean;
 }
 
+// --- Memory Foundation (Sprint 3A). Structural trust layer only — no
+// embeddings/RAG/semantic search/intelligence here. Distinct from the legacy
+// MemoryNoteDto above (Sprint 1's Dashboard highlight source, unchanged). ---
+
+export type MemoryTypeValue =
+  | 'IDENTITY'
+  | 'PREFERENCE'
+  | 'GOAL'
+  | 'RELATIONSHIP'
+  | 'HABIT'
+  | 'ROUTINE'
+  | 'ACHIEVEMENT'
+  | 'CHALLENGE'
+  | 'EMOTION'
+  | 'IMPORTANT_EVENT'
+  | 'DECISION'
+  | 'INTEREST'
+  | 'WORK'
+  | 'STUDY'
+  | 'PET'
+  | 'LOCATION_PREFERENCE'
+  | 'HEALTH'
+  | 'CUSTOM';
+
+export type MemoryStatusValue = 'CANDIDATE' | 'PENDING_CONSENT' | 'ACCEPTED' | 'REJECTED' | 'ARCHIVED' | 'EXPIRED' | 'DELETED';
+
+export type MemoryConsentModeValue = 'ASK_EVERY_TIME' | 'ALLOW_SELECTED' | 'ALLOW_TYPE' | 'DENY_TYPE' | 'DISABLED';
+
+export type MemoryVisibilityValue = 'PRIVATE' | 'COMPANION_ALLOWED';
+
+export type MemorySourceTypeValue = 'ONBOARDING' | 'COMPANION' | 'USER_EXPLICIT' | 'MIGRATED_LEGACY' | 'SYSTEM_TEST';
+
+export type MemoryCandidateStatusValue = 'CANDIDATE' | 'PENDING_CONSENT' | 'ACCEPTED' | 'REJECTED';
+
+export interface MemoryDto {
+  id: string;
+  type: MemoryTypeValue;
+  title: string;
+  summary: string;
+  structuredPayload: Record<string, unknown> | null;
+  status: MemoryStatusValue;
+  consentState: MemoryConsentModeValue;
+  visibility: MemoryVisibilityValue;
+  sourceType: MemorySourceTypeValue;
+  sourceConversationId: string | null;
+  sourceMessageId: string | null;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
+}
+
+export interface MemoryTimelineItemDto extends MemoryDto {
+  group: 'today' | 'this_week' | 'earlier';
+  sourceAvailable: boolean;
+  whyThisMemory: string;
+  consentExplanation: string;
+}
+
+export interface MemoryListResultDto {
+  items: MemoryDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface MemoryTimelineResultDto {
+  items: MemoryTimelineItemDto[];
+  nextCursor: string | null;
+}
+
+export interface MemoryVersionDto {
+  version: number;
+  title: string;
+  summary: string;
+  visibility: MemoryVisibilityValue;
+  changeReason: string;
+  createdAt: string;
+}
+
+export interface MemoryAuditEntryDto {
+  id: string;
+  memoryId: string | null;
+  action: string;
+  actorType: string;
+  createdAt: string;
+}
+
+export interface MemoryCandidateDto {
+  id: string;
+  proposedType: MemoryTypeValue;
+  proposedTitle: string;
+  proposedSummary: string;
+  sourceConversationId: string | null;
+  sourceMessageId: string | null;
+  reason: string | null;
+  status: MemoryCandidateStatusValue;
+  resultingMemoryId: string | null;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface MemoryConsentSummaryDto {
+  globalMode: MemoryConsentModeValue;
+  typeOverrides: { type: MemoryTypeValue; mode: MemoryConsentModeValue }[];
+}
+
+export interface MemoryExportResultDto {
+  exportedAt: string;
+  memories: MemoryDto[];
+  versions: { memoryId: string; version: number; title: string; summary: string; visibility: string; changeReason: string; createdAt: string }[];
+  consent: MemoryConsentSummaryDto;
+  activityHistory: { memoryId: string | null; action: string; createdAt: string }[];
+}
+
+export interface MemoryExportJobDto {
+  jobId: string;
+  status: 'completed';
+  result: MemoryExportResultDto;
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {

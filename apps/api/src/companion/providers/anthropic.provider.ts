@@ -105,21 +105,6 @@ export class AnthropicProvider implements AIProvider {
     return estimateCostUsd('anthropic', model, usage.promptTokens, usage.completionTokens);
   }
 
-  async health(): Promise<boolean> {
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: this.headers(),
-        body: JSON.stringify({ model: DEFAULT_MODEL, max_tokens: 1, messages: [{ role: 'user', content: 'hi' }] }),
-        signal: AbortSignal.timeout(5000),
-      });
-      // 200 (succeeded) or 400 (bad tiny request but reachable/authenticated) both indicate the API is up.
-      return res.ok || res.status === 400;
-    } catch {
-      return false;
-    }
-  }
-
   supportsStreaming(): boolean {
     return true;
   }

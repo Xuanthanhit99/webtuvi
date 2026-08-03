@@ -25,8 +25,11 @@ test('create a conversation, send a message, and see the streamed reply', async 
   await composer.fill('Starting a new job next week and feeling nervous about it.');
   await page.getByRole('button', { name: /send message/i }).click();
 
-  // The user's own message appears immediately.
-  await expect(page.getByText('Starting a new job next week and feeling nervous about it.')).toBeVisible();
+  // The user's own message appears immediately. Scoped to the conversation
+  // log — the composer intentionally keeps showing the just-sent text
+  // (disabled) until the turn completes, so a page-wide search would also
+  // match it.
+  await expect(page.getByRole('log', { name: 'Conversation' }).getByText('Starting a new job next week and feeling nervous about it.')).toBeVisible();
 
   // The assistant's streamed reply completes and the composer returns to idle.
   await expect(page.getByRole('log', { name: 'Conversation' }).locator('text=Companion').last()).toBeVisible({

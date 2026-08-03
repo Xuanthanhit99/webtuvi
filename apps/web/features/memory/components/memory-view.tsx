@@ -1,0 +1,87 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useMutation } from '@tanstack/react-query';
+import { MemoryTimeline } from './memory-timeline';
+import { MemoryDetail } from './memory-detail';
+import { CandidateReview } from './candidate-review';
+import { ConsentSettings } from './consent-settings';
+import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/toast';
+import { memoryApi } from '../api/memory-api';
+
+type Section = 'timeline' | 'candidates' | 'consent';
+
+const SECTIONS: { value: Section; label: string }[] = [
+  { value: 'timeline', label: 'Timeline' },
+  { value: 'candidates', label: 'Pending' },
+  { value: 'consent', label: 'Memory settings' },
+];
+
+export function MemoryView() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [section, setSection] = useState<Section>('timeline');
+  const activeId = searchParams.get('item');
+
+  const createExport = useMutation({
+    mutationFn: () => memoryApi.export.create(),
+    onSuccess: (job) => {
+      const blob = new Blob([JSON.stringify(job.result, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `beaconvie-memory-export-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('Your memory export has downloaded.');
+    },
+    onError: () => toast.error("Couldn't create an export right now. Please try again."),
+  });
+
+  function selectItem(id: string | null) {
+    router.replace(id ? `/memory?item=${id}` : '/memory', { scroll: false });
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="font-display text-heading-lg text-text-primary">Memory</h1>
+        <Button variant="secondary" size="sm" onClick={() => createExport.mutate()} loading={createExport.isPending}>
+          Export my memories
+        </Button>
+      </div>
+      <p className="text-body-sm text-text-secondary">
+        Everything BeaconVie remembers about you, with the source, the reason, and your consent choice always visible. Nothing
+        here is guessed — every memory traces back to something you actually said or explicitly asked BeaconVie to remember.
+      </p>
+
+      <nav aria-label="Memory sections" className="flex gap-2 border-b border-border-subtle pb-2">
+        {SECTIONS.map((s) => (
+          <button
+            key={s.value}
+            type="button"
+            onClick={() => setSection(s.value)}
+            aria-current={section === s.value ? 'page' : undefined}
+            className={`rounded-md px-3 py-1.5 text-body-sm font-medium transition-colors duration-fast ${
+              section === s.value ? 'bg-surface text-text-primary' : 'text-text-secondary hover:bg-surface hover:text-text-primary'
+            }`}
+          >
+            {s.label}
+          </button>
+        ))}
+      </nav>
+
+      {activeId ? (
+        <MemoryDetail memoryId={activeId} onClose={() => selectItem(null)} />
+      ) : (
+        <>
+          {section === 'timeline' && <MemoryTimeline onSelect={selectItem} />}
+          {section === 'candidates' && <CandidateReview />}
+          {section === 'consent' && <ConsentSettings />}
+        </>
+      )}
+    </div>
+  );
+}

@@ -18,9 +18,6 @@ export interface AIProvider {
   /** USD, from a static per-provider/per-model pricing table — see providers/pricing.ts. */
   estimateCost(usage: TokenUsage, model: string): number;
 
-  /** Cheap reachability check (no full generation) — used by ProviderOrchestrator before committing to a provider. */
-  health(): Promise<boolean>;
-
   supportsStreaming(): boolean;
   supportsJson(): boolean;
   supportsVision(): boolean;
