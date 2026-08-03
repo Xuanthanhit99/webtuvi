@@ -9,8 +9,10 @@ and fixes real defects surfaced only by that live verification. Sprint 3B is **n
 - **HEAD at the start of this closure**: `3284287` ("[update][commit]" — the Sprint 2B
   code-complete commit, itself sitting on top of `624c2de` "feat: complete Sprint 2A production
   hardening" and `ff77169` "feat: complete BeaconVie Sprint 1 foundation").
-- **HEAD at the time of writing this report**: still `3284287` — nothing has been committed yet;
-  see §17 for the commit this report is a precondition for.
+- **Closure commit**: `5027d16` ("feat: complete Companion remediation and Memory Foundation") —
+  106 files changed, 8401 insertions(+), 363 deletions(-). Not pushed; `master` is ahead of
+  `origin/master` by this one commit (this report itself was written and committed as part of
+  the same commit — this section was updated with the final hash immediately after).
 
 ## 2. Git scope classification
 
