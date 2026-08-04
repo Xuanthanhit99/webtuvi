@@ -4,6 +4,15 @@ Covers the threat model, controls, deletion semantics, consent model, audit/logg
 residual risks for Memory Foundation. See docs/architecture/memory-engine.md for the functional
 design this document assumes.
 
+> **Sprint 3C note**: Companion's new "Remember"/"Not now"/"Never remember this type"/"Forget"
+> actions (`companion/memory/*`) call exactly the mutations documented here
+> (`propose`/`accept`/`updateType`/`remove`) through the same guards (`JwtAuthGuard`, the
+> project-wide `CsrfGuard`, per-`userId` scoping) — no new authorization path, no new deletion
+> semantics, no new consent model. `MemoryRetrievalService.recommend()`'s consent re-check and
+> `ACCEPTED`-only filter (see memory-intelligence.md) now also gate what a live Companion prompt
+> can see, not only the standalone `/memory/recommendations` endpoint. See
+> docs/architecture/companion-memory-integration.md "Privacy and consent enforcement"/"Security".
+
 ## Threat model
 
 | Threat | Mitigation |

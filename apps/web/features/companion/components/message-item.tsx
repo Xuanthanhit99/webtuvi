@@ -1,7 +1,8 @@
-import type { ConversationMessageDto } from '@beaconvie/types';
+import type { CompanionMemoryUsageDto, ConversationMessageDto } from '@beaconvie/types';
 import { Logo } from '@/components/ui/logo';
 import { Avatar } from '@/components/ui/avatar';
 import { RememberThisButton } from '@/features/memory/components/remember-this-button';
+import { MemoryUsedSection } from './memory-used-section';
 
 /**
  * Deliberately not chat-bubble UI — a calm, minimal, journal-like reading
@@ -12,8 +13,21 @@ import { RememberThisButton } from '@/features/memory/components/remember-this-b
  * action to the caller's own messages only (never on an assistant reply —
  * see Sprint 3A's memory-engine.md "Candidate lifecycle": a candidate must
  * always trace to real user-authored content).
+ *
+ * `memoryUsage` is the ephemeral, this-turn-only `skipped` view (Phase 8) —
+ * only ever passed for the assistant message that was *just* generated (see
+ * `lastTurnMemoryUsage` in `useCompanionConversation`). Every other assistant
+ * message still shows "Memory used" from its own persisted `memoryUsed`.
  */
-export function MessageItem({ message, conversationId }: { message: ConversationMessageDto; conversationId?: string }) {
+export function MessageItem({
+  message,
+  conversationId,
+  memoryUsage,
+}: {
+  message: ConversationMessageDto;
+  conversationId?: string;
+  memoryUsage?: CompanionMemoryUsageDto;
+}) {
   const isAssistant = message.role === 'assistant';
 
   return (
@@ -29,6 +43,14 @@ export function MessageItem({ message, conversationId }: { message: Conversation
           )}
         </div>
         <p className="whitespace-pre-wrap text-body-md text-text-primary">{message.content}</p>
+        {isAssistant && conversationId && (
+          <MemoryUsedSection
+            conversationId={conversationId}
+            messageId={message.id}
+            used={message.memoryUsed ?? []}
+            skipped={memoryUsage?.skipped}
+          />
+        )}
       </div>
     </div>
   );

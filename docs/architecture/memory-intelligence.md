@@ -174,12 +174,13 @@ policy behind `GET /memory/recommendations`:
 6. Included memories get `referencedCount` incremented and `lastReferencedAt` bumped (feeds
    future ranking); a `MemoryRetrievalLog` row is written (see "Observability").
 
-**This is not wired into any live Companion conversation this sprint** — `GET
-/memory/recommendations` is a standalone, read-only transparency surface (also rendered in the
-Memory page's Insights tab) showing what the policy *would* surface. Wiring retrieval into an
-actual Companion system prompt, and anything embedding/semantic-based, is Sprint 3C's job per
-the Sprint 3A report's own stated roadmap — this sprint deliberately stops at "the deterministic
-decision layer exists and is inspectable," not "it feeds a live conversation."
+**As originally written this sprint (3B), this was not wired into any live Companion conversation**
+— `GET /memory/recommendations` was a standalone, read-only transparency surface (also rendered
+in the Memory page's Insights tab) showing what the policy *would* surface. Sprint 3C wired this
+same `recommend()` call into `StreamService.generate()` via `MemoryContextAssembler` — no change
+to the algorithm itself, only a second caller. See
+docs/architecture/companion-memory-integration.md "Retrieval pipeline." Embedding/semantic-based
+retrieval remains explicitly out of scope for both sprints.
 
 ## Context budget algorithm
 
@@ -243,7 +244,8 @@ budget/used, latency) via NestJS `Logger`, mirroring Companion Core's `Observabi
 discipline (`docs/security/ai-safety.md`). `MemoryRetrievalLog` additionally **persists**
 `candidateCount`/`retrievedCount`/`tokenBudget`/`tokenUsed`/`latencyMs` per call — the one metric
 this sprint gives a durable, queryable table to, since it's the one most likely to matter
-operationally once Sprint 3C wires retrieval into a live prompt. **No memory id, title, summary,
+operationally once retrieval feeds a live prompt (it now does, as of Sprint 3C — this table fires
+on every Companion turn that retrieves, not only `GET /memory/recommendations` calls). **No memory id, title, summary,
 or structured payload is ever logged or persisted in an observability row** — grepped every
 `this.logger.*` call site in `memory/importance|duplicate|conflict|merge|retrieval` at review
 time; only counts and structural facts appear.
@@ -288,9 +290,10 @@ time; only counts and structural facts appear.
   real usage data (dismissal rates) to become one.
 - **Evaluation is fixture-based, not against live production data** — see "Evaluation
   methodology." A follow-up evaluation against real usage is warranted once this ships.
-- **No live Companion integration** — retrieval, ranking, and budgeting exist and are correct in
-  isolation, but nothing in this sprint changes what the Companion actually sees in a
-  conversation. That wiring, and anything semantic/embedding-based, is explicitly Sprint 3C's.
+- **No live Companion integration as of Sprint 3B** — retrieval, ranking, and budgeting existed
+  and were correct in isolation, but nothing in 3B changed what the Companion actually saw in a
+  conversation. Sprint 3C closed this gap (see docs/architecture/companion-memory-integration.md);
+  anything semantic/embedding-based remains out of scope for both sprints.
 
 ## Sprint 3C entry criteria
 

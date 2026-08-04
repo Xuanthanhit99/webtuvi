@@ -9,7 +9,9 @@ building, safety, retry/fallback, cost tracking, observability.
 
 **Explicitly out of scope (do not add here):** embeddings, vector search, semantic memory
 extraction, RAG, report generation, tarot, astrology, community features. Those belong to later
-sprints and a separate Memory Engine, not to this module.
+sprints and a separate Memory Engine, not to this module — this remains true after Sprint 3C's
+memory integration below, which calls Memory Intelligence's existing deterministic retrieval
+rather than adding any embedding/semantic capability here.
 
 ## Module layout
 
@@ -25,6 +27,11 @@ apps/api/src/companion/
   cost/               CostControlService (per-user usage aggregates + daily/monthly budget enforcement)
   concurrency/       GenerationLockService (Redis-backed per-user concurrent-generation cap)
   observability/     ObservabilityService (structured logs + ProviderLog persistence)
+  memory/            Sprint 3C — MemoryContextAssembler/MemoryExplanationService/
+                      MemorySuggestionService/CompanionForgetService: the sole integration point
+                      with Memory Intelligence (calls MemoryRetrievalService.recommend(), never
+                      reads the Memory Prisma model directly). See
+                      docs/architecture/companion-memory-integration.md.
 ```
 
 `common/guards/companion-throttler.guard.ts` (outside this module, alongside the other request guards)

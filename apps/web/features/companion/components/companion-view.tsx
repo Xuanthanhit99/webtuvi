@@ -10,6 +10,8 @@ import { useAutoScroll } from '../hooks/use-auto-scroll';
 import { deriveLiveAnnouncement } from '../lib/live-announcement';
 import { ConversationSidebar } from './conversation-sidebar';
 import { MessageItem, StreamingMessageItem } from './message-item';
+import { MemorySuggestionCard } from './memory-suggestion-card';
+import { ForgetSuggestionCard } from './forget-suggestion-card';
 import { Composer } from './composer';
 import { IconButton } from '@/components/ui/icon-button';
 import { Dialog } from '@/components/ui/dialog';
@@ -67,8 +69,24 @@ export function CompanionView() {
     },
   });
 
-  const { messages, status, streamingText, errorMessage, isLoadingHistory, draft, setDraft, send, cancel, retry, reset } =
-    useCompanionConversation(activeId);
+  const {
+    messages,
+    status,
+    streamingText,
+    errorMessage,
+    isLoadingHistory,
+    draft,
+    setDraft,
+    send,
+    cancel,
+    retry,
+    reset,
+    pendingMemorySuggestion,
+    clearMemorySuggestion,
+    pendingForgetSuggestion,
+    clearForgetSuggestion,
+    lastTurnMemoryUsage,
+  } = useCompanionConversation(activeId);
 
   const { containerRef: listRef, hasNewMessage, handleScroll, scrollToBottom } = useAutoScroll({
     itemCount: messages.length,
@@ -159,9 +177,28 @@ export function CompanionView() {
                   </p>
                 )}
                 {messages.map((message) => (
-                  <MessageItem key={message.id} message={message} conversationId={activeId ?? undefined} />
+                  <MessageItem
+                    key={message.id}
+                    message={message}
+                    conversationId={activeId ?? undefined}
+                    memoryUsage={lastTurnMemoryUsage?.messageId === message.id ? lastTurnMemoryUsage.memoryUsage : undefined}
+                  />
                 ))}
                 {status === 'streaming' && streamingText && <StreamingMessageItem text={streamingText} />}
+
+                {/* Phases 4/5 — surfaced once, right after the turn that produced them; never
+                    acted on automatically, and dismissed only by an explicit user choice. */}
+                {activeId && pendingMemorySuggestion && (
+                  <MemorySuggestionCard
+                    suggestion={pendingMemorySuggestion.suggestion}
+                    sourceConversationId={pendingMemorySuggestion.sourceConversationId}
+                    sourceMessageId={pendingMemorySuggestion.sourceMessageId}
+                    onResolved={clearMemorySuggestion}
+                  />
+                )}
+                {pendingForgetSuggestion && (
+                  <ForgetSuggestionCard suggestion={pendingForgetSuggestion.suggestion} onResolved={clearForgetSuggestion} />
+                )}
               </div>
 
               {/* Sprint 2B audit Finding 5: a single, dedicated status region — announced

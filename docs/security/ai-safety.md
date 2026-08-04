@@ -165,3 +165,17 @@ oversight.
 `metadata` of every persisted assistant `ConversationMessage`. Bump it whenever the system prompt's
 rules or fact-assembly logic change materially, so a future behavior shift in stored conversations can
 be correlated back to a specific prompt revision instead of being unattributable.
+
+## Sprint 3C: retrieved-memory context
+
+`PromptBuilderService.build()` now optionally appends a labeled, budget-fitted memory block (built
+by `MemoryContextAssembler`, `companion/memory/`) to the same system message described above — see
+docs/architecture/companion-memory-integration.md "Prompt assembly." This does not weaken any rule
+above: "never fabricate memories... that weren't told to it" now extends naturally to memory
+context, since every fact in that block traces to a real, consented `Memory` row the person
+themselves saved, and the block is explicitly framed to the model as optional color ("only bring
+these up if it feels natural"), not a scripted claim. `companion/memory/*` observability
+(`memory-suggestion.service.ts`, `companion-forget.service.ts`, and the reused
+`MemoryRetrievalLog`) follows the identical "structural facts only, never content" discipline as
+the rest of this document — see "Observability: what is and isn't recorded" above, which this
+sprint does not change.

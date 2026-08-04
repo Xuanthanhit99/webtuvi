@@ -8,12 +8,17 @@ Companion prompts. Those are Sprint 3B/3C, per the Product Bible's own phased ro
 
 > **Sprint 3B update**: importance scoring, duplicate/conflict detection, merge suggestions, a
 > deterministic retrieval policy, ranking, and context budgeting were added on top of this
-> foundation — still no embeddings/RAG/semantic search, and still not wired into a live Companion
-> prompt (that remains Sprint 3C). See docs/architecture/memory-intelligence.md for the full
-> design; this document is otherwise unchanged from Sprint 3A and still describes the storage
-> layer accurately. The `Memory` model gained `importanceScore`/`importanceFactors`/`pinned`/
-> `referencedCount` columns (Sprint 3B migration `20260804120000_memory_intelligence`) — additive
-> only, nothing described below was altered.
+> foundation — still no embeddings/RAG/semantic search. See docs/architecture/memory-intelligence.md
+> for the full design; this document is otherwise unchanged from Sprint 3A and still describes the
+> storage layer accurately. The `Memory` model gained `importanceScore`/`importanceFactors`/
+> `pinned`/`referencedCount` columns (Sprint 3B migration `20260804120000_memory_intelligence`) —
+> additive only, nothing described below was altered.
+>
+> **Sprint 3C update**: Companion now calls the Sprint 3B retrieval pipeline on every turn (still
+> no embeddings/RAG/semantic search — deterministic ranking only) and adds deterministic
+> suggestion/forget-intent detectors that map to the propose+accept/consent/delete flows described
+> in this document, never a second consent or deletion mechanism. See
+> docs/architecture/companion-memory-integration.md for the full wiring.
 
 **Governing rule** (Product Bible Module 10 §2's standing creed, restated as this sprint's own test):
 > Remember less. Remember better. Never fake. Always explain. Always allow deletion. Respect change.
@@ -206,10 +211,12 @@ proposes and — if consent currently allows it — immediately accepts the cand
 action. If consent blocks it, the candidate is created as `PENDING_CONSENT` and surfaces in Settings →
 Memory → Pending instead of silently failing or silently succeeding.
 
-Companion does **not** automatically retrieve memories into prompts in this sprint (that's Sprint 3C);
-it does not perform semantic selection; it cannot bypass consent (the same `MemoryConsentService.
-canAccept()` gate applies regardless of caller); and it never claims to have "remembered" something
-unless a `Memory` record was actually created via a real, successful `accept()` call.
+As of Sprint 3C, Companion **does** retrieve memories into prompts (via `MemoryContextAssembler`
+calling `MemoryRetrievalService.recommend()` — see docs/architecture/companion-memory-integration.md);
+it still does not perform semantic selection (deterministic ranking only); it cannot bypass consent
+(the same `MemoryConsentService.canAccept()` gate applies regardless of caller, re-checked at
+retrieval time); and it never claims to have "remembered" something unless a `Memory` record was
+actually created via a real, successful `accept()` call.
 
 ## Frontend
 
