@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ConversationMessageDto } from '@beaconvie/types';
+import type { CompanionMemoryUsageDto, ConversationMessageDto, ForgetSuggestionDto, MemorySuggestionDto } from '@beaconvie/types';
 import { conversationsApi } from '../api/conversations-api';
 import { ApiError } from '@/lib/api-error';
 
@@ -17,6 +17,27 @@ export type ComposerStatus =
 
 interface DoneEventData {
   message: ConversationMessageDto;
+  /** Sprint 3C — ephemeral, this-turn-only (see StreamService); `used` here duplicates what's
+   * now persisted on `message.memoryUsed` but already carries full explanations, so the UI can
+   * show "why" immediately without a second fetch right after generation. */
+  memoryUsage?: CompanionMemoryUsageDto;
+}
+
+export interface PendingMemorySuggestion {
+  suggestion: MemorySuggestionDto;
+  sourceConversationId: string;
+  sourceMessageId: string;
+}
+
+export interface PendingForgetSuggestion {
+  suggestion: ForgetSuggestionDto;
+}
+
+/** Ephemeral "why I ignored" data for the message that was *just* generated — never available
+ * again after this, including on reload (see StreamService's "never persisted" decision). */
+export interface LastTurnMemoryUsage {
+  messageId: string;
+  memoryUsage: CompanionMemoryUsageDto;
 }
 
 /**
@@ -35,6 +56,9 @@ export function useCompanionConversation(conversationId: string | null) {
   // (a completed reply, a safety refusal, or a deliberate cancel) — never
   // synchronously on submit. See Sprint 2B audit Finding 3.
   const [draft, setDraft] = useState('');
+  const [pendingMemorySuggestion, setPendingMemorySuggestion] = useState<PendingMemorySuggestion | null>(null);
+  const [pendingForgetSuggestion, setPendingForgetSuggestion] = useState<PendingForgetSuggestion | null>(null);
+  const [lastTurnMemoryUsage, setLastTurnMemoryUsage] = useState<LastTurnMemoryUsage | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
   const closeStream = useCallback(() => {
@@ -86,6 +110,9 @@ export function useCompanionConversation(conversationId: string | null) {
       source.addEventListener('done', (event) => {
         const data = JSON.parse((event as MessageEvent).data) as DoneEventData;
         setMessages((prev) => [...prev, data.message]);
+        if (data.memoryUsage) {
+          setLastTurnMemoryUsage({ messageId: data.message.id, memoryUsage: data.memoryUsage });
+        }
         setStreamingText('');
         closeStream();
         setStatus('idle');
@@ -119,6 +146,15 @@ export function useCompanionConversation(conversationId: string | null) {
       try {
         const result = await conversationsApi.sendMessage(id, content);
         setMessages((prev) => [...prev, result.userMessage]);
+
+        // Sprint 3C, Phases 4/5 — surfaced as a distinct, dismissible card (see
+        // MemorySuggestionCard/ForgetSuggestionCard), never acted on automatically.
+        setPendingMemorySuggestion(
+          result.memorySuggestion
+            ? { suggestion: result.memorySuggestion, sourceConversationId: id, sourceMessageId: result.userMessage.id }
+            : null,
+        );
+        setPendingForgetSuggestion(result.forgetSuggestion ? { suggestion: result.forgetSuggestion } : null);
 
         if (!result.requiresGeneration) {
           if (result.assistantMessage) setMessages((prev) => [...prev, result.assistantMessage!]);
@@ -167,5 +203,22 @@ export function useCompanionConversation(conversationId: string | null) {
     setErrorMessage(null);
   }, []);
 
-  return { messages, status, streamingText, errorMessage, isLoadingHistory, draft, setDraft, send, cancel, retry, reset };
+  return {
+    messages,
+    status,
+    streamingText,
+    errorMessage,
+    isLoadingHistory,
+    draft,
+    setDraft,
+    send,
+    cancel,
+    retry,
+    reset,
+    pendingMemorySuggestion,
+    clearMemorySuggestion: useCallback(() => setPendingMemorySuggestion(null), []),
+    pendingForgetSuggestion,
+    clearForgetSuggestion: useCallback(() => setPendingForgetSuggestion(null), []),
+    lastTurnMemoryUsage,
+  };
 }

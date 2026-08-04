@@ -10,6 +10,13 @@ import { MemoryRecordService } from './record/memory-record.service';
 import { MemoryRecordController } from './record/memory-record.controller';
 import { MemoryExportService } from './export/memory-export.service';
 import { MemoryExportController } from './export/memory-export.controller';
+import { ImportanceScoringService } from './importance/importance-scoring.service';
+import { MemoryDuplicateService } from './duplicate/memory-duplicate.service';
+import { MemoryConflictService } from './conflict/memory-conflict.service';
+import { MemoryMergeSuggestionService } from './merge/memory-merge-suggestion.service';
+import { ContextBudgetService } from './budget/context-budget.service';
+import { MemoryRetrievalService } from './retrieval/memory-retrieval.service';
+import { MemoryIntelligenceController } from './intelligence/memory-intelligence.controller';
 
 /**
  * Sprint 1's `MemoryService` (`mostRecent`, backed by the legacy `MemoryNote`
@@ -21,7 +28,13 @@ import { MemoryExportController } from './export/memory-export.controller';
  */
 @Module({
   imports: [ActivitiesModule],
-  controllers: [MemoryConsentController, MemoryCandidateController, MemoryRecordController, MemoryExportController],
+  controllers: [
+    MemoryConsentController,
+    MemoryCandidateController,
+    MemoryRecordController,
+    MemoryExportController,
+    MemoryIntelligenceController,
+  ],
   providers: [
     MemoryService,
     MemoryAuditService,
@@ -29,7 +42,24 @@ import { MemoryExportController } from './export/memory-export.controller';
     MemoryCandidateService,
     MemoryRecordService,
     MemoryExportService,
+    ImportanceScoringService,
+    MemoryDuplicateService,
+    MemoryConflictService,
+    MemoryMergeSuggestionService,
+    ContextBudgetService,
+    MemoryRetrievalService,
   ],
-  exports: [MemoryService, MemoryConsentService, MemoryCandidateService, MemoryRecordService, MemoryAuditService],
+  exports: [
+    MemoryService,
+    MemoryConsentService,
+    MemoryCandidateService,
+    MemoryRecordService,
+    MemoryAuditService,
+    ImportanceScoringService,
+    // Sprint 3C (Companion integration) — MemoryRetrievalService is the one Memory Intelligence
+    // service Companion is allowed to call (via MemoryContextAssembler), never the Memory Prisma
+    // model directly. See docs/architecture/companion-memory-integration.md.
+    MemoryRetrievalService,
+  ],
 })
 export class MemoryModule {}

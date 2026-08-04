@@ -4,12 +4,22 @@ import type { ConversationDto, ConversationMessageDto } from '@beaconvie/types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SafetyService } from '../safety/safety.service';
 import { CostControlService } from '../cost/cost-control.service';
+import { MemorySuggestionService, type MemorySuggestionDto } from '../memory/memory-suggestion.service';
+import { CompanionForgetService, type ForgetSuggestionDto } from '../memory/companion-forget.service';
 
 export interface SendMessageResult {
   userMessage: ConversationMessageDto;
   /** Set only when the message was safety-refused — no generation is triggered, the frontend never opens the stream. */
   assistantMessage: ConversationMessageDto | null;
   requiresGeneration: boolean;
+  /** Sprint 3C, Phase 4 — "this sounds worth remembering." Never persisted by itself; the
+   * frontend's "Remember" button is what actually creates anything (see memory-api.ts's
+   * existing propose+accept flow). Null whenever nothing matched or consent already excludes
+   * that type ("Never remember this type" is respected here too). */
+  memorySuggestion: MemorySuggestionDto | null;
+  /** Sprint 3C, Phase 5 — detected forget-intent, never executed without a separate, explicit
+   * confirmation call (see CompanionMemoryController). */
+  forgetSuggestion: ForgetSuggestionDto | null;
 }
 
 const RECENT_MESSAGES_PREVIEW = 1;
@@ -20,6 +30,8 @@ export class ConversationService {
     private readonly prisma: PrismaService,
     private readonly safety: SafetyService,
     private readonly costControl: CostControlService,
+    private readonly memorySuggestion: MemorySuggestionService,
+    private readonly forget: CompanionForgetService,
   ) {}
 
   async create(userId: string, title: string | undefined): Promise<ConversationDto> {
@@ -90,10 +102,27 @@ export class ConversationService {
       });
       await this.touchConversation(conversationId);
 
-      return { userMessage: toMessageDto(userMessage), assistantMessage: toMessageDto(assistantMessage), requiresGeneration: false };
+      return {
+        userMessage: toMessageDto(userMessage),
+        assistantMessage: toMessageDto(assistantMessage),
+        requiresGeneration: false,
+        // A safety-refused message is never evaluated for a memory suggestion or forget-intent
+        // — it was never actually processed as real conversational content.
+        memorySuggestion: null,
+        forgetSuggestion: null,
+      };
     }
 
-    return { userMessage: toMessageDto(userMessage), assistantMessage: null, requiresGeneration: true };
+    // Sprint 3C, Phases 4/5 — deterministic, non-LLM heuristics only (see
+    // memory-suggestion-detector.ts/forget-intent-detector.ts). Neither ever saves, deletes, or
+    // changes consent by itself; both are pure "here's what I noticed" signals the frontend
+    // renders as an explicit choice.
+    const [memorySuggestion, forgetSuggestion] = await Promise.all([
+      this.memorySuggestion.evaluate(userId, content),
+      this.forget.evaluate(userId, conversationId, content),
+    ]);
+
+    return { userMessage: toMessageDto(userMessage), assistantMessage: null, requiresGeneration: true, memorySuggestion, forgetSuggestion };
   }
 
   /** Ownership check shared by every mutating/reading method — 404 (not 403) for someone else's conversation, so existence can't be probed. */
@@ -122,11 +151,17 @@ function toConversationDto(conversation: Conversation, messageCount: number): Co
 }
 
 function toMessageDto(message: ConversationMessage): ConversationMessageDto {
+  const metadata = message.metadata as { memoryUsage?: { used: ConversationMessageDto['memoryUsed'] } } | null;
   return {
     id: message.id,
     role: message.role.toLowerCase() as ConversationMessageDto['role'],
     content: message.content,
     createdAt: message.createdAt.toISOString(),
+    // Sprint 3C — the persisted, structural-only reference list (see StreamService). Present
+    // whenever this message actually used memory, on reload as much as right after generation
+    // ("later retrieval" in the Phase 13 flow) — `null` for every message that didn't, including
+    // every message that predates this sprint.
+    memoryUsed: metadata?.memoryUsage?.used ?? null,
   };
 }
 

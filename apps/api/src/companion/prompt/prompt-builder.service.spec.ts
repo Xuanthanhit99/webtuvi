@@ -81,4 +81,25 @@ describe('PromptBuilderService', () => {
     const messages = builder.build(context({ memoryPreference: 'DO_NOT_SAVE_YET' }), [], 'Hi');
     expect(messages[0]!.content).toContain('DO_NOT_SAVE_YET');
   });
+
+  // --- Sprint 3C: retrieved-memory block ---
+
+  it('sends exactly the same prompt shape as before this sprint when no memory block is given', () => {
+    const withoutArg = builder.build(context(), [], 'Hi');
+    const withNull = builder.build(context(), [], 'Hi', null);
+    expect(withoutArg).toEqual(withNull);
+  });
+
+  it('appends the memory block to the single system message — never as a separate message', () => {
+    const messages = builder.build(context(), [], 'Hi', '- [GOAL] Learn Japanese: "Working toward JLPT N3."');
+    expect(messages).toHaveLength(2); // system + user only, no extra message
+    expect(messages[0]!.role).toBe('system');
+    expect(messages[0]!.content).toContain('Learn Japanese');
+  });
+
+  it('places the memory block after the base system prompt content', () => {
+    const messages = builder.build(context(), [], 'Hi', 'MEMORY_BLOCK_MARKER');
+    const content = messages[0]!.content;
+    expect(content.indexOf('Never fabricate memories')).toBeLessThan(content.indexOf('MEMORY_BLOCK_MARKER'));
+  });
 });

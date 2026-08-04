@@ -11,6 +11,7 @@ import { Dropdown } from '@/components/ui/dropdown';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
+import { ImportanceBadge } from './importance-badge';
 
 const TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: '', label: 'All types' },
@@ -114,7 +115,10 @@ export function MemoryTimeline({ onSelect }: MemoryTimelineProps) {
                 onKeyDown={(e) => e.key === 'Enter' && onSelect(item.id)}
               >
                 <div className="mb-1 flex items-center justify-between gap-2">
-                  <Badge variant="insight">{item.type.replace(/_/g, ' ').toLowerCase()}</Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="insight">{item.type.replace(/_/g, ' ').toLowerCase()}</Badge>
+                    <ImportanceBadge score={item.importanceScore} explanations={item.importanceExplanations} pinned={item.pinned} />
+                  </div>
                   <time className="text-caption text-text-disabled" dateTime={item.createdAt}>
                     {new Date(item.createdAt).toLocaleDateString()}
                   </time>

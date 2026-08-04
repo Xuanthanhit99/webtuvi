@@ -13,15 +13,23 @@ import { ProviderRegistryService } from './providers/provider-registry.service';
 import { ProviderOrchestratorService } from './providers/provider-orchestrator.service';
 import { GenerationLockService } from './concurrency/generation-lock.service';
 import { ActivitiesModule } from '../activities/activities.module';
+import { MemoryModule } from '../memory/memory.module';
+import { MemoryContextAssembler } from './memory/memory-context-assembler.service';
+import { MemoryExplanationService } from './memory/memory-explanation.service';
+import { MemorySuggestionService } from './memory/memory-suggestion.service';
+import { CompanionForgetService } from './memory/companion-forget.service';
+import { CompanionMemoryController } from './memory/companion-memory.controller';
 
 /**
- * Companion Core (Sprint 2B) — replaces Sprint 1's rule-based Companion in
- * place. See docs/architecture/companion-core.md. Explicitly not a Memory
- * Engine: no embeddings, no vector store, no semantic search anywhere here.
+ * Companion Core (Sprint 2B) + Companion/Memory Integration (Sprint 3C). Still not a Memory
+ * Engine itself: no embeddings, no vector store, no semantic search anywhere here — the memory
+ * pieces in this module (`memory/`) are integration glue, calling into Memory Intelligence
+ * (`MemoryModule`, imported below) rather than reimplementing anything. See
+ * docs/architecture/companion-core.md and docs/architecture/companion-memory-integration.md.
  */
 @Module({
-  imports: [ActivitiesModule],
-  controllers: [ConversationController, StreamController],
+  imports: [ActivitiesModule, MemoryModule],
+  controllers: [ConversationController, StreamController, CompanionMemoryController],
   providers: [
     ConversationService,
     StreamService,
@@ -34,6 +42,10 @@ import { ActivitiesModule } from '../activities/activities.module';
     ProviderRegistryService,
     ProviderOrchestratorService,
     GenerationLockService,
+    MemoryContextAssembler,
+    MemoryExplanationService,
+    MemorySuggestionService,
+    CompanionForgetService,
   ],
 })
 export class CompanionModule {}

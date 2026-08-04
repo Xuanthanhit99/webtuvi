@@ -1,4 +1,5 @@
 import type { Memory, MemoryConsentMode, MemorySourceType, MemoryStatus, MemoryType, MemoryVisibility } from '@prisma/client';
+import { explainImportanceFactors } from './importance/memory-importance.calculator';
 
 export interface MemoryDto {
   id: string;
@@ -16,6 +17,11 @@ export interface MemoryDto {
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
+  /** Sprint 3B — deterministic 0-100 score; always paired with importanceExplanations on the
+   * frontend, never rendered as a bare number (see ImportanceBadge). */
+  importanceScore: number;
+  importanceExplanations: string[];
+  pinned: boolean;
 }
 
 /** Shared by MemoryCandidateService (accept) and MemoryRecordService (CRUD/timeline) so both surfaces render an identical shape. Never includes deletedAt/lastReferencedAt/expiresAt — internal-only fields not yet exposed to the client in Sprint 3A. */
@@ -36,5 +42,8 @@ export function toMemoryDto(memory: Memory): MemoryDto {
     createdAt: memory.createdAt.toISOString(),
     updatedAt: memory.updatedAt.toISOString(),
     archivedAt: memory.archivedAt?.toISOString() ?? null,
+    importanceScore: memory.importanceScore,
+    importanceExplanations: explainImportanceFactors((memory.importanceFactors as Record<string, number> | null) ?? {}),
+    pinned: memory.pinned,
   };
 }

@@ -130,11 +130,57 @@ export interface ConversationDto {
 
 export type ConversationMessageRole = 'system' | 'user' | 'assistant';
 
+// --- Companion + Memory Integration (Sprint 3C). "No hidden retrieval" — every memory the
+// Companion actually used carries these fields; see docs/architecture/companion-memory-integration.md. ---
+
+export interface MemoryReferenceDto {
+  memoryId: string;
+  title: string;
+  type: MemoryTypeValue;
+  reason: string;
+  retrievalType: RetrievalTypeValue;
+  importance: { score: number; explanations: string[] };
+  retrievalTimestamp: string;
+  sourceConversationId: string | null;
+  createdAt: string;
+}
+
+export interface MemorySkipReferenceDto {
+  memoryId: string;
+  title: string;
+  type: MemoryTypeValue;
+  reason: SkipReasonValue;
+}
+
+export interface MemoryExplanationDto {
+  headline: string;
+  reason: string;
+  source: string;
+  date: string;
+  consent: string;
+  importance: { score: number; explanations: string[] };
+}
+
+export interface MemorySkipExplanationDto {
+  headline: string;
+  reason: string;
+}
+
+/** The ephemeral, this-turn-only view returned by the SSE `done` event — `skipped` is never
+ * persisted, so it is only ever available right after the generation that produced it. */
+export interface CompanionMemoryUsageDto {
+  used: (MemoryReferenceDto & { explanation: MemoryExplanationDto })[];
+  skipped: (MemorySkipReferenceDto & { explanation: MemorySkipExplanationDto })[];
+}
+
 export interface ConversationMessageDto {
   id: string;
   role: ConversationMessageRole;
   content: string;
   createdAt: string;
+  /** Persisted, structural-only — present on reload for any message that used memory, `null`
+   * otherwise (including every message from before this sprint). */
+  memoryUsed: MemoryReferenceDto[] | null;
 }
 
 export interface ConversationDetailDto {
@@ -142,10 +188,35 @@ export interface ConversationDetailDto {
   messages: ConversationMessageDto[];
 }
 
+export interface MemorySuggestionDto {
+  type: MemoryTypeValue;
+  title: string;
+  summary: string;
+  reason: string;
+}
+
+export type ForgetIntentKindValue = 'FORGET_RECENT' | 'NEVER_REMEMBER_TYPE' | 'DELETE_ABOUT';
+
+export interface ForgetCandidateDto {
+  memoryId: string;
+  title: string;
+  summary: string;
+  type: MemoryTypeValue;
+}
+
+export interface ForgetSuggestionDto {
+  kind: ForgetIntentKindValue;
+  message: string;
+  candidates: ForgetCandidateDto[];
+  type: MemoryTypeValue | null;
+}
+
 export interface SendConversationMessageResultDto {
   userMessage: ConversationMessageDto;
   assistantMessage: ConversationMessageDto | null;
   requiresGeneration: boolean;
+  memorySuggestion: MemorySuggestionDto | null;
+  forgetSuggestion: ForgetSuggestionDto | null;
 }
 
 // --- Memory Foundation (Sprint 3A). Structural trust layer only — no
@@ -198,6 +269,11 @@ export interface MemoryDto {
   createdAt: string;
   updatedAt: string;
   archivedAt: string | null;
+  /** Sprint 3B — deterministic 0-100 score; always render alongside importanceExplanations,
+   * never as a bare number (Product Bible "always explain"). */
+  importanceScore: number;
+  importanceExplanations: string[];
+  pinned: boolean;
 }
 
 export interface MemoryTimelineItemDto extends MemoryDto {
@@ -267,6 +343,99 @@ export interface MemoryExportJobDto {
   jobId: string;
   status: 'completed';
   result: MemoryExportResultDto;
+}
+
+// --- Memory Intelligence (Sprint 3B). Deterministic decision layer on top of Memory
+// Foundation — importance scoring, duplicate/conflict detection, merge suggestions, retrieval
+// policy, ranking, context budgeting. Still no embeddings/RAG/semantic search/LLM decisions —
+// see docs/architecture/memory-intelligence.md. ---
+
+export type MemoryDuplicateMatchTypeValue = 'EXACT' | 'NORMALIZED' | 'STRUCTURED' | 'TYPE_SPECIFIC';
+
+export type MemoryDuplicateStatusValue = 'PENDING' | 'DISMISSED' | 'MERGED';
+
+export type MemoryConflictStatusValue = 'CONFLICT' | 'SUPERSEDED';
+
+export type MemoryMergeSuggestionStatusValue = 'PENDING' | 'ACCEPTED' | 'REJECTED';
+
+export interface MemoryDuplicatePairDto {
+  id: string;
+  memoryAId: string;
+  memoryBId: string;
+  matchType: MemoryDuplicateMatchTypeValue;
+  similarity: number;
+  reason: string;
+  status: MemoryDuplicateStatusValue;
+  detectedAt: string;
+}
+
+export interface MemoryConflictDto {
+  id: string;
+  memoryAId: string;
+  memoryBId: string;
+  status: MemoryConflictStatusValue;
+  reason: string;
+  detectedAt: string;
+}
+
+export interface MergeSuggestionDto {
+  id: string;
+  primaryMemoryId: string;
+  primaryTitle: string;
+  duplicateMemoryId: string;
+  duplicateTitle: string;
+  confidence: number;
+  reason: string;
+  status: MemoryMergeSuggestionStatusValue;
+  createdAt: string;
+}
+
+/** How a memory came to be included — a plain, inspectable fact (Sprint 3C). */
+export type RetrievalTypeValue = 'PINNED' | 'CONTEXT_MATCH' | 'IMPORTANCE_RANKED';
+
+export type SkipReasonValue = 'consent_denied' | 'over_budget' | 'limit_reached';
+
+export interface RecommendedMemoryDto {
+  id: string;
+  type: MemoryTypeValue;
+  title: string;
+  summary: string;
+  pinned: boolean;
+  importanceScore: number;
+  /** Plain-language reasons behind the score — always shown alongside it, never the raw
+   * number alone (Product Bible "always explain," applied to Sprint 3B's scoring). */
+  importanceExplanations: string[];
+  whyRecommended: string;
+  /** Sprint 3C (Companion integration) — "no hidden retrieval": every reference carries these. */
+  retrievalType: RetrievalTypeValue;
+  retrievalTimestamp: string;
+  sourceConversationId: string | null;
+  createdAt: string;
+}
+
+export interface SkippedMemoryDto {
+  id: string;
+  type: MemoryTypeValue;
+  title: string;
+  reason: SkipReasonValue;
+}
+
+export interface ContextBudgetDto {
+  totalWindowTokens: number;
+  reservedOutputTokens: number;
+  systemPromptTokens: number;
+  conversationTokens: number;
+  userInputTokens: number;
+  memoryTokens: number;
+}
+
+export interface RetrievalResultDto {
+  items: RecommendedMemoryDto[];
+  /** Sprint 3C explainability (Phase 8) — found but not surfaced, and why. */
+  skipped: SkippedMemoryDto[];
+  candidateCount: number;
+  budget: ContextBudgetDto;
+  tokenUsed: number;
 }
 
 export interface ApiErrorShape {

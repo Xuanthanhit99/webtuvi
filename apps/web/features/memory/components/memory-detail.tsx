@@ -12,6 +12,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { toast } from '@/components/ui/toast';
+import { ImportanceBadge } from './importance-badge';
 
 const TYPE_LABELS: Record<string, string> = {
   IDENTITY: 'Identity', PREFERENCE: 'Preference', GOAL: 'Goal', RELATIONSHIP: 'Relationship',
@@ -119,7 +120,10 @@ export function MemoryDetail({ memoryId, onClose }: { memoryId: string; onClose:
     <Card className="flex flex-col gap-4" aria-label="Memory detail">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
-          <Badge variant="insight">{TYPE_LABELS[memory.type] ?? memory.type}</Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="insight">{TYPE_LABELS[memory.type] ?? memory.type}</Badge>
+            <ImportanceBadge score={memory.importanceScore} explanations={memory.importanceExplanations} pinned={memory.pinned} />
+          </div>
           {editingTitle !== null ? (
             <form
               className="mt-2 flex gap-2"

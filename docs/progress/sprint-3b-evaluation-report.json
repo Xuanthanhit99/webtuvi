@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-08-03T17:43:14.178Z",
+  "retrieval": {
+    "scenarios": [
+      {
+        "name": "pinned memory always surfaces over higher-importance-but-unpinned noise",
+        "precision": 1,
+        "recall": 1,
+        "retrievedCount": 2,
+        "latencyMs": 0.3557999999993626,
+        "tokenUsageRatio": 0.018666666666666668
+      },
+      {
+        "name": "context text about coffee surfaces the coffee preference over an unrelated pet memory",
+        "precision": 1,
+        "recall": 1,
+        "retrievedCount": 1,
+        "latencyMs": 0.34029999999984284,
+        "tokenUsageRatio": 0.007333333333333333
+      },
+      {
+        "name": "goal-relation breaks a tie between two equally-important memories",
+        "precision": 1,
+        "recall": 1,
+        "retrievedCount": 1,
+        "latencyMs": 0.036400000000867294,
+        "tokenUsageRatio": 0.010666666666666666
+      },
+      {
+        "name": "an unmatched context falls back to ranking every consented candidate, not an empty result",
+        "precision": 1,
+        "recall": 1,
+        "retrievedCount": 1,
+        "latencyMs": 0.03570000000036089,
+        "tokenUsageRatio": 0.005333333333333333
+      }
+    ],
+    "averagePrecision": 1,
+    "averageRecall": 1,
+    "averageRetrievedCount": 1.25,
+    "averageLatencyMs": 0.1920500000001084,
+    "averageTokenUsageRatio": 0.0105
+  },
+  "duplicateDetection": {
+    "pairsChecked": 5,
+    "duplicatesFound": 3,
+    "duplicateRate": 0.6,
+    "accuracyAgainstLabels": 1
+  },
+  "conflictDetection": {
+    "pairsChecked": 2,
+    "conflictsFound": 1,
+    "accuracyAgainstLabels": 1
+  },
+  "mergeSuggestions": {
+    "duplicatesFound": 3,
+    "suggestionsWouldBeGenerated": 3,
+    "mergeSuggestionRate": 1
+  }
+}

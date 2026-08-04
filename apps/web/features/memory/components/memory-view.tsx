@@ -7,15 +7,20 @@ import { MemoryTimeline } from './memory-timeline';
 import { MemoryDetail } from './memory-detail';
 import { CandidateReview } from './candidate-review';
 import { ConsentSettings } from './consent-settings';
+import { RecommendationPanel } from './recommendation-panel';
+import { ConflictsSection } from './conflicts-section';
+import { DuplicatesSection } from './duplicates-section';
+import { MergeSuggestionsPanel } from './merge-suggestions-panel';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { memoryApi } from '../api/memory-api';
 
-type Section = 'timeline' | 'candidates' | 'consent';
+type Section = 'timeline' | 'candidates' | 'insights' | 'consent';
 
 const SECTIONS: { value: Section; label: string }[] = [
   { value: 'timeline', label: 'Timeline' },
   { value: 'candidates', label: 'Pending' },
+  { value: 'insights', label: 'Insights' },
   { value: 'consent', label: 'Memory settings' },
 ];
 
@@ -79,6 +84,34 @@ export function MemoryView() {
         <>
           {section === 'timeline' && <MemoryTimeline onSelect={selectItem} />}
           {section === 'candidates' && <CandidateReview />}
+          {section === 'insights' && (
+            <div className="flex flex-col gap-8">
+              <section aria-labelledby="insights-recommendations">
+                <h2 id="insights-recommendations" className="mb-3 text-body-sm font-semibold text-text-secondary">
+                  Recommended for you
+                </h2>
+                <RecommendationPanel />
+              </section>
+              <section aria-labelledby="insights-merge-suggestions">
+                <h2 id="insights-merge-suggestions" className="mb-3 text-body-sm font-semibold text-text-secondary">
+                  Merge suggestions
+                </h2>
+                <MergeSuggestionsPanel />
+              </section>
+              <section aria-labelledby="insights-duplicates">
+                <h2 id="insights-duplicates" className="mb-3 text-body-sm font-semibold text-text-secondary">
+                  Duplicates
+                </h2>
+                <DuplicatesSection />
+              </section>
+              <section aria-labelledby="insights-conflicts">
+                <h2 id="insights-conflicts" className="mb-3 text-body-sm font-semibold text-text-secondary">
+                  Conflicts
+                </h2>
+                <ConflictsSection />
+              </section>
+            </div>
+          )}
           {section === 'consent' && <ConsentSettings />}
         </>
       )}

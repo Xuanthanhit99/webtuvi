@@ -6,6 +6,15 @@ intelligence: no embeddings, no vector database, no semantic search, no RAG, no 
 LLM-based extraction, no importance/duplicate/merge/conflict automation, no semantic retrieval into
 Companion prompts. Those are Sprint 3B/3C, per the Product Bible's own phased roadmap (Module 10).
 
+> **Sprint 3B update**: importance scoring, duplicate/conflict detection, merge suggestions, a
+> deterministic retrieval policy, ranking, and context budgeting were added on top of this
+> foundation — still no embeddings/RAG/semantic search, and still not wired into a live Companion
+> prompt (that remains Sprint 3C). See docs/architecture/memory-intelligence.md for the full
+> design; this document is otherwise unchanged from Sprint 3A and still describes the storage
+> layer accurately. The `Memory` model gained `importanceScore`/`importanceFactors`/`pinned`/
+> `referencedCount` columns (Sprint 3B migration `20260804120000_memory_intelligence`) — additive
+> only, nothing described below was altered.
+
 **Governing rule** (Product Bible Module 10 §2's standing creed, restated as this sprint's own test):
 > Remember less. Remember better. Never fake. Always explain. Always allow deletion. Respect change.
 > Protect privacy.

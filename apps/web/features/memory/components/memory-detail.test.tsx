@@ -32,6 +32,9 @@ const MEMORY = {
   createdAt: '2026-01-01T00:00:00.000Z',
   updatedAt: '2026-01-01T00:00:00.000Z',
   archivedAt: null,
+  importanceScore: 42,
+  importanceExplanations: ['This relates to a goal or a decision you made.'],
+  pinned: false,
 };
 
 describe('MemoryDetail', () => {

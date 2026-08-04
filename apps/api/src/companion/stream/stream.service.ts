@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConversationService, toMessageDto } from '../conversation/conversation.service';
 import { ContextBuilderService } from '../context/context-builder.service';
@@ -8,7 +9,9 @@ import { ObservabilityService } from '../observability/observability.service';
 import { CostControlService } from '../cost/cost-control.service';
 import { ProviderOrchestratorService } from '../providers/provider-orchestrator.service';
 import { GenerationLockService } from '../concurrency/generation-lock.service';
-import { PROMPT_VERSION } from '../prompt/system-prompt';
+import { PROMPT_VERSION, buildSystemPrompt } from '../prompt/system-prompt';
+import { MemoryContextAssembler } from '../memory/memory-context-assembler.service';
+import { MemoryExplanationService } from '../memory/memory-explanation.service';
 
 export interface StreamEvent {
   type: 'token' | 'done' | 'error' | 'cancelled';
@@ -37,6 +40,8 @@ export class StreamService {
     private readonly costControl: CostControlService,
     private readonly orchestrator: ProviderOrchestratorService,
     private readonly concurrency: GenerationLockService,
+    private readonly memoryContextAssembler: MemoryContextAssembler,
+    private readonly memoryExplanation: MemoryExplanationService,
   ) {}
 
   async *generate(userId: string, conversationId: string, signal: AbortSignal): AsyncGenerator<StreamEvent> {
@@ -81,7 +86,26 @@ export class StreamService {
         .map((m) => ({ role: m.role === 'USER' ? 'user' : 'assistant', content: m.content }));
 
       const context = await this.contextBuilder.build(userId, conversationId);
-      const promptMessages = this.promptBuilder.build(context, history, pending.content);
+
+      // Phase 1 ("Companion never queries Memory directly"): this is the only call site in
+      // Companion Core that touches Memory Intelligence, and it goes through the assembler, not
+      // the Memory module's Prisma models directly. `buildSystemPrompt(context)` is called here
+      // purely to give the retrieval pipeline a real token estimate to budget against — the
+      // actual prompt sent to the provider is built once, below, by `promptBuilder.build()`.
+      const memoryContext = await this.memoryContextAssembler.assemble(userId, {
+        userMessage: pending.content,
+        systemPromptText: buildSystemPrompt(context),
+        conversationText: history.map((h) => h.content).join('\n'),
+      });
+      const promptMessages = this.promptBuilder.build(context, history, pending.content, memoryContext.promptBlock);
+
+      // Explanations computed once, right after retrieval, against the consent state that was
+      // actually true when the memory was used this turn — Phase 3/8's "used"/"skipped"
+      // explanations exposed with the SSE `done` event below.
+      const usedExplanations = await Promise.all(
+        memoryContext.used.map(async (ref) => ({ ...ref, explanation: await this.memoryExplanation.explain(userId, ref) })),
+      );
+      const skippedExplanations = memoryContext.skipped.map((ref) => ({ ...ref, explanation: this.memoryExplanation.explainSkip(ref) }));
 
       let fullText = '';
       let finalProvider: string | null = null;
@@ -108,15 +132,27 @@ export class StreamService {
               conversationId,
               role: 'ASSISTANT',
               content: persistedContent,
-              metadata: outputCheck.allowed
-                ? { provider: chunk.provider, model: chunk.model, promptVersion: PROMPT_VERSION }
+              metadata: (outputCheck.allowed
+                ? {
+                    provider: chunk.provider,
+                    model: chunk.model,
+                    promptVersion: PROMPT_VERSION,
+                    // Structural references only (memoryId/title/type/reason/retrievalType/
+                    // importance/timestamps/sourceConversationId) — never a content duplicate
+                    // of the memory's summary. Recomputed into a full explanation on demand via
+                    // GET .../memory-explanation/:memoryId, so it always reflects *current*
+                    // consent even for an old message. Omitted entirely when nothing was used,
+                    // so old (pre-Sprint-3C) and memory-free messages have identical metadata
+                    // shape to before.
+                    ...(memoryContext.used.length > 0 ? { memoryUsage: { used: memoryContext.used } } : {}),
+                  }
                 : {
                     provider: chunk.provider,
                     model: chunk.model,
                     promptVersion: PROMPT_VERSION,
                     safetyRefused: true,
                     category: outputCheck.category,
-                  },
+                  }) as Prisma.InputJsonValue,
             },
           });
           await this.prisma.conversation.update({ where: { id: conversationId }, data: { updatedAt: new Date() } });
@@ -147,7 +183,13 @@ export class StreamService {
           yield {
             type: outputCheck.allowed ? 'done' : 'error',
             data: outputCheck.allowed
-              ? { message: toMessageDto(assistantMessage) }
+              ? {
+                  message: toMessageDto(assistantMessage),
+                  // Ephemeral, this-turn-only view (Phase 8) — `skipped` is intentionally never
+                  // persisted (see memoryContext.used/metadata comment above), so it is only
+                  // ever available right after the generation that produced it, not on reload.
+                  memoryUsage: { used: usedExplanations, skipped: skippedExplanations },
+                }
               : { message: persistedContent },
           };
           return;

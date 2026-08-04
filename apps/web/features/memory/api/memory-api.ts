@@ -1,14 +1,18 @@
 import type {
   MemoryCandidateDto,
+  MemoryConflictDto,
   MemoryConsentModeValue,
   MemoryConsentSummaryDto,
   MemoryDto,
+  MemoryDuplicatePairDto,
   MemoryExportJobDto,
   MemoryListResultDto,
   MemoryTimelineResultDto,
   MemoryTypeValue,
   MemoryVersionDto,
   MemoryAuditEntryDto,
+  MergeSuggestionDto,
+  RetrievalResultDto,
 } from '@beaconvie/types';
 import { api } from '@/lib/api-client';
 
@@ -65,5 +69,17 @@ export const memoryApi = {
   export: {
     create: () => api.post<MemoryExportJobDto>('/memory/export'),
     get: (jobId: string) => api.get<MemoryExportJobDto>(`/memory/export/${jobId}`),
+  },
+
+  intelligence: {
+    recommendations: (params: { context?: string; limit?: number } = {}) =>
+      api.get<RetrievalResultDto>(`/memory/recommendations${toQuery(params)}`),
+    conflicts: () => api.get<MemoryConflictDto[]>('/memory/conflicts'),
+    duplicates: () => api.get<MemoryDuplicatePairDto[]>('/memory/duplicates'),
+    mergeSuggestions: {
+      list: () => api.get<MergeSuggestionDto[]>('/memory/merge-suggestions'),
+      accept: (id: string) => api.post<MergeSuggestionDto>(`/memory/merge-suggestions/${id}/accept`),
+      reject: (id: string) => api.post<MergeSuggestionDto>(`/memory/merge-suggestions/${id}/reject`),
+    },
   },
 };

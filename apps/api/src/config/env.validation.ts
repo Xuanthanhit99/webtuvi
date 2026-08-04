@@ -85,6 +85,14 @@ const envSchema = z.object({
   AI_DAILY_REQUEST_LIMIT: z.coerce.number().int().positive().default(50),
   AI_DAILY_TOKEN_LIMIT: z.coerce.number().int().positive().default(200_000),
   AI_MONTHLY_TOKEN_LIMIT: z.coerce.number().int().positive().default(2_000_000),
+
+  // --- Memory Intelligence (Sprint 3B) — deterministic context token budgeting. Token counts
+  // are all estimated via a fixed chars/4 heuristic (ContextBudgetService.estimateTokens), not
+  // a real tokenizer — see docs/architecture/memory-intelligence.md "Context budget algorithm".
+  MEMORY_CONTEXT_WINDOW_TOKENS: z.coerce.number().int().positive().default(8_000),
+  MEMORY_CONTEXT_RESERVED_OUTPUT_TOKENS: z.coerce.number().int().positive().default(1_024),
+  MEMORY_CONTEXT_CONVERSATION_MAX_TOKENS: z.coerce.number().int().positive().default(3_000),
+  MEMORY_CONTEXT_MEMORY_MAX_TOKENS: z.coerce.number().int().positive().default(1_500),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

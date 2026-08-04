@@ -86,6 +86,14 @@ export const appConfig = registerAs('app', () => {
         monthlyTokenLimit: env.AI_MONTHLY_TOKEN_LIMIT,
       },
     },
+    memory: {
+      contextBudget: {
+        totalWindowTokens: env.MEMORY_CONTEXT_WINDOW_TOKENS,
+        reservedOutputTokens: env.MEMORY_CONTEXT_RESERVED_OUTPUT_TOKENS,
+        conversationMaxTokens: env.MEMORY_CONTEXT_CONVERSATION_MAX_TOKENS,
+        memoryMaxTokens: env.MEMORY_CONTEXT_MEMORY_MAX_TOKENS,
+      },
+    },
   };
 });
 

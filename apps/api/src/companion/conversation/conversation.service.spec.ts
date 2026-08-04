@@ -9,6 +9,14 @@ function makeCostControlMock(allowed = true): CostControlService {
   } as unknown as CostControlService;
 }
 
+function makeMemorySuggestionMock() {
+  return { evaluate: jest.fn(async () => null) };
+}
+
+function makeForgetMock() {
+  return { evaluate: jest.fn(async () => null) };
+}
+
 function makePrismaMock() {
   const conversations = new Map<string, { id: string; userId: string; title: string | null; status: string; createdAt: Date; updatedAt: Date }>();
   const messages: { id: string; conversationId: string; role: string; content: string; createdAt: Date }[] = [];
@@ -66,7 +74,13 @@ describe('ConversationService', () => {
 
   beforeEach(() => {
     prisma = makePrismaMock();
-    service = new ConversationService(prisma as never, new SafetyService(), makeCostControlMock());
+    service = new ConversationService(
+      prisma as never,
+      new SafetyService(),
+      makeCostControlMock(),
+      makeMemorySuggestionMock() as never,
+      makeForgetMock() as never,
+    );
   });
 
   it('creates a conversation owned by the calling user', async () => {
@@ -120,7 +134,13 @@ describe('ConversationService', () => {
   });
 
   it('sendMessage rejects with a normalized 429 when the usage budget is exceeded, persisting nothing', async () => {
-    const overBudgetService = new ConversationService(prisma as never, new SafetyService(), makeCostControlMock(false));
+    const overBudgetService = new ConversationService(
+      prisma as never,
+      new SafetyService(),
+      makeCostControlMock(false),
+      makeMemorySuggestionMock() as never,
+      makeForgetMock() as never,
+    );
     const conversation = await overBudgetService.create('user-1', undefined);
 
     await expect(overBudgetService.sendMessage('user-1', conversation.id, 'hello')).rejects.toThrow(HttpException);
@@ -129,7 +149,13 @@ describe('ConversationService', () => {
   });
 
   it('sendMessage HttpException carries the normalized AI_BUDGET_EXCEEDED shape', async () => {
-    const overBudgetService = new ConversationService(prisma as never, new SafetyService(), makeCostControlMock(false));
+    const overBudgetService = new ConversationService(
+      prisma as never,
+      new SafetyService(),
+      makeCostControlMock(false),
+      makeMemorySuggestionMock() as never,
+      makeForgetMock() as never,
+    );
     const conversation = await overBudgetService.create('user-1', undefined);
 
     try {

@@ -48,6 +48,10 @@ model User {
   memoryConsentSetting  MemoryConsentSetting?
   memoryTypeConsents    MemoryTypeConsent[]
   memoryAudits          MemoryAudit[]
+  memoryDuplicates      MemoryDuplicate[]
+  memoryConflicts       MemoryConflict[]
+  memoryMergeSuggestions MemoryMergeSuggestion[]
+  memoryRetrievalLogs   MemoryRetrievalLog[]
 
   @@map("users")
 }
@@ -522,6 +526,10 @@ model Memory {
   /// Bumped on every user-visible content change; mirrors the latest MemoryVersion.version.
   version              Int               @default(1)
   /// Set by Companion context-assembly reads in a later sprint; unused (always null) in Sprint 3A.
+  /// Sprint 3B's MemoryRetrievalService bumps this + referencedCount whenever a memory is
+  /// actually selected by the retrieval policy — still never read into a live Companion prompt
+  /// this sprint (that wiring is Sprint 3C's), but the recommendation/ranking surfaces do count
+  /// as "referenced" for recency/frequency ranking purposes (see memory-intelligence.md).
   lastReferencedAt     DateTime?
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
@@ -531,11 +539,29 @@ model Memory {
   /// timestamp — the Memory row does not outlive its own deletedAt.
   deletedAt            DateTime?
 
+  /// Sprint 3B — deterministic 0-100 score, recomputed by ImportanceScoringService.
+  /// Never AI-derived; see memory-intelligence.md "Importance algorithm" for the documented
+  /// weights. Defaults to 0 until first scored (existing Sprint 3A rows are backfilled by the
+  /// migration itself, not left at a misleading 0 — see the migration SQL).
+  importanceScore      Int               @default(0)
+  /// Structural breakdown of which weighted inputs contributed to importanceScore (e.g.
+  /// {"pinned":35,"recency":6,...}) — stored so the frontend can render "why this memory is
+  /// important" without recomputing, and so the algorithm's output is auditable, not opaque.
+  importanceFactors    Json?
+  /// Manual pin — the one importance input that is a direct user action, not inferred.
+  /// Never automatically set by any scoring/detection service.
+  pinned               Boolean           @default(false)
+  /// Bumped by MemoryRetrievalService each time this memory is actually selected into a
+  /// recommendation result — used by ranking's frequency factor (Phase 7). Never bumped by a
+  /// mere `list()`/`timeline()` read (those already have their own VIEWED audit action).
+  referencedCount      Int               @default(0)
+
   versions             MemoryVersion[]
 
   @@index([userId, status, createdAt])
   @@index([userId, type, createdAt])
   @@index([userId, createdAt])
+  @@index([userId, status, importanceScore])
   @@map("memories")
 }
 
@@ -580,4 +606,124 @@ model MemoryAudit {
   @@index([userId, createdAt])
   @@index([memoryId, createdAt])
   @@map("memory_audits")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 3B — Memory Intelligence. Turns Memory Foundation's storage layer into
+// a deterministic decision layer: importance scoring, duplicate detection,
+// conflict detection, merge suggestions, retrieval policy, ranking, and
+// context budgeting. Explicitly NOT semantic: no embeddings, no vector
+// database, no RAG, no knowledge graph, no LLM-generated decisions anywhere in
+// this section. See docs/architecture/memory-intelligence.md.
+// ---------------------------------------------------------------------------
+
+enum MemoryDuplicateMatchType {
+  EXACT
+  NORMALIZED
+  STRUCTURED
+  TYPE_SPECIFIC
+}
+
+enum MemoryDuplicateStatus {
+  PENDING
+  DISMISSED
+  MERGED
+}
+
+enum MemoryConflictStatus {
+  CONFLICT
+  SUPERSEDED
+}
+
+enum MemoryMergeSuggestionStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+/// Pairwise duplicate finding between two of the caller's own ACCEPTED memories, computed
+/// on demand by MemoryDuplicateService (no background job — see memory-intelligence.md
+/// "Duplicate policy"). `similarity` is a deterministic normalized-text/structural overlap
+/// score (0-100) — never an embedding distance. A duplicate is never merged by this row's
+/// mere existence; see MemoryMergeSuggestion for the (also never-automatic) next step.
+model MemoryDuplicate {
+  id         String                   @id @default(cuid())
+  userId     String
+  user       User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memoryAId  String
+  memoryBId  String
+  matchType  MemoryDuplicateMatchType
+  similarity Int
+  status     MemoryDuplicateStatus    @default(PENDING)
+  detectedAt DateTime                 @default(now())
+  resolvedAt DateTime?
+
+  @@unique([memoryAId, memoryBId])
+  @@index([userId, status])
+  @@map("memory_duplicates")
+}
+
+/// Pairwise conflict between two of the caller's own ACCEPTED memories — deterministic,
+/// structural contradiction detection (e.g. two current-location facts that cannot both be
+/// true). `NONE` is never a stored value: the absence of a row for a pair of memories *is*
+/// "no conflict." `SUPERSEDED` marks the case where the newer memory is a clear replacement
+/// of the older one (e.g. "I moved to Osaka" superseding "I live in Tokyo") rather than a
+/// live contradiction — see memory-intelligence.md "Conflict policy". This sprint is
+/// detection-only (Phase 9 exposes a read-only `GET /memory/conflicts`, no resolve mutation) —
+/// there is no third "resolved" status here; a future sprint that adds explicit conflict
+/// resolution should extend this model then, not speculatively now.
+model MemoryConflict {
+  id         String               @id @default(cuid())
+  userId     String
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memoryAId  String
+  memoryBId  String
+  status     MemoryConflictStatus @default(CONFLICT)
+  reason     String
+  detectedAt DateTime             @default(now())
+
+  @@unique([memoryAId, memoryBId])
+  @@index([userId, status])
+  @@map("memory_conflicts")
+}
+
+/// A suggestion — never an automatic action — to merge `duplicateMemoryId` into
+/// `primaryMemoryId`, generated from a MemoryDuplicate finding. Accepting archives the
+/// duplicate memory (reversible, per Sprint 3A's existing archive semantics) and keeps the
+/// primary; this sprint does not synthesize new merged content (no LLM/content generation).
+/// `confidence`/`reason` are both deterministic outputs of MemoryMergeSuggestionService — see
+/// memory-intelligence.md "Merge policy".
+model MemoryMergeSuggestion {
+  id                String                      @id @default(cuid())
+  userId            String
+  user              User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  primaryMemoryId   String
+  duplicateMemoryId String
+  confidence        Int
+  reason            String
+  status            MemoryMergeSuggestionStatus @default(PENDING)
+  createdAt         DateTime                    @default(now())
+  resolvedAt        DateTime?
+
+  @@unique([primaryMemoryId, duplicateMemoryId])
+  @@index([userId, status])
+  @@map("memory_merge_suggestions")
+}
+
+/// Observability only for the retrieval policy (Phase 5/6/9) — structural counts and
+/// latency, never memory content or the memories' ids/titles/summaries themselves. See
+/// memory-intelligence.md "Observability".
+model MemoryRetrievalLog {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  candidateCount Int
+  retrievedCount Int
+  tokenBudget    Int
+  tokenUsed      Int
+  latencyMs      Int
+  createdAt      DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("memory_retrieval_logs")
 }
