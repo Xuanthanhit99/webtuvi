@@ -122,6 +122,11 @@ apps/
                   versioning, audit, timeline, export; see
                   docs/architecture/memory-engine.md. MemoryNote (Sprint 1) is
                   kept read-only for the Dashboard's legacy fallback only.
+      journal/    Journal Foundation (Sprint 4A) — a first-class, user-authored
+                  writing space: CRUD, lifecycle (draft/published/archived/
+                  soft-deleted), draft autosave, revisions, timeline, search,
+                  export; see docs/architecture/journal-foundation.md. No
+                  AI-generated content, no embeddings/semantic search.
       users/      Profile + preferences
       common/     Guards, filters, interceptors, shared utils
     prisma/       Schema, migrations, dev seed

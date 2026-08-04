@@ -14,7 +14,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: Home },
   { label: 'Companion', href: '/companion', icon: MessageCircle },
-  { label: 'Journal', href: '/journal', icon: NotebookPen, comingSoon: true },
+  { label: 'Journal', href: '/journal', icon: NotebookPen },
   { label: 'Discover', href: '/discover', icon: Compass, comingSoon: true },
   { label: 'Settings', href: '/settings', icon: Settings },
 ];

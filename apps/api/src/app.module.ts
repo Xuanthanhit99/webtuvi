@@ -18,6 +18,7 @@ import { OnboardingModule } from './onboarding/onboarding.module';
 import { MemoryModule } from './memory/memory.module';
 import { CompanionModule } from './companion/companion.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { JournalModule } from './journal/journal.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     AuthModule,
     MemoryModule,
     OnboardingModule,
+    JournalModule,
     CompanionModule,
     DashboardModule,
   ],

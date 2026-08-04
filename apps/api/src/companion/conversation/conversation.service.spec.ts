@@ -17,6 +17,10 @@ function makeForgetMock() {
   return { evaluate: jest.fn(async () => null) };
 }
 
+function makeJournalSuggestionMock() {
+  return { evaluate: jest.fn(async () => null) };
+}
+
 function makePrismaMock() {
   const conversations = new Map<string, { id: string; userId: string; title: string | null; status: string; createdAt: Date; updatedAt: Date }>();
   const messages: { id: string; conversationId: string; role: string; content: string; createdAt: Date }[] = [];
@@ -80,6 +84,7 @@ describe('ConversationService', () => {
       makeCostControlMock(),
       makeMemorySuggestionMock() as never,
       makeForgetMock() as never,
+      makeJournalSuggestionMock() as never,
     );
   });
 
@@ -140,6 +145,7 @@ describe('ConversationService', () => {
       makeCostControlMock(false),
       makeMemorySuggestionMock() as never,
       makeForgetMock() as never,
+      makeJournalSuggestionMock() as never,
     );
     const conversation = await overBudgetService.create('user-1', undefined);
 
@@ -155,6 +161,7 @@ describe('ConversationService', () => {
       makeCostControlMock(false),
       makeMemorySuggestionMock() as never,
       makeForgetMock() as never,
+      makeJournalSuggestionMock() as never,
     );
     const conversation = await overBudgetService.create('user-1', undefined);
 

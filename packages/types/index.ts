@@ -217,6 +217,8 @@ export interface SendConversationMessageResultDto {
   requiresGeneration: boolean;
   memorySuggestion: MemorySuggestionDto | null;
   forgetSuggestion: ForgetSuggestionDto | null;
+  /** Sprint 4A, Phase 8 — see JournalSuggestionDto below. */
+  journalSuggestion: JournalSuggestionDto | null;
 }
 
 // --- Memory Foundation (Sprint 3A). Structural trust layer only — no
@@ -436,6 +438,92 @@ export interface RetrievalResultDto {
   candidateCount: number;
   budget: ContextBudgetDto;
   tokenUsed: number;
+}
+
+// --- Journal Foundation (Sprint 4A). A first-class, user-authored writing space — no
+// AI-generated content, no automatic summarization, no mood analytics, no embeddings/semantic
+// search anywhere here. See docs/architecture/journal-foundation.md. ---
+
+export type JournalStateValue = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED' | 'DELETED';
+export type JournalVisibilityValue = 'PRIVATE' | 'SHARED';
+export type JournalMoodValue = 'GREAT' | 'GOOD' | 'OKAY' | 'LOW' | 'DIFFICULT';
+export type JournalSourceTypeValue = 'USER' | 'COMPANION_SUGGESTED';
+
+export interface JournalEntryDto {
+  id: string;
+  title: string;
+  content: string;
+  state: JournalStateValue;
+  visibility: JournalVisibilityValue;
+  mood: JournalMoodValue | null;
+  tags: string[];
+  pinned: boolean;
+  wordCount: number;
+  readingTimeMinutes: number;
+  version: number;
+  sourceType: JournalSourceTypeValue;
+  sourceConversationId: string | null;
+  sourceMessageId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+  archivedAt: string | null;
+}
+
+export interface JournalRevisionDto {
+  version: number;
+  title: string;
+  content: string;
+  mood: JournalMoodValue | null;
+  tags: string[];
+  changeReason: string;
+  createdAt: string;
+}
+
+export interface ListJournalResultDto {
+  items: JournalEntryDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface JournalTimelineItemDto extends JournalEntryDto {
+  groupKey: string;
+  groupLabel: string;
+}
+
+export interface JournalTimelineResultDto {
+  items: JournalTimelineItemDto[];
+  nextCursor: string | null;
+}
+
+export interface JournalAutosaveResultDto {
+  entry: JournalEntryDto;
+  savedAt: string;
+}
+
+export interface JournalMarkdownExportDto {
+  filename: string;
+  content: string;
+}
+
+export interface JournalAccountExportResultDto {
+  exportedAt: string;
+  entries: JournalEntryDto[];
+}
+
+export interface JournalAccountExportJobDto {
+  jobId: string;
+  status: 'completed';
+  result: JournalAccountExportResultDto;
+}
+
+/** Sprint 4A, Phase 8 — Companion "This might be worth saving as a journal entry" suggestion.
+ * Never contains generated content: `excerpt` is a truncated slice of the user's own real
+ * message, nothing synthesized. */
+export interface JournalSuggestionDto {
+  excerpt: string;
+  reason: string;
 }
 
 export interface ApiErrorShape {

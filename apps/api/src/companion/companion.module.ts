@@ -14,22 +14,27 @@ import { ProviderOrchestratorService } from './providers/provider-orchestrator.s
 import { GenerationLockService } from './concurrency/generation-lock.service';
 import { ActivitiesModule } from '../activities/activities.module';
 import { MemoryModule } from '../memory/memory.module';
+import { JournalModule } from '../journal/journal.module';
 import { MemoryContextAssembler } from './memory/memory-context-assembler.service';
 import { MemoryExplanationService } from './memory/memory-explanation.service';
 import { MemorySuggestionService } from './memory/memory-suggestion.service';
 import { CompanionForgetService } from './memory/companion-forget.service';
 import { CompanionMemoryController } from './memory/companion-memory.controller';
+import { CompanionJournalService } from './journal/companion-journal.service';
+import { CompanionJournalController } from './journal/companion-journal.controller';
 
 /**
- * Companion Core (Sprint 2B) + Companion/Memory Integration (Sprint 3C). Still not a Memory
- * Engine itself: no embeddings, no vector store, no semantic search anywhere here — the memory
- * pieces in this module (`memory/`) are integration glue, calling into Memory Intelligence
- * (`MemoryModule`, imported below) rather than reimplementing anything. See
- * docs/architecture/companion-core.md and docs/architecture/companion-memory-integration.md.
+ * Companion Core (Sprint 2B) + Companion/Memory Integration (Sprint 3C) + Companion/Journal
+ * Integration (Sprint 4A). Still not a Memory Engine or a Reflection Engine: no embeddings, no
+ * vector store, no semantic search, no AI-generated journal content anywhere here — the
+ * memory/journal pieces in this module are integration glue, calling into Memory Intelligence
+ * (`MemoryModule`) and Journal Foundation (`JournalModule`) rather than reimplementing anything.
+ * See docs/architecture/companion-core.md, docs/architecture/companion-memory-integration.md,
+ * and docs/architecture/journal-foundation.md.
  */
 @Module({
-  imports: [ActivitiesModule, MemoryModule],
-  controllers: [ConversationController, StreamController, CompanionMemoryController],
+  imports: [ActivitiesModule, MemoryModule, JournalModule],
+  controllers: [ConversationController, StreamController, CompanionMemoryController, CompanionJournalController],
   providers: [
     ConversationService,
     StreamService,
@@ -46,6 +51,7 @@ import { CompanionMemoryController } from './memory/companion-memory.controller'
     MemoryExplanationService,
     MemorySuggestionService,
     CompanionForgetService,
+    CompanionJournalService,
   ],
 })
 export class CompanionModule {}

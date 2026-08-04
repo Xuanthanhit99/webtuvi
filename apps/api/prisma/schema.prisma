@@ -52,6 +52,7 @@ model User {
   memoryConflicts       MemoryConflict[]
   memoryMergeSuggestions MemoryMergeSuggestion[]
   memoryRetrievalLogs   MemoryRetrievalLog[]
+  journalEntries        JournalEntry[]
 
   @@map("users")
 }
@@ -141,6 +142,10 @@ model UserPreference {
   memoryPreference    MemoryPreference    @default(ASK_BEFORE_SAVING)
   reflectionFrequency ReflectionFrequency @default(NOT_SURE_YET)
   checkInTime         String?
+  /// Sprint 4A — "Never suggest again" on a Companion journal suggestion. A single toggle, not a
+  /// per-type consent table like Memory's: journal suggestions come from one deterministic
+  /// detector, not eighteen memory types, so there is no per-type dimension to gate.
+  journalSuggestionsEnabled Boolean       @default(true)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 
@@ -726,4 +731,124 @@ model MemoryRetrievalLog {
 
   @@index([userId, createdAt])
   @@map("memory_retrieval_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 4A — Journal Foundation. A first-class, user-authored writing space:
+// data model, lifecycle, versioning, search, export, draft system. Explicitly
+// NOT the Reflection Engine: no AI-generated journal content, no automatic
+// summarization, no mood analytics, no embeddings, no vector database, no
+// semantic search, no RAG anywhere in this section. See
+// docs/architecture/journal-foundation.md.
+// ---------------------------------------------------------------------------
+
+/// Deliberately a soft-delete lifecycle, unlike Memory's hard delete — see
+/// docs/architecture/journal-foundation.md "Lifecycle" for why these are different features with
+/// different stated requirements. DRAFT -> PUBLISHED are the only two "live authoring" states;
+/// ARCHIVED and DELETED are both reversible via restore() (see JournalEntry.previousState).
+enum JournalState {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  DELETED
+}
+
+/// SHARED is stored but not functionally implemented this sprint — no recipient model, no share
+/// link, no actual visibility change to any other user. Future-ready field only, per the brief's
+/// own "Shared (future-ready only)" wording. Mirrors Memory's own COMPANION_ALLOWED precedent of
+/// a visibility value that exists before its full mechanism does.
+enum JournalVisibility {
+  PRIVATE
+  SHARED
+}
+
+/// Fixed, self-selected only — never inferred, scored, or trended. Mood analytics is explicitly
+/// out of scope this sprint (see the mission's own non-goals list).
+enum JournalMood {
+  GREAT
+  GOOD
+  OKAY
+  LOW
+  DIFFICULT
+}
+
+/// How an entry came to exist. COMPANION_SUGGESTED never means Companion wrote the content — it
+/// means the *draft* originated from a user-clicked "Save as Journal" suggestion button, carrying
+/// over the user's own already-sent message text verbatim. See
+/// docs/architecture/journal-foundation.md "Companion integration".
+enum JournalSourceType {
+  USER
+  COMPANION_SUGGESTED
+}
+
+/// A user-owned, freeform, versioned journal entry. Ownership is enforced on every read/write —
+/// see docs/security/journal-privacy.md "Ownership". Content is markdown text; rendering to HTML
+/// happens client-side only (no server-side HTML generation/sanitization pipeline this sprint
+/// beyond escaping when displayed as plain text).
+model JournalEntry {
+  id                    String            @id @default(cuid())
+  userId                String
+  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title                 String
+  content               String
+  state                 JournalState      @default(DRAFT)
+  /// Set only when transitioning into ARCHIVED or DELETED — restore() always returns to exactly
+  /// this state, never a guessed/default one. Null otherwise.
+  previousState         JournalState?
+  visibility            JournalVisibility @default(PRIVATE)
+  mood                  JournalMood?
+  tags                  String[]          @default([])
+  /// Manual pin only — never automatically set. Surfaced in the timeline's "Pinned" section
+  /// (Phase 4), same spirit as Memory.pinned.
+  pinned                Boolean           @default(false)
+  /// Recomputed server-side on every save from `content` — used by search result display and the
+  /// editor's own count without trusting a client-supplied number.
+  wordCount             Int               @default(0)
+  /// Bumped only when a new JournalRevision snapshot is taken (see JournalRevision) — never on a
+  /// silent autosave tick. Mirrors Memory.version's "meaningful edit" semantics.
+  version               Int               @default(1)
+  sourceType            JournalSourceType @default(USER)
+  /// Plain string references, not enforced FKs — same reasoning as Memory's own
+  /// sourceConversationId/sourceMessageId: Conversation/ConversationMessage belong to the
+  /// Companion module, ownership is verified in application code at creation time, never trusted
+  /// from the client, never enforced via a cross-module DB constraint.
+  sourceConversationId  String?
+  sourceMessageId       String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  publishedAt           DateTime?
+  archivedAt            DateTime?
+  deletedAt             DateTime?
+
+  revisions             JournalRevision[]
+
+  @@index([userId, state, createdAt])
+  @@index([userId, state, pinned, createdAt])
+  @@index([userId, createdAt])
+  @@map("journal_entries")
+}
+
+/// One row per meaningful edit (see journal-foundation.md "Revisions" for exactly when a
+/// revision is/isn't created) — a full content snapshot, unlike an audit-style event trail.
+/// Cascades with its parent JournalEntry: a revision has no meaning independent of the entry it
+/// documents the history of (unlike MemoryAudit, which deliberately survives its parent's
+/// deletion — Journal's soft-delete means the parent row itself never actually disappears while
+/// its revisions would still be needed, so there is no equivalent "audit must outlive the row"
+/// requirement here).
+model JournalRevision {
+  id           String       @id @default(cuid())
+  journalId    String
+  journal      JournalEntry @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  version      Int
+  title        String
+  content      String
+  mood         JournalMood?
+  tags         String[]     @default([])
+  /// Plain-language reason, e.g. "published", "edited" — never a diff, never inferred.
+  changeReason String
+  createdAt    DateTime     @default(now())
+
+  @@unique([journalId, version])
+  @@index([journalId, createdAt])
+  @@map("journal_revisions")
 }

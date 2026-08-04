@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CompanionMemoryUsageDto, ConversationMessageDto, ForgetSuggestionDto, MemorySuggestionDto } from '@beaconvie/types';
+import type { CompanionMemoryUsageDto, ConversationMessageDto, ForgetSuggestionDto, JournalSuggestionDto, MemorySuggestionDto } from '@beaconvie/types';
 import { conversationsApi } from '../api/conversations-api';
 import { ApiError } from '@/lib/api-error';
 
@@ -33,6 +33,12 @@ export interface PendingForgetSuggestion {
   suggestion: ForgetSuggestionDto;
 }
 
+export interface PendingJournalSuggestion {
+  suggestion: JournalSuggestionDto;
+  sourceConversationId: string;
+  sourceMessageId: string;
+}
+
 /** Ephemeral "why I ignored" data for the message that was *just* generated — never available
  * again after this, including on reload (see StreamService's "never persisted" decision). */
 export interface LastTurnMemoryUsage {
@@ -58,6 +64,7 @@ export function useCompanionConversation(conversationId: string | null) {
   const [draft, setDraft] = useState('');
   const [pendingMemorySuggestion, setPendingMemorySuggestion] = useState<PendingMemorySuggestion | null>(null);
   const [pendingForgetSuggestion, setPendingForgetSuggestion] = useState<PendingForgetSuggestion | null>(null);
+  const [pendingJournalSuggestion, setPendingJournalSuggestion] = useState<PendingJournalSuggestion | null>(null);
   const [lastTurnMemoryUsage, setLastTurnMemoryUsage] = useState<LastTurnMemoryUsage | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null);
 
@@ -155,6 +162,11 @@ export function useCompanionConversation(conversationId: string | null) {
             : null,
         );
         setPendingForgetSuggestion(result.forgetSuggestion ? { suggestion: result.forgetSuggestion } : null);
+        setPendingJournalSuggestion(
+          result.journalSuggestion
+            ? { suggestion: result.journalSuggestion, sourceConversationId: id, sourceMessageId: result.userMessage.id }
+            : null,
+        );
 
         if (!result.requiresGeneration) {
           if (result.assistantMessage) setMessages((prev) => [...prev, result.assistantMessage!]);
@@ -219,6 +231,8 @@ export function useCompanionConversation(conversationId: string | null) {
     clearMemorySuggestion: useCallback(() => setPendingMemorySuggestion(null), []),
     pendingForgetSuggestion,
     clearForgetSuggestion: useCallback(() => setPendingForgetSuggestion(null), []),
+    pendingJournalSuggestion,
+    clearJournalSuggestion: useCallback(() => setPendingJournalSuggestion(null), []),
     lastTurnMemoryUsage,
   };
 }

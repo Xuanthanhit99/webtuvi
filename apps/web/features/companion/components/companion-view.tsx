@@ -12,6 +12,7 @@ import { ConversationSidebar } from './conversation-sidebar';
 import { MessageItem, StreamingMessageItem } from './message-item';
 import { MemorySuggestionCard } from './memory-suggestion-card';
 import { ForgetSuggestionCard } from './forget-suggestion-card';
+import { JournalSuggestionCard } from './journal-suggestion-card';
 import { Composer } from './composer';
 import { IconButton } from '@/components/ui/icon-button';
 import { Dialog } from '@/components/ui/dialog';
@@ -85,6 +86,8 @@ export function CompanionView() {
     clearMemorySuggestion,
     pendingForgetSuggestion,
     clearForgetSuggestion,
+    pendingJournalSuggestion,
+    clearJournalSuggestion,
     lastTurnMemoryUsage,
   } = useCompanionConversation(activeId);
 
@@ -198,6 +201,15 @@ export function CompanionView() {
                 )}
                 {pendingForgetSuggestion && (
                   <ForgetSuggestionCard suggestion={pendingForgetSuggestion.suggestion} onResolved={clearForgetSuggestion} />
+                )}
+                {/* Phase 8 — same "surfaced once, never automatic" rule as the memory cards above. */}
+                {activeId && pendingJournalSuggestion && (
+                  <JournalSuggestionCard
+                    suggestion={pendingJournalSuggestion.suggestion}
+                    sourceConversationId={pendingJournalSuggestion.sourceConversationId}
+                    sourceMessageId={pendingJournalSuggestion.sourceMessageId}
+                    onResolved={clearJournalSuggestion}
+                  />
                 )}
               </div>
 

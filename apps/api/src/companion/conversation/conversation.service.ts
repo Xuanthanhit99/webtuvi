@@ -6,6 +6,7 @@ import { SafetyService } from '../safety/safety.service';
 import { CostControlService } from '../cost/cost-control.service';
 import { MemorySuggestionService, type MemorySuggestionDto } from '../memory/memory-suggestion.service';
 import { CompanionForgetService, type ForgetSuggestionDto } from '../memory/companion-forget.service';
+import { CompanionJournalService, type JournalSuggestionResult } from '../journal/companion-journal.service';
 
 export interface SendMessageResult {
   userMessage: ConversationMessageDto;
@@ -20,6 +21,11 @@ export interface SendMessageResult {
   /** Sprint 3C, Phase 5 — detected forget-intent, never executed without a separate, explicit
    * confirmation call (see CompanionMemoryController). */
   forgetSuggestion: ForgetSuggestionDto | null;
+  /** Sprint 4A, Phase 8 — "This might be worth saving as a journal entry." Never persisted by
+   * itself; "Save as Journal" is what actually creates a (draft) journal entry (see
+   * CompanionJournalController). Null whenever nothing matched or the user has turned journal
+   * suggestions off entirely ("Never suggest again"). */
+  journalSuggestion: JournalSuggestionResult | null;
 }
 
 const RECENT_MESSAGES_PREVIEW = 1;
@@ -32,6 +38,7 @@ export class ConversationService {
     private readonly costControl: CostControlService,
     private readonly memorySuggestion: MemorySuggestionService,
     private readonly forget: CompanionForgetService,
+    private readonly journalSuggestion: CompanionJournalService,
   ) {}
 
   async create(userId: string, title: string | undefined): Promise<ConversationDto> {
@@ -106,23 +113,25 @@ export class ConversationService {
         userMessage: toMessageDto(userMessage),
         assistantMessage: toMessageDto(assistantMessage),
         requiresGeneration: false,
-        // A safety-refused message is never evaluated for a memory suggestion or forget-intent
-        // — it was never actually processed as real conversational content.
+        // A safety-refused message is never evaluated for a memory/journal suggestion or
+        // forget-intent — it was never actually processed as real conversational content.
         memorySuggestion: null,
         forgetSuggestion: null,
+        journalSuggestion: null,
       };
     }
 
-    // Sprint 3C, Phases 4/5 — deterministic, non-LLM heuristics only (see
-    // memory-suggestion-detector.ts/forget-intent-detector.ts). Neither ever saves, deletes, or
-    // changes consent by itself; both are pure "here's what I noticed" signals the frontend
-    // renders as an explicit choice.
-    const [memorySuggestion, forgetSuggestion] = await Promise.all([
+    // Sprint 3C Phases 4/5 + Sprint 4A Phase 8 — deterministic, non-LLM heuristics only (see
+    // memory-suggestion-detector.ts/forget-intent-detector.ts/journal-suggestion-detector.ts).
+    // None of these ever saves, deletes, or changes consent/settings by itself; all three are
+    // pure "here's what I noticed" signals the frontend renders as an explicit choice.
+    const [memorySuggestion, forgetSuggestion, journalSuggestion] = await Promise.all([
       this.memorySuggestion.evaluate(userId, content),
       this.forget.evaluate(userId, conversationId, content),
+      this.journalSuggestion.evaluate(userId, content),
     ]);
 
-    return { userMessage: toMessageDto(userMessage), assistantMessage: null, requiresGeneration: true, memorySuggestion, forgetSuggestion };
+    return { userMessage: toMessageDto(userMessage), assistantMessage: null, requiresGeneration: true, memorySuggestion, forgetSuggestion, journalSuggestion };
   }
 
   /** Ownership check shared by every mutating/reading method — 404 (not 403) for someone else's conversation, so existence can't be probed. */
