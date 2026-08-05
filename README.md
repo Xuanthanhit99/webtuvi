@@ -127,6 +127,11 @@ apps/
                   soft-deleted), draft autosave, revisions, timeline, search,
                   export; see docs/architecture/journal-foundation.md. No
                   AI-generated content, no embeddings/semantic search.
+      reflection/ Reflection Foundation (Sprint 4B) — a deterministic rule
+                  engine that turns Journal/Memory/Activity/Companion data
+                  into Reflection Candidates: grouping, scoring, timeline,
+                  feed; see docs/architecture/reflection-foundation.md. No
+                  AI-generated reflections, no reports, no embeddings.
       users/      Profile + preferences
       common/     Guards, filters, interceptors, shared utils
     prisma/       Schema, migrations, dev seed
@@ -154,7 +159,12 @@ development only and is structurally blocked from running in production
 Foundation), Memory has its own consent engine, candidate lifecycle, CRUD,
 versioning, audit trail, timeline, and export — deliberately **not** yet Memory
 *intelligence* (no embeddings, vector search, RAG, or automatic extraction); see
-`docs/architecture/memory-engine.md`.
+`docs/architecture/memory-engine.md`. As of Sprint 4B (Reflection Foundation),
+`/reflections` shows deterministic Reflection Candidates — patterns a fixed
+rule engine finds across Journal, Memory, Activity, and Companion data, each
+citing its real sources and a documented, weighted score — deliberately
+**not** AI-generated reflections, summaries, coaching, or reports; see
+`docs/architecture/reflection-foundation.md`.
 
 Two things remain deliberately simplified (and disclosed, not hidden):
 

@@ -124,6 +124,21 @@ export default function SettingsPage() {
         </div>
       </Card>
 
+      <Card className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-body-sm font-semibold text-text-secondary">Reflections</p>
+          <p className="text-body-sm text-text-secondary">
+            Deterministic patterns BeaconVie has noticed in your journal, memories, and goals — never AI-generated, always
+            with the reason and evidence shown.
+          </p>
+        </div>
+        <Link href="/reflections">
+          <Button variant="secondary" size="sm">
+            View my reflections
+          </Button>
+        </Link>
+      </Card>
+
       <Card>
         <p className="mb-2 text-body-sm font-semibold text-text-secondary">More settings</p>
         <p className="text-body-sm text-text-secondary">

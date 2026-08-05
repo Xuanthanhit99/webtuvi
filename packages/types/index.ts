@@ -526,6 +526,100 @@ export interface JournalSuggestionDto {
   reason: string;
 }
 
+// --- Reflection Foundation (Sprint 4B). Deterministic Reflection Candidates built from existing
+// user-owned data (Journal, Memory, Activity, Companion). No AI-generated reflections, no
+// summaries/coaching, no reports, no mood/habit prediction, no embeddings/semantic search
+// anywhere here. See docs/architecture/reflection-foundation.md. ---
+
+export type ReflectionCategoryValue = 'GOAL' | 'TOPIC' | 'JOURNAL' | 'WELLBEING' | 'ALIGNMENT' | 'MISMATCH' | 'INACTIVITY';
+
+export type ReflectionTriggerValue =
+  | 'REPEATED_TOPIC'
+  | 'REPEATED_GOAL'
+  | 'LONG_INACTIVITY'
+  | 'GOAL_REGRESSION'
+  | 'POSITIVE_STREAK'
+  | 'NEGATIVE_STREAK'
+  | 'REPEATED_JOURNAL_THEME'
+  | 'MEMORY_JOURNAL_ALIGNMENT'
+  | 'GOAL_ACTIVITY_MISMATCH';
+
+export type ReflectionStateValue = 'NEW' | 'READY' | 'DISMISSED' | 'ARCHIVED' | 'EXPIRED';
+export type ReflectionWindowValue = 'DAY' | 'WEEK' | 'MONTH' | 'CUSTOM';
+export type ReflectionVisibilityValue = 'PRIVATE' | 'COMPANION_VISIBLE';
+export type ReflectionSourceTypeValue = 'JOURNAL' | 'MEMORY' | 'ACTIVITY' | 'COMPANION';
+export type ReflectionSortValue = 'score' | 'recency' | 'category';
+export type ReflectionTimelineBucketValue = 'today' | 'this_week' | 'last_week' | 'last_month' | 'earlier';
+
+export interface ReflectionSourceDto {
+  sourceType: ReflectionSourceTypeValue;
+  sourceId: string;
+  sourceTimestamp: string;
+}
+
+export interface ReflectionCandidateDto {
+  id: string;
+  category: ReflectionCategoryValue;
+  trigger: ReflectionTriggerValue;
+  state: ReflectionStateValue;
+  window: ReflectionWindowValue;
+  windowStart: string;
+  windowEnd: string;
+  reason: string;
+  score: number;
+  scoreExplanation: string[];
+  groupKey: string;
+  visibility: ReflectionVisibilityValue;
+  pinned: boolean;
+  sources: ReflectionSourceDto[];
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+  expiredAt: string | null;
+}
+
+export interface ListReflectionsResultDto {
+  items: ReflectionCandidateDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface ReflectionTimelineItemDto extends ReflectionCandidateDto {
+  bucket: ReflectionTimelineBucketValue;
+}
+
+export interface ReflectionTimelineResultDto {
+  items: ReflectionTimelineItemDto[];
+}
+
+export interface ReflectionGroupDto {
+  groupKey: string;
+  category: ReflectionCategoryValue;
+  trigger: ReflectionTriggerValue;
+  count: number;
+  averageScore: number;
+  topScore: number;
+  latest: ReflectionCandidateDto;
+}
+
+export interface ReflectionStatisticsDto {
+  total: number;
+  byState: Record<ReflectionStateValue, number>;
+  byCategory: Partial<Record<ReflectionCategoryValue, number>>;
+  byTrigger: Partial<Record<ReflectionTriggerValue, number>>;
+  dismissalRate: number;
+  archiveRate: number;
+}
+
+/** Sprint 4B, Phase 10 — Companion's one read-only Reflection surface: whether a READY,
+ * Companion-visible candidate currently exists. Never the candidate's content. */
+export interface ReflectionHintDto {
+  available: boolean;
+  reflectionId: string | null;
+  category: ReflectionCategoryValue | null;
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {

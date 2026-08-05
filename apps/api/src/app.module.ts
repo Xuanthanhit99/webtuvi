@@ -19,6 +19,7 @@ import { MemoryModule } from './memory/memory.module';
 import { CompanionModule } from './companion/companion.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { JournalModule } from './journal/journal.module';
+import { ReflectionModule } from './reflection/reflection.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { JournalModule } from './journal/journal.module';
     MemoryModule,
     OnboardingModule,
     JournalModule,
+    ReflectionModule,
     CompanionModule,
     DashboardModule,
   ],

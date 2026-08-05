@@ -53,6 +53,7 @@ model User {
   memoryMergeSuggestions MemoryMergeSuggestion[]
   memoryRetrievalLogs   MemoryRetrievalLog[]
   journalEntries        JournalEntry[]
+  reflectionCandidates  ReflectionCandidate[]
 
   @@map("users")
 }
@@ -851,4 +852,165 @@ model JournalRevision {
   @@unique([journalId, version])
   @@index([journalId, createdAt])
   @@map("journal_revisions")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 4B — Reflection Foundation. Deterministic Reflection Candidates built
+// from existing user-owned data (Journal, Memory, Activity, Companion — see
+// "Goals" note below). Explicitly NOT AI: no LLM-generated reflections, no AI
+// summaries/coaching, no weekly/monthly reports, no mood/habit prediction, no
+// embeddings, no pgvector, no vector database, no semantic search, no RAG, no
+// knowledge graph, no autonomous agents. See docs/architecture/reflection-foundation.md.
+//
+// "Goals" data source: this repository has no dedicated Goal model (confirmed during this
+// sprint's Phase 0 audit — see docs/progress/sprint-4b-progress.md). Memory Intelligence
+// (Sprint 3B) already treats MemoryType GOAL/ACHIEVEMENT/CHALLENGE as "goal-relation" memories;
+// this sprint follows that precedent rather than fabricating a new entity. A "goal" reflection
+// source is always a real Memory row of one of those three types.
+// ---------------------------------------------------------------------------
+
+/// The life area a candidate is about — used for Phase 4 grouping and feed/timeline filtering.
+enum ReflectionCategory {
+  GOAL
+  TOPIC
+  JOURNAL
+  WELLBEING
+  ALIGNMENT
+  MISMATCH
+  INACTIVITY
+}
+
+/// Which deterministic rule produced this candidate — see ReflectionRuleEngine. Every value maps
+/// to exactly one rule function; the candidate's `reason` is that rule's own plain-language
+/// explanation of why it fired, never inferred after the fact.
+enum ReflectionTrigger {
+  REPEATED_TOPIC
+  REPEATED_GOAL
+  LONG_INACTIVITY
+  GOAL_REGRESSION
+  POSITIVE_STREAK
+  NEGATIVE_STREAK
+  REPEATED_JOURNAL_THEME
+  MEMORY_JOURNAL_ALIGNMENT
+  GOAL_ACTIVITY_MISMATCH
+}
+
+/// NEW/EXPIRED exist on this shared enum for forward-compatibility with the literal Sprint 4B
+/// spec, mirroring MemoryStatus's own disclosed precedent (memory-engine.md) — in practice a
+/// candidate is created directly as READY (rule+score computation is synchronous, so there is no
+/// window where a "not yet scored" row would need to exist) and only ever moves to
+/// DISMISSED/ARCHIVED (explicit user action) or EXPIRED (a cited source became invalid — see
+/// "Privacy" in reflection-foundation.md). NEW is reserved, not assigned, this sprint.
+enum ReflectionState {
+  NEW
+  READY
+  DISMISSED
+  ARCHIVED
+  EXPIRED
+}
+
+/// The time granularity ReflectionRuleEngine scanned at when this candidate was generated —
+/// distinct from the Timeline's own read-time Today/This week/Last week/Last month grouping
+/// (computed live from createdAt, like Memory's timeline; see ReflectionTimelineService).
+enum ReflectionWindow {
+  DAY
+  WEEK
+  MONTH
+  CUSTOM
+}
+
+/// PRIVATE: owner-only, never referenced by Companion's "you may want to reflect on this" hint.
+/// COMPANION_VISIBLE (default): Companion may notice a READY candidate exists — never its content,
+/// only that one exists — mirroring Memory's PRIVATE/COMPANION_ALLOWED precedent of a value that
+/// gates Companion-side visibility without changing who owns or can read the row itself.
+enum ReflectionVisibility {
+  PRIVATE
+  COMPANION_VISIBLE
+}
+
+/// Real source tables only — a "goal" source is always MEMORY (type GOAL/ACHIEVEMENT/CHALLENGE),
+/// never a separate, fabricated GOAL value. See the schema-section comment above.
+enum ReflectionSourceType {
+  JOURNAL
+  MEMORY
+  ACTIVITY
+  COMPANION
+}
+
+/// A deterministic Reflection Candidate — never AI-generated (see the schema-section comment
+/// above). Every row must have at least one ReflectionSourceRef; ReflectionRuleEngine never
+/// creates a candidate with zero real sources. `groupKey` is a plain, deterministic string (no
+/// semantic clustering — see reflection-foundation.md "Grouping") used by GET /reflections/groups.
+/// `dedupeKey` (trigger + groupKey + windowStart, see ReflectionGenerationService) is what makes
+/// regeneration idempotent and lets a DISMISSED/ARCHIVED decision stick — the same pattern
+/// MemoryDuplicateService already uses to never resurrect a resolved pair.
+model ReflectionCandidate {
+  id            String               @id @default(cuid())
+  userId        String
+  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      ReflectionCategory
+  trigger       ReflectionTrigger
+  state         ReflectionState      @default(READY)
+  window        ReflectionWindow
+  windowStart   DateTime
+  windowEnd     DateTime
+  /// Plain-language, deterministically templated explanation of why this rule fired — the Product
+  /// Bible's "always explain" creed, structural rather than a UI convention. Never free-text
+  /// generation.
+  reason        String
+  /// 0-100, see ReflectionScoreService. Never AI-derived — a documented, weighted sum.
+  score         Int                  @default(0)
+  /// Structural breakdown of which weighted inputs contributed to `score` (frequency/recency/
+  /// importance/goalRelevance/journalDensity/activity/pin) — mirrors Memory.importanceFactors so
+  /// the frontend can render "why this score" without recomputing.
+  scoreFactors  Json?
+  /// Deterministic grouping key (e.g. "GOAL:memory_<id>", "TOPIC:<token>") — see
+  /// reflection-foundation.md "Grouping". Never a semantic embedding key.
+  groupKey      String
+  visibility    ReflectionVisibility @default(COMPANION_VISIBLE)
+  /// Manual pin — the one direct user-action scoring input, never automatically set. Mirrors
+  /// Memory.pinned.
+  pinned        Boolean              @default(false)
+  /// trigger + groupKey + windowStart fingerprint — unique per user so regeneration is an upsert,
+  /// never a duplicate row, and a resolved (DISMISSED/ARCHIVED) decision is never overwritten.
+  dedupeKey     String
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  /// Set when the user explicitly dismisses or archives this candidate.
+  resolvedAt    DateTime?
+  /// Set when ReflectionValidityService finds a cited source is gone/deleted (Phase 11 privacy) —
+  /// distinct from resolvedAt, which is only ever set by a real user action.
+  expiredAt     DateTime?
+
+  sources       ReflectionSourceRef[]
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, state, score])
+  @@index([userId, state, createdAt])
+  @@index([userId, groupKey])
+  @@index([userId, category, state])
+  @@map("reflection_candidates")
+}
+
+/// One row per real source record a ReflectionCandidate cites. "Never fabricate sources" (Phase 1)
+/// is enforced structurally: every candidate is created with >= 1 of these, each pointing at a
+/// real, already-existing Journal/Memory/Activity/Companion row the same user owns.
+/// `sourceId`/`sourceTimestamp` are plain, unenforced references — same reasoning as Memory's own
+/// `sourceConversationId`/`sourceMessageId`: the referenced tables span multiple modules, and
+/// ownership/existence is checked in application code (ReflectionValidityService), never via a
+/// cross-module DB constraint.
+model ReflectionSourceRef {
+  id                    String               @id @default(cuid())
+  reflectionCandidateId String
+  reflectionCandidate   ReflectionCandidate  @relation(fields: [reflectionCandidateId], references: [id], onDelete: Cascade)
+  sourceType            ReflectionSourceType
+  sourceId              String
+  /// The source record's own real timestamp (e.g. createdAt) — never the moment this ref row was
+  /// written, so recency scoring/explanations reflect the underlying evidence, not this table.
+  sourceTimestamp       DateTime
+  createdAt             DateTime             @default(now())
+
+  @@index([reflectionCandidateId])
+  @@index([sourceType, sourceId])
+  @@map("reflection_source_refs")
 }

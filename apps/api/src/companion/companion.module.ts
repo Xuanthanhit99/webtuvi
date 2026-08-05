@@ -15,6 +15,7 @@ import { GenerationLockService } from './concurrency/generation-lock.service';
 import { ActivitiesModule } from '../activities/activities.module';
 import { MemoryModule } from '../memory/memory.module';
 import { JournalModule } from '../journal/journal.module';
+import { ReflectionModule } from '../reflection/reflection.module';
 import { MemoryContextAssembler } from './memory/memory-context-assembler.service';
 import { MemoryExplanationService } from './memory/memory-explanation.service';
 import { MemorySuggestionService } from './memory/memory-suggestion.service';
@@ -22,6 +23,7 @@ import { CompanionForgetService } from './memory/companion-forget.service';
 import { CompanionMemoryController } from './memory/companion-memory.controller';
 import { CompanionJournalService } from './journal/companion-journal.service';
 import { CompanionJournalController } from './journal/companion-journal.controller';
+import { CompanionReflectionController } from './reflection/companion-reflection.controller';
 
 /**
  * Companion Core (Sprint 2B) + Companion/Memory Integration (Sprint 3C) + Companion/Journal
@@ -31,10 +33,14 @@ import { CompanionJournalController } from './journal/companion-journal.controll
  * (`MemoryModule`) and Journal Foundation (`JournalModule`) rather than reimplementing anything.
  * See docs/architecture/companion-core.md, docs/architecture/companion-memory-integration.md,
  * and docs/architecture/journal-foundation.md.
+ *
+ * Sprint 4B adds `ReflectionModule` for `CompanionReflectionController`'s one read-only hint
+ * endpoint — Companion still never generates, fabricates, or summarizes a reflection; see
+ * docs/architecture/reflection-foundation.md "Companion integration".
  */
 @Module({
-  imports: [ActivitiesModule, MemoryModule, JournalModule],
-  controllers: [ConversationController, StreamController, CompanionMemoryController, CompanionJournalController],
+  imports: [ActivitiesModule, MemoryModule, JournalModule, ReflectionModule],
+  controllers: [ConversationController, StreamController, CompanionMemoryController, CompanionJournalController, CompanionReflectionController],
   providers: [
     ConversationService,
     StreamService,

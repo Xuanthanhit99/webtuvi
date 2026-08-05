@@ -13,6 +13,7 @@ import { MessageItem, StreamingMessageItem } from './message-item';
 import { MemorySuggestionCard } from './memory-suggestion-card';
 import { ForgetSuggestionCard } from './forget-suggestion-card';
 import { JournalSuggestionCard } from './journal-suggestion-card';
+import { ReflectionHintBanner } from './reflection-hint-banner';
 import { Composer } from './composer';
 import { IconButton } from '@/components/ui/icon-button';
 import { Dialog } from '@/components/ui/dialog';
@@ -159,6 +160,8 @@ export function CompanionView() {
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               </IconButton>
             </div>
+
+            <ReflectionHintBanner />
 
             <div className="relative min-h-0 flex-1">
               <div

@@ -60,6 +60,10 @@ import { MemoryIntelligenceController } from './intelligence/memory-intelligence
     // service Companion is allowed to call (via MemoryContextAssembler), never the Memory Prisma
     // model directly. See docs/architecture/companion-memory-integration.md.
     MemoryRetrievalService,
+    // Sprint 4B (Reflection Foundation) — ReflectionDataSourceService reuses this sprint's
+    // existing deterministic conflict detection for its GoalRegressionRule rather than
+    // reimplementing contradiction detection. See docs/architecture/reflection-foundation.md.
+    MemoryConflictService,
   ],
 })
 export class MemoryModule {}
