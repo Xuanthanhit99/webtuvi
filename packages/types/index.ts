@@ -620,6 +620,66 @@ export interface ReflectionHintDto {
   category: ReflectionCategoryValue | null;
 }
 
+// --- Insight Preparation Engine (Sprint 4C). Prepares deterministic Insight Candidates from
+// existing Reflection Candidates — structured evidence for a future Sprint 5, never a user-facing
+// insight itself. No LLM-generated insights, no AI summaries/coaching, no reports, no
+// recommendations, no embeddings/semantic search anywhere here. See
+// docs/architecture/insight-preparation.md. ---
+
+export type InsightCategoryValue = 'GOAL' | 'TOPIC' | 'JOURNAL' | 'WELLBEING' | 'ALIGNMENT' | 'MISMATCH' | 'INACTIVITY';
+export type InsightStatusValue = 'NOT_READY' | 'READY' | 'INSUFFICIENT_EVIDENCE' | 'ARCHIVED';
+export type InsightWindowValue = 'DAY' | 'WEEK' | 'MONTH' | 'CUSTOM';
+export type InsightRelationshipTypeValue = 'SUPPORTS' | 'CONTRADICTS' | 'CONTINUES' | 'REPEATS' | 'IMPROVES' | 'REGRESSES' | 'STAGNATES';
+
+export interface InsightEvidenceDto {
+  reflectionCandidateId: string;
+  contribution: string;
+  reflectionCategory: ReflectionCategoryValue;
+  reflectionTrigger: ReflectionTriggerValue;
+  reflectionScore: number;
+  reflectionState: ReflectionStateValue;
+}
+
+export interface InsightRelationshipDto {
+  id: string;
+  reflectionAId: string;
+  reflectionBId: string;
+  type: InsightRelationshipTypeValue;
+  reason: string;
+}
+
+export interface InsightCandidateDto {
+  id: string;
+  category: InsightCategoryValue;
+  status: InsightStatusValue;
+  window: InsightWindowValue;
+  windowStart: string;
+  windowEnd: string;
+  ruleExplanation: string;
+  priority: number;
+  priorityExplanation: string[];
+  evidence: InsightEvidenceDto[];
+  relationships: InsightRelationshipDto[];
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+}
+
+export interface ListInsightsResultDto {
+  items: InsightCandidateDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface InsightStatisticsDto {
+  total: number;
+  byStatus: Record<InsightStatusValue, number>;
+  byCategory: Partial<Record<InsightCategoryValue, number>>;
+  averagePriority: number;
+  readyCount: number;
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {

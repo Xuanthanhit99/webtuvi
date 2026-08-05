@@ -20,6 +20,7 @@ import { CompanionModule } from './companion/companion.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { JournalModule } from './journal/journal.module';
 import { ReflectionModule } from './reflection/reflection.module';
+import { InsightModule } from './insight/insight.module';
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { ReflectionModule } from './reflection/reflection.module';
     OnboardingModule,
     JournalModule,
     ReflectionModule,
+    InsightModule,
     CompanionModule,
     DashboardModule,
   ],

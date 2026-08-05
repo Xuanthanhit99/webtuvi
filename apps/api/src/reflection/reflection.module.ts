@@ -22,6 +22,12 @@ import { ReflectionHintService } from './hint/reflection-hint.service';
  * and `ReflectionValidityService`, both of which are read-only with respect to those tables.
  * `ReflectionHintService` is exported for `CompanionModule` — the one thing Companion is allowed
  * to know about Reflection: whether a `READY`, `COMPANION_VISIBLE` candidate currently exists.
+ *
+ * Sprint 4C (Insight Preparation) also imports this module, for `ReflectionGenerationService` and
+ * `ReflectionValidityService` — Insight Preparation is layered strictly on top of Reflection
+ * Foundation (every Insight Candidate references real ReflectionCandidate rows) and re-runs
+ * Reflection's own regenerate-then-revalidate pass first, so it never reads a stale or
+ * not-yet-generated Reflection layer. See docs/architecture/insight-preparation.md.
  */
 @Module({
   imports: [MemoryModule],
@@ -35,6 +41,6 @@ import { ReflectionHintService } from './hint/reflection-hint.service';
     ReflectionRecordService,
     ReflectionHintService,
   ],
-  exports: [ReflectionHintService],
+  exports: [ReflectionHintService, ReflectionGenerationService, ReflectionValidityService],
 })
 export class ReflectionModule {}

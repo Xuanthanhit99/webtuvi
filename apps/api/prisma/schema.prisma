@@ -54,6 +54,8 @@ model User {
   memoryRetrievalLogs   MemoryRetrievalLog[]
   journalEntries        JournalEntry[]
   reflectionCandidates  ReflectionCandidate[]
+  insightCandidates     InsightCandidate[]
+  insightRelationships  InsightRelationship[]
 
   @@map("users")
 }
@@ -983,6 +985,9 @@ model ReflectionCandidate {
   expiredAt     DateTime?
 
   sources       ReflectionSourceRef[]
+  insightEvidence         InsightEvidence[]
+  insightRelationshipsAsA InsightRelationship[] @relation("InsightRelationshipA")
+  insightRelationshipsAsB InsightRelationship[] @relation("InsightRelationshipB")
 
   @@unique([userId, dedupeKey])
   @@index([userId, state, score])
@@ -1013,4 +1018,163 @@ model ReflectionSourceRef {
   @@index([reflectionCandidateId])
   @@index([sourceType, sourceId])
   @@map("reflection_source_refs")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 4C — Insight Preparation Engine. Prepares deterministic Insight
+// Candidates from existing Reflection Candidates — structured evidence for a
+// future Sprint 5, never a user-facing insight itself. Explicitly NOT AI: no
+// LLM-generated insights, no AI summaries/coaching, no weekly/monthly reports,
+// no recommendations, no embeddings, no vector database, no semantic search,
+// no RAG, no autonomous agents, no prompt optimization. See
+// docs/architecture/insight-preparation.md.
+//
+// Layered strictly on top of Reflection Foundation (Sprint 4B): every
+// InsightCandidate references real ReflectionCandidate rows via
+// InsightEvidence — never Journal/Memory/Activity/Companion rows directly.
+// See docs/progress/sprint-4c-progress.md "Deliberate scope decisions".
+// ---------------------------------------------------------------------------
+
+/// Isomorphic to ReflectionCategory by design — an insight's category is the dominant category
+/// among the Reflection Candidates that make up its evidence, never a separately-invented
+/// taxonomy. Kept as its own named enum (not a reuse of ReflectionCategory) because Phase 1 of
+/// this sprint names InsightCategory as its own domain concept.
+enum InsightCategory {
+  GOAL
+  TOPIC
+  JOURNAL
+  WELLBEING
+  ALIGNMENT
+  MISMATCH
+  INACTIVITY
+}
+
+/// Exactly the four states this sprint's own brief specifies — no fifth "EXPIRED" state was
+/// added; source invalidation (Phase 8) is handled by recomputing readiness from only the
+/// still-valid evidence on every read, which naturally falls back to NOT_READY/
+/// INSUFFICIENT_EVIDENCE rather than needing a separate stored state. See
+/// InsightValidityService.
+enum InsightStatus {
+  NOT_READY
+  READY
+  INSUFFICIENT_EVIDENCE
+  ARCHIVED
+}
+
+/// The time granularity the evidence spans — same four values as ReflectionWindow, same
+/// reasoning (see reflection-foundation.md).
+enum InsightWindow {
+  DAY
+  WEEK
+  MONTH
+  CUSTOM
+}
+
+/// The seven relationship types this sprint's own brief specifies. See
+/// insight-preparation.md "Relationship Engine" for the exact, fixed classification rules —
+/// structural comparison of two ReflectionCandidates' category/trigger/groupKey/score/window
+/// only, never semantic similarity.
+enum InsightRelationshipType {
+  SUPPORTS
+  CONTRADICTS
+  CONTINUES
+  REPEATS
+  IMPROVES
+  REGRESSES
+  STAGNATES
+}
+
+/// A deterministic Insight Candidate — structured evidence prepared for a future Sprint 5, never
+/// a user-facing insight itself (no generated text beyond a plain, templated rule explanation).
+/// Every row must have >= 1 InsightEvidence; InsightGenerationService never creates a candidate
+/// with zero real evidence. `dedupeKey` (category + the cluster's anchor ReflectionCandidate id —
+/// see InsightGenerationService) makes regeneration idempotent and lets an ARCHIVED decision
+/// stick, the same pattern ReflectionCandidate.dedupeKey already uses.
+model InsightCandidate {
+  id               String                @id @default(cuid())
+  userId           String
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category         InsightCategory
+  status           InsightStatus         @default(NOT_READY)
+  window           InsightWindow
+  windowStart      DateTime
+  windowEnd        DateTime
+  /// Plain-language, deterministically templated explanation of which relationships/rules formed
+  /// this cluster (e.g. "3 reflections connected by REPEATS and CONTINUES over 21 days") — never
+  /// free-text generation. Mirrors ReflectionCandidate.reason.
+  ruleExplanation  String
+  /// 0-100, see InsightPriorityService. Never AI-derived — a documented, weighted sum.
+  priority         Int                   @default(0)
+  /// Structural breakdown of which weighted inputs contributed to `priority` (frequency/
+  /// consistency/reflectionScore/goalRelevance/activity/journalDensity/memoryImportance) — mirrors
+  /// ReflectionCandidate.scoreFactors so confidence explanations never drift from the actual
+  /// computation.
+  priorityFactors  Json?
+  /// category + anchor ReflectionCandidate id — see InsightGenerationService "Clustering".
+  dedupeKey        String
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  /// Set only when the user explicitly archives this candidate via POST .../archive.
+  resolvedAt       DateTime?
+
+  evidence         InsightEvidence[]
+  relationships    InsightRelationship[]
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, status, priority])
+  @@index([userId, category, status])
+  @@map("insight_candidates")
+}
+
+/// One row per real ReflectionCandidate an InsightCandidate cites as evidence. "Never fabricate
+/// evidence" (Phase 3) is enforced structurally: every row is only ever created from a
+/// ReflectionCandidate id already present in a fetched, userId-scoped snapshot
+/// (InsightDataSourceService) — there is no code path that could cite an id it wasn't handed.
+/// A real FK (not a plain string reference like ReflectionSourceRef's cross-module sourceId) is
+/// used here because InsightCandidate and ReflectionCandidate are siblings in the same schema,
+/// not crossing a module boundary the way Reflection's own Journal/Memory/Activity/Companion
+/// references do.
+model InsightEvidence {
+  id                    String              @id @default(cuid())
+  insightCandidateId    String
+  insightCandidate      InsightCandidate    @relation(fields: [insightCandidateId], references: [id], onDelete: Cascade)
+  reflectionCandidateId String
+  reflectionCandidate   ReflectionCandidate @relation(fields: [reflectionCandidateId], references: [id], onDelete: Cascade)
+  /// Plain-language, deterministically templated: what this specific reflection contributes to
+  /// the cluster (e.g. "Repeated topic, score 60, observed 8/5/2026").
+  contribution          String
+  createdAt             DateTime            @default(now())
+
+  @@unique([insightCandidateId, reflectionCandidateId])
+  @@index([insightCandidateId])
+  @@index([reflectionCandidateId])
+  @@map("insight_evidence")
+}
+
+/// A deterministic, pairwise relationship between two of the caller's own ReflectionCandidates —
+/// computed by InsightRelationshipEngine (Phase 2), never semantic similarity. `insightCandidateId`
+/// is set once the pair's cluster becomes an InsightCandidate (SetNull if that candidate is later
+/// removed — the edge itself remains a real, independently-computed fact). `reflectionAId`/
+/// `reflectionBId` are canonically ordered (A.id < B.id, see orderPair()) so the unique constraint
+/// can't be bypassed by swapping the pair.
+model InsightRelationship {
+  id                 String                  @id @default(cuid())
+  userId             String
+  user               User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  insightCandidateId String?
+  insightCandidate   InsightCandidate?       @relation(fields: [insightCandidateId], references: [id], onDelete: SetNull)
+  reflectionAId      String
+  reflectionA        ReflectionCandidate     @relation("InsightRelationshipA", fields: [reflectionAId], references: [id], onDelete: Cascade)
+  reflectionBId      String
+  reflectionB        ReflectionCandidate     @relation("InsightRelationshipB", fields: [reflectionBId], references: [id], onDelete: Cascade)
+  type               InsightRelationshipType
+  /// Plain-language, deterministically templated explanation of why this relationship was
+  /// classified this way (e.g. "Same goal, score rose from 40 to 62").
+  reason             String
+  detectedAt         DateTime                @default(now())
+
+  @@unique([reflectionAId, reflectionBId])
+  @@index([userId])
+  @@index([insightCandidateId])
+  @@map("insight_relationships")
 }
