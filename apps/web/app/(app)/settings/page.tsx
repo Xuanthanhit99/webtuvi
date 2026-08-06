@@ -139,6 +139,21 @@ export default function SettingsPage() {
         </Link>
       </Card>
 
+      <Card className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-body-sm font-semibold text-text-secondary">Insights</p>
+          <p className="text-body-sm text-text-secondary">
+            Deterministic patterns connected across your reflections — what happened, why it matters, and the evidence
+            behind it. Never AI-generated.
+          </p>
+        </div>
+        <Link href="/insights">
+          <Button variant="secondary" size="sm">
+            View my insights
+          </Button>
+        </Link>
+      </Card>
+
       <Card>
         <p className="mb-2 text-body-sm font-semibold text-text-secondary">More settings</p>
         <p className="text-body-sm text-text-secondary">

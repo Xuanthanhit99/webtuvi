@@ -5,6 +5,7 @@ import { InsightRelationshipService } from './relationships/insight-relationship
 import { InsightPriorityService } from './priority/insight-priority.service';
 import { InsightGenerationService } from './generation/insight-generation.service';
 import { InsightRecordService } from './record/insight-record.service';
+import { InsightPresentationService } from './presentation/insight-presentation.service';
 import { InsightController } from './insight.controller';
 
 /**
@@ -19,6 +20,10 @@ import { InsightController } from './insight.controller';
  * nothing here reads Journal/Memory/Activity/Companion directly; every real source this module
  * touches is a `ReflectionCandidate` (and, for the Priority Engine's memory-importance factor, the
  * `Memory` row a Reflection Candidate's own source already cited — read-only, never re-derived).
+ *
+ * `InsightPresentationService` (Sprint 5A — Insight Experience) is an additive presentation layer
+ * on top of the same `InsightCandidate` rows: cards/timeline/evidence rendering, filters, and
+ * pin/unpin. It generates no new insights — see docs/architecture/insight-experience.md.
  */
 @Module({
   imports: [ReflectionModule],
@@ -29,6 +34,7 @@ import { InsightController } from './insight.controller';
     InsightPriorityService,
     InsightGenerationService,
     InsightRecordService,
+    InsightPresentationService,
   ],
 })
 export class InsightModule {}

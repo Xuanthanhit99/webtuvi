@@ -235,9 +235,22 @@ export class InsightGenerationService {
       // simply drops out on reconciliation, a conservative (never-overstated) approximation.
       const result = this.computeClusterResult(remainingReflections, remainingEdges, new Map());
 
+      // category/window/ruleExplanation must be recomputed and persisted here too, not just
+      // status/priority — otherwise a candidate that loses evidence (e.g. a cited reflection
+      // expires) keeps displaying its old, now-inaccurate reflection count/category/window
+      // indefinitely, silently drifting out of sync with its own (already-updated) evidence rows.
       await this.prisma.insightCandidate.update({
         where: { id: candidate.id },
-        data: { status: result.status, priority: result.priority, priorityFactors: result.factors },
+        data: {
+          category: result.category,
+          window: result.window,
+          windowStart: result.windowStart,
+          windowEnd: result.windowEnd,
+          ruleExplanation: result.ruleExplanation,
+          status: result.status,
+          priority: result.priority,
+          priorityFactors: result.factors,
+        },
       });
     }
   }

@@ -680,6 +680,98 @@ export interface InsightStatisticsDto {
   readyCount: number;
 }
 
+// --- Insight Experience (Sprint 5A). Presentation layer over existing InsightCandidate rows —
+// no new insight generation, no AI summaries/coaching/reports. See
+// docs/architecture/insight-experience.md. ---
+
+export type InsightPriorityTierValue = 'LOW' | 'MEDIUM' | 'HIGH';
+
+export interface InsightPriorityBadgeDto {
+  tier: InsightPriorityTierValue;
+  label: string;
+  priority: number;
+}
+
+export interface InsightReasonDto {
+  headline: string;
+  whyItMatters: string[];
+  evidenceSummary: string;
+}
+
+export interface InsightCategoryPresentationDto {
+  value: InsightCategoryValue;
+  label: string;
+}
+
+export interface InsightStatusPresentationDto {
+  value: InsightStatusValue;
+  label: string;
+}
+
+export interface InsightCardDto {
+  id: string;
+  category: InsightCategoryPresentationDto;
+  status: InsightStatusPresentationDto;
+  window: InsightWindowValue;
+  windowStart: string;
+  windowEnd: string;
+  reason: InsightReasonDto;
+  priorityBadge: InsightPriorityBadgeDto;
+  evidenceCount: number;
+  relationshipCount: number;
+  pinned: boolean;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+}
+
+export interface ListInsightCardsResultDto {
+  items: InsightCardDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export type InsightTimelineRangeValue = 'today' | 'week' | 'month' | 'custom';
+export type InsightTimelineGroupByValue = 'category' | 'priority' | 'topic';
+
+export interface InsightTimelineCardDto extends InsightCardDto {
+  day: string;
+}
+
+export interface InsightTimelineGroupDto {
+  key: string;
+  label: string;
+  items: InsightTimelineCardDto[];
+}
+
+export interface InsightTimelineResultDto {
+  range: InsightTimelineRangeValue;
+  from: string;
+  to: string;
+  groupBy: InsightTimelineGroupByValue;
+  groups: InsightTimelineGroupDto[];
+}
+
+export interface InsightEvidenceSourceItemDto {
+  sourceType: ReflectionSourceTypeValue;
+  sourceTypeLabel: string;
+  sourceId: string;
+  sourceTimestamp: string;
+  href: string | null;
+  available: boolean;
+}
+
+export interface InsightEvidenceCardDto {
+  reflectionCandidateId: string;
+  reflectionCategory: ReflectionCategoryValue;
+  reflectionScore: number;
+  reflectionState: ReflectionStateValue;
+  contribution: string;
+  href: string;
+  sources: InsightEvidenceSourceItemDto[];
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {

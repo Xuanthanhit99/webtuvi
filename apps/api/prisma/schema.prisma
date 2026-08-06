@@ -1112,6 +1112,10 @@ model InsightCandidate {
   priorityFactors  Json?
   /// category + anchor ReflectionCandidate id — see InsightGenerationService "Clustering".
   dedupeKey        String
+  /// Manual pin — Sprint 5A (Insight Experience) presentation-layer user action, mirrors
+  /// ReflectionCandidate.pinned/Memory.pinned. Never set automatically; purely a display flag —
+  /// changes no category/priority/evidence and is untouched by regeneration.
+  pinned           Boolean               @default(false)
   createdAt        DateTime              @default(now())
   updatedAt        DateTime              @updatedAt
   /// Set only when the user explicitly archives this candidate via POST .../archive.
@@ -1123,6 +1127,7 @@ model InsightCandidate {
   @@unique([userId, dedupeKey])
   @@index([userId, status, priority])
   @@index([userId, category, status])
+  @@index([userId, pinned])
   @@map("insight_candidates")
 }
 

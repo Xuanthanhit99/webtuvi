@@ -132,6 +132,14 @@ apps/
                   into Reflection Candidates: grouping, scoring, timeline,
                   feed; see docs/architecture/reflection-foundation.md. No
                   AI-generated reflections, no reports, no embeddings.
+      insight/    Insight Preparation (Sprint 4C) turns Reflection Candidates
+                  into deterministic Insight Candidates (relationships,
+                  clustering, priority, evidence) — see
+                  docs/architecture/insight-preparation.md. Insight Experience
+                  (Sprint 5A, presentation/) renders those candidates into the
+                  user-facing /insights dashboard (cards, timeline, evidence
+                  view, filters, pin/archive) — no new insight generation, no
+                  AI; see docs/architecture/insight-experience.md.
       users/      Profile + preferences
       common/     Guards, filters, interceptors, shared utils
     prisma/       Schema, migrations, dev seed
@@ -164,7 +172,16 @@ versioning, audit trail, timeline, and export — deliberately **not** yet Memor
 rule engine finds across Journal, Memory, Activity, and Companion data, each
 citing its real sources and a documented, weighted score — deliberately
 **not** AI-generated reflections, summaries, coaching, or reports; see
-`docs/architecture/reflection-foundation.md`.
+`docs/architecture/reflection-foundation.md`. As of Sprint 4C (Insight
+Preparation), deterministic relationships/clustering/priority are computed
+over Reflection Candidates into Insight Candidates — see
+`docs/architecture/insight-preparation.md`. As of Sprint 5A (Insight
+Experience), `/insights` renders those Insight Candidates into a dashboard
+(Top/Recent/Timeline/Pinned/Archived, an Evidence View that deep-links back to
+the real Journal/Memory/Reflection records behind each insight, and priority/
+category/date/status/source filters) — still no AI, no new insights generated,
+every field traces back to structured data a prior sprint already produced;
+see `docs/architecture/insight-experience.md`.
 
 Two things remain deliberately simplified (and disclosed, not hidden):
 

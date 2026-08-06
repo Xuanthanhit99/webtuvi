@@ -168,6 +168,12 @@ describe('InsightGenerationService', () => {
 
     const remainingEvidence = [...evidence.values()];
     expect(remainingEvidence.every((e) => e.reflectionCandidateId !== 'r2')).toBe(true);
+
+    // Regression: ruleExplanation (and category/window) must be recomputed and persisted during
+    // reconciliation too, not just status/priority — otherwise the candidate keeps describing "2
+    // reflections" after dropping down to 1, silently drifting out of sync with its own evidence.
+    const reconciled = [...candidates.values()][0]!;
+    expect(reconciled.ruleExplanation).toBe('A single strong reflection (score 60) about goal.');
   });
 
   it('rolls forward past an archived cluster once genuinely new evidence joins it, rather than silently discarding the new evidence', async () => {
