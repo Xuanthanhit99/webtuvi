@@ -21,6 +21,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { JournalModule } from './journal/journal.module';
 import { ReflectionModule } from './reflection/reflection.module';
 import { InsightModule } from './insight/insight.module';
+import { ReviewModule } from './review/review.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { InsightModule } from './insight/insight.module';
     JournalModule,
     ReflectionModule,
     InsightModule,
+    ReviewModule,
     CompanionModule,
     DashboardModule,
   ],

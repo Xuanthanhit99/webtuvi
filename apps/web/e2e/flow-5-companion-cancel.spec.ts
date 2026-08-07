@@ -2,8 +2,32 @@ import { test, expect } from '@playwright/test';
 
 // Flow 5: Companion Core — cancel an in-flight streamed reply.
 // Relies on the seeded demo account: demo@beaconvie.local / Demo1234!
+//
+// Root cause of the previous flake: MockProvider.stream() (apps/api/src/companion/providers/
+// mock.provider.ts) emits one word every 15ms, and the shortest canned reply is ~13 words — the
+// whole turn can complete in well under 200ms. `status` flips to 'streaming' (mounting the Cancel
+// button) synchronously the instant the initial POST /messages resolves, *before* the EventSource
+// for the token stream has even opened (see use-companion-conversation.ts openStream()), so the
+// button's actual visible window was only ever as long as that ~200ms stream itself minus however
+// long the `toBeVisible` poll + click's own actionability checks took — on a fast run, or under any
+// system load, the reply could finish and unmount the Cancel button (composer.tsx only renders it
+// while status === 'streaming') between the visibility check and the click landing, which
+// Playwright correctly reported as "element was detached from the DOM".
+//
+// Fix: hold up the *network* request for the token stream deterministically before letting it
+// reach the real API — this widens the window `status === 'streaming'` stays true to a fixed,
+// generous duration without touching any product code (MockProvider/StreamService/the hook/the
+// Composer are all untouched, and the real backend still streams the real reply once the request is
+// let through — this is not a fake/stubbed response). This is a synchronization primitive scoped to
+// this one test, not an arbitrary sleep in the test's own control flow.
+const STREAM_HOLD_MS = 2000;
 
 test('cancel a streaming reply mid-generation', async ({ page }) => {
+  await page.route('**/companion/conversations/*/messages/stream*', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, STREAM_HOLD_MS));
+    await route.continue();
+  });
+
   await page.goto('/login');
   await page.getByLabel('Email').fill('demo@beaconvie.local');
   await page.getByLabel('Password', { exact: true }).fill('Demo1234!');
@@ -18,8 +42,8 @@ test('cancel a streaming reply mid-generation', async ({ page }) => {
   await composer.fill('Tell me about your day.');
   await page.getByRole('button', { name: /send message/i }).click();
 
-  // The mock provider streams word-by-word with a short delay per word, so
-  // there's a real window to click Cancel mid-stream.
+  // The held-up request above guarantees status stays 'streaming' (and the Cancel button mounted)
+  // for at least STREAM_HOLD_MS — a real, deterministic window, not a race against a ~200ms reply.
   const cancelButton = page.getByRole('button', { name: /cancel/i });
   await expect(cancelButton).toBeVisible({ timeout: 5000 });
   await cancelButton.click();

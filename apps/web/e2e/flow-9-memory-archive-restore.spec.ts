@@ -15,6 +15,14 @@ async function loginAsDemo(page: import('@playwright/test').Page) {
 test('archiving a memory hides it from the default timeline; restoring brings it back', async ({ page }) => {
   await loginAsDemo(page);
   const phrase = `Training for a half marathon ${Date.now()}`;
+  // Each timeline row renders both a title <p> and a summary <p>, and "Remember this" carries the
+  // raw message text into both fields verbatim — so an unscoped page-wide getByText(phrase) can
+  // resolve to two real elements in the very same row (a strict-mode violation, not a product bug).
+  // Scoping to the timeline's own accessible list (aria-label="Memory timeline",
+  // memory-timeline.tsx) makes every assertion below resolve to exactly the row(s) that actually
+  // matter, and — critically for the "hidden after archive" check — resolves to zero elements once
+  // archived, rather than racing a detail-view element that might still be mid-unmount.
+  const timelineList = page.getByRole('list', { name: 'Memory timeline' });
 
   await page.goto('/companion');
   await page.getByRole('button', { name: /start a conversation/i }).click();
@@ -34,7 +42,7 @@ test('archiving a memory hides it from the default timeline; restoring brings it
   await expect(page.getByRole('heading', { name: /remember this\?/i })).not.toBeVisible();
 
   await page.goto('/memory');
-  await page.getByText(phrase).first().click();
+  await timelineList.getByText(phrase).first().click();
   await expect(page.getByLabel('Memory detail')).toBeVisible();
 
   await page.getByRole('button', { name: /^archive$/i }).click();
@@ -42,11 +50,11 @@ test('archiving a memory hides it from the default timeline; restoring brings it
 
   // Back on the timeline, it's gone from the default (non-archived) view.
   await page.getByRole('button', { name: /close/i }).click();
-  await expect(page.getByText(phrase)).not.toBeVisible();
+  await expect(timelineList.getByText(phrase)).not.toBeVisible();
 
   // Restore it from the detail view again (re-open via the archived filter).
   await page.getByRole('button', { name: /show archived/i }).click();
-  await page.getByText(phrase).first().click();
+  await timelineList.getByText(phrase).first().click();
   await page.getByRole('button', { name: /restore/i }).click();
   await expect(page.getByRole('button', { name: /^archive$/i })).toBeVisible();
 });

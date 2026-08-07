@@ -154,6 +154,21 @@ export default function SettingsPage() {
         </Link>
       </Card>
 
+      <Card className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-body-sm font-semibold text-text-secondary">Reviews</p>
+          <p className="text-body-sm text-text-secondary">
+            Deterministic weekly and monthly summaries built from your existing insights, reflections, and activity. Never
+            AI-generated.
+          </p>
+        </div>
+        <Link href="/reviews">
+          <Button variant="secondary" size="sm">
+            View my reviews
+          </Button>
+        </Link>
+      </Card>
+
       <Card>
         <p className="mb-2 text-body-sm font-semibold text-text-secondary">More settings</p>
         <p className="text-body-sm text-text-secondary">

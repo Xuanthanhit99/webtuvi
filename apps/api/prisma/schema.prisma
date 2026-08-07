@@ -56,6 +56,7 @@ model User {
   reflectionCandidates  ReflectionCandidate[]
   insightCandidates     InsightCandidate[]
   insightRelationships  InsightRelationship[]
+  reviews               Review[]
 
   @@map("users")
 }
@@ -1182,4 +1183,142 @@ model InsightRelationship {
   @@index([userId])
   @@index([insightCandidateId])
   @@map("insight_relationships")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 5B — Weekly & Monthly Reviews. Deterministically aggregates existing
+// InsightCandidate/ReflectionCandidate rows (plus real Journal/Memory/Activity/
+// Companion counts for statistics) over a time window into a persisted Review
+// document. Generates NO new InsightCandidate/ReflectionCandidate rows —
+// strictly a read/aggregate layer, the same "never re-derive a lower layer's
+// own job" discipline every prior sprint in this schema follows. Explicitly
+// NOT AI: no LLM, no coaching, no recommendations, no embeddings, no vector
+// database, no semantic search, no autonomous agents, no conversational
+// reports. See docs/architecture/review-engine.md.
+// ---------------------------------------------------------------------------
+
+/// Compute-on-read window granularity — mirrors ReflectionWindow/InsightWindow's own three/four-
+/// value shape and reasoning.
+enum ReviewWindow {
+  WEEK
+  MONTH
+  CUSTOM
+}
+
+/// Exactly three states: a review with no qualifying evidence in its window, a real generated
+/// review, and an explicit user archive — no fifth invented state, same reasoning as
+/// InsightStatus's own "no EXPIRED" precedent (a Review is regenerated fresh on every read up
+/// until archived, so there's nothing that needs a separate "went stale" state).
+enum ReviewState {
+  NOT_READY
+  READY
+  ARCHIVED
+}
+
+/// Fixed section taxonomy this sprint's own brief specifies — Overview is a top-level Review
+/// field (see `overview` below), not its own section row.
+enum ReviewSectionType {
+  HIGHLIGHTS
+  CHANGES
+  ACHIEVEMENTS
+  CHALLENGES
+}
+
+/// Real source tables only, exactly the five this sprint's mission specifies it must consume.
+/// ACTIVITY/COMPANION are cited only via a ReflectionCandidate's own sources (Reviews never read
+/// ActivityEvent/ConversationMessage rows directly for evidence — only for Phase 3 statistics
+/// counts, which is a different, aggregate-only read path — see ReviewStatisticsService).
+enum ReviewEvidenceSourceType {
+  INSIGHT
+  REFLECTION
+  JOURNAL
+  MEMORY
+}
+
+/// One review document for one user, one window. `dedupeKey` (`window:windowStart:windowEnd`) is
+/// unique per user — the same idempotent-regeneration pattern ReflectionCandidate/InsightCandidate
+/// already use, so `ensureGenerated()` upserts in place rather than duplicating a row for the same
+/// period. `statistics` is an embedded JSON aggregate (Phase 3) — mirrors
+/// InsightCandidate.priorityFactors/ReflectionCandidate.scoreFactors's own "embedded, not a
+/// separate table" precedent, since a review's statistics are 1:1 with the review itself.
+model Review {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  window      ReviewWindow
+  windowStart DateTime
+  windowEnd   DateTime
+  state       ReviewState  @default(NOT_READY)
+  /// Plain-language, deterministically templated top-level summary (Phase 2 "Overview") — counts
+  /// and section totals only, never free-text generation. See review-builder.ts buildOverview().
+  overview    String
+  /// ReviewStatistics shape (Phase 3) — journal/memory/reflection/insight counts, journaling
+  /// streak, companion conversation count. See review.types.ts.
+  statistics  Json
+  dedupeKey   String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  /// Set only when the user explicitly archives this review via POST .../archive.
+  resolvedAt  DateTime?
+
+  sections    ReviewSection[]
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, window, windowStart])
+  @@index([userId, state])
+  @@map("reviews")
+}
+
+/// One row per non-empty section (Highlights/Changes/Achievements/Challenges) — a section with no
+/// qualifying evidence is simply not created, never a fabricated empty placeholder with invented
+/// text. `summary` is a deterministic template over the section's own evidence count/average
+/// priority, mirroring InsightCandidate.ruleExplanation's own "describe what's really there" rule.
+model ReviewSection {
+  id        String            @id @default(cuid())
+  reviewId  String
+  review    Review            @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  type      ReviewSectionType
+  title     String
+  summary   String
+  order     Int
+  createdAt DateTime          @default(now())
+
+  evidence  ReviewEvidence[]
+
+  @@unique([reviewId, type])
+  @@index([reviewId])
+  @@map("review_sections")
+}
+
+/// One row per real Insight/Reflection/Journal/Memory record a section cites. "Never fabricate
+/// evidence" is enforced the same structural way Insight Preparation enforces it: a row is only
+/// ever created from an id already present in a fetched, userId-scoped snapshot
+/// (ReviewGenerationService). `sourceId` is a plain, unenforced cross-module reference — same
+/// reasoning as ReflectionSourceRef's own sourceId (the referenced tables span multiple modules).
+model ReviewEvidence {
+  id              String                   @id @default(cuid())
+  reviewSectionId String
+  reviewSection   ReviewSection            @relation(fields: [reviewSectionId], references: [id], onDelete: Cascade)
+  sourceType      ReviewEvidenceSourceType
+  sourceId        String
+  /// The item's own real InsightCategory/ReflectionCategory string (or a real-precedent-derived
+  /// one for MEMORY/JOURNAL items — see review-generation.service.ts) — persisted (not only
+  /// embedded in `contribution`'s text) so Phase 6's category filter is a real, indexed query,
+  /// never a text-parse.
+  category        String
+  /// The item's own real priority/score/importance (0-100) — same reasoning as `category` above,
+  /// persisted so Phase 6's priority-tier filter doesn't need to re-parse `contribution`.
+  priority        Int
+  /// The source record's own real timestamp — never the moment this row was written.
+  sourceTimestamp DateTime
+  /// Plain-language, deterministically templated: what this specific item contributes to the
+  /// section (e.g. "Insight: 3 reflections connected by SUPPORTS relationships — High priority.").
+  contribution    String
+  createdAt       DateTime                 @default(now())
+
+  @@index([reviewSectionId])
+  @@index([sourceType, sourceId])
+  @@index([reviewSectionId, category])
+  @@index([reviewSectionId, priority])
+  @@map("review_evidence")
 }

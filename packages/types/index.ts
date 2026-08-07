@@ -772,6 +772,72 @@ export interface InsightEvidenceCardDto {
   sources: InsightEvidenceSourceItemDto[];
 }
 
+// --- Weekly & Monthly Reviews (Sprint 5B). Deterministically aggregates existing
+// InsightCandidate/ReflectionCandidate rows (plus real Journal/Memory/Activity/Companion counts
+// for statistics) over a time window. Generates no new InsightCandidate/ReflectionCandidate rows.
+// No LLM, no coaching, no recommendations, no generated advice. See
+// docs/architecture/review-engine.md. ---
+
+export type ReviewWindowValue = 'WEEK' | 'MONTH' | 'CUSTOM';
+export type ReviewStateValue = 'NOT_READY' | 'READY' | 'ARCHIVED';
+export type ReviewSectionTypeValue = 'HIGHLIGHTS' | 'CHANGES' | 'ACHIEVEMENTS' | 'CHALLENGES';
+export type ReviewEvidenceSourceTypeValue = 'INSIGHT' | 'REFLECTION' | 'JOURNAL' | 'MEMORY';
+
+export interface ReviewStatisticsDto {
+  journalCount: number;
+  memoryCreatedCount: number;
+  reflectionCount: number;
+  insightCount: number;
+  activityCount: number;
+  /** Disclosed substitution for "Study streak" — see docs/architecture/review-engine.md. */
+  journalingStreakDays: number;
+  /** Disclosed substitution for "Completed sessions" — see docs/architecture/review-engine.md. */
+  companionConversationCount: number;
+}
+
+export interface ReviewEvidenceDto {
+  sourceType: ReviewEvidenceSourceTypeValue;
+  sourceId: string;
+  category: string;
+  priority: number;
+  sourceTimestamp: string;
+  contribution: string;
+  href: string;
+}
+
+export interface ReviewSectionDto {
+  type: ReviewSectionTypeValue;
+  title: string;
+  summary: string;
+  evidence: ReviewEvidenceDto[];
+}
+
+export interface ReviewSummaryDto {
+  id: string;
+  window: ReviewWindowValue;
+  windowStart: string;
+  windowEnd: string;
+  state: ReviewStateValue;
+  overview: string;
+  statistics: ReviewStatisticsDto;
+  sections: ReviewSectionDto[];
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+}
+
+export interface ListReviewsResultDto {
+  items: ReviewSummaryDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface ReviewMarkdownExportDto {
+  filename: string;
+  content: string;
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {

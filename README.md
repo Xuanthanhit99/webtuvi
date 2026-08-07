@@ -140,6 +140,13 @@ apps/
                   user-facing /insights dashboard (cards, timeline, evidence
                   view, filters, pin/archive) — no new insight generation, no
                   AI; see docs/architecture/insight-experience.md.
+      review/     Weekly & Monthly Reviews (Sprint 5B) deterministically
+                  aggregate existing Insight/Reflection Candidates (plus real
+                  Journal/Memory/Activity/Companion counts for statistics)
+                  over a WEEK/MONTH/CUSTOM window into a persisted Review
+                  document (overview, sections, evidence, statistics, export)
+                  — generates no new Insight/Reflection Candidates, no AI; see
+                  docs/architecture/review-engine.md.
       users/      Profile + preferences
       common/     Guards, filters, interceptors, shared utils
     prisma/       Schema, migrations, dev seed
