@@ -63,5 +63,18 @@ export function buildSystemPrompt(context: ConversationContext): string {
     `Their memory preference is "${context.memoryPreference}" and reflection frequency preference is "${context.reflectionFrequency}" — respect this; do not push saving or reflecting on things against their stated preference.`,
   );
 
+  if (context.activeGoalTitles.length > 0) {
+    facts.push(
+      `Their current goals, most recent first: ${context.activeGoalTitles.join('; ')}. You may acknowledge these naturally if relevant — never invent progress, advice, or a plan for them beyond what they say.`,
+    );
+  }
+
+  if (context.latestTarotReading) {
+    const cards = context.latestTarotReading.cardNames.join(', ');
+    facts.push(
+      `Their most recent Tarot reading drew: ${cards}.${context.latestTarotReading.interpretation ? ` The reflection already offered for it: "${context.latestTarotReading.interpretation}"` : ''} You may reference this naturally if it comes up — you never draw, re-draw, or reinterpret cards yourself; that already happened deterministically before this conversation.`,
+    );
+  }
+
   return `${BASE_RULES}\n\nWhat you actually know about them right now (do not assume anything beyond this):\n${facts.map((f) => `- ${f}`).join('\n')}`;
 }

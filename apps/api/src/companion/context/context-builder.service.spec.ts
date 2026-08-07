@@ -1,10 +1,12 @@
 import { NotFoundException } from '@nestjs/common';
 import { ContextBuilderService } from './context-builder.service';
 
-function makePrismaMock(user: unknown, conversations: unknown[] = []) {
+function makePrismaMock(user: unknown, conversations: unknown[] = [], goals: unknown[] = [], latestTarotReading: unknown = null) {
   return {
     user: { findUnique: jest.fn().mockResolvedValue(user) },
     conversation: { findMany: jest.fn().mockResolvedValue(conversations) },
+    goal: { findMany: jest.fn().mockResolvedValue(goals) },
+    tarotReading: { findFirst: jest.fn().mockResolvedValue(latestTarotReading) },
   };
 }
 
@@ -84,5 +86,58 @@ describe('ContextBuilderService', () => {
 
     const context = await builder.build('u1');
     expect(context.recentConversationSummaries).toHaveLength(0);
+  });
+
+  it('includes active, Companion-visible goal titles only, scoped to the caller', async () => {
+    const prisma = makePrismaMock(
+      { id: 'u1', displayName: 'Alex', onboardingCompletedAt: null, profile: null, preference: null },
+      [],
+      [{ title: 'Learn Spanish' }, { title: 'Read 12 books' }],
+    );
+    const activities = { recent: jest.fn().mockResolvedValue([]) };
+    const builder = new ContextBuilderService(prisma as never, activities as never);
+
+    const context = await builder.build('u1');
+
+    expect(context.activeGoalTitles).toEqual(['Learn Spanish', 'Read 12 books']);
+    expect(prisma.goal.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'u1', status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' } }),
+    );
+  });
+
+  it('includes the latest active, Companion-visible Tarot reading’s real cards and interpretation', async () => {
+    const prisma = makePrismaMock(
+      { id: 'u1', displayName: 'Alex', onboardingCompletedAt: null, profile: null, preference: null },
+      [],
+      [],
+      {
+        interpretation: 'A moment worth sitting with.',
+        createdAt: new Date('2026-01-05T00:00:00.000Z'),
+        cards: [{ isReversed: false, card: { name: 'The Star' } }, { isReversed: true, card: { name: 'Five of Cups' } }],
+      },
+    );
+    const activities = { recent: jest.fn().mockResolvedValue([]) };
+    const builder = new ContextBuilderService(prisma as never, activities as never);
+
+    const context = await builder.build('u1');
+
+    expect(context.latestTarotReading).toEqual({
+      cardNames: ['The Star', 'Five of Cups (reversed)'],
+      interpretation: 'A moment worth sitting with.',
+      createdAt: '2026-01-05T00:00:00.000Z',
+    });
+    expect(prisma.tarotReading.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'u1', status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' } }),
+    );
+  });
+
+  it('latestTarotReading is null when no such reading exists', async () => {
+    const prisma = makePrismaMock({ id: 'u1', displayName: 'Alex', onboardingCompletedAt: null, profile: null, preference: null });
+    const activities = { recent: jest.fn().mockResolvedValue([]) };
+    const builder = new ContextBuilderService(prisma as never, activities as never);
+
+    const context = await builder.build('u1');
+
+    expect(context.latestTarotReading).toBeNull();
   });
 });

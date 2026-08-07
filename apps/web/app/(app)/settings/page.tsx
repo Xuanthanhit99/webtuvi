@@ -169,6 +169,21 @@ export default function SettingsPage() {
         </Link>
       </Card>
 
+      <Card className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-body-sm font-semibold text-text-secondary">Goals</p>
+          <p className="text-body-sm text-text-secondary">
+            First-class learning and life goals with deterministic progress, milestones, and evidence from your own
+            journal, memories, reflections, insights, and reviews. Never AI-generated.
+          </p>
+        </div>
+        <Link href="/goals">
+          <Button variant="secondary" size="sm">
+            View my goals
+          </Button>
+        </Link>
+      </Card>
+
       <Card>
         <p className="mb-2 text-body-sm font-semibold text-text-secondary">More settings</p>
         <p className="text-body-sm text-text-secondary">

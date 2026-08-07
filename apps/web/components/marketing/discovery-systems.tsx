@@ -1,7 +1,10 @@
+import Link from 'next/link';
 import { landingCopy } from '@/content/landing-copy';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+/** Only Tarot is real (Sprint 6) — every other Discovery system stays honestly badged "Coming
+ * soon" (see docs/audit/web-tu-vi-remediation-roadmap.md "Minimal SEO scope"). */
 export function DiscoverySystems() {
   return (
     <section id="discovery" aria-labelledby="discovery-heading" className="border-b border-border-subtle py-16 desktop:py-24">
@@ -10,15 +13,24 @@ export function DiscoverySystems() {
           Discovery systems
         </h2>
         <div className="flex gap-4 overflow-x-auto pb-2 desktop:grid desktop:grid-cols-4 desktop:overflow-visible">
-          {landingCopy.discoverySystems.map((system) => (
-            <Card key={system.title} className="w-56 shrink-0 desktop:w-auto">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="font-display text-body-lg text-text-primary">{system.title}</p>
-                <Badge>Coming soon</Badge>
-              </div>
-              <p className="text-body-sm text-text-secondary">{system.description}</p>
-            </Card>
-          ))}
+          {landingCopy.discoverySystems.map((system) => {
+            const content = (
+              <Card key={system.title} className="w-56 shrink-0 desktop:w-auto">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="font-display text-body-lg text-text-primary">{system.title}</p>
+                  {system.comingSoon && <Badge>Coming soon</Badge>}
+                </div>
+                <p className="text-body-sm text-text-secondary">{system.description}</p>
+              </Card>
+            );
+            return system.comingSoon ? (
+              content
+            ) : (
+              <Link key={system.title} href="/discover/tarot" className="w-56 shrink-0 desktop:w-auto">
+                {content}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

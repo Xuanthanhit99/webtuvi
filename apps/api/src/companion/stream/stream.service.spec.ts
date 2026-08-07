@@ -42,6 +42,8 @@ function makeDeps(overrides: {
       reflectionFrequency: 'NOT_SURE_YET',
       recentActivityLabels: [],
       recentConversationSummaries: [],
+      activeGoalTitles: [],
+      latestTarotReading: null,
       currentTimeIso: '2026-01-01T00:00:00.000Z',
       currentTimeLabel: 'Thursday, 12:00 PM',
     })),
@@ -199,7 +201,7 @@ describe('StreamService.generate — Sprint 3C memory integration', () => {
       build: jest.fn(async () => ({
         displayName: 'Alex', timezone: null, locale: null, pronouns: null, onboardingCompleted: true,
         memoryPreference: 'ASK_BEFORE_SAVING', reflectionFrequency: 'NOT_SURE_YET', recentActivityLabels: [],
-        recentConversationSummaries: [], currentTimeIso: '2026-01-01T00:00:00.000Z', currentTimeLabel: 'Thursday, 12:00 PM',
+        recentConversationSummaries: [], activeGoalTitles: [], latestTarotReading: null, currentTimeIso: '2026-01-01T00:00:00.000Z', currentTimeLabel: 'Thursday, 12:00 PM',
       })),
     };
     const promptBuilder = { build: jest.fn(() => []) };

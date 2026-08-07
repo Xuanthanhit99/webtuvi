@@ -1,9 +1,15 @@
 import { PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
+import { seedTarotDeck } from './seed-tarot';
 
 const prisma = new PrismaClient();
 
 async function main() {
+  await seedTarotDeck(prisma);
+  await seedDemoUser();
+}
+
+async function seedDemoUser() {
   const email = 'demo@beaconvie.local';
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {

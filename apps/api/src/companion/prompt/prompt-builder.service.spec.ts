@@ -12,6 +12,8 @@ function context(overrides: Partial<ConversationContext> = {}): ConversationCont
     reflectionFrequency: 'NOT_SURE_YET',
     recentActivityLabels: [],
     recentConversationSummaries: [],
+    activeGoalTitles: [],
+    latestTarotReading: null,
     currentTimeIso: '2026-01-01T12:00:00.000Z',
     currentTimeLabel: 'Thursday, 12:00 PM',
     ...overrides,

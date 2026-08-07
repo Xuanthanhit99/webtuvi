@@ -57,6 +57,8 @@ model User {
   insightCandidates     InsightCandidate[]
   insightRelationships  InsightRelationship[]
   reviews               Review[]
+  goals                 Goal[]
+  tarotReadings         TarotReading[]
 
   @@map("users")
 }
@@ -1321,4 +1323,471 @@ model ReviewEvidence {
   @@index([reviewSectionId, category])
   @@index([reviewSectionId, priority])
   @@map("review_evidence")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 5C — Goal System & Progress Engine. First-class, deterministic
+// learning/life goals: CRUD, milestones, a deterministic progress engine, and
+// real evidence citing Memory/Journal/Reflection/Insight/Review/Activity rows.
+// Explicitly NOT AI: no LLM, no coaching, no recommendations, no embeddings,
+// no vector database, no semantic search, no RAG, no autonomous agents, no
+// predictive analytics. `Memory.type: GOAL/ACHIEVEMENT/CHALLENGE`,
+// `ReflectionCategory.GOAL`, and `InsightCategory.GOAL` are untouched by this
+// sprint — a Goal cites them as evidence, it does not replace or rewrite them.
+// See docs/architecture/goal-system.md.
+// ---------------------------------------------------------------------------
+
+enum GoalCategory {
+  LEARNING
+  CAREER
+  HEALTH
+  HABIT
+  RELATIONSHIP
+  FINANCIAL
+  CREATIVE
+  PERSONAL
+  OTHER
+}
+
+/// Determines GoalProgressEngine's one fixed, documented completion formula for this goal — see
+/// goal-system.md "Progress formulas". Never a weighted/inferred model.
+enum GoalType {
+  MILESTONE_BASED
+  METRIC_BASED
+  BINARY
+}
+
+/// User-selected only — never computed, never affects scoring.
+enum GoalDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+/// Every transition is an explicit user action (pause/resume/archive/delete/complete/abandon) —
+/// see goal-system.md "Status transitions are always explicit". COMPLETED is never set
+/// automatically by the progress engine, even at 100%.
+enum GoalStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ABANDONED
+  ARCHIVED
+  DELETED
+}
+
+/// Mirrors ReflectionVisibility/Memory's PRIVATE/COMPANION_ALLOWED precedent exactly — gates
+/// whether Companion's context assembly may reference this goal's title, never a public/community
+/// visibility.
+enum GoalVisibility {
+  PRIVATE
+  COMPANION_VISIBLE
+}
+
+/// AUTOMATIC completes deterministically once the goal's real evidence count reaches
+/// GoalMilestone.targetCount (recomputed by GoalProgressEngine). MANUAL is only ever
+/// completed/failed by an explicit user action.
+enum GoalMilestoneType {
+  AUTOMATIC
+  MANUAL
+}
+
+enum GoalMilestoneStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  ARCHIVED
+}
+
+/// Derived by comparing GoalProgress.completionPercent against its own previousCompletionPercent
+/// — never a forecast, never predictive. NEW means no prior computation exists yet.
+enum GoalTrend {
+  NEW
+  IMPROVING
+  STABLE
+  DECLINING
+}
+
+/// Real source tables only — see goal-system.md "Evidence linking" for the exact, deterministic
+/// tag/category-equality rule per source type. ACTIVITY exists on this enum per the brief's own
+/// explicit list, but no automatic GoalEvidence row is ever created from it this sprint (no
+/// goal-specific ActivityType exists in this product — disclosed, not fabricated).
+enum GoalEvidenceSourceType {
+  JOURNAL
+  MEMORY
+  REFLECTION
+  INSIGHT
+  REVIEW
+  ACTIVITY
+}
+
+/// Append-only lifecycle event log — mirrors MemoryAudit's own action-list precedent. Content-free
+/// beyond a plain, templated `detail` sentence (never journal/memory/reflection text).
+enum GoalHistoryAction {
+  CREATED
+  UPDATED
+  PAUSED
+  RESUMED
+  COMPLETED
+  ABANDONED
+  ARCHIVED
+  RESTORED
+  DELETED
+  MILESTONE_COMPLETED
+  MILESTONE_FAILED
+}
+
+/// PARENT_CHILD is directional (goalA is the parent); RELATED is symmetric. Both are explicit,
+/// user-created links — no automatic relationship detection (would require semantic comparison
+/// between goals, out of scope this sprint).
+enum GoalRelationshipType {
+  PARENT_CHILD
+  RELATED
+}
+
+/// A user-authored, first-class learning/life goal. Ownership is enforced on every read/write —
+/// see docs/security/goal-privacy.md "Ownership". `linkedTag` is the one real, deterministic
+/// matching key GoalProgressEngine uses to gather evidence — never semantic/AI matching.
+model Goal {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title          String
+  description    String
+  category       GoalCategory
+  type           GoalType
+  difficulty     GoalDifficulty @default(MEDIUM)
+  status         GoalStatus     @default(ACTIVE)
+  /// Set only when transitioning into ARCHIVED or DELETED — restore() always returns to exactly
+  /// this state, never a guessed/default one. Mirrors JournalEntry.previousState.
+  previousStatus GoalStatus?
+  visibility     GoalVisibility @default(PRIVATE)
+  /// The real, deterministic tag GoalProgressEngine matches JournalEntry.tags / Memory title-
+  /// summary substrings / ReflectionCandidate.groupKey against — see goal-system.md.
+  linkedTag      String
+  /// METRIC_BASED only — the real countable target (e.g. 12 for "read 12 books").
+  targetValue    Int?
+  /// METRIC_BASED only — a plain label for targetValue's unit (e.g. "books", "sessions"). Never
+  /// parsed/interpreted, display-only.
+  targetUnit     String?
+  targetDate     DateTime?
+  startedAt      DateTime       @default(now())
+  completedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  archivedAt     DateTime?
+  deletedAt      DateTime?
+
+  milestones       GoalMilestone[]
+  progress         GoalProgress?
+  history          GoalHistory[]
+  relationshipsAsA GoalRelationship[] @relation("GoalRelationshipA")
+  relationshipsAsB GoalRelationship[] @relation("GoalRelationshipB")
+
+  @@index([userId, status, createdAt])
+  @@index([userId, category, status])
+  @@index([userId, linkedTag])
+  @@map("goals")
+}
+
+/// A checkpoint within a Goal. AUTOMATIC milestones are recomputed by GoalProgressEngine every
+/// time it runs; MANUAL milestones only change via an explicit user action.
+model GoalMilestone {
+  id          String              @id @default(cuid())
+  goalId      String
+  goal        Goal                @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  type        GoalMilestoneType
+  status      GoalMilestoneStatus @default(PENDING)
+  order       Int
+  /// AUTOMATIC only — the goal's real evidence count this milestone completes at.
+  targetCount Int?
+  dueDate     DateTime?
+  completedAt DateTime?
+  failedAt    DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([goalId, order])
+  @@index([goalId, status])
+  @@map("goal_milestones")
+}
+
+/// The current, recomputed-in-place progress snapshot for one Goal — mirrors
+/// Memory.importanceScore/importanceFactors's own "recompute and overwrite, never append"
+/// precedent (Sprint 3B), not the window-keyed append pattern Review/InsightCandidate use (a Goal
+/// has no natural time window). previousCompletionPercent/previousComputedAt are captured just
+/// before being overwritten — what makes GoalTrend derivable without a second history table.
+model GoalProgress {
+  id                         String     @id @default(cuid())
+  goalId                     String     @unique
+  goal                       Goal       @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  completionPercent          Int        @default(0)
+  milestoneCompletionPercent Int        @default(0)
+  /// Structural breakdown of how completionPercent was computed (evidence counts by source,
+  /// milestone counts, metric currentValue/targetValue) — mirrors scoreFactors/priorityFactors/
+  /// importanceFactors precedent so the frontend never needs to recompute to explain a number.
+  factors                    Json?
+  trend                      GoalTrend  @default(NEW)
+  previousCompletionPercent  Int?
+  previousComputedAt         DateTime?
+  computedAt                 DateTime   @default(now())
+
+  evidence                   GoalEvidence[]
+
+  @@map("goal_progress")
+}
+
+/// One row per real Memory/Journal/Reflection/Insight/Review record cited by the current
+/// GoalProgress computation. Recreated fresh on every recompute — the same "delete + recreate"
+/// discipline ReviewGenerationService/InsightGenerationService already use for their own evidence
+/// tables. `sourceId` is a plain, unenforced cross-module reference, same reasoning as
+/// ReflectionSourceRef/ReviewEvidence's own sourceId.
+model GoalEvidence {
+  id              String                 @id @default(cuid())
+  goalProgressId  String
+  goalProgress    GoalProgress           @relation(fields: [goalProgressId], references: [id], onDelete: Cascade)
+  sourceType      GoalEvidenceSourceType
+  sourceId        String
+  /// The source record's own real timestamp — never the moment this row was written.
+  sourceTimestamp DateTime
+  /// Plain-language, deterministically templated: what this specific item contributes (e.g.
+  /// "Journal entry tagged 'spanish', published 8/5/2026.").
+  contribution    String
+  createdAt       DateTime               @default(now())
+
+  @@index([goalProgressId])
+  @@index([sourceType, sourceId])
+  @@map("goal_evidence")
+}
+
+/// Append-only lifecycle event log — mirrors MemoryAudit's own precedent (event trail only, never
+/// re-derivable content). Survives regardless of the Goal's current status.
+model GoalHistory {
+  id        String            @id @default(cuid())
+  goalId    String
+  goal      Goal              @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  action    GoalHistoryAction
+  /// Plain-language, deterministically templated — never free-text generation.
+  detail    String
+  createdAt DateTime          @default(now())
+
+  @@index([goalId, createdAt])
+  @@map("goal_history")
+}
+
+/// A real, explicit, user-created link between two of the caller's own Goals. No automatic
+/// relationship detection — see goal-system.md "Known limitations".
+model GoalRelationship {
+  id        String               @id @default(cuid())
+  goalAId   String
+  goalA     Goal                 @relation("GoalRelationshipA", fields: [goalAId], references: [id], onDelete: Cascade)
+  goalBId   String
+  goalB     Goal                 @relation("GoalRelationshipB", fields: [goalBId], references: [id], onDelete: Cascade)
+  type      GoalRelationshipType
+  createdAt DateTime             @default(now())
+
+  @@unique([goalAId, goalBId, type])
+  @@index([goalAId])
+  @@index([goalBId])
+  @@map("goal_relationships")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 6 — Tarot Discovery Foundation. The first real Discovery system
+// (Product Bible Module 12) — a deterministic, seeded 78-card draw engine
+// with real traditional card meanings, plus a narrow AI interpretation layer
+// that only ever narrates a real, already-drawn result (see
+// docs/architecture/tarot-discovery.md). Explicitly NOT AI-generated cards,
+// NOT AI-chosen cards, NOT Natal Chart/Eastern Horoscope/Numerology/Premium —
+// those remain out of scope per docs/audit/web-tu-vi-remediation-roadmap.md.
+// Reflection/Insight/Review/Goal above are frozen, untouched by this sprint.
+// ---------------------------------------------------------------------------
+
+enum TarotArcana {
+  MAJOR
+  MINOR
+}
+
+enum TarotSuit {
+  WANDS
+  CUPS
+  SWORDS
+  PENTACLES
+}
+
+/// DAILY_DRAW and SINGLE_CARD both draw exactly one card via the identical engine — they differ
+/// only in rate limiting and framing (see tarot-discovery.md "Reading types"). DAILY_DRAW is
+/// rate-limited to once per UTC calendar day per user (Module 12: "no re-draw allowed... to
+/// preserve the reflective premise"); SINGLE_CARD and THREE_CARD are unlimited, on-demand.
+enum TarotReadingType {
+  DAILY_DRAW
+  SINGLE_CARD
+  THREE_CARD
+}
+
+/// Mirrors JournalEntry/Goal's own reversible-archive + soft-delete precedent exactly.
+enum TarotReadingStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+/// Mirrors Memory/Reflection/Goal's own PRIVATE/COMPANION_VISIBLE precedent exactly — gates
+/// whether Companion's context assembly may reference this reading, never a public visibility.
+enum TarotReadingVisibility {
+  PRIVATE
+  COMPANION_VISIBLE
+}
+
+/// Append-only lifecycle event log — mirrors GoalHistory/MemoryAudit's own precedent.
+enum TarotReadingHistoryAction {
+  CREATED
+  VIEWED
+  INTERPRETED
+  ARCHIVED
+  RESTORED
+  DELETED
+}
+
+/// The full, real, 78-card traditional Tarot deck — no placeholders, no AI-generated content.
+/// Upright/reversed meanings and keywords are original text grounded in traditional/public-domain
+/// Tarot knowledge (see docs/progress/sprint-6-progress.md "Deliberate scope decisions" #3).
+/// `imageSlug` is a stable reference for a future art asset pipeline — no illustration exists yet
+/// (disclosed, not faked; the frontend renders a typographic/symbolic card face instead).
+model TarotCard {
+  id               String      @id @default(cuid())
+  /// URL-safe, stable, human-readable (e.g. "major-00-the-fool", "wands-05-five-of-wands").
+  slug             String      @unique
+  name             String
+  arcana           TarotArcana
+  /// Null for Major Arcana.
+  suit             TarotSuit?
+  /// Major Arcana: 0-21 (The Fool through The World). Minor Arcana: 1-14 (Ace, 2-10, Page=11,
+  /// Knight=12, Queen=13, King=14).
+  number           Int
+  uprightKeywords  String[]
+  uprightMeaning   String
+  reversedKeywords String[]
+  reversedMeaning  String
+  /// Real, traditional elemental correspondence (Fire/Water/Air/Earth) — null only where the
+  /// traditional system genuinely assigns none.
+  element          String?
+  /// Real, traditional planet/zodiac correspondence, where the traditional system assigns one.
+  astrological     String?
+  /// Real thematic tags (e.g. "love", "career", "change") for Phase 5's search/filter — derived
+  /// from the card's own actual meaning, never arbitrary.
+  categories       String[]
+  imageSlug        String
+  createdAt        DateTime    @default(now())
+
+  readingCards TarotReadingCard[]
+
+  @@index([arcana])
+  @@index([suit])
+  @@map("tarot_cards")
+}
+
+/// A named spread template (position count + labels) — referenced by every TarotReading, not
+/// duplicated per-reading. Seeded once alongside the deck: "daily-draw" (1 position, "Today"),
+/// "single-card" (1 position, "Focus"), "three-card-ppf" (3 positions, Past/Present/Future).
+model TarotSpread {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  cardCount Int
+  /// [{ order: 0, label: "Past" }, ...] — real, fixed, never generated per-reading.
+  positions Json
+  createdAt DateTime @default(now())
+
+  readings TarotReading[]
+
+  @@map("tarot_spreads")
+}
+
+/// A persisted Tarot reading. `interpretation` is null until the AI narration step completes
+/// (Phase 4) — a reading is fully real and viewable (real cards, real meanings) before that, the
+/// interpretation is additive, never a precondition for the deterministic result to exist.
+model TarotReading {
+  id             String                  @id @default(cuid())
+  userId         String
+  user           User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type           TarotReadingType
+  spreadId       String
+  spread         TarotSpread             @relation(fields: [spreadId], references: [id])
+  status         TarotReadingStatus      @default(ACTIVE)
+  visibility     TarotReadingVisibility  @default(PRIVATE)
+  /// Optional — Daily Draw never requires one; Single Card/Three Card may carry the user's own
+  /// real question, never fabricated.
+  question       String?
+  /// AI-narrated interpretation of the real drawn cards (Phase 4) — null until generated, never a
+  /// placeholder string in the meantime.
+  interpretation String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+  archivedAt     DateTime?
+  deletedAt      DateTime?
+
+  cards   TarotReadingCard[]
+  session TarotReadingSession?
+  history TarotReadingHistory[]
+
+  @@index([userId, status, createdAt])
+  @@index([userId, type, createdAt])
+  @@map("tarot_readings")
+}
+
+/// One row per real card drawn within a reading — "never fabricate a card" is enforced
+/// structurally: every row's `cardId` is a real FK into the fixed 78-row `TarotCard` table, and
+/// `isReversed` is set once, at draw time, by the deterministic engine (Phase 2) — never changed
+/// after the fact.
+model TarotReadingCard {
+  id            String       @id @default(cuid())
+  readingId     String
+  reading       TarotReading @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  cardId        String
+  card          TarotCard    @relation(fields: [cardId], references: [id])
+  /// 0-indexed position within the spread.
+  position      Int
+  /// Copied from the spread's own position label at draw time (e.g. "Past") — denormalized so a
+  /// reading's own history reads correctly even if the spread template's labels are ever revised.
+  positionLabel String?
+  isReversed    Boolean      @default(false)
+
+  @@unique([readingId, position])
+  @@index([readingId])
+  @@index([cardId])
+  @@map("tarot_reading_cards")
+}
+
+/// The deterministic-draw audit record — one row per TarotReading, storing exactly what the
+/// engine needs to reproduce the same draw again: the seed, the algorithm version, and the full
+/// shuffled deck order it drew from. This is what makes Phase 2's "engine must be reproducible"
+/// requirement independently verifiable after the fact, not just true at draw-time (see
+/// tarot-discovery.md "Draw engine").
+model TarotReadingSession {
+  id              String       @id @default(cuid())
+  readingId       String       @unique
+  reading         TarotReading @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  seed            String
+  algorithm       String
+  /// The full 78-card shuffled order (card ids) the draw was taken from the front of.
+  shuffledCardIds Json
+  createdAt       DateTime     @default(now())
+
+  @@map("tarot_reading_sessions")
+}
+
+/// Append-only lifecycle event log — mirrors GoalHistory's own precedent exactly.
+model TarotReadingHistory {
+  id        String                    @id @default(cuid())
+  readingId String
+  reading   TarotReading              @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  action    TarotReadingHistoryAction
+  detail    String
+  createdAt DateTime                  @default(now())
+
+  @@index([readingId, createdAt])
+  @@map("tarot_reading_history")
 }

@@ -147,6 +147,20 @@ apps/
                   document (overview, sections, evidence, statistics, export)
                   — generates no new Insight/Reflection Candidates, no AI; see
                   docs/architecture/review-engine.md.
+      goal/       Goal System & Progress Engine (Sprint 5C) — first-class,
+                  deterministic learning/life goals: CRUD, milestones, and a
+                  progress engine that computes completion from real
+                  Journal/Memory/Reflection/Insight/Review evidence matched by
+                  tag/category equality — no AI, no coaching, no
+                  recommendations, no semantic search; see
+                  docs/architecture/goal-system.md.
+      tarot/      Tarot Discovery Foundation (Sprint 6) — the first real Discovery
+                  feature: a real, curated 78-card deck, a deterministic seeded
+                  draw engine (Daily Draw/Single Card/Three Card Spread), a
+                  persisted TarotReading (never recomputed), and AI
+                  interpretation that only ever narrates an already-drawn
+                  result — never chooses or changes cards; see
+                  docs/architecture/tarot-discovery.md.
       users/      Profile + preferences
       common/     Guards, filters, interceptors, shared utils
     prisma/       Schema, migrations, dev seed
@@ -188,14 +202,33 @@ Experience), `/insights` renders those Insight Candidates into a dashboard
 the real Journal/Memory/Reflection records behind each insight, and priority/
 category/date/status/source filters) — still no AI, no new insights generated,
 every field traces back to structured data a prior sprint already produced;
-see `docs/architecture/insight-experience.md`.
+see `docs/architecture/insight-experience.md`. As of Sprint 5B (Weekly &
+Monthly Reviews), `/reviews` aggregates existing Insight/Reflection Candidates
+into deterministic Weekly/Monthly/Custom review documents — see
+`docs/architecture/review-engine.md`. As of Sprint 5C (Goal System & Progress
+Engine), `/goals` introduces first-class, deterministic learning/life goals
+whose progress is computed from real Journal/Memory/Reflection/Insight/Review
+evidence matched by tag/category equality — still no AI, no coaching, no
+recommendations, no semantic search; see
+`docs/architecture/goal-system.md`. As of Sprint 6 (Tarot Discovery
+Foundation), `/discover/tarot` is the product's first real Discovery feature:
+a real, curated 78-card deck; a deterministic, seeded draw engine (Daily
+Draw/Single Card/Three Card Spread, reproducible and duplicate-free); a
+persisted `TarotReading` that's computed once and never recomputed; and AI
+interpretation that only ever narrates an already-drawn, already-persisted
+result — it never chooses, changes, or invents a card. A short, read-only
+reference to the caller's latest reading is surfaced to the Companion; see
+`docs/architecture/tarot-discovery.md`.
 
 Two things remain deliberately simplified (and disclosed, not hidden):
 
 - **Google/Apple login buttons are visible but disabled** ("Coming soon") — no
   OAuth credentials are configured for this environment, and requirements
   explicitly forbid faking a successful social login.
-- Journal, Discovery (Tarot/Natal Chart/Eastern Horoscope/Numerology), Reports,
-  and Community remain out of scope. Their nav entries and/or landing mentions
-  exist, but route to structured "Coming soon" pages — never a dead link or a
-  page that pretends to be a working feature.
+- Of Discovery's four systems, only **Tarot** is real. Natal Chart, Eastern
+  Horoscope, and Numerology remain out of scope, as do Reports and Community.
+  Their nav entries and/or landing mentions exist, but route to structured
+  "Coming soon" pages — never a dead link or a page that pretends to be a
+  working feature. Tarot cards have no illustrated artwork yet — a
+  typographic/symbolic card face is used instead (see
+  `docs/architecture/tarot-discovery.md` "No card artwork").

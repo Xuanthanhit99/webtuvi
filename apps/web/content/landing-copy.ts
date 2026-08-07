@@ -15,7 +15,7 @@ export const landingCopy = {
     headline: 'An AI that actually remembers you.',
     headlineHighlight: 'remembers you',
     subheadline:
-      "BeaconVie uses tarot, astrology, and numerology as a way to get to know you — then carries what it learns forward, conversation after conversation, so you're never starting over.",
+      "BeaconVie starts with a real Tarot draw as a way to get to know you — then carries what it learns forward, conversation after conversation, so you're never starting over.",
     primaryCta: 'Meet your Companion',
     secondaryCta: 'See how it works',
   },
@@ -25,7 +25,7 @@ export const landingCopy = {
     areTitle: 'We ARE',
     are: [
       'An AI Companion that remembers what you share',
-      'A reflection practice, grounded in tarot, astrology, and numerology',
+      'A reflection practice, starting with a real Tarot draw',
       'Private by default, yours to export or delete anytime',
     ],
   },
@@ -36,23 +36,23 @@ export const landingCopy = {
     ],
   },
   solution: {
-    text: 'BeaconVie starts with a reading — a card, a chart, a number — and carries what you share forward. Every conversation adds to what your Companion knows. Nothing is lost between visits.',
+    text: 'BeaconVie starts with a real Tarot draw and carries what you share forward. Every conversation adds to what your Companion knows. Nothing is lost between visits.',
   },
   howItWorks: {
     steps: [
       {
         number: 1,
-        text: "Start with a reading — tarot, your chart, your numbers, whichever you're drawn to.",
+        text: 'Start with a real Tarot draw — your chart and your numbers are on their way.',
       },
       { number: 2, text: 'Talk it through with your Companion.' },
       { number: 3, text: 'Come back — it remembers, and the picture gets clearer.' },
     ],
   },
   discoverySystems: [
-    { title: 'Tarot', description: 'A card, a moment of reflection.' },
-    { title: 'Natal Chart', description: 'What your chart says about how you move through the world.' },
-    { title: 'Eastern Horoscope', description: 'An old lens on a familiar question: who am I, really?' },
-    { title: 'Numerology', description: 'The numbers already in your life, given a second look.' },
+    { title: 'Tarot', description: 'A real, deterministic 78-card draw — live today.', comingSoon: false },
+    { title: 'Natal Chart', description: 'What your chart says about how you move through the world.', comingSoon: true },
+    { title: 'Eastern Horoscope', description: 'An old lens on a familiar question: who am I, really?', comingSoon: true },
+    { title: 'Numerology', description: 'The numbers already in your life, given a second look.', comingSoon: true },
   ],
   // Module 5 describes this section's shape (a short, credible 2-3 message
   // exchange) without providing exact copy — the example dialogue below is the
@@ -96,7 +96,7 @@ export const landingCopy = {
     {
       question: 'Is this a horoscope app?',
       answer:
-        "No. Tarot, astrology, and numerology are how BeaconVie gets to know you — not what it sells you. The Companion and its memory of you are the actual product.",
+        "No. A real Tarot draw is how BeaconVie starts getting to know you — not what it sells you. The Companion and its memory of you are the actual product.",
     },
     {
       question: 'Is my data private?',

@@ -838,6 +838,183 @@ export interface ReviewMarkdownExportDto {
   content: string;
 }
 
+// --- Goal System & Progress Engine (Sprint 5C). First-class, deterministic learning/life goals:
+// CRUD, milestones, a deterministic progress engine, and real evidence citing Memory/Journal/
+// Reflection/Insight/Review rows. No LLM, no coaching, no recommendations, no embeddings, no
+// semantic search. See docs/architecture/goal-system.md. ---
+
+export type GoalCategoryValue = 'LEARNING' | 'CAREER' | 'HEALTH' | 'HABIT' | 'RELATIONSHIP' | 'FINANCIAL' | 'CREATIVE' | 'PERSONAL' | 'OTHER';
+export type GoalTypeValue = 'MILESTONE_BASED' | 'METRIC_BASED' | 'BINARY';
+export type GoalDifficultyValue = 'EASY' | 'MEDIUM' | 'HARD';
+export type GoalStatusValue = 'ACTIVE' | 'PAUSED' | 'COMPLETED' | 'ABANDONED' | 'ARCHIVED' | 'DELETED';
+export type GoalVisibilityValue = 'PRIVATE' | 'COMPANION_VISIBLE';
+export type GoalMilestoneTypeValue = 'AUTOMATIC' | 'MANUAL';
+export type GoalMilestoneStatusValue = 'PENDING' | 'COMPLETED' | 'FAILED' | 'ARCHIVED';
+export type GoalTrendValue = 'NEW' | 'IMPROVING' | 'STABLE' | 'DECLINING';
+export type GoalEvidenceSourceTypeValue = 'JOURNAL' | 'MEMORY' | 'REFLECTION' | 'INSIGHT' | 'REVIEW' | 'ACTIVITY';
+export type GoalHistoryActionValue =
+  | 'CREATED'
+  | 'UPDATED'
+  | 'PAUSED'
+  | 'RESUMED'
+  | 'COMPLETED'
+  | 'ABANDONED'
+  | 'ARCHIVED'
+  | 'RESTORED'
+  | 'DELETED'
+  | 'MILESTONE_COMPLETED'
+  | 'MILESTONE_FAILED';
+export type GoalRelationshipTypeValue = 'PARENT_CHILD' | 'RELATED';
+
+export interface GoalEvidenceDto {
+  sourceType: GoalEvidenceSourceTypeValue;
+  sourceId: string;
+  sourceTimestamp: string;
+  contribution: string;
+  href: string;
+}
+
+export interface GoalProgressFactorsDto {
+  formula: 'MILESTONE_BASED' | 'METRIC_BASED' | 'BINARY';
+  evidenceCount: number;
+  milestonesTotal: number;
+  milestonesCompleted: number;
+  targetValue: number | null;
+  currentValue: number | null;
+}
+
+export interface GoalProgressDto {
+  completionPercent: number;
+  milestoneCompletionPercent: number;
+  trend: GoalTrendValue;
+  factors: GoalProgressFactorsDto;
+  previousCompletionPercent: number | null;
+  computedAt: string;
+  evidence: GoalEvidenceDto[];
+}
+
+export interface GoalMilestoneDto {
+  id: string;
+  title: string;
+  description: string;
+  type: GoalMilestoneTypeValue;
+  status: GoalMilestoneStatusValue;
+  order: number;
+  targetCount: number | null;
+  dueDate: string | null;
+  completedAt: string | null;
+  failedAt: string | null;
+}
+
+export interface GoalHistoryDto {
+  id: string;
+  action: GoalHistoryActionValue;
+  detail: string;
+  createdAt: string;
+}
+
+export interface GoalRelationshipDto {
+  id: string;
+  type: GoalRelationshipTypeValue;
+  goalId: string;
+  goalTitle: string;
+  direction: 'A' | 'B';
+}
+
+export interface GoalSummaryDto {
+  id: string;
+  title: string;
+  description: string;
+  category: GoalCategoryValue;
+  type: GoalTypeValue;
+  difficulty: GoalDifficultyValue;
+  status: GoalStatusValue;
+  visibility: GoalVisibilityValue;
+  linkedTag: string;
+  targetValue: number | null;
+  targetUnit: string | null;
+  targetDate: string | null;
+  startedAt: string;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
+  progress: GoalProgressDto | null;
+  milestones: GoalMilestoneDto[];
+}
+
+export interface ListGoalsResultDto {
+  items: GoalSummaryDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+// --- Tarot Discovery Foundation (Sprint 6). The Product Bible's first real Discovery system
+// (Module 12) — a deterministic, seeded 78-card draw engine with real traditional card meanings,
+// plus a narrow AI interpretation layer that only ever narrates an already-real, already-drawn
+// result. No AI-chosen or AI-generated cards. See docs/architecture/tarot-discovery.md. ---
+
+export type TarotArcanaValue = 'MAJOR' | 'MINOR';
+export type TarotSuitValue = 'WANDS' | 'CUPS' | 'SWORDS' | 'PENTACLES';
+export type TarotReadingTypeValue = 'DAILY_DRAW' | 'SINGLE_CARD' | 'THREE_CARD';
+export type TarotReadingStatusValue = 'ACTIVE' | 'ARCHIVED' | 'DELETED';
+export type TarotReadingVisibilityValue = 'PRIVATE' | 'COMPANION_VISIBLE';
+export type TarotReadingHistoryActionValue = 'CREATED' | 'VIEWED' | 'INTERPRETED' | 'ARCHIVED' | 'RESTORED' | 'DELETED';
+
+export interface TarotCardDto {
+  id: string;
+  slug: string;
+  name: string;
+  arcana: TarotArcanaValue;
+  suit: TarotSuitValue | null;
+  number: number;
+  uprightKeywords: string[];
+  uprightMeaning: string;
+  reversedKeywords: string[];
+  reversedMeaning: string;
+  element: string | null;
+  astrological: string | null;
+  categories: string[];
+  imageSlug: string;
+}
+
+export interface TarotReadingCardDto {
+  position: number;
+  positionLabel: string | null;
+  isReversed: boolean;
+  card: TarotCardDto;
+}
+
+export interface TarotReadingDto {
+  id: string;
+  type: TarotReadingTypeValue;
+  status: TarotReadingStatusValue;
+  visibility: TarotReadingVisibilityValue;
+  spreadSlug: string;
+  spreadName: string;
+  question: string | null;
+  interpretation: string | null;
+  cards: TarotReadingCardDto[];
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
+}
+
+export interface TarotReadingHistoryDto {
+  id: string;
+  action: TarotReadingHistoryActionValue;
+  detail: string;
+  createdAt: string;
+}
+
+export interface ListReadingsResultDto {
+  items: TarotReadingDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {

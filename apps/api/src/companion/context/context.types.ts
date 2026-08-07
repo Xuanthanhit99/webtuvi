@@ -16,6 +16,15 @@ export interface ConversationContext {
   recentActivityLabels: string[];
   /** Short excerpts from the user's other recent conversations, oldest-first, for continuity across threads. */
   recentConversationSummaries: { title: string | null; lastMessageExcerpt: string; updatedAt: string }[];
+  /** Titles of the user's own ACTIVE, COMPANION_VISIBLE goals (Sprint 5C, Phase 7) — real,
+   * already-stored strings, never rewritten/summarized. Read-only: Companion never creates,
+   * updates, or scores a Goal, and this is never a coaching suggestion. */
+  activeGoalTitles: string[];
+  /** The user's most recent ACTIVE, COMPANION_VISIBLE Tarot reading (Sprint 6, Phase 7) — real
+   * card names/orientations and the real AI interpretation already generated for it, never
+   * re-interpreted here. Read-only: Companion never draws, re-draws, or edits a reading. Null
+   * when no such reading exists. */
+  latestTarotReading: { cardNames: string[]; interpretation: string | null; createdAt: string } | null;
   currentTimeIso: string;
   currentTimeLabel: string;
 }

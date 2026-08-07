@@ -37,6 +37,12 @@ import { CompanionReflectionController } from './reflection/companion-reflection
  * Sprint 4B adds `ReflectionModule` for `CompanionReflectionController`'s one read-only hint
  * endpoint — Companion still never generates, fabricates, or summarizes a reflection; see
  * docs/architecture/reflection-foundation.md "Companion integration".
+ *
+ * Sprint 6 exports `ProviderOrchestratorService` and `SafetyService` — and only those two —
+ * so `TarotModule`'s AI interpretation layer reuses the exact same retry/fallback provider chain
+ * and input/output safety checks Companion already has, rather than standing up a second AI
+ * client (see docs/architecture/tarot-discovery.md "AI interpretation"). Nothing else here is
+ * exported; Tarot never touches Conversation/Memory/Journal/Reflection state.
  */
 @Module({
   imports: [ActivitiesModule, MemoryModule, JournalModule, ReflectionModule],
@@ -59,5 +65,6 @@ import { CompanionReflectionController } from './reflection/companion-reflection
     CompanionForgetService,
     CompanionJournalService,
   ],
+  exports: [ProviderOrchestratorService, SafetyService],
 })
 export class CompanionModule {}

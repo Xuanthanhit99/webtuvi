@@ -22,6 +22,8 @@ import { JournalModule } from './journal/journal.module';
 import { ReflectionModule } from './reflection/reflection.module';
 import { InsightModule } from './insight/insight.module';
 import { ReviewModule } from './review/review.module';
+import { GoalModule } from './goal/goal.module';
+import { TarotModule } from './tarot/tarot.module';
 
 @Module({
   imports: [
@@ -73,6 +75,8 @@ import { ReviewModule } from './review/review.module';
     ReflectionModule,
     InsightModule,
     ReviewModule,
+    GoalModule,
+    TarotModule,
     CompanionModule,
     DashboardModule,
   ],

@@ -42,11 +42,11 @@ export const metadata: Metadata = {
     template: '%s — BeaconVie',
   },
   description:
-    'BeaconVie starts with tarot, astrology, or numerology, then remembers what you share — so every conversation builds on the last. A reflection practice with real memory.',
+    'BeaconVie starts with a real Tarot draw, then remembers what you share — so every conversation builds on the last. A reflection practice with real memory.',
   openGraph: {
     title: 'BeaconVie — An AI Companion That Remembers You',
     description:
-      'BeaconVie starts with tarot, astrology, or numerology, then remembers what you share — so every conversation builds on the last.',
+      'BeaconVie starts with a real Tarot draw, then remembers what you share — so every conversation builds on the last.',
     type: 'website',
     locale: 'en_US',
   },
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'BeaconVie — An AI Companion That Remembers You',
     description:
-      'BeaconVie starts with tarot, astrology, or numerology, then remembers what you share — so every conversation builds on the last.',
+      'BeaconVie starts with a real Tarot draw, then remembers what you share — so every conversation builds on the last.',
   },
 };
 

@@ -5,6 +5,10 @@ import type { ConversationContext } from './context.types';
 
 const RECENT_CONVERSATIONS_LIMIT = 3;
 const EXCERPT_MAX_CHARS = 140;
+/** Same "never inject an unbounded list" discipline `MAX_MEMORIES_PER_TURN` already applies one
+ * layer over in `MemoryContextAssembler` — a hard cap, not a token-budget calculation, since
+ * titles alone are always short. */
+const ACTIVE_GOALS_LIMIT = 10;
 
 function excerpt(text: string, maxChars = EXCERPT_MAX_CHARS): string {
   const trimmed = text.trim();
@@ -30,13 +34,30 @@ export class ContextBuilderService {
     });
     if (!user) throw new NotFoundException();
 
-    const [recentActivity, otherConversations] = await Promise.all([
+    const [recentActivity, otherConversations, activeGoals, latestTarotReading] = await Promise.all([
       this.activitiesService.recent(userId, 5),
       this.prisma.conversation.findMany({
         where: { userId, ...(currentConversationId ? { id: { not: currentConversationId } } : {}) },
         orderBy: { updatedAt: 'desc' },
         take: RECENT_CONVERSATIONS_LIMIT,
         include: { messages: { orderBy: { createdAt: 'desc' }, take: 1 } },
+      }),
+      // Sprint 5C Phase 7 — read-only, structural goal awareness: real, already-stored titles
+      // only, never a progress/coaching summary. COMPANION_VISIBLE mirrors Memory's own PRIVATE/
+      // COMPANION_ALLOWED precedent (memory-engine.md) — a PRIVATE goal is never referenced here.
+      this.prisma.goal.findMany({
+        where: { userId, status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' },
+        orderBy: { createdAt: 'desc' },
+        take: ACTIVE_GOALS_LIMIT,
+        select: { title: true },
+      }),
+      // Sprint 6 Phase 7 — read-only Tarot bridge: the real cards/orientations and the real
+      // already-generated interpretation of the user's most recent visible reading, never
+      // re-interpreted or re-drawn here. COMPANION_VISIBLE mirrors the same Goal/Memory precedent.
+      this.prisma.tarotReading.findFirst({
+        where: { userId, status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' },
+        orderBy: { createdAt: 'desc' },
+        include: { cards: { include: { card: true }, orderBy: { position: 'asc' } } },
       }),
     ]);
 
@@ -58,6 +79,14 @@ export class ContextBuilderService {
           lastMessageExcerpt: excerpt(c.messages[0]!.content),
           updatedAt: c.updatedAt.toISOString(),
         })),
+      activeGoalTitles: activeGoals.map((g) => g.title),
+      latestTarotReading: latestTarotReading
+        ? {
+            cardNames: latestTarotReading.cards.map((rc) => `${rc.card.name}${rc.isReversed ? ' (reversed)' : ''}`),
+            interpretation: latestTarotReading.interpretation,
+            createdAt: latestTarotReading.createdAt.toISOString(),
+          }
+        : null,
       currentTimeIso: now.toISOString(),
       currentTimeLabel: formatTimeLabel(now, user.profile?.timezone ?? undefined),
     };
