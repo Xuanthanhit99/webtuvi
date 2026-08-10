@@ -95,6 +95,7 @@ export const appConfig = registerAs('app', () => {
       },
     },
     payment: {
+      enabled: env.PAYMENTS_ENABLED,
       payos: {
         clientId: env.PAYOS_CLIENT_ID,
         apiKey: env.PAYOS_API_KEY,

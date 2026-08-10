@@ -12,7 +12,7 @@ import { PremiumMatrix } from './premium-matrix';
 
 function checkoutErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.code === 'PAYMENT_PROVIDER_UNAVAILABLE') {
+    if (error.code === 'PAYMENT_PROVIDER_UNAVAILABLE' || error.code === 'PAYMENTS_DISABLED') {
       return 'Payment is temporarily unavailable. Please try again in a little while.';
     }
     if (error.code === 'RATE_LIMITED') {

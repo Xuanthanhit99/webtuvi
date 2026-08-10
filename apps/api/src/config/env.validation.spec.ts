@@ -86,4 +86,13 @@ describe('validateEnv — Premium & Payment Foundation (Sprint 7) production req
     expect(config.PREMIUM_PRICE_VND).toBe(79_000);
     expect(config.PREMIUM_DURATION_DAYS).toBe(30);
   });
+
+  it('defaults PAYMENTS_ENABLED to true when unset (kill switch is opt-out, not opt-in)', () => {
+    const config = validateEnv({ ...VALID_PRODUCTION_BASE });
+    expect(config.PAYMENTS_ENABLED).toBe(true);
+  });
+
+  it('allows PAYMENTS_ENABLED=false in production (the kill switch itself must not be blocked)', () => {
+    expect(() => validateEnv({ ...VALID_PRODUCTION_BASE, PAYMENTS_ENABLED: 'false' })).not.toThrow();
+  });
 });

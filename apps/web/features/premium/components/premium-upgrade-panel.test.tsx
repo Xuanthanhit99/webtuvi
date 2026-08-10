@@ -68,6 +68,15 @@ describe('PremiumUpgradePanel', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Payment is temporarily unavailable');
   });
 
+  it('payments disabled (kill switch): shows the same non-technical unavailable message', async () => {
+    (premiumApi.status as jest.Mock).mockResolvedValue(FREE_STATUS);
+    (premiumApi.checkout as jest.Mock).mockRejectedValue(new ApiError('irrelevant backend message', 'PAYMENTS_DISABLED', 400));
+    const user = userEvent.setup();
+    renderWithQuery(<PremiumUpgradePanel />);
+    await user.click(await screen.findByRole('button', { name: 'Upgrade to Premium' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Payment is temporarily unavailable');
+  });
+
   it('never redirects or claims success before the backend actually returns a checkoutUrl', async () => {
     (premiumApi.status as jest.Mock).mockResolvedValue(FREE_STATUS);
     (premiumApi.checkout as jest.Mock).mockResolvedValue({ id: 'order-1', checkoutUrl: null });

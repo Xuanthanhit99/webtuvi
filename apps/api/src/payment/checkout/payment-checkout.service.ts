@@ -32,6 +32,15 @@ export class PaymentCheckoutService {
   ) {}
 
   async createCheckout(userId: string): Promise<PaymentOrderDto> {
+    const config = this.configService.get<AppConfiguration>('app')!;
+    if (!config.payment.enabled) {
+      // Kill switch — see PAYMENTS_ENABLED docstring (env.validation.ts). Existing entitlements and
+      // already-created orders are unaffected; only new checkout creation is blocked.
+      throw new BadRequestException({
+        code: 'PAYMENTS_DISABLED',
+        message: 'Payment is temporarily unavailable. Please try again later.',
+      });
+    }
     if (!this.providerRegistry.has('payos')) {
       throw new BadRequestException({
         code: 'PAYMENT_PROVIDER_UNAVAILABLE',
@@ -39,7 +48,6 @@ export class PaymentCheckoutService {
       });
     }
     const provider = this.providerRegistry.get('payos');
-    const config = this.configService.get<AppConfiguration>('app')!;
     const amount = config.payment.premium.priceVnd;
     const currency = 'VND';
 

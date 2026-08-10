@@ -108,6 +108,12 @@ const envSchema = z.object({
   // on PayOS. Webhook signature VERIFICATION is always real — this flag never touches it. See
   // PayOSProvider and docs/security/ai-safety.md "Mock provider" for the precedent this mirrors.
   PAYOS_MOCK_CHECKOUT: z.coerce.boolean().default(false),
+  // Kill switch (PayOS Production Readiness Gate): flips checkout off without a redeploy while
+  // existing entitlements and webhook processing stay untouched — see PaymentCheckoutService and
+  // docs/progress/payos-production-readiness.md "Payment kill switch". Already-created orders may
+  // still legitimately receive a real webhook after checkout is disabled, so the webhook route never
+  // checks this flag.
+  PAYMENTS_ENABLED: z.coerce.boolean().default(true),
   PREMIUM_PRICE_VND: z.coerce.number().int().positive().default(79_000),
   PREMIUM_DURATION_DAYS: z.coerce.number().int().positive().default(30),
   PAYMENT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),

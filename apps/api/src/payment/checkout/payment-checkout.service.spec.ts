@@ -3,7 +3,7 @@ import { PaymentCheckoutService } from './payment-checkout.service';
 
 const USER = 'user-1';
 
-function makeHarness(options: { providerAvailable?: boolean; createPaymentImpl?: (input: unknown) => Promise<{ checkoutUrl: string; providerPaymentLinkId: string }> } = {}) {
+function makeHarness(options: { providerAvailable?: boolean; paymentsEnabled?: boolean; createPaymentImpl?: (input: unknown) => Promise<{ checkoutUrl: string; providerPaymentLinkId: string }> } = {}) {
   const orders = new Map<string, Record<string, unknown>>();
   let seq = 0;
 
@@ -23,7 +23,12 @@ function makeHarness(options: { providerAvailable?: boolean; createPaymentImpl?:
   };
 
   const prisma = { paymentOrder };
-  const configService = { get: jest.fn().mockReturnValue({ frontendUrl: 'https://app.example.com', payment: { premium: { priceVnd: 79000 } } }) };
+  const configService = {
+    get: jest.fn().mockReturnValue({
+      frontendUrl: 'https://app.example.com',
+      payment: { enabled: options.paymentsEnabled ?? true, premium: { priceVnd: 79000 } },
+    }),
+  };
   const createPayment = jest.fn(
     options.createPaymentImpl ?? (async (_input: unknown) => ({ checkoutUrl: 'https://pay.payos.vn/web/abc', providerPaymentLinkId: 'link-abc' })),
   );
@@ -63,6 +68,13 @@ describe('PaymentCheckoutService.createCheckout', () => {
     const { service, orders } = makeHarness({ providerAvailable: false });
     await expect(service.createCheckout(USER)).rejects.toMatchObject({ response: { code: 'PAYMENT_PROVIDER_UNAVAILABLE' } });
     expect(orders.size).toBe(0);
+  });
+
+  it('returns PAYMENTS_DISABLED without creating an order or touching the provider when the kill switch is off', async () => {
+    const { service, orders, providerRegistry } = makeHarness({ paymentsEnabled: false });
+    await expect(service.createCheckout(USER)).rejects.toMatchObject({ response: { code: 'PAYMENTS_DISABLED' } });
+    expect(orders.size).toBe(0);
+    expect(providerRegistry.has).not.toHaveBeenCalled();
   });
 
   it('marks the order FAILED (not left PENDING forever) if the provider call throws', async () => {

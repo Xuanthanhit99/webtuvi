@@ -6,6 +6,16 @@ PayOS sandbox/production credentials available in this environment — see §11)
 `docs/progress/sprint-7-progress.md` for the audit and provider-decision trail, and
 `docs/architecture/premium-entitlements.md` for what a verified payment grants.
 
+**Update — PayOS Production Readiness Gate**: see `docs/progress/payos-production-readiness.md` for
+the full gate report. Two additions since the paragraph above was written: (1) a `PAYMENTS_ENABLED`
+kill switch (§13 of the readiness report) now gates *new* checkout creation only — the webhook route
+is deliberately never gated by it, since an order created before a disable can still legitimately
+receive a real webhook after; (2) the gate's own re-verification found the official PayOS contract
+unchanged from §12's findings (no new mismatch), but found and fixed two *environment* gaps that had
+made the previously-reported test counts non-reproducible in this environment (an undeployed Prisma
+migration and a stale `.env.test`) — see the readiness report §"Environment/regression discrepancy
+found and fixed" for detail. No payment/webhook/entitlement logic changed as a result.
+
 ## 1. Provider decision
 
 Every mention in the Product Bible pairs `PayOS/VNPay` without picking one; the remediation roadmap
