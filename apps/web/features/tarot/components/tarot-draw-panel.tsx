@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Sparkles } from 'lucide-react';
 import type { TarotReadingDto, TarotReadingTypeValue } from '@beaconvie/types';
@@ -8,11 +9,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { toast } from '@/components/ui/toast';
+import { ApiError } from '@/lib/api-error';
 import { tarotApi } from '../api/tarot-api';
 import { TarotReadingView } from './tarot-reading-view';
 import { READING_TYPE_DESCRIPTIONS, READING_TYPE_LABELS } from '../labels';
 
 const READING_TYPES: TarotReadingTypeValue[] = ['DAILY_DRAW', 'SINGLE_CARD', 'THREE_CARD'];
+
+/** Sprint 7 Phase 11 — Tarot UI must clearly explain Premium boundaries, not just show a generic
+ * error toast. `PREMIUM_REQUIRED` means upgrading would actually raise this specific ceiling;
+ * `TAROT_DAILY_LIMIT_REACHED` means even Premium's (higher) ceiling was hit today — no upsell. */
+function drawLimitBanner(error: unknown): { message: string; showUpgrade: boolean } | null {
+  if (!(error instanceof ApiError)) return null;
+  if (error.code === 'PREMIUM_REQUIRED') return { message: error.message, showUpgrade: true };
+  if (error.code === 'TAROT_DAILY_LIMIT_REACHED' || error.code === 'TAROT_DAILY_DRAW_ALREADY_TAKEN') {
+    return { message: error.message, showUpgrade: false };
+  }
+  return null;
+}
 
 /** Phase 6 — Draw animation. A brief, calm "shuffling" pause before the real, already-computed
  * result reveals — never a fake random spin; the deterministic draw already happened server-side
@@ -23,6 +37,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
   const [question, setQuestion] = useState('');
   const [phase, setPhase] = useState<'idle' | 'shuffling' | 'revealed'>('idle');
   const [result, setResult] = useState<TarotReadingDto | null>(null);
+  const [limitBanner, setLimitBanner] = useState<{ message: string; showUpgrade: boolean } | null>(null);
 
   const draw = useMutation({
     mutationFn: () => tarotApi.draw(type, type === 'DAILY_DRAW' ? undefined : question || undefined),
@@ -35,6 +50,11 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     },
     onError: (error: unknown) => {
       setPhase('idle');
+      const banner = drawLimitBanner(error);
+      if (banner) {
+        setLimitBanner(banner);
+        return;
+      }
       const message = error instanceof Error ? error.message : "Couldn't draw a card. Please try again.";
       toast.error(message);
     },
@@ -43,6 +63,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
   function startDraw() {
     setPhase('shuffling');
     setResult(null);
+    setLimitBanner(null);
     draw.mutate();
   }
 
@@ -92,6 +113,19 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
         <FormField label="Your question (optional)" htmlFor="tarot-question">
           <Input id="tarot-question" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="What's on your mind?" />
         </FormField>
+      )}
+
+      {limitBanner && (
+        <div role="alert" className="flex flex-col gap-2 rounded-md border border-insight/30 bg-insight/5 px-4 py-3 text-body-sm text-text-primary">
+          <span>{limitBanner.message}</span>
+          {limitBanner.showUpgrade && (
+            <Link href="/premium?reason=required" className="self-start">
+              <Button variant="secondary" size="sm">
+                Upgrade to Premium
+              </Button>
+            </Link>
+          )}
+        </div>
       )}
 
       {phase === 'shuffling' ? (

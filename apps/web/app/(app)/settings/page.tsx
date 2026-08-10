@@ -13,6 +13,7 @@ import { SessionsPanel } from '@/features/settings/components/sessions-panel';
 import { ChangePasswordForm } from '@/features/settings/components/change-password-form';
 import { ConsentSettings } from '@/features/memory/components/consent-settings';
 import { memoryApi } from '@/features/memory/api/memory-api';
+import { PremiumStatusCard } from '@/features/premium/components/premium-status-card';
 import type { MemoryPreferenceValue } from '@beaconvie/types';
 
 const MEMORY_OPTIONS: { value: MemoryPreferenceValue; label: string }[] = [
@@ -70,6 +71,10 @@ export default function SettingsPage() {
             <dd className="text-text-primary">{user?.emailVerifiedAt ? 'Yes' : 'Not yet'}</dd>
           </div>
         </dl>
+      </Card>
+
+      <Card>
+        <PremiumStatusCard />
       </Card>
 
       <ChangePasswordForm />

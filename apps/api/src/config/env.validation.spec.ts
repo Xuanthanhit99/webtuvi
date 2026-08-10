@@ -18,6 +18,9 @@ const VALID_PRODUCTION_BASE: Record<string, string> = {
   RESEND_API_KEY: 'resend-test-key',
   DEFAULT_AI_PROVIDER: 'openai',
   OPENAI_API_KEY: 'sk-test',
+  PAYOS_CLIENT_ID: 'payos-client-test',
+  PAYOS_API_KEY: 'payos-api-key-test',
+  PAYOS_CHECKSUM_KEY: 'payos-checksum-key-test',
 };
 
 describe('validateEnv — Companion Core Mock provider production rejection (Sprint 2B audit Finding 1)', () => {
@@ -52,5 +55,35 @@ describe('validateEnv — Companion Core Mock provider production rejection (Spr
   it('defaults AI_ENABLE_MOCK_PROVIDER to false when unset', () => {
     const config = validateEnv({ ...VALID_PRODUCTION_BASE });
     expect(config.AI_ENABLE_MOCK_PROVIDER).toBe(false);
+  });
+});
+
+function withoutKey(key: keyof typeof VALID_PRODUCTION_BASE): Record<string, string> {
+  const rest = { ...VALID_PRODUCTION_BASE };
+  delete rest[key];
+  return rest;
+}
+
+describe('validateEnv — Premium & Payment Foundation (Sprint 7) production requirements', () => {
+  it('rejects production boot when PAYOS_CLIENT_ID is missing', () => {
+    expect(() => validateEnv(withoutKey('PAYOS_CLIENT_ID'))).toThrow(/PAYOS_CLIENT_ID, PAYOS_API_KEY, and PAYOS_CHECKSUM_KEY are all required/);
+  });
+
+  it('rejects production boot when PAYOS_API_KEY is missing', () => {
+    expect(() => validateEnv(withoutKey('PAYOS_API_KEY'))).toThrow(/PAYOS_CLIENT_ID, PAYOS_API_KEY, and PAYOS_CHECKSUM_KEY are all required/);
+  });
+
+  it('rejects production boot when PAYOS_CHECKSUM_KEY is missing', () => {
+    expect(() => validateEnv(withoutKey('PAYOS_CHECKSUM_KEY'))).toThrow(/PAYOS_CLIENT_ID, PAYOS_API_KEY, and PAYOS_CHECKSUM_KEY are all required/);
+  });
+
+  it('rejects PAYOS_MOCK_CHECKOUT=true in production', () => {
+    expect(() => validateEnv({ ...VALID_PRODUCTION_BASE, PAYOS_MOCK_CHECKOUT: 'true' })).toThrow(/PAYOS_MOCK_CHECKOUT cannot be true in production/);
+  });
+
+  it('defaults PREMIUM_PRICE_VND/PREMIUM_DURATION_DAYS sensibly when unset', () => {
+    const config = validateEnv({ ...VALID_PRODUCTION_BASE });
+    expect(config.PREMIUM_PRICE_VND).toBe(79_000);
+    expect(config.PREMIUM_DURATION_DAYS).toBe(30);
   });
 });

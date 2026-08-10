@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import type { Prisma, TarotReadingStatus, TarotReadingType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryRetrievalService } from '../../memory/retrieval/memory-retrieval.service';
+import { EntitlementService } from '../../payment/entitlement/entitlement.service';
 import { drawCards } from '../draw/tarot-draw-engine.util';
 import { TarotInterpretationService } from '../interpretation/tarot-interpretation.service';
 import { toTarotReadingDto, toTarotReadingHistoryDto, type TarotReadingDto, type TarotReadingHistoryDto } from '../tarot.mappers';
@@ -33,6 +34,19 @@ const SPREAD_SLUG_BY_TYPE: Record<TarotReadingType, string> = {
   THREE_CARD: 'three-card-ppf',
 };
 
+// Sprint 7, Phase 8 — documented product change: Single Card and Three Card Spread were unlimited
+// in Sprint 6; both are still fully available to Free users (never removed), just given the same
+// kind of reasonable daily cap Daily Draw already had. Daily Draw itself is unchanged for both
+// tiers — its "no re-draw" reflective premise applies equally to Free and Premium (see
+// assertNoDailyDrawToday). See docs/architecture/premium-entitlements.md "Free vs Premium matrix".
+const FREE_DAILY_LIMITS: Partial<Record<TarotReadingType, number>> = { SINGLE_CARD: 3, THREE_CARD: 1 };
+const PREMIUM_DAILY_LIMITS: Partial<Record<TarotReadingType, number>> = { SINGLE_CARD: 15, THREE_CARD: 10 };
+
+/** Free users can browse only their most recent 20 readings (any page/pageSize combination whose
+ * window falls entirely within that range); requesting further back is an explicit PREMIUM_REQUIRED
+ * denial, never a silently-truncated result. Premium is unlimited (existing pagination). */
+const FREE_HISTORY_LIMIT = 20;
+
 /**
  * Phase 3/5 — Reading persistence and lifecycle. `draw()` is the one place a new
  * `TarotReading`/`TarotReadingCard`/`TarotReadingSession` gets created: the deterministic engine
@@ -48,11 +62,14 @@ export class TarotRecordService {
     private readonly prisma: PrismaService,
     private readonly interpretation: TarotInterpretationService,
     private readonly memoryRetrieval: MemoryRetrievalService,
+    private readonly entitlementService: EntitlementService,
   ) {}
 
   async draw(userId: string, dto: DrawReadingDto): Promise<TarotReadingDto> {
     if (dto.type === 'DAILY_DRAW') {
       await this.assertNoDailyDrawToday(userId);
+    } else {
+      await this.assertWithinDailyLimit(userId, dto.type);
     }
 
     const spread = await this.prisma.tarotSpread.findUnique({ where: { slug: SPREAD_SLUG_BY_TYPE[dto.type] } });
@@ -106,15 +123,21 @@ export class TarotRecordService {
   private async generateInterpretation(userId: string, readingId: string): Promise<void> {
     try {
       const full = await this.prisma.tarotReading.findUniqueOrThrow({ where: { id: readingId }, include: INCLUDE });
+      const isPremium = await this.entitlementService.hasPremiumAccess(userId);
 
+      // Sprint 7, Phase 13 — Free interpretations never receive a memory reference: the retrieval
+      // call itself is skipped for Free, not merely fetched-then-hidden (see tarot.types.ts
+      // InterpretationTier docstring).
       let memoryReference: { title: string; summary: string } | null = null;
-      try {
-        const recommended = await this.memoryRetrieval.recommend(userId, { limit: 1, contextText: full.question ?? undefined });
-        const top = recommended.items[0];
-        if (top) memoryReference = { title: top.title, summary: top.summary };
-      } catch {
-        // Memory retrieval failing never blocks a Tarot reading — the interpretation just
-        // proceeds without a memory reference.
+      if (isPremium) {
+        try {
+          const recommended = await this.memoryRetrieval.recommend(userId, { limit: 1, contextText: full.question ?? undefined });
+          const top = recommended.items[0];
+          if (top) memoryReference = { title: top.title, summary: top.summary };
+        } catch {
+          // Memory retrieval failing never blocks a Tarot reading — the interpretation just
+          // proceeds without a memory reference.
+        }
       }
 
       const interpretation = await this.interpretation.interpret({
@@ -123,6 +146,7 @@ export class TarotRecordService {
         cards: [...full.cards]
           .sort((a, b) => a.position - b.position)
           .map((rc) => ({ card: rc.card, position: rc.position, positionLabel: rc.positionLabel, isReversed: rc.isReversed })),
+        tier: isPremium ? 'PREMIUM' : 'FREE',
         memoryReference,
       });
 
@@ -144,6 +168,16 @@ export class TarotRecordService {
   async list(userId: string, params: ListReadingsParams): Promise<ListReadingsResult> {
     const page = Math.max(1, params.page ?? 1);
     const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, params.pageSize ?? DEFAULT_PAGE_SIZE));
+    const skip = (page - 1) * pageSize;
+
+    const isPremium = await this.entitlementService.hasPremiumAccess(userId);
+    if (!isPremium && skip >= FREE_HISTORY_LIMIT) {
+      throw new ForbiddenException({
+        code: 'PREMIUM_REQUIRED',
+        message: `Free accounts can browse their most recent ${FREE_HISTORY_LIMIT} readings. Upgrade to Premium for unlimited history.`,
+      });
+    }
+    const take = isPremium ? pageSize : Math.min(pageSize, FREE_HISTORY_LIMIT - skip);
 
     const where: Prisma.TarotReadingWhereInput = {
       userId,
@@ -152,10 +186,11 @@ export class TarotRecordService {
       ...(params.search ? { question: { contains: params.search, mode: 'insensitive' } } : {}),
     };
 
-    const [total, rows] = await Promise.all([
+    const [totalRaw, rows] = await Promise.all([
       this.prisma.tarotReading.count({ where }),
-      this.prisma.tarotReading.findMany({ where, include: INCLUDE, orderBy: { createdAt: 'desc' }, skip: (page - 1) * pageSize, take: pageSize }),
+      this.prisma.tarotReading.findMany({ where, include: INCLUDE, orderBy: { createdAt: 'desc' }, skip, take }),
     ]);
+    const total = isPremium ? totalRaw : Math.min(totalRaw, FREE_HISTORY_LIMIT);
 
     return { items: rows.map(toTarotReadingDto), total, page, pageSize };
   }
@@ -208,8 +243,7 @@ export class TarotRecordService {
   }
 
   private async assertNoDailyDrawToday(userId: string): Promise<void> {
-    const now = new Date();
-    const startOfDayUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const startOfDayUtc = getStartOfUtcDay();
     // Deliberately status-agnostic (Phase 9 security review finding): "already drawn today" is a
     // fact about whether the draw event happened, not about the reading's current lifecycle
     // status — excluding DELETED here would let a user soft-delete today's Daily Draw and redraw,
@@ -225,6 +259,34 @@ export class TarotRecordService {
     }
   }
 
+  /** Sprint 7, Phase 9/10 — server-side usage-limit enforcement for Single Card / Three Card
+   * Spread. Same status-agnostic counting rationale as `assertNoDailyDrawToday`. When a Free user
+   * hits their (lower) cap and Premium would actually raise it, the denial is the normalized
+   * `PREMIUM_REQUIRED` shape (Phase 9); when even Premium's cap is reached, it's a plain usage-limit
+   * error instead — upgrading wouldn't help, so it would be misleading to say Premium is required. */
+  private async assertWithinDailyLimit(userId: string, type: TarotReadingType): Promise<void> {
+    const isPremium = await this.entitlementService.hasPremiumAccess(userId);
+    const limit = (isPremium ? PREMIUM_DAILY_LIMITS : FREE_DAILY_LIMITS)[type];
+    if (limit === undefined) return;
+
+    const startOfDayUtc = getStartOfUtcDay();
+    const count = await this.prisma.tarotReading.count({ where: { userId, type, createdAt: { gte: startOfDayUtc } } });
+    if (count < limit) return;
+
+    const label = type.replace('_', ' ').toLowerCase();
+    const premiumLimit = PREMIUM_DAILY_LIMITS[type];
+    if (!isPremium && premiumLimit !== undefined && count < premiumLimit) {
+      throw new ForbiddenException({
+        code: 'PREMIUM_REQUIRED',
+        message: `You've reached today's free ${label} limit (${limit}). Upgrade to Premium for a higher daily allowance.`,
+      });
+    }
+    throw new BadRequestException({
+      code: 'TAROT_DAILY_LIMIT_REACHED',
+      message: `You've reached today's ${label} limit (${limit}). Come back tomorrow.`,
+    });
+  }
+
   /** Owner-scoped fetch — 404s identically for "doesn't exist" and "belongs to someone else". */
   private async findOwned(userId: string, id: string) {
     const reading = await this.prisma.tarotReading.findUnique({ where: { id }, include: INCLUDE });
@@ -233,4 +295,9 @@ export class TarotRecordService {
     }
     return reading;
   }
+}
+
+function getStartOfUtcDay(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }

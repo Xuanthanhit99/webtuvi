@@ -93,6 +93,25 @@ const envSchema = z.object({
   MEMORY_CONTEXT_RESERVED_OUTPUT_TOKENS: z.coerce.number().int().positive().default(1_024),
   MEMORY_CONTEXT_CONVERSATION_MAX_TOKENS: z.coerce.number().int().positive().default(3_000),
   MEMORY_CONTEXT_MEMORY_MAX_TOKENS: z.coerce.number().int().positive().default(1_500),
+
+  // --- Premium & Payment Foundation (Sprint 7) — one provider (PayOS), one product
+  // (PREMIUM_30D). Price/duration are backend-owned config, never client-supplied. ---
+  PAYOS_CLIENT_ID: z.string().optional(),
+  PAYOS_API_KEY: z.string().optional(),
+  // Signs both outgoing checkout requests and verifies incoming webhook signatures (HMAC-SHA256)
+  // — never sent to the client, never logged. See docs/architecture/payment-foundation.md.
+  PAYOS_CHECKSUM_KEY: z.string().optional(),
+  PAYOS_BASE_URL: z.string().url().default('https://api-merchant.payos.vn'),
+  // Defense-in-depth gate mirroring AI_ENABLE_MOCK_PROVIDER: outside production, short-circuits
+  // only the outbound "create checkout link" HTTP call with a locally-built (but still
+  // real-signature) response, so checkout order-creation is testable without a network dependency
+  // on PayOS. Webhook signature VERIFICATION is always real — this flag never touches it. See
+  // PayOSProvider and docs/security/ai-safety.md "Mock provider" for the precedent this mirrors.
+  PAYOS_MOCK_CHECKOUT: z.coerce.boolean().default(false),
+  PREMIUM_PRICE_VND: z.coerce.number().int().positive().default(79_000),
+  PREMIUM_DURATION_DAYS: z.coerce.number().int().positive().default(30),
+  PAYMENT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  PAYMENT_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
@@ -147,6 +166,12 @@ export function validateEnv(config: Record<string, unknown>): EnvConfig {
     requireProviderKey(parsed.data, parsed.data.DEFAULT_AI_PROVIDER, 'DEFAULT_AI_PROVIDER');
     if (parsed.data.FALLBACK_PROVIDER) {
       requireProviderKey(parsed.data, parsed.data.FALLBACK_PROVIDER, 'FALLBACK_PROVIDER');
+    }
+    if (!parsed.data.PAYOS_CLIENT_ID || !parsed.data.PAYOS_API_KEY || !parsed.data.PAYOS_CHECKSUM_KEY) {
+      throw new Error('PAYOS_CLIENT_ID, PAYOS_API_KEY, and PAYOS_CHECKSUM_KEY are all required in production');
+    }
+    if (parsed.data.PAYOS_MOCK_CHECKOUT) {
+      throw new Error('PAYOS_MOCK_CHECKOUT cannot be true in production — the real PayOS API must always be called there');
     }
   } else {
     // Outside production, a non-mailpit provider still needs its credential —

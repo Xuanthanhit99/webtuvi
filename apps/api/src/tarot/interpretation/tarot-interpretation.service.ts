@@ -4,15 +4,31 @@ import { SafetyService } from '../../companion/safety/safety.service';
 import type { ChatMessage } from '../../companion/providers/provider.types';
 import type { InterpretationInput } from '../tarot.types';
 
-const SYSTEM_PROMPT = `You are the reflective narration layer for a Tarot reading feature inside an AI companion app.
-
-Hard rules — never break these:
+const HARD_RULES = `Hard rules — never break these:
 - You are given the exact, real card(s) already drawn, their real upright/reversed orientation, and their real traditional meanings. You never choose, change, add, or remove a card — the draw already happened deterministically before you were called.
 - Never invent a card that was not given to you. Never claim a card is reversed if it was given to you as upright, or vice versa.
 - Speak in reflective, possibility-framed language — never state a prediction as a fact ("this will happen"), always frame it as something to consider or notice.
 - If a memory reference is provided, you may weave it in naturally if genuinely relevant — never claim to remember something that was not given to you.
-- Keep the interpretation warm, calm, and concise (roughly 120-220 words) — not a mystical performance, a grounded reflection.
+- Never fabricate a user memory — if none is provided, do not invent one.`;
+
+// Sprint 7 — Premium interpretation gating (Phase 13 of the sprint brief). The hard rules above are
+// identical for both tiers: Premium is never allowed to choose cards, change orientation, fabricate
+// draws, or fabricate memories — only the narration's depth and (for Premium) memory personalization
+// differ. See docs/architecture/premium-entitlements.md "AI interpretation gating".
+const FREE_SYSTEM_PROMPT = `You are the reflective narration layer for a Tarot reading feature inside an AI companion app.
+
+${HARD_RULES}
+- Keep the interpretation brief and clear (roughly 80-140 words) — a grounded, single-pass reflection, not an essay.
 - End with one genuine, open question for the person to sit with.`;
+
+const PREMIUM_SYSTEM_PROMPT = `You are the reflective narration layer for a Tarot reading feature inside an AI companion app, writing this reader's Premium (deeper) interpretation.
+
+${HARD_RULES}
+- Go deeper than a surface reading: note thematic connections between the cards (if more than one), and where relevant, gently connect the reading to the one memory reference provided.
+- Keep the interpretation warm, calm, and concise (roughly 150-260 words) — not a mystical performance, a grounded reflection.
+- End with one genuine, open question for the person to sit with.`;
+
+const MAX_TOKENS_BY_TIER = { FREE: 400, PREMIUM: 700 } as const;
 
 function describeCard(card: InterpretationInput['cards'][number]): string {
   const orientation = card.isReversed ? 'reversed' : 'upright';
@@ -62,13 +78,13 @@ export class TarotInterpretationService {
     }
 
     const messages: ChatMessage[] = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: input.tier === 'PREMIUM' ? PREMIUM_SYSTEM_PROMPT : FREE_SYSTEM_PROMPT },
       { role: 'user', content: buildUserMessage(input) },
     ];
 
     let content = '';
     try {
-      for await (const chunk of this.orchestrator.stream(messages, { maxTokens: 400, temperature: 0.7 })) {
+      for await (const chunk of this.orchestrator.stream(messages, { maxTokens: MAX_TOKENS_BY_TIER[input.tier], temperature: 0.7 })) {
         if (chunk.type === 'token') content += chunk.content;
         if (chunk.type === 'error') {
           this.logger.warn(`Tarot interpretation provider error: code=${chunk.code ?? 'unknown'}`);

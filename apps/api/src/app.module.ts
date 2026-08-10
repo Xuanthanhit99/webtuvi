@@ -23,6 +23,7 @@ import { ReflectionModule } from './reflection/reflection.module';
 import { InsightModule } from './insight/insight.module';
 import { ReviewModule } from './review/review.module';
 import { GoalModule } from './goal/goal.module';
+import { PaymentModule } from './payment/payment.module';
 import { TarotModule } from './tarot/tarot.module';
 
 @Module({
@@ -55,6 +56,18 @@ import { TarotModule } from './tarot/tarot.module';
               ttl: config.ai.rateLimit.windowMs,
               limit: config.ai.rateLimit.ipMax,
             },
+            // Checkout/order-creation (Sprint 7): its own per-authenticated-user bucket, isolated
+            // from `companion`/`companion-ip`/`auth` exactly the way f8fcba1 isolated `auth` from
+            // `companion` — see PaymentThrottlerGuard's docstring.
+            {
+              name: 'payment',
+              ttl: config.payment.rateLimit.windowMs,
+              limit: config.payment.rateLimit.max,
+              getTracker: (req: Record<string, unknown>) => {
+                const user = req.user as { id?: string } | undefined;
+                return user?.id ?? String(req.ip ?? 'unknown-ip');
+              },
+            },
           ],
           storage: new RedisThrottlerStorageService(redisService, configService),
         };
@@ -76,6 +89,7 @@ import { TarotModule } from './tarot/tarot.module';
     InsightModule,
     ReviewModule,
     GoalModule,
+    PaymentModule,
     TarotModule,
     CompanionModule,
     DashboardModule,

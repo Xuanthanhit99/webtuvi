@@ -94,6 +94,23 @@ export const appConfig = registerAs('app', () => {
         memoryMaxTokens: env.MEMORY_CONTEXT_MEMORY_MAX_TOKENS,
       },
     },
+    payment: {
+      payos: {
+        clientId: env.PAYOS_CLIENT_ID,
+        apiKey: env.PAYOS_API_KEY,
+        checksumKey: env.PAYOS_CHECKSUM_KEY,
+        baseUrl: env.PAYOS_BASE_URL,
+        mockCheckout: env.PAYOS_MOCK_CHECKOUT,
+      },
+      premium: {
+        priceVnd: env.PREMIUM_PRICE_VND,
+        durationDays: env.PREMIUM_DURATION_DAYS,
+      },
+      rateLimit: {
+        max: env.PAYMENT_RATE_LIMIT_MAX,
+        windowMs: env.PAYMENT_RATE_LIMIT_WINDOW_MS,
+      },
+    },
   };
 });
 

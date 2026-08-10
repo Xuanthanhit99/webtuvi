@@ -2,6 +2,7 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { TarotReadingDto } from '@beaconvie/types';
 import { renderWithQuery } from '@/test/render-with-query';
+import { ApiError } from '@/lib/api-error';
 import { TarotDrawPanel } from './tarot-draw-panel';
 import { tarotApi } from '../api/tarot-api';
 
@@ -76,6 +77,33 @@ describe('TarotDrawPanel', () => {
     await waitFor(() => expect(screen.getByText('The Fool')).toBeInTheDocument(), { timeout: 3000 });
     expect(tarotApi.draw).toHaveBeenCalledWith('DAILY_DRAW', undefined);
     expect(onDrawn).toHaveBeenCalledWith(drawnReading);
+  });
+
+  it('a PREMIUM_REQUIRED draw error shows an upgrade banner with a link to /premium, not just a toast', async () => {
+    (tarotApi.draw as jest.Mock).mockRejectedValue(
+      new ApiError("You've reached today's free single card limit (3). Upgrade to Premium for a higher daily allowance.", 'PREMIUM_REQUIRED', 403),
+    );
+    const user = userEvent.setup();
+    renderWithQuery(<TarotDrawPanel />);
+    await user.click(screen.getByRole('button', { name: /Single Card/ }));
+    await user.click(screen.getByRole('button', { name: 'Draw' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/free single card limit/i);
+    const upgradeLink = screen.getByRole('link', { name: 'Upgrade to Premium' });
+    expect(upgradeLink).toHaveAttribute('href', '/premium?reason=required');
+  });
+
+  it('a TAROT_DAILY_LIMIT_REACHED error (Premium ceiling also hit) shows the limit message without an upgrade link', async () => {
+    (tarotApi.draw as jest.Mock).mockRejectedValue(
+      new ApiError("You've reached today's single card limit (15). Come back tomorrow.", 'TAROT_DAILY_LIMIT_REACHED', 400),
+    );
+    const user = userEvent.setup();
+    renderWithQuery(<TarotDrawPanel />);
+    await user.click(screen.getByRole('button', { name: /Single Card/ }));
+    await user.click(screen.getByRole('button', { name: 'Draw' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(/single card limit \(15\)/i);
+    expect(screen.queryByRole('link', { name: 'Upgrade to Premium' })).not.toBeInTheDocument();
   });
 
   it('"Draw again" resets back to the selector', async () => {

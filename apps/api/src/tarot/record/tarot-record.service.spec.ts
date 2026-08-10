@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TarotRecordService } from './tarot-record.service';
 import type { TarotInterpretationService } from '../interpretation/tarot-interpretation.service';
 import type { MemoryRetrievalService } from '../../memory/retrieval/memory-retrieval.service';
+import type { EntitlementService } from '../../payment/entitlement/entitlement.service';
 
 const OWNER = 'user-1';
 const OTHER = 'user-2';
@@ -27,6 +28,27 @@ function makeReading(overrides: { id?: string; userId?: string; status?: string;
 
 type Row = ReturnType<typeof makeReading>;
 
+interface ReadingWhere {
+  userId?: string;
+  type?: string;
+  status?: string | { not: string };
+  createdAt?: { gte: Date };
+}
+
+function matchesWhere(row: Row, where: ReadingWhere = {}): boolean {
+  if (where.userId !== undefined && row.userId !== where.userId) return false;
+  if (where.type !== undefined && row.type !== where.type) return false;
+  if (where.createdAt?.gte !== undefined && row.createdAt < where.createdAt.gte) return false;
+  if (where.status !== undefined) {
+    if (typeof where.status === 'string') {
+      if (row.status !== where.status) return false;
+    } else if (row.status === where.status.not) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function makePrismaMock(seed: Row[] = []) {
   const rows = new Map(seed.map((r) => [r.id, r]));
   const history: { id: string; readingId: string; action: string; detail: string; createdAt: Date }[] = [];
@@ -40,11 +62,15 @@ function makePrismaMock(seed: Row[] = []) {
         if (!row) throw new Error('not found');
         return row;
       }),
-      findFirst: jest.fn(async ({ where }: { where: { userId: string; type: string; createdAt?: { gte: Date } } }) =>
-        [...rows.values()].find((r) => r.userId === where.userId && r.type === where.type && (!where.createdAt || r.createdAt >= where.createdAt.gte)) ?? null,
-      ),
-      count: jest.fn(async () => rows.size),
-      findMany: jest.fn(async () => [...rows.values()]),
+      findFirst: jest.fn(async ({ where }: { where: ReadingWhere }) => [...rows.values()].find((r) => matchesWhere(r, where)) ?? null),
+      count: jest.fn(async ({ where }: { where?: ReadingWhere } = {}) => [...rows.values()].filter((r) => matchesWhere(r, where)).length),
+      findMany: jest.fn(async ({ where, orderBy, skip, take }: { where?: ReadingWhere; orderBy?: { createdAt?: 'asc' | 'desc' }; skip?: number; take?: number } = {}) => {
+        let result = [...rows.values()].filter((r) => matchesWhere(r, where));
+        if (orderBy?.createdAt === 'desc') result = result.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        if (typeof skip === 'number') result = result.slice(skip);
+        if (typeof take === 'number') result = result.slice(0, take);
+        return result;
+      }),
       update: jest.fn(async ({ where: { id }, data }: { where: { id: string }; data: Record<string, unknown> }) => {
         const existing = rows.get(id)!;
         const updated = { ...existing, ...data };
@@ -60,15 +86,22 @@ function makePrismaMock(seed: Row[] = []) {
       }),
       findMany: jest.fn(async ({ where: { readingId } }: { where: { readingId: string } }) => history.filter((h) => h.readingId === readingId)),
     },
+    // Unseeded in every test here — draw() should never get this far once the Phase 9/10 usage-limit
+    // guards below have already rejected, so a null spread (-> TAROT_SPREAD_NOT_SEEDED) is a safe,
+    // deliberate stand-in for "the guard passed and draw() moved on".
+    tarotSpread: {
+      findUnique: jest.fn(async () => null),
+    },
   };
 }
 
-function makeService(seed: Row[] = []) {
+function makeService(seed: Row[] = [], isPremium = false) {
   const prisma = makePrismaMock(seed);
   const interpretation = { interpret: jest.fn().mockResolvedValue(null) } as unknown as TarotInterpretationService;
   const memoryRetrieval = { recommend: jest.fn().mockResolvedValue({ items: [] }) } as unknown as MemoryRetrievalService;
-  const service = new TarotRecordService(prisma as never, interpretation, memoryRetrieval);
-  return { service, prisma };
+  const entitlementService = { hasPremiumAccess: jest.fn().mockResolvedValue(isPremium) } as unknown as EntitlementService;
+  const service = new TarotRecordService(prisma as never, interpretation, memoryRetrieval, entitlementService);
+  return { service, prisma, entitlementService };
 }
 
 describe('TarotRecordService — ownership', () => {
@@ -131,5 +164,67 @@ describe('TarotRecordService — Daily Draw rate limit (Phase 9 security fix)', 
       response: { code: 'TAROT_DAILY_DRAW_ALREADY_TAKEN' },
     });
     expect(prisma.tarotReading.findFirst).toHaveBeenCalled();
+  });
+});
+
+describe('TarotRecordService — Sprint 7 Free vs Premium daily usage limits', () => {
+  function readingsToday(type: string, count: number, ownerOverride = OWNER) {
+    return Array.from({ length: count }, (_, i) => makeReading({ id: `${type}-${i}`, type, userId: ownerOverride, createdAt: new Date() }));
+  }
+
+  it('a Free user is denied PREMIUM_REQUIRED after 3 Single Card draws today (raising the ceiling would help)', async () => {
+    const { service } = makeService(readingsToday('SINGLE_CARD', 3), false);
+    await expect(service.draw(OWNER, { type: 'SINGLE_CARD' })).rejects.toMatchObject({ response: { code: 'PREMIUM_REQUIRED' } });
+  });
+
+  it('a Free user may still draw a 3rd Single Card (limit not yet reached)', async () => {
+    const { service, prisma } = makeService(readingsToday('SINGLE_CARD', 2), false);
+    // No spread/card seeded — assert the usage-limit guard itself passes (no PREMIUM_REQUIRED/limit
+    // error) by checking draw() gets past assertWithinDailyLimit and fails later on the (unmocked)
+    // spread lookup instead.
+    await expect(service.draw(OWNER, { type: 'SINGLE_CARD' })).rejects.toMatchObject({ response: { code: 'TAROT_SPREAD_NOT_SEEDED' } });
+    expect(prisma.tarotReading.count).toHaveBeenCalled();
+  });
+
+  it('a Free user is denied a Three Card Spread after 1 today', async () => {
+    const { service } = makeService(readingsToday('THREE_CARD', 1), false);
+    await expect(service.draw(OWNER, { type: 'THREE_CARD' })).rejects.toMatchObject({ response: { code: 'PREMIUM_REQUIRED' } });
+  });
+
+  it('a Premium user is allowed a 4th Single Card draw the same day (raised ceiling)', async () => {
+    const { service } = makeService(readingsToday('SINGLE_CARD', 3), true);
+    await expect(service.draw(OWNER, { type: 'SINGLE_CARD' })).rejects.toMatchObject({ response: { code: 'TAROT_SPREAD_NOT_SEEDED' } });
+  });
+
+  it('a Premium user hitting their own (higher) Single Card ceiling gets a plain limit error, not PREMIUM_REQUIRED', async () => {
+    const { service } = makeService(readingsToday('SINGLE_CARD', 15), true);
+    await expect(service.draw(OWNER, { type: 'SINGLE_CARD' })).rejects.toMatchObject({ response: { code: 'TAROT_DAILY_LIMIT_REACHED' } });
+  });
+});
+
+describe('TarotRecordService — Sprint 7 Free history cap', () => {
+  function readings(count: number) {
+    return Array.from({ length: count }, (_, i) =>
+      makeReading({ id: `r${i}`, userId: OWNER, createdAt: new Date(Date.UTC(2026, 0, 1, 0, 0, i)) }),
+    );
+  }
+
+  it('a Free user sees at most the most recent 20 readings, total capped at 20', async () => {
+    const { service } = makeService(readings(35), false);
+    const result = await service.list(OWNER, { page: 1, pageSize: 20 });
+    expect(result.items).toHaveLength(20);
+    expect(result.total).toBe(20);
+  });
+
+  it('a Free user requesting beyond the 20-item window is denied PREMIUM_REQUIRED', async () => {
+    const { service } = makeService(readings(35), false);
+    await expect(service.list(OWNER, { page: 2, pageSize: 20 })).rejects.toMatchObject({ response: { code: 'PREMIUM_REQUIRED' } });
+  });
+
+  it('a Premium user can page past 20 readings normally', async () => {
+    const { service } = makeService(readings(35), true);
+    const result = await service.list(OWNER, { page: 2, pageSize: 20 });
+    expect(result.items).toHaveLength(15);
+    expect(result.total).toBe(35);
   });
 });

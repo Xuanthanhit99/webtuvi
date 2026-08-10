@@ -1015,6 +1015,33 @@ export interface ListReadingsResultDto {
   pageSize: number;
 }
 
+// --- Premium & Payment Foundation (Sprint 7). One paid product (PREMIUM_30D, a 30-day pass, not
+// an auto-renewing subscription), one provider (PayOS). Premium access is always backend-decided —
+// these DTOs are read-only projections of server state; the client never sends a price, product,
+// or success flag that the backend trusts. See docs/architecture/premium-entitlements.md and
+// docs/architecture/payment-foundation.md. ---
+
+export type PaymentOrderStatusValue = 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED' | 'CANCELLED';
+export type PaymentProductValue = 'PREMIUM_30D';
+export type PremiumEntitlementStatusValue = 'ACTIVE' | 'EXPIRED' | 'REVOKED' | 'NONE';
+
+export interface PaymentOrderDto {
+  id: string;
+  status: PaymentOrderStatusValue;
+  product: PaymentProductValue;
+  amount: number;
+  currency: string;
+  checkoutUrl: string | null;
+  createdAt: string;
+  paidAt: string | null;
+}
+
+export interface PremiumStatusDto {
+  isPremium: boolean;
+  status: PremiumEntitlementStatusValue;
+  expiresAt: string | null;
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {
