@@ -13,7 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
 import type { SessionDto, UserDto } from '@beaconvie/types';
 import { AuthService } from './auth.service';
@@ -36,6 +36,17 @@ import { CsrfService } from '../common/csrf/csrf.service';
 import { SkipCsrf } from '../common/csrf/skip-csrf.decorator';
 
 const AUTH_THROTTLE = { default: { limit: AUTH_RATE_LIMIT_MAX, ttl: AUTH_RATE_LIMIT_WINDOW_MS } };
+
+// Every named throttler registered in ThrottlerModule (app.module.ts) is checked against every
+// guarded route by default, not just the one(s) named in that route's own @Throttle() override
+// (see CompanionThrottlerGuard's docstring, which documents the same mechanism from the other
+// side: Companion routes skip `auth` so its tighter limit doesn't leak onto chat traffic). Without
+// this, every route below is also incidentally governed by the much tighter, short-window
+// `companion` (per-user/IP, ~20/60s) and `companion-ip` (~500/60s) buckets meant only for AI
+// generation endpoints — unrelated to registration/login/password flows, and easily tripped by
+// legitimate traffic (or a test suite) making more than ~20 auth requests from one IP within a
+// minute, long before the real 200-per-15-minutes auth ceiling is anywhere close to being reached.
+const SKIP_UNRELATED_THROTTLERS = { companion: true, 'companion-ip': true };
 
 @ApiTags('auth')
 @Controller('auth')
@@ -60,6 +71,7 @@ export class AuthController {
   @SkipCsrf()
   @UseGuards(AuthThrottlerGuard)
   @Throttle(AUTH_THROTTLE)
+  @SkipThrottle(SKIP_UNRELATED_THROTTLERS)
   @ApiOperation({ summary: 'Create an account with email + password' })
   async register(
     @Body() dto: RegisterDto,
@@ -75,6 +87,7 @@ export class AuthController {
   @SkipCsrf()
   @UseGuards(LoginThrottlerGuard)
   @Throttle(AUTH_THROTTLE)
+  @SkipThrottle(SKIP_UNRELATED_THROTTLERS)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Log in with email + password' })
   async login(
@@ -133,6 +146,7 @@ export class AuthController {
   @SkipCsrf()
   @UseGuards(AuthThrottlerGuard)
   @Throttle(AUTH_THROTTLE)
+  @SkipThrottle(SKIP_UNRELATED_THROTTLERS)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request a password reset email (never reveals whether the email exists)' })
   async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<{ message: string }> {
@@ -144,6 +158,7 @@ export class AuthController {
   @SkipCsrf()
   @UseGuards(AuthThrottlerGuard)
   @Throttle(AUTH_THROTTLE)
+  @SkipThrottle(SKIP_UNRELATED_THROTTLERS)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Set a new password using a reset token' })
   async resetPassword(@Body() dto: ResetPasswordDto): Promise<{ message: string }> {
@@ -155,6 +170,7 @@ export class AuthController {
   @SkipCsrf()
   @UseGuards(AuthThrottlerGuard)
   @Throttle(AUTH_THROTTLE)
+  @SkipThrottle(SKIP_UNRELATED_THROTTLERS)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Confirm an email address using a verification token' })
   async verifyEmail(@Body() dto: VerifyEmailDto): Promise<{ message: string }> {
@@ -166,6 +182,7 @@ export class AuthController {
   @SkipCsrf()
   @UseGuards(AuthThrottlerGuard)
   @Throttle(AUTH_THROTTLE)
+  @SkipThrottle(SKIP_UNRELATED_THROTTLERS)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Resend the verification email (never reveals whether the email exists)' })
   async resendVerification(@Body() dto: ResendVerificationDto): Promise<{ message: string }> {
@@ -176,6 +193,7 @@ export class AuthController {
   @Post('change-password')
   @UseGuards(JwtAuthGuard, AuthThrottlerGuard)
   @Throttle(AUTH_THROTTLE)
+  @SkipThrottle(SKIP_UNRELATED_THROTTLERS)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Change password; revokes every other session' })
   async changePassword(
