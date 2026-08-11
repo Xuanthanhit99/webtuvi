@@ -1,7 +1,23 @@
 // '/' is treated like an auth route for redirect purposes: docs/reference
 // Module 5 §15 — a logged-in visitor should never see the marketing page again.
 export const AUTH_ROUTES = ['/login', '/register', '/'];
-export const APP_ROUTES = ['/dashboard', '/companion', '/journal', '/discover', '/settings'];
+// Sprint 8.5 remediation: this allowlist previously covered only the 5 primary-nav routes,
+// leaving /memory, /goals, /reflections, /insights (+/internal), /reviews, and /premium
+// (+/return) reachable by a fully logged-out visitor with no redirect — see middleware.ts's
+// matcher, which must list the same routes for this allowlist to actually run against them.
+export const APP_ROUTES = [
+  '/dashboard',
+  '/companion',
+  '/journal',
+  '/discover',
+  '/settings',
+  '/memory',
+  '/goals',
+  '/reflections',
+  '/insights',
+  '/reviews',
+  '/premium',
+];
 export const ONBOARDING_ROUTE = '/onboarding';
 
 export interface RouteGuardInput {

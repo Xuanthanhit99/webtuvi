@@ -89,6 +89,13 @@ export function PremiumUpgradePanel() {
           Higher daily Tarot allowances, deeper AI interpretations, and unlimited reading history — a one-time 30-day
           Premium pass.
         </p>
+        <p className="text-heading-md font-display text-text-primary">
+          {status.priceVnd.toLocaleString('vi-VN')} {status.currency}
+          <span className="ml-1 text-body-sm font-normal text-text-secondary">/ 30 days</span>
+        </p>
+        {status.isMvpTestPrice && (
+          <p className="text-caption text-text-disabled">MVP test price — not yet finalized.</p>
+        )}
         <Button variant="primary" onClick={() => checkout.mutate()} loading={checkout.isPending}>
           Upgrade to Premium
         </Button>

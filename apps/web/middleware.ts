@@ -46,5 +46,13 @@ export const config = {
     '/journal/:path*',
     '/discover/:path*',
     '/settings/:path*',
+    // Sprint 8.5 remediation — these were previously absent, so requests to them never ran
+    // through resolveRedirect() at all (see route-guard.ts's APP_ROUTES for the matching fix).
+    '/memory/:path*',
+    '/goals/:path*',
+    '/reflections/:path*',
+    '/insights/:path*',
+    '/reviews/:path*',
+    '/premium/:path*',
   ],
 };

@@ -45,6 +45,19 @@ describe('resolveRedirect (protected route behavior)', () => {
     expect(resolveRedirect({ pathname: '/login', hasAccessToken: true, session: null })).toBeNull();
   });
 
+  it('Sprint 8.5 remediation: redirects an unauthenticated visitor away from the previously-ungated app routes to /login', () => {
+    for (const pathname of ['/memory', '/goals', '/reflections', '/insights', '/insights/internal', '/reviews', '/premium', '/premium/return']) {
+      expect(resolveRedirect({ pathname, hasAccessToken: false, session: null })).toBe('/login');
+    }
+  });
+
+  it('Sprint 8.5 remediation: lets a fully onboarded user reach the previously-ungated app routes normally', () => {
+    const session = { onboardingCompletedAt: '2026-01-01T00:00:00.000Z' };
+    for (const pathname of ['/memory', '/goals', '/reflections', '/insights', '/insights/internal', '/reviews', '/premium', '/premium/return']) {
+      expect(resolveRedirect({ pathname, hasAccessToken: true, session })).toBeNull();
+    }
+  });
+
   it('never gates /verify-email or /verify-email/pending, regardless of auth state (no redirect loop on the verification flow)', () => {
     const onboarded = { onboardingCompletedAt: '2026-01-01T00:00:00.000Z' };
     const notOnboarded = { onboardingCompletedAt: null };

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/ui/error-state';
+import { PremiumStatusCard } from '@/features/premium/components/premium-status-card';
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -54,6 +55,19 @@ export function DashboardView() {
         </Link>
       </section>
 
+      {data.discoverySuggestion && (
+        <Link href={data.discoverySuggestion.href} className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight">
+          <Card className="transition-colors hover:border-insight/50">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-body-sm font-semibold text-text-secondary">Discover</p>
+              {data.discoverySuggestion.comingSoon && <Badge>Coming soon</Badge>}
+            </div>
+            <p className="text-body-md text-text-primary">{data.discoverySuggestion.title}</p>
+            <p className="mt-1 text-body-sm text-text-secondary">{data.discoverySuggestion.description}</p>
+          </Card>
+        </Link>
+      )}
+
       <Card>
         <p className="mb-3 text-body-sm font-semibold text-text-secondary">From your Companion</p>
         {data.companionPanel.previewMessages.length === 0 ? (
@@ -80,40 +94,6 @@ export function DashboardView() {
         </Link>
       </Card>
 
-      <Card>
-        <p className="mb-2 text-body-sm font-semibold text-text-secondary">Memory</p>
-        {data.memoryHighlight ? (
-          <p className="text-body-md text-text-primary">
-            {data.memoryHighlight.content.replace(/^Remembered:\s*/, '')}
-          </p>
-        ) : (
-          <>
-            <p className="text-body-md text-text-primary">No memories yet.</p>
-            <p className="mt-1 text-body-sm text-text-secondary">
-              Memories you choose to save will appear here.
-            </p>
-          </>
-        )}
-      </Card>
-
-      {data.discoverySuggestion && (
-        <Card>
-          <div className="mb-2 flex items-center justify-between">
-            <p className="text-body-sm font-semibold text-text-secondary">Suggested for you</p>
-            {data.discoverySuggestion.comingSoon && <Badge>Coming soon</Badge>}
-          </div>
-          <p className="text-body-md text-text-primary">{data.discoverySuggestion.title}</p>
-          <p className="mt-1 text-body-sm text-text-secondary">{data.discoverySuggestion.description}</p>
-        </Card>
-      )}
-
-      <Card>
-        <p className="mb-2 text-body-sm font-semibold text-text-secondary">Your first reflection report</p>
-        <p className="text-body-sm text-text-secondary">
-          Your first reflection report will appear after you&rsquo;ve created enough entries.
-        </p>
-      </Card>
-
       {data.recentActivity.length > 0 && (
         <Card>
           <p className="mb-3 text-body-sm font-semibold text-text-secondary">Recent activity</p>
@@ -127,6 +107,28 @@ export function DashboardView() {
           </ul>
         </Card>
       )}
+
+      <Link href="/memory" className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight">
+        <Card className="transition-colors hover:border-insight/50">
+          <p className="mb-2 text-body-sm font-semibold text-text-secondary">Memory</p>
+          {data.memoryHighlight ? (
+            <p className="text-body-md text-text-primary">
+              {data.memoryHighlight.content.replace(/^Remembered:\s*/, '')}
+            </p>
+          ) : (
+            <>
+              <p className="text-body-md text-text-primary">No memories yet.</p>
+              <p className="mt-1 text-body-sm text-text-secondary">
+                Memories you choose to save will appear here.
+              </p>
+            </>
+          )}
+        </Card>
+      </Link>
+
+      <Card>
+        <PremiumStatusCard />
+      </Card>
     </div>
   );
 }

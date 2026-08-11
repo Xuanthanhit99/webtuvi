@@ -10,8 +10,22 @@ jest.mock('../api/premium-api', () => ({
   premiumApi: { status: jest.fn(), checkout: jest.fn() },
 }));
 
-const FREE_STATUS: PremiumStatusDto = { isPremium: false, status: 'NONE', expiresAt: null };
-const PREMIUM_STATUS: PremiumStatusDto = { isPremium: true, status: 'ACTIVE', expiresAt: '2026-02-09T00:00:00.000Z' };
+const FREE_STATUS: PremiumStatusDto = {
+  isPremium: false,
+  status: 'NONE',
+  expiresAt: null,
+  priceVnd: 79000,
+  currency: 'VND',
+  isMvpTestPrice: true,
+};
+const PREMIUM_STATUS: PremiumStatusDto = {
+  isPremium: true,
+  status: 'ACTIVE',
+  expiresAt: '2026-02-09T00:00:00.000Z',
+  priceVnd: 79000,
+  currency: 'VND',
+  isMvpTestPrice: true,
+};
 
 describe('PremiumUpgradePanel', () => {
   beforeEach(() => {
@@ -26,6 +40,13 @@ describe('PremiumUpgradePanel', () => {
     renderWithQuery(<PremiumUpgradePanel />);
     expect(await screen.findByRole('button', { name: 'Upgrade to Premium' })).toBeInTheDocument();
     expect(screen.getByText('15 / day')).toBeInTheDocument(); // Premium Single Card allowance from the matrix
+  });
+
+  it('Free state: discloses the price and the MVP-test-price caveat before checkout', async () => {
+    (premiumApi.status as jest.Mock).mockResolvedValue(FREE_STATUS);
+    renderWithQuery(<PremiumUpgradePanel />);
+    expect(await screen.findByText(/79.000 VND/)).toBeInTheDocument();
+    expect(screen.getByText(/MVP test price/)).toBeInTheDocument();
   });
 
   it('Premium state: shows the active badge and expiry, no upgrade button', async () => {

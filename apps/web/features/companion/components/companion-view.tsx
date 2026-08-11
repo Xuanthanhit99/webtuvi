@@ -18,6 +18,7 @@ import { Composer } from './composer';
 import { IconButton } from '@/components/ui/icon-button';
 import { Dialog } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorState } from '@/components/ui/error-state';
 import { toast } from '@/components/ui/toast';
@@ -155,6 +156,9 @@ export function CompanionView() {
                 <h1 className="font-display text-heading-md text-text-primary">
                   {activeConversation?.title ?? 'Companion'}
                 </h1>
+                {/* Sprint 8.5 remediation — once per conversation header, not per message, so the
+                    conversation is clearly AI-powered without turning every reply into AI marketing. */}
+                <Badge variant="insight">AI</Badge>
               </div>
               <IconButton aria-label="Delete this conversation" onClick={() => setConfirmDelete(true)}>
                 <Trash2 className="h-4 w-4" aria-hidden="true" />

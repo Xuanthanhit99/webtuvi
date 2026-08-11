@@ -42,23 +42,29 @@ export class DashboardService {
     const now = new Date();
     const tod = timeOfDay(now);
 
-    const [recentMemory, legacyMemoryNote, latestConversation, recentActivity] = await Promise.all([
-      // Sprint 3A: the real, accepted Memory model takes priority over the
-      // legacy MemoryNote fallback below — only ever a genuinely accepted
-      // memory, never a candidate/archived/deleted one. See
-      // docs/architecture/memory-engine.md "Dashboard integration".
-      this.memoryRecordService.mostRecentAccepted(userId),
-      this.memoryService.mostRecent(userId),
-      // Sprint 2B: previously read companionMessage(context='COMPANION') directly;
-      // now sourced from the real Conversation model (Companion Core) — see
-      // docs/architecture/companion-core.md "Dashboard integration".
-      this.prisma.conversation.findFirst({
-        where: { userId },
-        orderBy: { updatedAt: 'desc' },
-        include: { messages: { orderBy: { createdAt: 'desc' }, take: 3 } },
-      }),
-      this.activitiesService.recent(userId, 5),
-    ]);
+    const [recentMemory, legacyMemoryNote, latestConversation, recentActivity, tarotReading, numerologyReading] =
+      await Promise.all([
+        // Sprint 3A: the real, accepted Memory model takes priority over the
+        // legacy MemoryNote fallback below — only ever a genuinely accepted
+        // memory, never a candidate/archived/deleted one. See
+        // docs/architecture/memory-engine.md "Dashboard integration".
+        this.memoryRecordService.mostRecentAccepted(userId),
+        this.memoryService.mostRecent(userId),
+        // Sprint 2B: previously read companionMessage(context='COMPANION') directly;
+        // now sourced from the real Conversation model (Companion Core) — see
+        // docs/architecture/companion-core.md "Dashboard integration".
+        this.prisma.conversation.findFirst({
+          where: { userId },
+          orderBy: { updatedAt: 'desc' },
+          include: { messages: { orderBy: { createdAt: 'desc' }, take: 3 } },
+        }),
+        this.activitiesService.recent(userId, 5),
+        // Sprint 8.5 remediation: existence-only checks (not full reads) so the hero CTA can tell a
+        // user who has never tried Discovery apart from one who has, instead of always pointing at
+        // Companion — see the `hasTriedDiscovery` branch below.
+        this.prisma.tarotReading.findFirst({ where: { userId }, select: { id: true } }),
+        this.prisma.numerologyReading.findFirst({ where: { userId }, select: { id: true } }),
+      ]);
     const memoryHighlight = recentMemory
       ? { content: recentMemory.summary, createdAt: recentMemory.createdAt }
       : legacyMemoryNote;
@@ -66,6 +72,7 @@ export class DashboardService {
 
     const justOnboarded =
       user.onboardingCompletedAt !== null && now.getTime() - user.onboardingCompletedAt.getTime() < ONE_DAY_MS;
+    const hasTriedDiscovery = !!tarotReading || !!numerologyReading;
 
     let greeting: string;
     let subheadline: string;
@@ -85,6 +92,15 @@ export class DashboardService {
       ctaLabel = 'Continue the conversation';
       ctaHref = '/companion';
       suggestionChip = 'Want to pick that up again?';
+    } else if (!hasTriedDiscovery) {
+      // Landing copy and onboarding both frame Discovery (a real Tarot draw or Numerology
+      // reading) as the product's starting point — a brand-new user who hasn't tried either yet
+      // (e.g. they skipped it during onboarding) is pointed there rather than at an empty
+      // Companion chat, matching the actual first-run experience the product promises.
+      greeting = `${capitalize(tod)}, ${user.displayName}.`;
+      subheadline = 'Start with a real Tarot draw or a real Numerology reading — your Companion picks up from there.';
+      ctaLabel = 'Start Discovery';
+      ctaHref = '/discover';
     } else {
       greeting = `${capitalize(tod)}, ${user.displayName}.`;
       subheadline = "We're just getting to know each other — say hello whenever you're ready.";

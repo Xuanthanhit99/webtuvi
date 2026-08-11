@@ -62,6 +62,11 @@ describe('TarotReadingView', () => {
     expect(screen.getByText('Focus')).toBeInTheDocument();
   });
 
+  it('labels the interpretation as AI, distinct from the deterministic card above it', () => {
+    renderWithQuery(<TarotReadingView reading={baseReading} />);
+    expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
+  });
+
   it('shows a "Generate interpretation" retry action when interpretation is still null', async () => {
     (tarotApi.retryInterpretation as jest.Mock).mockResolvedValue({ ...baseReading, interpretation: 'Now generated.' });
     const user = userEvent.setup();

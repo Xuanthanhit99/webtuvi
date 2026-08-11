@@ -129,64 +129,25 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      <Card className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-body-sm font-semibold text-text-secondary">Reflections</p>
-          <p className="text-body-sm text-text-secondary">
-            Deterministic patterns BeaconVie has noticed in your journal, memories, and goals — never AI-generated, always
-            with the reason and evidence shown.
-          </p>
+      <Card>
+        <p className="mb-1 text-body-sm font-semibold text-text-secondary">More tools</p>
+        <p className="mb-3 text-body-sm text-text-secondary">
+          Deterministic, never AI-generated — always shown with the reason and evidence behind them.
+        </p>
+        <div className="flex flex-col divide-y divide-border-subtle">
+          <Link href="/reflections" className="flex items-center justify-between py-2.5 text-body-sm text-text-primary hover:text-insight">
+            Reflections
+          </Link>
+          <Link href="/insights" className="flex items-center justify-between py-2.5 text-body-sm text-text-primary hover:text-insight">
+            Insights
+          </Link>
+          <Link href="/reviews" className="flex items-center justify-between py-2.5 text-body-sm text-text-primary hover:text-insight">
+            Reviews
+          </Link>
+          <Link href="/goals" className="flex items-center justify-between py-2.5 text-body-sm text-text-primary hover:text-insight">
+            Goals
+          </Link>
         </div>
-        <Link href="/reflections">
-          <Button variant="secondary" size="sm">
-            View my reflections
-          </Button>
-        </Link>
-      </Card>
-
-      <Card className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-body-sm font-semibold text-text-secondary">Insights</p>
-          <p className="text-body-sm text-text-secondary">
-            Deterministic patterns connected across your reflections — what happened, why it matters, and the evidence
-            behind it. Never AI-generated.
-          </p>
-        </div>
-        <Link href="/insights">
-          <Button variant="secondary" size="sm">
-            View my insights
-          </Button>
-        </Link>
-      </Card>
-
-      <Card className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-body-sm font-semibold text-text-secondary">Reviews</p>
-          <p className="text-body-sm text-text-secondary">
-            Deterministic weekly and monthly summaries built from your existing insights, reflections, and activity. Never
-            AI-generated.
-          </p>
-        </div>
-        <Link href="/reviews">
-          <Button variant="secondary" size="sm">
-            View my reviews
-          </Button>
-        </Link>
-      </Card>
-
-      <Card className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-body-sm font-semibold text-text-secondary">Goals</p>
-          <p className="text-body-sm text-text-secondary">
-            First-class learning and life goals with deterministic progress, milestones, and evidence from your own
-            journal, memories, reflections, insights, and reviews. Never AI-generated.
-          </p>
-        </div>
-        <Link href="/goals">
-          <Button variant="secondary" size="sm">
-            View my goals
-          </Button>
-        </Link>
       </Card>
 
       <Card>

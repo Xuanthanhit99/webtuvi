@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NumerologyReadingDto } from '@beaconvie/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AiInterpretation } from '@/components/ui/ai-interpretation';
 import { toast } from '@/components/ui/toast';
 import { numerologyApi } from '../api/numerology-api';
 import { NumerologyValueCard } from './numerology-value-card';
@@ -92,16 +93,11 @@ export function NumerologyReadingView({ reading, onChanged }: { reading: Numerol
         ))}
       </div>
 
-      {reading.interpretation ? (
-        <p className="rounded-md border border-border-subtle bg-surface p-4 text-body-md text-text-primary">{reading.interpretation}</p>
-      ) : (
-        <div className="flex items-center justify-between gap-3 rounded-md border border-dashed border-border-subtle p-3">
-          <p className="text-body-sm text-text-secondary">Interpretation isn’t ready yet.</p>
-          <Button variant="secondary" size="sm" onClick={() => retryInterpretation.mutate()} loading={retryInterpretation.isPending}>
-            Generate interpretation
-          </Button>
-        </div>
-      )}
+      <AiInterpretation
+        interpretation={reading.interpretation}
+        isGenerating={retryInterpretation.isPending}
+        onGenerate={() => retryInterpretation.mutate()}
+      />
     </div>
   );
 }

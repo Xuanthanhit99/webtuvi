@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { TarotCardDto, TarotReadingDto } from '@beaconvie/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AiInterpretation } from '@/components/ui/ai-interpretation';
 import { toast } from '@/components/ui/toast';
 import { tarotApi } from '../api/tarot-api';
 import { TarotCardFace } from './tarot-card-face';
@@ -90,16 +91,11 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
         ))}
       </div>
 
-      {reading.interpretation ? (
-        <p className="text-body-md text-text-primary">{reading.interpretation}</p>
-      ) : (
-        <div className="flex items-center justify-between gap-3 rounded-md border border-dashed border-border-subtle p-3">
-          <p className="text-body-sm text-text-secondary">Interpretation isn’t ready yet.</p>
-          <Button variant="secondary" size="sm" onClick={() => retryInterpretation.mutate()} loading={retryInterpretation.isPending}>
-            Generate interpretation
-          </Button>
-        </div>
-      )}
+      <AiInterpretation
+        interpretation={reading.interpretation}
+        isGenerating={retryInterpretation.isPending}
+        onGenerate={() => retryInterpretation.mutate()}
+      />
 
       <TarotCardDetailDialog
         card={detailCard?.card ?? null}

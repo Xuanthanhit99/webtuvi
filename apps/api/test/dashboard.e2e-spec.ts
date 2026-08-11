@@ -42,6 +42,22 @@ describe('Dashboard (e2e)', () => {
     expect(res.body.data.hero.greeting).toContain('Dashboard User');
     // Never fabricate memory/report content for a user with none yet.
     expect(JSON.stringify(res.body.data)).not.toMatch(/report/i);
+    // Sprint 8.5 remediation: a user who hasn't tried Discovery yet is pointed at it, not at an
+    // empty Companion chat — see DashboardService's `hasTriedDiscovery` branch.
+    expect(res.body.data.hero.ctaHref).toBe('/discover');
+  });
+
+  it('points the hero CTA at Companion once the user has tried Discovery', async () => {
+    const headers = await registerAndGetHeaders(app, uniqueEmail('dash-discovered'));
+
+    await request(app.getHttpServer())
+      .post('/numerology/calculate')
+      .set(headers)
+      .send({ fullBirthName: 'Dashboard User', birthDate: '1990-01-01' })
+      .expect(201);
+
+    const res = await request(app.getHttpServer()).get('/dashboard').set(headers).expect(200);
+    expect(res.body.data.hero.ctaHref).toBe('/companion');
   });
 
   it('reflects real memory and activity once onboarding is completed', async () => {

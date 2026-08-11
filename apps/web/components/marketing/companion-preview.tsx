@@ -21,7 +21,7 @@ export function CompanionPreview() {
           </div>
         </div>
         <p className="mt-4 text-center text-caption text-text-disabled">
-          Preview only — the full Companion experience is being built for a coming release.
+          Example conversation. Your Companion remembers what you share and brings it back when it&rsquo;s relevant.
         </p>
       </div>
     </section>

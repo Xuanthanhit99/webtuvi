@@ -74,6 +74,17 @@ async function bootstrap() {
   await app.listen(config.port);
   // eslint-disable-next-line no-console
   console.log(`BeaconVie API listening on ${config.apiBaseUrl}`);
+  // Sprint 8.5 remediation — the audit found that a real provider key configured
+  // without also setting DEFAULT_AI_PROVIDER silently runs the whole product on
+  // the Mock provider with no visible signal. This line is the visible signal:
+  // it names which provider/model actually handles generation, and explicitly
+  // says "mock" rather than omitting it, so an unintentional mock-only runtime
+  // is obvious in the boot log instead of discoverable only by reading code.
+  // Never logs API keys or any other credential.
+  // eslint-disable-next-line no-console
+  console.log(`AI provider: ${config.ai.defaultProvider}`);
+  // eslint-disable-next-line no-console
+  console.log(`AI fallback: ${config.ai.fallbackProvider ?? '(none)'}`);
 }
 
 bootstrap();

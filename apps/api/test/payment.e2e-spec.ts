@@ -39,6 +39,9 @@ interface PremiumStatusApi {
   isPremium: boolean;
   status: string;
   expiresAt: string | null;
+  priceVnd: number;
+  currency: string;
+  isMvpTestPrice: boolean;
 }
 
 function buildWebhookPayload(
@@ -141,7 +144,14 @@ describe('Payment & Premium (e2e)', () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('fresh'));
       const res = await request(app.getHttpServer()).get('/payment/premium-status').set(headers).expect(200);
       const status = res.body.data as PremiumStatusApi;
-      expect(status).toEqual({ isPremium: false, status: 'NONE', expiresAt: null });
+      expect(status).toEqual({
+        isPremium: false,
+        status: 'NONE',
+        expiresAt: null,
+        priceVnd: 79000,
+        currency: 'VND',
+        isMvpTestPrice: true,
+      });
     });
   });
 

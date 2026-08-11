@@ -81,6 +81,9 @@ describe('NumerologyForm', () => {
     expect(screen.getByText('Master Number')).toBeInTheDocument();
     expect(numerologyApi.calculate).toHaveBeenCalledWith('Nguyen Van A', '1995-08-17');
     expect(onCalculated).toHaveBeenCalledWith(calculatedReading);
+    // Sprint 8.5 remediation: the interpretation is labeled as AI, distinct from the deterministic
+    // Life Path number above it.
+    expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
   });
 
   it('a PREMIUM_REQUIRED calculate error shows an upgrade banner with a link to /premium', async () => {

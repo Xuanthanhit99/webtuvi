@@ -1040,6 +1040,13 @@ export interface PremiumStatusDto {
   isPremium: boolean;
   status: PremiumEntitlementStatusValue;
   expiresAt: string | null;
+  /** The current 30-day Premium pass price, so the price shown before checkout always matches
+   * what checkout actually charges — never hardcode this in the frontend. */
+  priceVnd: number;
+  currency: string;
+  /** True until Product has signed off on a validated production price — see
+   * docs/architecture/premium-entitlements.md. The frontend must disclose this when true. */
+  isMvpTestPrice: boolean;
 }
 
 // --- Numerology Discovery Foundation (Sprint 8). The Product Bible's second real Discovery

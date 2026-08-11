@@ -1,11 +1,13 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
+import { ConfigService } from '@nestjs/config';
 import type { PaymentOrderDto, PremiumStatusDto } from '@beaconvie/types';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PaymentThrottlerGuard } from '../common/guards/payment-throttler.guard';
 import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { SkipCsrf } from '../common/csrf/skip-csrf.decorator';
+import type { AppConfiguration } from '../config/configuration';
 import { PaymentCheckoutService } from './checkout/payment-checkout.service';
 import { PaymentWebhookService } from './webhook/payment-webhook.service';
 import { EntitlementService } from './entitlement/entitlement.service';
@@ -31,6 +33,7 @@ export class PaymentController {
     private readonly checkoutService: PaymentCheckoutService,
     private readonly webhookService: PaymentWebhookService,
     private readonly entitlementService: EntitlementService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Post('checkout')
@@ -50,9 +53,19 @@ export class PaymentController {
 
   @Get('premium-status')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'The caller’s current Premium entitlement status' })
-  getPremiumStatus(@CurrentUser() user: AuthenticatedUser): Promise<PremiumStatusDto> {
-    return this.entitlementService.getEntitlementSummary(user.id);
+  @ApiOperation({ summary: 'The caller’s current Premium entitlement status, plus the price checkout will charge' })
+  async getPremiumStatus(@CurrentUser() user: AuthenticatedUser): Promise<PremiumStatusDto> {
+    const summary = await this.entitlementService.getEntitlementSummary(user.id);
+    const config = this.configService.get<AppConfiguration>('app')!;
+    return {
+      ...summary,
+      priceVnd: config.payment.premium.priceVnd,
+      currency: 'VND',
+      // No product sign-off mechanism exists yet for this price (see
+      // docs/architecture/premium-entitlements.md) — always disclosed as unvalidated until one does,
+      // never inferred from NODE_ENV (that would wrongly imply production pricing is validated).
+      isMvpTestPrice: true,
+    };
   }
 
   @Post('webhooks/payos')
