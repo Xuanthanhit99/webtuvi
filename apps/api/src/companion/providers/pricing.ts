@@ -22,8 +22,9 @@ const PRICING: Record<AIProviderName, Record<string, ModelPricing>> = {
     'claude-3-haiku-20240307': { promptPer1k: 0.00025, completionPer1k: 0.00125 },
   },
   gemini: {
-    'gemini-1.5-pro': { promptPer1k: 0.00125, completionPer1k: 0.005 },
-    'gemini-1.5-flash': { promptPer1k: 0.000075, completionPer1k: 0.0003 },
+    // gemini-1.5-pro/-flash were shut down 2025-09-29 — see gemini.provider.ts's DEFAULT_MODEL
+    // comment. Pricing below is gemini-3.5-flash-lite (current default) per official pricing docs.
+    'gemini-3.5-flash-lite': { promptPer1k: 0.0003, completionPer1k: 0.0025 },
   },
   mock: {
     'mock-model': { promptPer1k: 0, completionPer1k: 0 },

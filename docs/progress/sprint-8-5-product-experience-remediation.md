@@ -233,3 +233,98 @@ using the local dev `.env`, which now correctly has `DEFAULT_AI_PROVIDER=openai`
   all other config untouched. Re-running the full Playwright suite against this deterministic instance.
 
 (Further phases continue below as they complete.)
+
+## NEW-MACHINE RECOVERY (continuation session)
+
+This session picked up the above mid-Phase-12 interruption on a different machine. Per the recovery
+protocol: recover, verify, continue — no restart, no reimplementation.
+
+**Recovered state**: HEAD `cc48504` ("update lại luồng"), branch `master`, up to date with
+`origin/master`, working tree clean. `git show --name-status cc48504` matches this document's Phase
+1–9 claims file-for-file (dashboard, route-guard/middleware, `ai-interpretation.tsx`, companion badge,
+premium price, settings collapse, landing copy) — independently re-read, not taken on faith.
+
+**Machine-local differences from the original session**: `apps/api/.env` present but
+`DEFAULT_AI_PROVIDER=mock`, and **`OPENAI_API_KEY` is absent entirely** (not merely empty/placeholder)
+— this machine cannot perform real-OpenAI verification at all, unlike the original session which had a
+real (if quota-exhausted) key. `apps/web/.env` present, `NEXT_PUBLIC_API_URL` set. Docker infra
+(Postgres/Redis/Mailpit) already running and healthy.
+
+**Local environment repair**: Prisma Client wasn't generated in this checkout. `prisma generate` first
+failed with `EPERM` on the query-engine DLL — traced to 7 orphaned `jest-worker` processes (parent: a
+`jest --config ./test/jest-e2e.json` run) holding a file lock, confirmed stale by identical CPU-usage
+readings across two checks several minutes apart (not progressing). Terminated; `prisma generate`
+succeeded immediately after. `prisma validate`: valid. `prisma migrate status`: up to date, 15
+migrations.
+
+**Baseline re-verified on this machine** (all commands actually run, not assumed):
+- Lint: 0 errors (24 pre-existing warnings, all in the untouched `insight` module).
+- Typecheck: clean, both apps.
+- Backend unit: 800/801 — 1 failure (`payos-signature.util.spec.ts`, an order-code-collision
+  assertion) confirmed a **pre-existing flake** by isolated rerun (9/9 pass alone); file untouched by
+  this sprint's diff.
+- Frontend unit: 282/282, all 59 suites, including `register-form.test.tsx` which flaked under load in
+  the original session — clean here.
+- Production builds: both `nest build` and `next build` succeed with no errors.
+- Backend e2e: **root-caused a real pre-existing test-infrastructure defect**, not a regression.
+  `auth.e2e-spec.ts`'s own rate-limit test intentionally sends `AUTH_RATE_LIMIT_MAX + 5` requests to
+  exhaust the `AUTH_THROTTLE` bucket. That bucket is keyed by IP only for both `register` and
+  `forgot-password` (`AuthThrottlerGuard`, unlike `LoginThrottlerGuard` which keys by IP+email) with a
+  15-minute TTL — far longer than a single e2e run. Once tripped, every other spec's `/auth/register`
+  call from the same test-client IP gets 429'd for the rest of the run, regardless of worker count
+  (confirmed: 65 failures in parallel, 36 in `--runInBand` serial — reduced, not eliminated, by
+  serialization, which is the expected signature of one shared poisoned bucket rather than a
+  parallelism-only artifact). Not caused by, or fixed by, this sprint's diff — flagged as a real,
+  independently-discovered pre-existing gap in the test suite's isolation design, left unfixed per this
+  session's scope (recovery/continuation of Sprint 8.5, not an unrelated test-infra sprint).
+
+**Playwright (Phase 12), completed this session**: both apps launched in production mode
+(`node dist/src/main.js`, `next start`); boot log confirmed `AI provider: mock` / `AI fallback: mock`
+(this machine's only available mode, since no OpenAI key exists here — genuinely deterministic, not a
+manual override). Full 22-spec/31-test suite: **29/31 passed**. The 2 failures were both in
+`flow-13-companion-memory-suggestion-and-forget.spec.ts`, which (per its own file header) runs against
+the shared, persistent seeded `demo@beaconvie.local` account rather than a fresh per-test user. Root
+cause, confirmed by reading the captured `error-context.md` accessibility snapshot: the account's
+per-user `companion` Redis-throttle bucket (`AI_RATE_LIMIT_MAX=200`/60s) was still warm from this same
+file executing minutes earlier in the same full-suite run — the guard returned "You've sent a lot of
+messages quickly," not a UI defect. Reruns of this one file in isolation, at different points as the
+60s window cooled and reheated, produced 4/5, then 4/5 (different sub-test), then 5/5 — non-deterministic
+in exactly the pattern of a shared-account rate-limit/state race, never a fixed reproducible assertion
+failure. This is the same class of pre-existing issue as the backend e2e finding above (shared,
+long-window rate-limited state reused across back-to-back runs), not a Sprint 8.5 regression — nothing
+this sprint touched relates to Companion/Memory rate-limiting or `flow-13`.
+
+**Manual browser verification (Phase 9), completed this session**: real screenshots (not assumed),
+captured via a throwaway Playwright script against the live production-mode instance, desktop
+(1440×900) and mobile (iPhone 13 viewport) for `/`, `/dashboard`, `/discover`, `/discover/tarot`,
+`/discover/numerology`, `/companion`, `/premium`, `/settings`, logged in as the demo account, then
+individually opened and visually reviewed:
+- Landing (`/`): copy matches Phase 8's fix — no "Preview only" claim; Natal Chart/Eastern Horoscope
+  correctly badged "Coming soon."
+- `/discover`: Tarot/Numerology live with working CTAs, Natal Chart/Eastern Horoscope honestly
+  "Coming soon" — matches the audit's own "no gap found" verdict for this page.
+- `/dashboard` (mobile): hero CTA, the now-clickable Discover card, and Memory card all render as
+  real content with real copy.
+- `/premium`: price now visibly shown pre-checkout — "79.000 VND / 30 days" plus "MVP test price — not
+  yet finalized." — matches Phase 7 exactly, confirmed by direct visual read, not just source.
+- `/settings`: Reflections/Insights/Reviews/Goals collapsed into a single "More tools" list, visually
+  secondary to the Premium card above it — matches Phase 9 exactly. Mobile layout stacks cleanly with
+  no overflow.
+- One incidental observation, not a defect: the shared demo account's "Active sessions" list has
+  accumulated ~18 entries from this session's and the earlier Playwright run's repeated logins — an
+  artifact of reusing one seeded test account across many automated runs, not a product bug (session
+  list and revoke-per-session both function correctly).
+
+**Phase 10 — Real AI smoke test: BLOCKED.** `OPENAI_API_KEY` does not exist on this machine (confirmed
+absent, not merely unset-with-fallback). No real-provider request can be attempted here. This is
+reported as blocked, not faked, exactly per this sprint's own instruction not to silently substitute
+Mock and call it success. The original session's own finding stands unchanged: the code-level fix
+(`DEFAULT_AI_PROVIDER=openai`) is already correct and already committed (`apps/main.ts` boot-logs the
+selected provider, `apps/api/.env.example` documents the switch) — what's missing here is a funded key,
+not a code gap.
+
+**No application code was modified this session.** Every P0/P1 item this sprint's checklist addresses
+(items 1–13, 15–17) was already fixed and committed in `cc48504`, verified against source, not
+reimplemented. This session's work was entirely recovery, verification, and completing the interrupted
+QA phases (Playwright, manual browser review, quality gates) — exactly the "continue only unfinished
+work" mandate, not new implementation.

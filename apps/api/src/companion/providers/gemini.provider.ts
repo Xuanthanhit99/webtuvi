@@ -12,7 +12,12 @@ import { estimateTokens } from './token-estimate.util';
 import { estimateCostUsd } from './pricing';
 
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const DEFAULT_MODEL = 'gemini-1.5-flash';
+// gemini-1.5-flash was shut down by Google on 2025-09-29 (all requests returned 404) — see
+// https://ai.google.dev/gemini-api/docs/changelog. gemini-3.5-flash-lite is the current
+// lowest-cost/lowest-latency Flash-tier model with no announced shutdown date (verified against
+// official docs during the Sprint 8.5 temporary Gemini runtime switch); gemini-2.5-flash was
+// considered but is already retiring 2026-10-16, too close to pick for a fresh default.
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 
 interface GeminiUsage {
   promptTokenCount: number;
