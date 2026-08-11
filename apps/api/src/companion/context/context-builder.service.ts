@@ -34,7 +34,7 @@ export class ContextBuilderService {
     });
     if (!user) throw new NotFoundException();
 
-    const [recentActivity, otherConversations, activeGoals, latestTarotReading] = await Promise.all([
+    const [recentActivity, otherConversations, activeGoals, latestTarotReading, latestNumerologyReading] = await Promise.all([
       this.activitiesService.recent(userId, 5),
       this.prisma.conversation.findMany({
         where: { userId, ...(currentConversationId ? { id: { not: currentConversationId } } : {}) },
@@ -58,6 +58,14 @@ export class ContextBuilderService {
         where: { userId, status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' },
         orderBy: { createdAt: 'desc' },
         include: { cards: { include: { card: true }, orderBy: { position: 'asc' } } },
+      }),
+      // Sprint 8 Phase 9 — read-only Numerology bridge: the real, already-calculated core numbers
+      // and the real already-generated interpretation of the user's most recent visible reading,
+      // never recalculated or edited here. Mirrors the Tarot bridge immediately above exactly.
+      this.prisma.numerologyReading.findFirst({
+        where: { userId, status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' },
+        orderBy: { createdAt: 'desc' },
+        include: { values: { orderBy: { order: 'asc' } } },
       }),
     ]);
 
@@ -85,6 +93,13 @@ export class ContextBuilderService {
             cardNames: latestTarotReading.cards.map((rc) => `${rc.card.name}${rc.isReversed ? ' (reversed)' : ''}`),
             interpretation: latestTarotReading.interpretation,
             createdAt: latestTarotReading.createdAt.toISOString(),
+          }
+        : null,
+      latestNumerologyReading: latestNumerologyReading
+        ? {
+            values: latestNumerologyReading.values.map((v) => ({ type: v.type, value: v.value, isMasterNumber: v.isMasterNumber })),
+            interpretation: latestNumerologyReading.interpretation,
+            createdAt: latestNumerologyReading.createdAt.toISOString(),
           }
         : null,
       currentTimeIso: now.toISOString(),

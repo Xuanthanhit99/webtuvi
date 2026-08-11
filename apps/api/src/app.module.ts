@@ -25,6 +25,7 @@ import { ReviewModule } from './review/review.module';
 import { GoalModule } from './goal/goal.module';
 import { PaymentModule } from './payment/payment.module';
 import { TarotModule } from './tarot/tarot.module';
+import { NumerologyModule } from './numerology/numerology.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { TarotModule } from './tarot/tarot.module';
     GoalModule,
     PaymentModule,
     TarotModule,
+    NumerologyModule,
     CompanionModule,
     DashboardModule,
   ],

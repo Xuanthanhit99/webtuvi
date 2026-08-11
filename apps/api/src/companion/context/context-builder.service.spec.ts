@@ -1,12 +1,19 @@
 import { NotFoundException } from '@nestjs/common';
 import { ContextBuilderService } from './context-builder.service';
 
-function makePrismaMock(user: unknown, conversations: unknown[] = [], goals: unknown[] = [], latestTarotReading: unknown = null) {
+function makePrismaMock(
+  user: unknown,
+  conversations: unknown[] = [],
+  goals: unknown[] = [],
+  latestTarotReading: unknown = null,
+  latestNumerologyReading: unknown = null,
+) {
   return {
     user: { findUnique: jest.fn().mockResolvedValue(user) },
     conversation: { findMany: jest.fn().mockResolvedValue(conversations) },
     goal: { findMany: jest.fn().mockResolvedValue(goals) },
     tarotReading: { findFirst: jest.fn().mockResolvedValue(latestTarotReading) },
+    numerologyReading: { findFirst: jest.fn().mockResolvedValue(latestNumerologyReading) },
   };
 }
 
@@ -139,5 +146,42 @@ describe('ContextBuilderService', () => {
     const context = await builder.build('u1');
 
     expect(context.latestTarotReading).toBeNull();
+  });
+
+  it('includes the latest active, Companion-visible Numerology reading’s real values and interpretation', async () => {
+    const prisma = makePrismaMock(
+      { id: 'u1', displayName: 'Alex', onboardingCompletedAt: null, profile: null, preference: null },
+      [],
+      [],
+      null,
+      {
+        interpretation: 'A grounded reflection.',
+        createdAt: new Date('2026-01-06T00:00:00.000Z'),
+        values: [{ type: 'LIFE_PATH', value: 22, isMasterNumber: true }],
+      },
+    );
+    const activities = { recent: jest.fn().mockResolvedValue([]) };
+    const builder = new ContextBuilderService(prisma as never, activities as never);
+
+    const context = await builder.build('u1');
+
+    expect(context.latestNumerologyReading).toEqual({
+      values: [{ type: 'LIFE_PATH', value: 22, isMasterNumber: true }],
+      interpretation: 'A grounded reflection.',
+      createdAt: '2026-01-06T00:00:00.000Z',
+    });
+    expect(prisma.numerologyReading.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'u1', status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' } }),
+    );
+  });
+
+  it('latestNumerologyReading is null when no such reading exists', async () => {
+    const prisma = makePrismaMock({ id: 'u1', displayName: 'Alex', onboardingCompletedAt: null, profile: null, preference: null });
+    const activities = { recent: jest.fn().mockResolvedValue([]) };
+    const builder = new ContextBuilderService(prisma as never, activities as never);
+
+    const context = await builder.build('u1');
+
+    expect(context.latestNumerologyReading).toBeNull();
   });
 });

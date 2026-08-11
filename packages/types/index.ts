@@ -1042,6 +1042,104 @@ export interface PremiumStatusDto {
   expiresAt: string | null;
 }
 
+// --- Numerology Discovery Foundation (Sprint 8). The Product Bible's second real Discovery
+// system (Module 15) — a deterministic, versioned, standard-Pythagorean numerology engine, plus a
+// narrow AI interpretation layer that only ever narrates an already-real, already-calculated
+// result. No AI-calculated or AI-invented core numbers. See
+// docs/architecture/numerology-discovery.md. ---
+
+export type NumerologyReadingStatusValue = 'ACTIVE' | 'ARCHIVED' | 'DELETED';
+export type NumerologyReadingVisibilityValue = 'PRIVATE' | 'COMPANION_VISIBLE';
+export type NumerologyReadingHistoryActionValue = 'CREATED' | 'VIEWED' | 'INTERPRETED' | 'ARCHIVED' | 'RESTORED' | 'DELETED';
+export type NumerologyValueTypeValue = 'LIFE_PATH' | 'EXPRESSION' | 'SOUL_URGE' | 'PERSONALITY' | 'BIRTHDAY' | 'PERSONAL_YEAR';
+
+export interface NumerologyReductionStepDto {
+  from: number;
+  digits: number[];
+  to: number;
+}
+
+export interface NumerologyReductionResultDto {
+  value: number;
+  isMasterNumber: boolean;
+  steps: NumerologyReductionStepDto[];
+}
+
+export interface NumerologyDateComponentReductionDto {
+  component: 'MONTH' | 'DAY' | 'YEAR';
+  input: number;
+  reduction: NumerologyReductionResultDto;
+}
+
+/** `breakdown` shape for LIFE_PATH and PERSONAL_YEAR. */
+export interface NumerologyDateBasedBreakdownDto {
+  normalizedDate: string;
+  components: NumerologyDateComponentReductionDto[];
+  total: number;
+  finalReduction: NumerologyReductionResultDto;
+}
+
+/** `breakdown` shape for EXPRESSION, SOUL_URGE, PERSONALITY. */
+export interface NumerologyNameBasedBreakdownDto {
+  normalizedName: string;
+  letters: { char: string; value: number }[];
+  sum: number;
+  reduction: NumerologyReductionResultDto;
+}
+
+/** `breakdown` shape for BIRTHDAY. */
+export type NumerologyBirthdayBreakdownDto = NumerologyDateComponentReductionDto;
+
+export interface NumerologyValueDto {
+  type: NumerologyValueTypeValue;
+  value: number;
+  isMasterNumber: boolean;
+  breakdown: NumerologyDateBasedBreakdownDto | NumerologyNameBasedBreakdownDto | NumerologyBirthdayBreakdownDto;
+  /** Only set for PERSONAL_YEAR. */
+  appliesToYear: number | null;
+  order: number;
+}
+
+export interface NumerologyReadingDto {
+  id: string;
+  status: NumerologyReadingStatusValue;
+  visibility: NumerologyReadingVisibilityValue;
+  birthNameInput: string;
+  normalizedBirthName: string;
+  /** `YYYY-MM-DD`. */
+  birthDate: string;
+  calculationVersion: string;
+  normalizationVersion: string;
+  interpretation: string | null;
+  values: NumerologyValueDto[];
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
+}
+
+export interface NumerologyReadingHistoryDto {
+  id: string;
+  action: NumerologyReadingHistoryActionValue;
+  detail: string;
+  createdAt: string;
+}
+
+export interface ListNumerologyReadingsResultDto {
+  items: NumerologyReadingDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface NumerologyMeaningDto {
+  type: NumerologyValueTypeValue;
+  value: number;
+  isMasterNumber: boolean;
+  title: string;
+  framing: string;
+  meaning: string;
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {

@@ -3,8 +3,10 @@ import { landingCopy } from '@/content/landing-copy';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-/** Only Tarot is real (Sprint 6) — every other Discovery system stays honestly badged "Coming
- * soon" (see docs/audit/web-tu-vi-remediation-roadmap.md "Minimal SEO scope"). */
+/** Tarot (Sprint 6) and Numerology (Sprint 8) are real — every other Discovery system stays
+ * honestly badged "Coming soon" (see docs/audit/web-tu-vi-remediation-roadmap.md "Minimal SEO
+ * scope"). Each live system links to its own real route via `system.href` — never a single
+ * hardcoded destination shared across every non-comingSoon card. */
 export function DiscoverySystems() {
   return (
     <section id="discovery" aria-labelledby="discovery-heading" className="border-b border-border-subtle py-16 desktop:py-24">
@@ -23,12 +25,12 @@ export function DiscoverySystems() {
                 <p className="text-body-sm text-text-secondary">{system.description}</p>
               </Card>
             );
-            return system.comingSoon ? (
-              content
-            ) : (
-              <Link key={system.title} href="/discover/tarot" className="w-56 shrink-0 desktop:w-auto">
+            return !system.comingSoon && system.href ? (
+              <Link key={system.title} href={system.href} className="w-56 shrink-0 desktop:w-auto">
                 {content}
               </Link>
+            ) : (
+              content
             );
           })}
         </div>

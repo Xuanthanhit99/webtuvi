@@ -104,11 +104,16 @@ export class DashboardService {
         suggestionChip,
       },
       memoryHighlight,
+      // Sprint 8 release-closure fix: this was a static, hardcoded object never updated as
+      // Discovery systems actually shipped — it still claimed "on their way" for Tarot (live
+      // since Sprint 6) and Numerology (live since Sprint 8) alike. Natal Chart/Eastern Horoscope
+      // remain genuinely pending, so `comingSoon` now reflects the section honestly rather than
+      // being permanently true.
       discoverySuggestion: {
         title: 'Discovery',
-        description: 'Tarot, your chart, your numbers — on their way.',
+        description: 'A real Tarot draw and a real Numerology reading — your chart is on its way.',
         href: '/discover',
-        comingSoon: true,
+        comingSoon: false,
       },
       recentActivity,
     };

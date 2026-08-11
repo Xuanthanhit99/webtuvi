@@ -76,5 +76,14 @@ export function buildSystemPrompt(context: ConversationContext): string {
     );
   }
 
+  if (context.latestNumerologyReading) {
+    const numbers = context.latestNumerologyReading.values
+      .map((v) => `${v.type.replace('_', ' ').toLowerCase()}: ${v.value}${v.isMasterNumber ? ' (Master Number)' : ''}`)
+      .join(', ');
+    facts.push(
+      `Their most recent Numerology reading calculated: ${numbers}.${context.latestNumerologyReading.interpretation ? ` The reflection already offered for it: "${context.latestNumerologyReading.interpretation}"` : ''} You may reference this naturally if it comes up — you never calculate, recalculate, or "correct" a number yourself; those were already computed deterministically before this conversation, and you never state a number that isn't exactly what's listed here.`,
+    );
+  }
+
   return `${BASE_RULES}\n\nWhat you actually know about them right now (do not assume anything beyond this):\n${facts.map((f) => `- ${f}`).join('\n')}`;
 }

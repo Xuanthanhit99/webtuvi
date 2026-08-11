@@ -14,6 +14,7 @@ function context(overrides: Partial<ConversationContext> = {}): ConversationCont
     recentConversationSummaries: [],
     activeGoalTitles: [],
     latestTarotReading: null,
+    latestNumerologyReading: null,
     currentTimeIso: '2026-01-01T12:00:00.000Z',
     currentTimeLabel: 'Thursday, 12:00 PM',
     ...overrides,

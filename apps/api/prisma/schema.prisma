@@ -61,6 +61,7 @@ model User {
   tarotReadings         TarotReading[]
   paymentOrders         PaymentOrder[]
   premiumEntitlements   PremiumEntitlement[]
+  numerologyReadings    NumerologyReading[]
 
   @@map("users")
 }
@@ -1941,4 +1942,142 @@ model PremiumEntitlement {
   @@index([userId, status])
   @@index([userId, expiresAt])
   @@map("premium_entitlements")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 8 — Numerology Discovery Foundation (Product Bible Module 15). The second
+// real Discovery system: a deterministic, versioned, standard-Pythagorean numerology
+// engine (see apps/api/src/numerology/engine/) with a narrow AI interpretation layer
+// that only ever narrates already-real, already-computed core numbers. Explicitly NOT
+// AI-generated numbers, NOT Natal Chart/Eastern Horoscope, NOT a second payment
+// provider — those remain out of scope per docs/audit/web-tu-vi-remediation-roadmap.md.
+// Reflection/Insight/Review/Goal remain frozen, untouched by this sprint.
+// ---------------------------------------------------------------------------
+
+/// Mirrors TarotReadingStatus/JournalEntry/Goal's own reversible-archive + soft-delete
+/// precedent exactly.
+enum NumerologyReadingStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+/// Mirrors TarotReadingVisibility/Memory/Reflection/Goal's own PRIVATE/COMPANION_VISIBLE
+/// precedent exactly — gates whether Companion's context assembly may reference this
+/// reading, never a public visibility.
+enum NumerologyReadingVisibility {
+  PRIVATE
+  COMPANION_VISIBLE
+}
+
+/// Append-only lifecycle event log — mirrors TarotReadingHistory/GoalHistory's own
+/// precedent exactly.
+enum NumerologyReadingHistoryAction {
+  CREATED
+  VIEWED
+  INTERPRETED
+  ARCHIVED
+  RESTORED
+  DELETED
+}
+
+/// The six core numbers this sprint implements (Product Bible Module 15 §4/§18) — Life
+/// Path, Expression, Soul Urge, Personality, and Birthday are permanent/high-durability;
+/// Personal Year is time-bound and calculated for a specific calendar year
+/// (`NumerologyValue.appliesToYear`). Personal Month is explicitly deferred (§22) — not
+/// implemented this sprint.
+enum NumerologyValueType {
+  LIFE_PATH
+  EXPRESSION
+  SOUL_URGE
+  PERSONALITY
+  BIRTHDAY
+  PERSONAL_YEAR
+}
+
+/// A persisted Numerology reading — one calculation of the six core numbers from a real,
+/// user-submitted `birthNameInput`/`birthDate`, computed once by the deterministic engine
+/// and never recalculated after the fact. `birthNameInput` is what the user actually typed
+/// (shown back to them so normalization is never silent, per the sprint brief's Phase 2
+/// transparency requirement); `normalizedBirthName` is the exact upper-cased,
+/// diacritic-stripped string the engine calculated from
+/// (`numerology-name.util.ts#normalizeName`). `calculationVersion`/`normalizationVersion`
+/// pin the exact engine/normalization revision used, so a future rule change never
+/// silently reinterprets an old reading (Phase 7: reproducibility/versioning).
+model NumerologyReading {
+  id                   String                        @id @default(cuid())
+  userId               String
+  user                 User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status               NumerologyReadingStatus       @default(ACTIVE)
+  visibility           NumerologyReadingVisibility   @default(PRIVATE)
+  /// Exactly as typed by the user — never silently altered.
+  birthNameInput       String
+  /// The normalized string actually used for letter-value calculation
+  /// (`numerology-name.util.ts#normalizeName().display`).
+  normalizedBirthName  String
+  /// Date-only, `YYYY-MM-DD` semantics enforced at the application layer
+  /// (`numerology-date.util.ts`) — stored as a real `DateTime` at UTC midnight.
+  birthDate            DateTime
+  calculationVersion   String
+  normalizationVersion String
+  /// AI-narrated interpretation of the real calculated numbers — null until generated,
+  /// never a placeholder string in the meantime. A reading is fully real and viewable
+  /// (real numbers, real breakdowns) before this exists; interpretation is additive, never
+  /// a precondition (mirrors TarotReading's own "interpretation is additive" precedent).
+  interpretation       String?
+  aiProvider           String?
+  aiModel              String?
+  promptVersion        String?
+  interpretedAt        DateTime?
+  createdAt            DateTime                      @default(now())
+  updatedAt            DateTime                      @updatedAt
+  archivedAt           DateTime?
+  deletedAt            DateTime?
+
+  values  NumerologyValue[]
+  history NumerologyReadingHistory[]
+
+  @@index([userId, status, createdAt])
+  @@map("numerology_readings")
+}
+
+/// One row per core number computed for a reading. `breakdown` is the full, structured
+/// reduction trail (`NumerologyValueResult['breakdown']` in `numerology-engine.ts`,
+/// serialized) — the "why is my number X" transparency data the frontend renders as
+/// expandable steps (Sprint 8 brief, Phase 13). Never AI-generated: every row's `value`
+/// and `breakdown` come directly from `calculateNumerology()`'s real output.
+model NumerologyValue {
+  id             String              @id @default(cuid())
+  readingId      String
+  reading        NumerologyReading   @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  type           NumerologyValueType
+  value          Int
+  isMasterNumber Boolean             @default(false)
+  /// Structured calculation steps — see `numerology-engine.ts`'s `DateBasedBreakdown` /
+  /// `NameBasedBreakdown` / `DateComponentReduction` shapes.
+  breakdown      Json
+  /// Only set for PERSONAL_YEAR — the calendar year this value describes (Product Bible
+  /// §7/§8: lower-durability, time-bound content). Null for the five permanent numbers.
+  appliesToYear  Int?
+  /// Display/reveal order within a reading (Overview -> Life Path -> Expression -> Soul
+  /// Urge -> Personality -> Birthday -> Personal Year, per Module 15 §4's progressive
+  /// disclosure order) — a real, fixed ordering, never client-supplied.
+  order          Int
+
+  @@unique([readingId, type])
+  @@index([readingId])
+  @@map("numerology_values")
+}
+
+/// Append-only lifecycle event log — mirrors TarotReadingHistory's own precedent exactly.
+model NumerologyReadingHistory {
+  id        String                          @id @default(cuid())
+  readingId String
+  reading   NumerologyReading               @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  action    NumerologyReadingHistoryAction
+  detail    String
+  createdAt DateTime                        @default(now())
+
+  @@index([readingId, createdAt])
+  @@map("numerology_reading_history")
 }

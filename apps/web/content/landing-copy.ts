@@ -42,17 +42,22 @@ export const landingCopy = {
     steps: [
       {
         number: 1,
-        text: 'Start with a real Tarot draw — your chart and your numbers are on their way.',
+        text: 'Start with a real Tarot draw or a real Numerology reading — your chart is on its way.',
       },
       { number: 2, text: 'Talk it through with your Companion.' },
       { number: 3, text: 'Come back — it remembers, and the picture gets clearer.' },
     ],
   },
   discoverySystems: [
-    { title: 'Tarot', description: 'A real, deterministic 78-card draw — live today.', comingSoon: false },
+    { title: 'Tarot', description: 'A real, deterministic 78-card draw — live today.', comingSoon: false, href: '/discover/tarot' },
     { title: 'Natal Chart', description: 'What your chart says about how you move through the world.', comingSoon: true },
     { title: 'Eastern Horoscope', description: 'An old lens on a familiar question: who am I, really?', comingSoon: true },
-    { title: 'Numerology', description: 'The numbers already in your life, given a second look.', comingSoon: true },
+    {
+      title: 'Numerology',
+      description: 'The numbers already in your life, given a second look — no number ever chosen or invented by AI.',
+      comingSoon: false,
+      href: '/discover/numerology',
+    },
   ],
   // Module 5 describes this section's shape (a short, credible 2-3 message
   // exchange) without providing exact copy — the example dialogue below is the

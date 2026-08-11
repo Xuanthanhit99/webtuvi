@@ -25,6 +25,15 @@ export interface ConversationContext {
    * re-interpreted here. Read-only: Companion never draws, re-draws, or edits a reading. Null
    * when no such reading exists. */
   latestTarotReading: { cardNames: string[]; interpretation: string | null; createdAt: string } | null;
+  /** The user's most recent ACTIVE, COMPANION_VISIBLE Numerology reading (Sprint 8, Phase 9) —
+   * real, already-calculated core numbers and the real AI interpretation already generated for
+   * it, never recalculated here. Read-only: Companion never calculates, recalculates, or edits a
+   * reading. Null when no such reading exists. */
+  latestNumerologyReading: {
+    values: { type: string; value: number; isMasterNumber: boolean }[];
+    interpretation: string | null;
+    createdAt: string;
+  } | null;
   currentTimeIso: string;
   currentTimeLabel: string;
 }

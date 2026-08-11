@@ -6,20 +6,26 @@ import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = { title: 'Discover' };
 
-/** Only Tarot is real (Sprint 6). The other three remain honestly labeled "Coming soon" — never
- * claimed as available until they actually are (see docs/audit/web-tu-vi-remediation-roadmap.md). */
+/** Tarot (Sprint 6) and Numerology (Sprint 8) are real. The remaining two stay honestly labeled
+ * "Coming soon" — never claimed as available until they actually are (see
+ * docs/audit/web-tu-vi-remediation-roadmap.md). */
 const SYSTEMS = [
   { title: 'Tarot', description: 'A real, deterministic 78-card draw — no card ever chosen or invented by AI.', href: '/discover/tarot', available: true },
   { title: 'Natal Chart', description: 'What your chart says about how you move through the world.', available: false },
   { title: 'Eastern Horoscope', description: 'An old lens on a familiar question: who am I, really?', available: false },
-  { title: 'Numerology', description: 'The numbers already in your life, given a second look.', available: false },
+  {
+    title: 'Numerology',
+    description: 'The numbers already in your life, given a second look — no number ever chosen or invented by AI.',
+    href: '/discover/numerology',
+    available: true,
+  },
 ];
 
 export default function DiscoverPage() {
   return (
     <div className="flex flex-col gap-6">
       <h1 className="font-display text-heading-lg text-text-primary">Discover</h1>
-      <p className="text-body-sm text-text-secondary">Tarot is live. Your chart and your numbers are on their way.</p>
+      <p className="text-body-sm text-text-secondary">Tarot and Numerology are live. Your chart and your horoscope are on their way.</p>
       <div className="grid gap-4 desktop:grid-cols-2">
         {SYSTEMS.map((system) => (
           <Card key={system.title}>
@@ -31,7 +37,7 @@ export default function DiscoverPage() {
             {system.available && system.href && (
               <Link href={system.href}>
                 <Button variant="secondary" size="sm">
-                  Try Tarot
+                  Try {system.title}
                 </Button>
               </Link>
             )}
