@@ -25,6 +25,21 @@ const config: Config = {
         caution: '#C17B6B',
         'border-subtle': '#332F52',
         'border-focus': '#E3B368',
+
+        // Mệnh Vi (docs/design/menh-vi-reference-breakdown.md) — namespaced `mv-*` so this
+        // exploration's palette never collides with or overrides BeaconVie's tokens above.
+        // Isolated to apps/web/app/menh-vi/** and apps/web/features/menh-vi/**.
+        'mv-bg': '#080B14',
+        'mv-elevated': '#101323',
+        'mv-surface': '#15182B',
+        'mv-violet': '#7765FF',
+        'mv-violet-secondary': '#9A83FF',
+        'mv-gold': '#D9BC78',
+        'mv-text': '#F4F1EA',
+        'mv-text-secondary': '#A6A5B2',
+        'mv-muted': '#727180',
+        'mv-rose': '#C98BA0',
+        'mv-border': 'rgba(217, 188, 120, 0.16)',
       },
       fontFamily: {
         display: ['var(--font-fraunces)', 'Georgia', 'serif'],
@@ -52,6 +67,8 @@ const config: Config = {
       },
       boxShadow: {
         sm: '0 4px 12px rgba(0,0,0,0.2)',
+        'mv-glow-violet': '0 0 32px rgba(119, 101, 255, 0.28)',
+        'mv-glow-gold': '0 0 24px rgba(217, 188, 120, 0.22)',
       },
       transitionDuration: {
         fast: '200ms',
@@ -72,10 +89,29 @@ const config: Config = {
       screens: {
         tablet: '768px',
         desktop: '1280px',
+        // Mệnh Vi top nav's full icon+label state — deliberately wider than `desktop` (which
+        // also gates the sidebar + 4-col feature grid) so the two don't compete for space at
+        // the same 1280px boundary. See docs/design/menh-vi-reference-breakdown.md Round 3.
+        'mv-wide': '1440px',
       },
       maxWidth: {
         content: '1120px',
         reading: '720px',
+        'mv-content': '1360px',
+      },
+      keyframes: {
+        'mv-orbit-spin': {
+          from: { transform: 'rotate(0deg)' },
+          to: { transform: 'rotate(360deg)' },
+        },
+        'mv-orbit-spin-reverse': {
+          from: { transform: 'rotate(360deg)' },
+          to: { transform: 'rotate(0deg)' },
+        },
+      },
+      animation: {
+        'mv-orbit-slow': 'mv-orbit-spin 48s linear infinite',
+        'mv-orbit-slower': 'mv-orbit-spin-reverse 64s linear infinite',
       },
     },
   },

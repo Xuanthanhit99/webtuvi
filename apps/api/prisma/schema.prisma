@@ -62,6 +62,7 @@ model User {
   paymentOrders         PaymentOrder[]
   premiumEntitlements   PremiumEntitlement[]
   numerologyReadings    NumerologyReading[]
+  natalChartReadings    NatalChartReading[]
 
   @@map("users")
 }
@@ -2080,4 +2081,206 @@ model NumerologyReadingHistory {
 
   @@index([readingId, createdAt])
   @@map("numerology_reading_history")
+}
+
+// ---------------------------------------------------------------------------
+// Natal Chart Discovery Foundation (Sprint 9)
+// See docs/architecture/natal-chart-discovery.md for the full decision record.
+// Mirrors NumerologyReading/NumerologyValue/NumerologyReadingHistory's precedent.
+// ---------------------------------------------------------------------------
+
+enum NatalChartReadingStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+/// Mirrors NumerologyReadingVisibility's own precedent exactly — gates whether
+/// Companion's context assembly may reference this chart, never a public visibility.
+enum NatalChartReadingVisibility {
+  PRIVATE
+  COMPANION_VISIBLE
+}
+
+/// Append-only lifecycle event log — mirrors NumerologyReadingHistoryAction exactly.
+enum NatalChartReadingHistoryAction {
+  CREATED
+  VIEWED
+  INTERPRETED
+  ARCHIVED
+  RESTORED
+  DELETED
+}
+
+enum NatalChartBody {
+  SUN
+  MOON
+  MERCURY
+  VENUS
+  MARS
+  JUPITER
+  SATURN
+  URANUS
+  NEPTUNE
+  PLUTO
+}
+
+enum NatalChartAngleKind {
+  ASCENDANT
+  MIDHEAVEN
+}
+
+/// The 5 major aspects this sprint implements (Module 13 §4/§18) — no minor aspects
+/// (quincunx, semi-sextile, etc.), per `docs/architecture/natal-chart-discovery.md`'s
+/// orb-rules decision.
+enum NatalChartAspectType {
+  CONJUNCTION
+  OPPOSITION
+  TRINE
+  SQUARE
+  SEXTILE
+}
+
+/// A persisted Natal Chart reading — one deterministic calculation from real,
+/// user-submitted birth data, computed once by `NatalChartCalculatorService` and never
+/// recalculated after the fact except by explicit user correction (Module 13 §16), which
+/// creates a new reading rather than mutating this one. `birthDateInput`/`birthTimeInput`/
+/// `birthPlaceInput` are exactly what the user submitted; `normalizedLatitude`/
+/// `normalizedLongitude`/`normalizedTimezone`/`normalizedPlaceLabel` are the server-derived
+/// values actually used for calculation (never client-trusted raw coordinates) — same
+/// "never silently alter without showing the normalized input" precedent as
+/// NumerologyReading's `birthNameInput`/`normalizedBirthName` pair.
+/// `calculationVersion`/`engineVersion`/`houseSystem`/`zodiacMode` pin reproducibility
+/// (docs/architecture/natal-chart-discovery.md's Phase 5/7 decisions) — a future engine or
+/// convention change never silently reinterprets an old chart.
+model NatalChartReading {
+  id                   String                       @id @default(cuid())
+  userId               String
+  user                 User                         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status               NatalChartReadingStatus      @default(ACTIVE)
+  visibility           NatalChartReadingVisibility  @default(PRIVATE)
+
+  /// Exactly as typed/selected by the user — never silently altered.
+  birthDateInput       String
+  birthTimeInput       String?
+  birthTimeKnown       Boolean                      @default(false)
+  birthPlaceInput      String
+
+  /// Server-derived values actually used for calculation (Phase 3/8).
+  normalizedLatitude   Float
+  normalizedLongitude  Float
+  normalizedTimezone   String
+  normalizedPlaceLabel String
+
+  calculationVersion   String
+  engineVersion        String
+  houseSystem          String
+  zodiacMode           String
+  /// False when `birthTimeKnown` is false — houses/Ascendant/Midheaven are not computed
+  /// without a birth time (Module 13 §14/§16), never approximated.
+  ascendantAvailable   Boolean                      @default(false)
+
+  /// AI-narrated interpretation of the real calculated chart — structured sections
+  /// (Phase 11), null until generated, never a placeholder in the meantime. A chart is
+  /// fully real and viewable (real placements, houses, aspects) before this exists —
+  /// interpretation is additive, never a precondition (mirrors NumerologyReading's own
+  /// precedent).
+  interpretation       Json?
+  aiProvider           String?
+  aiModel              String?
+  promptVersion        String?
+  interpretedAt        DateTime?
+
+  createdAt            DateTime                     @default(now())
+  updatedAt            DateTime                     @updatedAt
+  archivedAt           DateTime?
+  deletedAt            DateTime?
+
+  placements NatalChartPlacement[]
+  angles     NatalChartAngle[]
+  houses     NatalChartHouse[]
+  aspects    NatalChartAspect[]
+  history    NatalChartReadingHistory[]
+
+  @@index([userId, status, createdAt])
+  @@map("natal_chart_readings")
+}
+
+/// One row per computed body (Sun..Pluto) — always 10 rows per reading.
+model NatalChartPlacement {
+  id             String              @id @default(cuid())
+  readingId      String
+  reading        NatalChartReading   @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  body           NatalChartBody
+  /// Absolute ecliptic longitude, 0-360 decimal degrees.
+  longitude      Float
+  sign           String
+  degreeInSign   Float
+  /// Null when `ascendantAvailable` is false on the parent reading — never approximated.
+  houseNumber    Int?
+  retrograde     Boolean             @default(false)
+
+  @@unique([readingId, body])
+  @@index([readingId])
+  @@map("natal_chart_placements")
+}
+
+/// Ascendant / Midheaven — 0 rows when birth time is unknown, else exactly 2.
+model NatalChartAngle {
+  id           String              @id @default(cuid())
+  readingId    String
+  reading      NatalChartReading   @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  kind         NatalChartAngleKind
+  longitude    Float
+  sign         String
+  degreeInSign Float
+
+  @@unique([readingId, kind])
+  @@index([readingId])
+  @@map("natal_chart_angles")
+}
+
+/// House cusps 1-12 — 0 rows when birth time is unknown, else exactly 12.
+model NatalChartHouse {
+  id             String              @id @default(cuid())
+  readingId      String
+  reading        NatalChartReading   @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  houseNumber    Int
+  cuspLongitude  Float
+  sign           String
+
+  @@unique([readingId, houseNumber])
+  @@index([readingId])
+  @@map("natal_chart_houses")
+}
+
+/// Major aspects between placements/angles. `orb`/`orbAllowed` are both persisted so a
+/// future orb-policy change is auditable against what was actually applied at calculation
+/// time (docs/architecture/natal-chart-discovery.md's orb-rules decision).
+model NatalChartAspect {
+  id          String                @id @default(cuid())
+  readingId   String
+  reading     NatalChartReading     @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  bodyOne     String
+  bodyTwo     String
+  aspectType  NatalChartAspectType
+  orb         Float
+  orbAllowed  Float
+
+  @@index([readingId])
+  @@map("natal_chart_aspects")
+}
+
+/// Append-only lifecycle event log — mirrors NumerologyReadingHistory's own precedent
+/// exactly.
+model NatalChartReadingHistory {
+  id        String                          @id @default(cuid())
+  readingId String
+  reading   NatalChartReading               @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  action    NatalChartReadingHistoryAction
+  detail    String
+  createdAt DateTime                        @default(now())
+
+  @@index([readingId, createdAt])
+  @@map("natal_chart_reading_history")
 }
