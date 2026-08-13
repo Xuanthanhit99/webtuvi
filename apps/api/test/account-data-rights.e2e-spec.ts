@@ -71,6 +71,22 @@ async function seedRealisticUserData(app: INestApplication, prisma: PrismaServic
     data: { userId, status: 'ACTIVE', source: 'PAYMENT', expiresAt: new Date(Date.now() + 30 * 86_400_000), orderId: order.id },
   });
 
+  // Sprint 11 — a real Notification + NotificationPreference row, same "real data, not assumed
+  // from schema inspection" discipline as every other seed above.
+  await prisma.notification.create({
+    data: {
+      userId,
+      category: 'PREMIUM',
+      class: 'TRANSACTIONAL',
+      type: 'premium.activated',
+      title: 'Premium is active',
+      body: 'Your Premium pass is active.',
+      deepLink: '/settings',
+      dedupeKey: `premium-activated:${order.id}`,
+    },
+  });
+  await prisma.notificationPreference.create({ data: { userId, reminderInApp: true, reminderEmail: true } });
+
   return { paymentOrderId: order.id };
 }
 
@@ -105,7 +121,7 @@ describe('Account Data Rights (e2e)', () => {
       const res = await request(app.getHttpServer()).post('/users/me/export').set(headers).expect(201);
       const result = res.body.data.result;
 
-      expect(result.exportVersion).toBe(1);
+      expect(result.exportVersion).toBe(2); // bumped Sprint 11
       expect(result.account.id).toBe(userId);
       expect(result.journal).toHaveLength(1);
       expect(result.discoveries.tarot).toHaveLength(1);
@@ -114,6 +130,9 @@ describe('Account Data Rights (e2e)', () => {
       expect(result.memory.legacyNotes).toHaveLength(1);
       expect(result.premium.entitlements).toHaveLength(1);
       expect(result.premium.paymentOrders).toHaveLength(1);
+      expect(result.notifications.items).toHaveLength(1);
+      expect(result.notifications.items[0].type).toBe('premium.activated');
+      expect(result.notifications.preferences).toMatchObject({ reminderInApp: true, reminderEmail: true });
 
       const raw = JSON.stringify(result);
       expect(raw).not.toContain('passwordHash');
@@ -216,20 +235,25 @@ describe('Account Data Rights (e2e)', () => {
       await request(app.getHttpServer()).post('/auth/refresh').set('Cookie', headers.Cookie).expect(401);
 
       // Real DB state: personal content gone.
-      const [journalCount, tarotCount, numerologyCount, memoryCount, memoryNoteCount, sessionCount] = await Promise.all([
-        prisma.journalEntry.count({ where: { userId } }),
-        prisma.tarotReading.count({ where: { userId } }),
-        prisma.numerologyReading.count({ where: { userId } }),
-        prisma.memory.count({ where: { userId } }),
-        prisma.memoryNote.count({ where: { userId } }),
-        prisma.userSession.count({ where: { userId } }),
-      ]);
+      const [journalCount, tarotCount, numerologyCount, memoryCount, memoryNoteCount, sessionCount, notificationCount, notificationPreferenceCount] =
+        await Promise.all([
+          prisma.journalEntry.count({ where: { userId } }),
+          prisma.tarotReading.count({ where: { userId } }),
+          prisma.numerologyReading.count({ where: { userId } }),
+          prisma.memory.count({ where: { userId } }),
+          prisma.memoryNote.count({ where: { userId } }),
+          prisma.userSession.count({ where: { userId } }),
+          prisma.notification.count({ where: { userId } }), // Sprint 11
+          prisma.notificationPreference.count({ where: { userId } }), // Sprint 11
+        ]);
       expect(journalCount).toBe(0);
       expect(tarotCount).toBe(0);
       expect(numerologyCount).toBe(0);
       expect(memoryCount).toBe(0);
       expect(memoryNoteCount).toBe(0);
       expect(sessionCount).toBe(0);
+      expect(notificationCount).toBe(0);
+      expect(notificationPreferenceCount).toBe(0);
 
       // Real DB state: payment/premium retained, financial/accounting integrity preserved.
       const [order, entitlement, user] = await Promise.all([

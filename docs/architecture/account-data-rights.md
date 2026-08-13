@@ -61,6 +61,8 @@ line 18-22) — the schema was already shaped for this pattern; it just wasn't e
 | `PaymentOrder` | direct | Yes (safe fields only) | **Not deleted** | **Yes, indefinitely** | Financial/accounting integrity; contains no PII |
 | `PaymentWebhookEvent` | indirect (via order) | No (internal audit ledger, not user-facing) | **Not deleted** | **Yes, indefinitely** | Webhook idempotency + audit trail |
 | `PremiumEntitlement` | direct | Yes | **Not deleted** | **Yes, indefinitely** | Accounting/what-was-granted record; contains no PII |
+| `Notification` (Sprint 11) | direct, cascade | Yes (content fields only — `emailStatus`/`emailAttemptedAt`/`emailError` excluded as internal delivery metadata) | Hard delete | No | Personal content; also excluded at the source going forward — `NotificationsSchedulerService` only ever queries `status: 'ACTIVE'` users |
+| `NotificationPreference` (Sprint 11) | direct, cascade | Yes | Hard delete | No | Personal settings |
 
 ## 3. Retention period — explicit product/legal decision required
 

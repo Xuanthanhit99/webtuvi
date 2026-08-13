@@ -22,6 +22,12 @@ export default function PrivacyPage() {
           We use essential cookies to keep you signed in securely. We don&rsquo;t set marketing or tracking
           cookies before you&rsquo;ve had a chance to review this notice.
         </p>
+        <p>
+          Tarot, Numerology, and Natal Chart results are calculated by deterministic, non-AI systems &mdash; a real
+          card draw, a real numerology formula, a real astronomical calculation. AI is only ever used afterward, to
+          help explain or reflect on a result that&rsquo;s already been calculated. It never chooses a card, picks a
+          number, or determines a chart placement.
+        </p>
         <p className="text-body-sm text-text-disabled">
           This is a plain-language summary for Sprint 1. A complete legal Privacy Policy will be published
           before general availability.

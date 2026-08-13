@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import type { NatalChartDto } from '@beaconvie/types';
-import { NatalChartWheel } from './natal-chart-wheel';
+import { NatalChartWheel, planetRadii } from './natal-chart-wheel';
 
 const baseChart: NatalChartDto = {
   id: 'c1',
@@ -65,5 +65,37 @@ describe('NatalChartWheel', () => {
     const chartWithoutAspects: NatalChartDto = { ...baseChart, aspects: [] };
     render(<NatalChartWheel chart={chartWithoutAspects} />);
     expect(screen.getByRole('img')).toBeInTheDocument();
+  });
+});
+
+// Sprint 11 remediation (docs/audit/sprint-11-pre-implementation-audit.md §28, §34): the
+// collision-easing loop only ever compared a placement to its immediate predecessor in sorted
+// order, so two planets straddling the 0°/360° seam were never checked against each other even
+// though they're circularly only a few degrees apart. Regression coverage for the fix.
+describe('planetRadii — 0°/360° wraparound collision easing', () => {
+  it('eases two placements that straddle the 0°/360° boundary within 7° (e.g. 359.5° and 0.5°)', () => {
+    // Sorted ascending, as the wheel component always passes them: the near-360° placement sorts
+    // last, the near-0° placement sorts first — exactly the pair the original bug never compared.
+    const radii = planetRadii([0.5, 90, 180, 359.5]);
+    expect(radii[0]).not.toBe(radii[3]); // first (0.5°) and last (359.5°) must not render identically
+    expect(radii[0]).toBeLessThan(100); // nudged inward from PLANET_BASE_R, not left at the default
+  });
+
+  it('does not ease placements that are near the boundary but more than 7° apart', () => {
+    const radii = planetRadii([10, 90, 180, 340]);
+    expect(radii[0]).toBe(100); // 10° vs 340° is a 30° circular distance — not close, no easing
+    expect(radii[3]).toBe(100);
+  });
+
+  it('still eases ordinary interior conjunctions exactly as before (no regression)', () => {
+    const radii = planetRadii([84.5, 86, 200]);
+    expect(radii[0]).toBe(100);
+    expect(radii[1]).not.toBe(radii[0]); // 84.5° and 86° are within 7° of each other
+    expect(radii[2]).toBe(100); // far from both — unaffected
+  });
+
+  it('handles a single placement without throwing (no wraparound partner to compare against)', () => {
+    expect(() => planetRadii([180])).not.toThrow();
+    expect(planetRadii([180])).toEqual([100]);
   });
 });

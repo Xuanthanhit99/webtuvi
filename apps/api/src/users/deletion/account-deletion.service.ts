@@ -52,6 +52,12 @@ export class AccountDeletionService {
       this.prisma.userProfile.deleteMany({ where: { userId } }),
       this.prisma.userPreference.deleteMany({ where: { userId } }),
       this.prisma.onboardingProgress.deleteMany({ where: { userId } }),
+      // --- Notifications (Sprint 11) — real personal content + preferences, deleted like every
+      // other user-owned table above; a DELETED user is also excluded at the source, since
+      // NotificationsSchedulerService only ever queries `status: 'ACTIVE'` users (see
+      // docs/architecture/notification-retention.md "Account deletion"). ---
+      this.prisma.notification.deleteMany({ where: { userId } }),
+      this.prisma.notificationPreference.deleteMany({ where: { userId } }),
       // --- Companion ---
       this.prisma.companionMessage.deleteMany({ where: { userId } }),
       this.prisma.conversation.deleteMany({ where: { userId } }), // cascades ConversationMessage

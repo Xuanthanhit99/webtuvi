@@ -1,6 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { PaymentWebhookService } from './payment-webhook.service';
 import { PaymentProviderSignatureError, type VerifiedWebhookPayment } from '../providers/payment-provider.interface';
+import { dedupeKeyForPremiumActivated } from '../../notifications/eligibility/date-key.util';
 
 const ORDER_ID = 'order-1';
 const USER_ID = 'user-1';
@@ -81,9 +82,16 @@ function makeHarness(
   const providerRegistry = { has: jest.fn().mockReturnValue(true), get: jest.fn().mockReturnValue({ verifyWebhook }) };
   const entitlementService = { grantPremium: jest.fn().mockResolvedValue(undefined) };
   const configService = { get: jest.fn().mockReturnValue({ payment: { premium: { durationDays: 30 } } }) };
+  const notificationsService = { create: jest.fn().mockResolvedValue({ notification: { id: 'notif-1' }, created: true }) };
 
-  const service = new PaymentWebhookService(prisma as never, configService as never, providerRegistry as never, entitlementService as never);
-  return { service, prisma, orders, webhookEvents, verifyWebhook, entitlementService, user };
+  const service = new PaymentWebhookService(
+    prisma as never,
+    configService as never,
+    providerRegistry as never,
+    entitlementService as never,
+    notificationsService as never,
+  );
+  return { service, prisma, orders, webhookEvents, verifyWebhook, entitlementService, notificationsService, user };
 }
 
 describe('PaymentWebhookService.handlePayOSWebhook — happy path', () => {
@@ -147,6 +155,46 @@ describe('PaymentWebhookService.handlePayOSWebhook — forged/invalid webhooks a
     await expect(service.handlePayOSWebhook({})).rejects.toBeInstanceOf(BadRequestException);
     expect(entitlementService.grantPremium).not.toHaveBeenCalled();
     expect(webhookEvents[0]!.errorCategory).toBe('CURRENCY_MISMATCH');
+  });
+});
+
+// Sprint 11 — Notification & Retention Foundation: a `premium.activated` notification is created
+// strictly downstream of a real entitlement grant, never in its place, and never breaks the
+// webhook response if notification creation itself fails.
+describe('PaymentWebhookService.handlePayOSWebhook — premium.activated notification (Sprint 11)', () => {
+  it('creates a premium.activated notification, deduped by orderId, exactly when Premium is granted', async () => {
+    const { service, notificationsService } = makeHarness();
+    await service.handlePayOSWebhook({});
+    expect(notificationsService.create).toHaveBeenCalledTimes(1);
+    expect(notificationsService.create).toHaveBeenCalledWith(
+      expect.objectContaining({ userId: USER_ID, type: 'premium.activated', dedupeKey: dedupeKeyForPremiumActivated(ORDER_ID) }),
+    );
+  });
+
+  it('does not create a notification when the payment FAILED (no entitlement was granted)', async () => {
+    const { service, notificationsService } = makeHarness({ verifyImpl: () => paidPayload({ status: 'FAILED' }) });
+    await service.handlePayOSWebhook({});
+    expect(notificationsService.create).not.toHaveBeenCalled();
+  });
+
+  it('does not create a notification when the account is inactive (entitlement grant itself was skipped)', async () => {
+    const { service, notificationsService, entitlementService } = makeHarness({ userStatus: 'DELETED' });
+    await service.handlePayOSWebhook({});
+    expect(entitlementService.grantPremium).not.toHaveBeenCalled();
+    expect(notificationsService.create).not.toHaveBeenCalled();
+  });
+
+  it('does not create a duplicate notification when a duplicate/late webhook delivery is a no-op (already-terminal order)', async () => {
+    const { service, notificationsService } = makeHarness({ order: { status: 'PAID', paidAt: new Date() } });
+    await service.handlePayOSWebhook({});
+    expect(notificationsService.create).not.toHaveBeenCalled();
+  });
+
+  it('a notification-creation failure never breaks the webhook response — the payment side still succeeds', async () => {
+    const { service, orders, notificationsService } = makeHarness();
+    notificationsService.create.mockRejectedValueOnce(new Error('notification db unavailable'));
+    await expect(service.handlePayOSWebhook({})).resolves.toBeUndefined();
+    expect(orders.get(ORDER_ID)!.status).toBe('PAID');
   });
 });
 

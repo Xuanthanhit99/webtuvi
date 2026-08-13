@@ -4,6 +4,7 @@ import type { AppConfiguration } from '../config/configuration';
 import { passwordResetTemplate } from './templates/password-reset.template';
 import { welcomeTemplate } from './templates/welcome.template';
 import { verifyEmailTemplate } from './templates/verify-email.template';
+import { notificationEmailTemplate } from './templates/notification.template';
 import type { MailProvider } from './providers/mail-provider.interface';
 import { MailpitMailProvider } from './providers/mailpit-mail.provider';
 import { ResendMailProvider } from './providers/resend-mail.provider';
@@ -55,12 +56,26 @@ export class MailService {
     await this.dispatch(to, subject, html, text, 'welcome');
   }
 
-  private async dispatch(to: string, subject: string, html: string, text: string, label: string): Promise<void> {
+  /** Sprint 11 — unlike the auth-flow senders above (fire-and-forget by design), the caller here
+   * (NotificationDeliveryService) needs to know whether the send actually succeeded, so it can
+   * persist that as the Notification's own `emailStatus` — this method surfaces `dispatch`'s
+   * outcome instead of swallowing it. */
+  async sendNotificationEmail(to: string, title: string, body: string, ctaLabel: string, ctaUrl: string): Promise<boolean> {
+    const { subject, html, text } = notificationEmailTemplate({ title, body, ctaLabel, ctaUrl });
+    return this.dispatch(to, subject, html, text, 'notification');
+  }
+
+  /** Returns `true` on a successful send, `false` on failure — never throws. Failure is always
+   * logged (without `html`/`text`/token content) so it's observable, but a caller that doesn't
+   * care about the outcome (the three auth-flow senders above) can simply not await/use it. */
+  private async dispatch(to: string, subject: string, html: string, text: string, label: string): Promise<boolean> {
     try {
       await this.provider.send(to, subject, html, text);
+      return true;
     } catch (error) {
       // Never log `html`/`text`/the recipient's token URL — only the failure itself.
       this.logger.error(`Failed to send ${label} email`, error instanceof Error ? error.stack : undefined);
+      return false;
     }
   }
 }

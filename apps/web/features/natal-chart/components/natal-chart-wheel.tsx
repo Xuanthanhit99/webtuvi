@@ -36,17 +36,31 @@ function makeLongitudeToScreenAngle(chart: NatalChartDto): (longitude: number) =
   return (longitude: number) => referenceScreenAngle + (longitude - referenceLongitude);
 }
 
+function circularDistance(a: number, b: number): number {
+  const diff = Math.abs(a - b);
+  return Math.min(diff, 360 - diff);
+}
+
 /** Simple collision easing: planets within 7° of a previously-placed one nudge outward in
  * alternating steps so glyphs don't fully overlap at a tight conjunction. Not a full
  * astrological collision-avoidance algorithm — a disclosed, deliberately modest visual
- * simplification (docs/architecture/natal-chart-discovery.md). */
-function planetRadii(sortedLongitudes: number[]): number[] {
+ * simplification (docs/architecture/natal-chart-discovery.md).
+ *
+ * Sprint 11 remediation (docs/audit/sprint-11-pre-implementation-audit.md §28): the forward pass
+ * below only ever compares a placement to its immediate predecessor in sorted order, so two
+ * planets straddling the 0°/360° seam (e.g. 3° and 358°) — circularly close, but at opposite ends
+ * of the sorted array — were never checked against each other. `wrapsAround` handles that one
+ * pair explicitly; every interior pair still runs through the exact same forward pass as before. */
+export function planetRadii(sortedLongitudes: number[]): number[] {
   const radii: number[] = [];
+  const n = sortedLongitudes.length;
+  const wrapsAround = n > 1 && circularDistance(sortedLongitudes[0]!, sortedLongitudes[n - 1]!) < 7;
+
   let step = 0;
-  for (let i = 0; i < sortedLongitudes.length; i++) {
+  for (let i = 0; i < n; i++) {
     const prev = sortedLongitudes[i - 1];
-    const close = i > 0 && prev !== undefined && Math.min(Math.abs(sortedLongitudes[i]! - prev), 360 - Math.abs(sortedLongitudes[i]! - prev)) < 7;
-    step = close ? step + 1 : 0;
+    const close = i > 0 && prev !== undefined && circularDistance(sortedLongitudes[i]!, prev) < 7;
+    step = close ? step + 1 : i === 0 && wrapsAround ? 1 : 0;
     radii.push(PLANET_BASE_R - (step % 3) * 14);
   }
   return radii;

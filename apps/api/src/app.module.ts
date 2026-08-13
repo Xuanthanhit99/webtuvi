@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { ScheduleModule } from '@nestjs/schedule';
 import { appConfig, AppConfiguration } from './config/configuration';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { PrismaModule } from './prisma/prisma.module';
@@ -28,10 +29,16 @@ import { TarotModule } from './tarot/tarot.module';
 import { NumerologyModule } from './numerology/numerology.module';
 import { GeocodingModule } from './geocoding/geocoding.module';
 import { NatalChartModule } from './natal-chart/natal-chart.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [appConfig] }),
+    // Sprint 11 — the only scheduled/cron infrastructure in this codebase (see
+    // docs/architecture/notification-retention.md "Scheduler architecture"). In-process only, no
+    // distributed lock — see NotificationsSchedulerService's doc comment for why that's an
+    // accepted, disclosed limitation at current scale.
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRootAsync({
       inject: [ConfigService, RedisService],
       useFactory: (configService: ConfigService, redisService: RedisService) => {
@@ -99,6 +106,7 @@ import { NatalChartModule } from './natal-chart/natal-chart.module';
     NatalChartModule,
     CompanionModule,
     DashboardModule,
+    NotificationsModule,
   ],
 })
 export class AppModule implements NestModule {

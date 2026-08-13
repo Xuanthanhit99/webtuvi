@@ -364,6 +364,8 @@ export interface AccountExportResultDto {
   goals: unknown[];
   discoveries: { tarot: unknown[]; numerology: unknown[]; natalChart: unknown[] };
   premium: { entitlements: unknown[]; paymentOrders: unknown[] };
+  /** Sprint 11 — content fields only, no delivery/operational metadata. */
+  notifications: { items: unknown[]; preferences: unknown };
   activity: unknown[];
 }
 
@@ -1306,6 +1308,37 @@ export interface ListNatalChartsResultDto {
 export interface GeocodingSearchResultDto {
   token: string;
   label: string;
+}
+
+// --- Notification & Retention Foundation (Sprint 11). Product Bible Module 19, V1 tier — see
+// docs/audit/sprint-11-pre-implementation-audit.md and docs/architecture/notification-retention.md.
+// Deterministic, silence-by-default: no AI decides whether/when to notify. No push channel. ---
+
+export type NotificationCategoryValue = 'SECURITY' | 'PREMIUM' | 'DISCOVERY';
+export type NotificationClassValue = 'TRANSACTIONAL' | 'PRODUCT' | 'REMINDER';
+
+export interface NotificationDto {
+  id: string;
+  category: NotificationCategoryValue;
+  class: NotificationClassValue;
+  type: string;
+  title: string;
+  body: string;
+  deepLink: string | null;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface ListNotificationsResultDto {
+  items: NotificationDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface NotificationPreferencesDto {
+  reminderInApp: boolean;
+  reminderEmail: boolean;
 }
 
 export interface ApiErrorShape {

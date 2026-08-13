@@ -7,6 +7,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { IconButton } from '@/components/ui/icon-button';
 import { authApi } from '@/features/auth/api/auth-api';
 import { toast } from '@/components/ui/toast';
+import { NotificationBell } from '@/features/notifications/components/notification-bell';
 
 export function AppHeader() {
   const { user } = useAuth();
@@ -31,6 +32,7 @@ export function AppHeader() {
         <span className="font-display text-body-lg font-medium text-text-primary">BeaconVie</span>
       </div>
       <div className="ml-auto flex items-center gap-3">
+        <NotificationBell />
         {user && <Avatar name={user.displayName} size="sm" />}
         <IconButton aria-label="Log out" onClick={handleLogout}>
           <LogOut className="h-4 w-4" aria-hidden="true" />

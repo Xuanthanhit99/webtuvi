@@ -7,6 +7,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { EntitlementService } from '../entitlement/entitlement.service';
 import { PaymentProviderRegistryService } from '../providers/payment-provider-registry.service';
 import { PaymentProviderSignatureError, type VerifiedWebhookPayment } from '../providers/payment-provider.interface';
+import { NotificationsService } from '../../notifications/notifications.service';
+import { dedupeKeyForPremiumActivated } from '../../notifications/eligibility/date-key.util';
 
 const REJECTED = Symbol('rejected');
 
@@ -39,6 +41,7 @@ export class PaymentWebhookService {
     private readonly configService: ConfigService,
     private readonly providerRegistry: PaymentProviderRegistryService,
     private readonly entitlementService: EntitlementService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   async handlePayOSWebhook(rawPayload: unknown): Promise<void> {
@@ -68,7 +71,39 @@ export class PaymentWebhookService {
       return;
     }
 
-    await this.applyPaymentResult(order.id, order.userId, verified, event.id);
+    const { granted } = await this.applyPaymentResult(order.id, order.userId, verified, event.id);
+
+    // Sprint 11 — strictly downstream of the transaction above, never inside it: a notification
+    // failure must never roll back a real entitlement grant (see
+    // docs/architecture/notification-retention.md "Payment integration"). If this call is never
+    // reached because the process crashes between the transaction commit and here, no automatic
+    // retry recreates it — a small, disclosed limitation (webhook redelivery from PayOS, if it
+    // happens, would still safely no-op the entitlement grant per the PENDING-only gate above, and
+    // could still yield a notification on that redelivery since `applyPaymentResult`'s `granted`
+    // reflects that specific call's own outcome).
+    if (granted) {
+      await this.notifyPremiumActivated(order.userId, order.id).catch((error) => {
+        this.logger.warn(`payment.notification.premium_activated_failed orderId=${order.id} error=${error instanceof Error ? error.message : 'unknown'}`);
+      });
+    }
+  }
+
+  /** Best-effort by design (caught at the call site above) — never allowed to affect the payment
+   * response the webhook caller receives, and never re-derives payment state itself (Sprint 11
+   * brief §29: "notification is downstream of payment state," "never grant Premium from
+   * notification code"). In-app only for Sprint 11 — no email: the checkout return page already
+   * gives the buyer a real-time confirmation, so an email receipt is deliberately out of scope
+   * rather than a duplicated, redundant channel (see docs/architecture/notification-retention.md
+   * "Initial retention events"). */
+  private async notifyPremiumActivated(userId: string, orderId: string): Promise<void> {
+    await this.notifications.create({
+      userId,
+      type: 'premium.activated',
+      title: 'Premium is active',
+      body: 'Your Premium pass is active — deeper Companion memory, longer history, and priority access are ready now.',
+      deepLink: '/settings',
+      dedupeKey: dedupeKeyForPremiumActivated(orderId),
+    });
   }
 
   private async verifyOrAudit(rawPayload: unknown, payloadHash: string): Promise<VerifiedWebhookPayment | typeof REJECTED> {
@@ -90,10 +125,12 @@ export class PaymentWebhookService {
     userId: string,
     verified: VerifiedWebhookPayment,
     webhookEventId: string,
-  ): Promise<void> {
+  ): Promise<{ granted: boolean }> {
     const config = this.configService.get<AppConfiguration>('app')!;
 
-    await this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx) => {
+      let granted = false;
+
       if (verified.status === 'PAID') {
         // Only transitions a still-PENDING order — a duplicate/late/stale PAID event for an
         // already-terminal order is a safe no-op, never regrants and never reverts. The order
@@ -108,6 +145,7 @@ export class PaymentWebhookService {
           if (user?.status === 'ACTIVE') {
             await this.entitlementService.grantPremium(tx, userId, orderId, config.payment.premium.durationDays);
             this.logger.log(`payment.entitlement.granted orderId=${orderId} userId=${userId}`);
+            granted = true;
           } else {
             this.logger.log(`payment.entitlement.skipped_inactive_account orderId=${orderId} userId=${userId}`);
           }
@@ -120,6 +158,8 @@ export class PaymentWebhookService {
       }
 
       await tx.paymentWebhookEvent.update({ where: { id: webhookEventId }, data: { status: 'PROCESSED', processedAt: new Date() } });
+
+      return { granted };
     });
   }
 

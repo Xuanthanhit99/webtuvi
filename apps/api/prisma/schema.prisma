@@ -63,6 +63,8 @@ model User {
   premiumEntitlements     PremiumEntitlement[]
   numerologyReadings      NumerologyReading[]
   natalCharts             NatalChart[]
+  notifications           Notification[]
+  notificationPreference  NotificationPreference?
 
   @@map("users")
 }
@@ -2302,4 +2304,91 @@ model NatalChartHistory {
 
   @@index([chartId, createdAt])
   @@map("natal_chart_history")
+}
+
+// ---------------------------------------------------------------------------
+// Sprint 11 — Notification & Retention Foundation (Product Bible Module 19, V1 tier — see
+// docs/audit/sprint-11-pre-implementation-audit.md and docs/architecture/notification-retention.md).
+// Deterministic, silence-by-default: a Notification row is only ever created for a concrete,
+// already-real reason (a Daily Tarot draw genuinely still available today, a Premium entitlement
+// genuinely just granted) — never an AI judgment call. No push channel this sprint.
+// ---------------------------------------------------------------------------
+
+enum NotificationCategory {
+  SECURITY
+  PREMIUM
+  DISCOVERY
+}
+
+enum NotificationClass {
+  /// Always created and, where email is involved, always sent — never subject to
+  /// NotificationPreference (Module 19 §6: "must not accidentally become suppressible").
+  TRANSACTIONAL
+  /// Reserved for a future non-reminder product-triggered category (Reports-ready, Community
+  /// reply, etc.) — defined now so PRODUCT-class notifications don't require a schema change
+  /// later, but no Sprint 11 trigger uses it yet (see notification-retention.md "Deliberately
+  /// excluded").
+  PRODUCT
+  /// Opt-in-to-email, visible-by-default-in-app. The only class Sprint 11 actually triggers
+  /// (Daily Tarot availability).
+  REMINDER
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+/// One row per notification actually created for a user. Creation itself IS the in-app delivery
+/// (its mere existence is what the Notification Center lists) — there is no separate
+/// NotificationDelivery table, since only the EMAIL channel can fail independently and needs its
+/// own state, which is tracked inline below (`emailStatus`/`emailAttemptedAt`/`emailError`).
+/// `@@unique([userId, dedupeKey])` is the real idempotency mechanism (mirrors
+/// `PaymentWebhookEvent`'s `@@unique([provider, externalEventId])` precedent exactly) — a
+/// scheduler re-run or a concurrent duplicate trigger fails at the DB layer and is treated as a
+/// safe no-op, not a distributed lock.
+model Notification {
+  id        String               @id @default(cuid())
+  userId    String
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  NotificationCategory
+  class     NotificationClass
+  /// Bounded at the application layer, not the DB — see notifications/notifications.types.ts
+  /// `NOTIFICATION_TYPES`. Kept as text rather than a native enum so a new notification type can
+  /// ship without a migration, unlike `category`/`class`, which are genuinely closed taxonomies.
+  type      String
+  title     String
+  body      String
+  deepLink  String?
+  /// Deterministic idempotency key, e.g. `tarot-daily-reminder:2026-08-14` (UTC date) or
+  /// `premium-activated:{orderId}`.
+  dedupeKey String
+  readAt    DateTime?
+  createdAt DateTime             @default(now())
+
+  emailStatus      NotificationDeliveryStatus @default(SKIPPED)
+  emailAttemptedAt DateTime?
+  emailError       String?
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@map("notifications")
+}
+
+/// One row per user, created lazily on first preference read/write (not at registration — most
+/// users will never customize this). TRANSACTIONAL-class notifications never consult this table by
+/// design (see NotificationClass.TRANSACTIONAL doc comment above).
+model NotificationPreference {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminderInApp Boolean  @default(true)
+  reminderEmail Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("notification_preferences")
 }

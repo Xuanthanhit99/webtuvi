@@ -24,6 +24,8 @@ function makePrismaMock(user: unknown) {
     userProfile: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     userPreference: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     onboardingProgress: { deleteMany: jest.fn(async () => ({ count: 0 })) },
+    notification: { deleteMany: jest.fn(async () => ({ count: 0 })) },
+    notificationPreference: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     companionMessage: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     conversation: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     aIUsage: { deleteMany: jest.fn(async () => ({ count: 0 })) },
@@ -96,6 +98,9 @@ describe('AccountDeletionService', () => {
     expect(prisma.natalChart.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     expect(prisma.conversation.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     expect(prisma.userSession.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
+    // Sprint 11
+    expect(prisma.notification.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
+    expect(prisma.notificationPreference.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
 
     const updateCall = (prisma.user.update as jest.Mock).mock.calls[0][0];
     expect(updateCall.data.status).toBe('DELETED');

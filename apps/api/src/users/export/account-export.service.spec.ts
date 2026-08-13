@@ -37,6 +37,8 @@ function makePrismaMock() {
     natalChart: { findMany: findMany() },
     premiumEntitlement: { findMany: findMany() },
     paymentOrder: { findMany: findMany() },
+    notification: { findMany: findMany() },
+    notificationPreference: { findUnique: jest.fn(async () => null) },
     activityEvent: { findMany: findMany() },
   };
 }
@@ -75,7 +77,7 @@ describe('AccountExportService', () => {
     const job = await service.createExport('user-1');
 
     expect(job.status).toBe('completed');
-    expect(job.result.exportVersion).toBe(1);
+    expect(job.result.exportVersion).toBe(2); // bumped Sprint 11 — see AccountExportResult doc comment
     expect(job.result.account.id).toBe('user-1');
     expect(job.result).toHaveProperty('preferences');
     expect(job.result).toHaveProperty('companion');
@@ -84,6 +86,22 @@ describe('AccountExportService', () => {
     expect(job.result).toHaveProperty('journal');
     expect(job.result).toHaveProperty('discoveries');
     expect(job.result).toHaveProperty('premium');
+    expect(job.result).toHaveProperty('notifications');
+    expect(job.result.notifications).toHaveProperty('items');
+    expect(job.result.notifications).toHaveProperty('preferences');
+  });
+
+  it('Sprint 11 — notification export never includes internal delivery/security metadata', async () => {
+    const prisma = makePrismaMock();
+    const service = makeService(prisma);
+
+    await service.createExport('user-1');
+
+    const call = (prisma.notification.findMany as jest.Mock).mock.calls[0][0];
+    expect(call.select).not.toHaveProperty('emailStatus');
+    expect(call.select).not.toHaveProperty('emailAttemptedAt');
+    expect(call.select).not.toHaveProperty('emailError');
+    expect(call.where.userId).toBe('user-1');
   });
 
   it('never includes passwordHash — the User query only selects safe display fields', async () => {

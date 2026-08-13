@@ -12,6 +12,7 @@ import { toast } from '@/components/ui/toast';
 import { SessionsPanel } from '@/features/settings/components/sessions-panel';
 import { ChangePasswordForm } from '@/features/settings/components/change-password-form';
 import { AccountDataSection } from '@/features/settings/components/account-data-section';
+import { NotificationPreferencesSection } from '@/features/notifications/components/notification-preferences-section';
 import { ConsentSettings } from '@/features/memory/components/consent-settings';
 import { memoryApi } from '@/features/memory/api/memory-api';
 import { PremiumStatusCard } from '@/features/premium/components/premium-status-card';
@@ -153,10 +154,7 @@ export default function SettingsPage() {
 
       <AccountDataSection />
 
-      <Card>
-        <p className="mb-2 text-body-sm font-semibold text-text-secondary">More settings</p>
-        <p className="text-body-sm text-text-secondary">Notifications and theme are coming soon.</p>
-      </Card>
+      <NotificationPreferencesSection />
     </div>
   );
 }

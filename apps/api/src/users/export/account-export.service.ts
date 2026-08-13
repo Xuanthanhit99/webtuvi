@@ -9,7 +9,11 @@ const EXPORT_CACHE_TTL_MS = 15 * 60 * 1000;
 const EXPORT_CACHE_PREFIX = 'account:export';
 const EXPORT_LOCK_PREFIX = 'account:export:lock';
 const EXPORT_LOCK_TTL_MS = 60_000;
-const EXPORT_VERSION = 1;
+// Sprint 11 — bumped from 1: an additive structural change (new top-level `notifications` key,
+// see AccountExportResult below), not a breaking one — existing consumers reading older keys are
+// unaffected, but the version is bumped anyway per this codebase's own documented contract that a
+// structural addition, not just a bugfix, earns a version bump.
+const EXPORT_VERSION = 2;
 
 export interface AccountExportResult {
   exportVersion: number;
@@ -26,6 +30,11 @@ export interface AccountExportResult {
   goals: unknown[];
   discoveries: { tarot: unknown[]; numerology: unknown[]; natalChart: unknown[] };
   premium: { entitlements: unknown[]; paymentOrders: unknown[] };
+  /** Sprint 11. Content fields only — `emailStatus`/`emailAttemptedAt`/`emailError` are internal
+   * delivery/operational metadata, deliberately excluded (Sprint 11 brief §28: "do not expose
+   * internal delivery/security metadata unnecessarily"), same principle as excluding
+   * `passwordHash`/provider correlation ids elsewhere in this export. */
+  notifications: { items: unknown[]; preferences: unknown };
   activity: unknown[];
 }
 
@@ -104,6 +113,8 @@ export class AccountExportService {
       natalChart,
       entitlements,
       paymentOrders,
+      notifications,
+      notificationPreferences,
       activity,
     ] = await Promise.all([
       this.prisma.user.findUniqueOrThrow({
@@ -181,6 +192,14 @@ export class AccountExportService {
         select: { id: true, product: true, amount: true, currency: true, status: true, createdAt: true, paidAt: true },
         orderBy: { createdAt: 'asc' },
       }),
+      // Sprint 11 — content fields only, no emailStatus/emailAttemptedAt/emailError (see
+      // AccountExportResult's `notifications` doc comment above).
+      this.prisma.notification.findMany({
+        where: { userId },
+        select: { id: true, category: true, class: true, type: true, title: true, body: true, deepLink: true, readAt: true, createdAt: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.notificationPreference.findUnique({ where: { userId } }),
       this.prisma.activityEvent.findMany({
         where: { userId },
         select: { id: true, type: true, createdAt: true },
@@ -209,6 +228,7 @@ export class AccountExportService {
       goals,
       discoveries: { tarot, numerology, natalChart },
       premium: { entitlements, paymentOrders },
+      notifications: { items: notifications, preferences: notificationPreferences },
       activity,
     };
   }
