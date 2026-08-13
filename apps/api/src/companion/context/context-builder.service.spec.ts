@@ -7,6 +7,7 @@ function makePrismaMock(
   goals: unknown[] = [],
   latestTarotReading: unknown = null,
   latestNumerologyReading: unknown = null,
+  latestNatalChart: unknown = null,
 ) {
   return {
     user: { findUnique: jest.fn().mockResolvedValue(user) },
@@ -14,6 +15,7 @@ function makePrismaMock(
     goal: { findMany: jest.fn().mockResolvedValue(goals) },
     tarotReading: { findFirst: jest.fn().mockResolvedValue(latestTarotReading) },
     numerologyReading: { findFirst: jest.fn().mockResolvedValue(latestNumerologyReading) },
+    natalChart: { findFirst: jest.fn().mockResolvedValue(latestNatalChart) },
   };
 }
 
@@ -183,5 +185,80 @@ describe('ContextBuilderService', () => {
     const context = await builder.build('u1');
 
     expect(context.latestNumerologyReading).toBeNull();
+  });
+
+  it('includes the latest active, Companion-visible Natal Chart’s real Big Three and interpretation overview', async () => {
+    const prisma = makePrismaMock(
+      { id: 'u1', displayName: 'Alex', onboardingCompletedAt: null, profile: null, preference: null },
+      [],
+      [],
+      null,
+      null,
+      {
+        ascendantSign: 'LIBRA',
+        interpretation: { overview: 'A chart oriented toward connection.', corePersonality: 'irrelevant here' },
+        createdAt: new Date('2026-01-07T00:00:00.000Z'),
+        placements: [
+          { body: 'SUN', sign: 'GEMINI' },
+          { body: 'MOON', sign: 'SAGITTARIUS' },
+        ],
+      },
+    );
+    const activities = { recent: jest.fn().mockResolvedValue([]) };
+    const builder = new ContextBuilderService(prisma as never, activities as never);
+
+    const context = await builder.build('u1');
+
+    expect(context.latestNatalChart).toEqual({
+      sun: 'Gemini',
+      moon: 'Sagittarius',
+      ascendant: 'Libra',
+      interpretationOverview: 'A chart oriented toward connection.',
+      createdAt: '2026-01-07T00:00:00.000Z',
+    });
+    expect(prisma.natalChart.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'u1', status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' } }),
+    );
+  });
+
+  it('latestNatalChart ascendant/interpretationOverview are null when houses/interpretation are unavailable', async () => {
+    const prisma = makePrismaMock(
+      { id: 'u1', displayName: 'Alex', onboardingCompletedAt: null, profile: null, preference: null },
+      [],
+      [],
+      null,
+      null,
+      {
+        ascendantSign: null,
+        interpretation: null,
+        createdAt: new Date('2026-01-08T00:00:00.000Z'),
+        placements: [
+          { body: 'SUN', sign: 'ARIES' },
+          { body: 'MOON', sign: 'CANCER' },
+        ],
+      },
+    );
+    const activities = { recent: jest.fn().mockResolvedValue([]) };
+    const builder = new ContextBuilderService(prisma as never, activities as never);
+
+    const context = await builder.build('u1');
+
+    expect(context.latestNatalChart).toEqual({
+      sun: 'Aries',
+      moon: 'Cancer',
+      ascendant: null,
+      interpretationOverview: null,
+      createdAt: '2026-01-08T00:00:00.000Z',
+    });
+  });
+
+  it('latestNatalChart is null when no such chart exists', async () => {
+    const prisma = makePrismaMock({ id: 'u1', displayName: 'Alex', onboardingCompletedAt: null, profile: null, preference: null });
+    const activities = { recent: jest.fn().mockResolvedValue([]) };
+    const builder = new ContextBuilderService(prisma as never, activities as never);
+
+    const context = await builder.build('u1');
+
+    expect(context.latestNatalChart).toBeNull();
   });
 });

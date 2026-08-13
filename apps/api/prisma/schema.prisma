@@ -22,46 +22,47 @@ enum UserStatus {
 }
 
 model User {
-  id                     String    @id @default(cuid())
-  email                  String    @unique
-  passwordHash           String
-  displayName            String
-  status                 UserStatus @default(ACTIVE)
-  emailVerifiedAt         DateTime?
-  onboardingCompletedAt  DateTime?
-  createdAt              DateTime  @default(now())
-  updatedAt              DateTime  @updatedAt
+  id                    String     @id @default(cuid())
+  email                 String     @unique
+  passwordHash          String
+  displayName           String
+  status                UserStatus @default(ACTIVE)
+  emailVerifiedAt       DateTime?
+  onboardingCompletedAt DateTime?
+  createdAt             DateTime   @default(now())
+  updatedAt             DateTime   @updatedAt
 
-  sessions              UserSession[]
-  passwordResetTokens   PasswordResetToken[]
+  sessions                UserSession[]
+  passwordResetTokens     PasswordResetToken[]
   emailVerificationTokens EmailVerificationToken[]
-  profile               UserProfile?
-  preference            UserPreference?
-  onboardingProgress    OnboardingProgress?
-  activityEvents        ActivityEvent[]
-  memoryNotes           MemoryNote[]
-  companionMessages     CompanionMessage[]
-  conversations         Conversation[]
-  aiUsages              AIUsage[]
-  memories              Memory[]
-  memoryCandidates      MemoryCandidate[]
-  memoryConsentSetting  MemoryConsentSetting?
-  memoryTypeConsents    MemoryTypeConsent[]
-  memoryAudits          MemoryAudit[]
-  memoryDuplicates      MemoryDuplicate[]
-  memoryConflicts       MemoryConflict[]
-  memoryMergeSuggestions MemoryMergeSuggestion[]
-  memoryRetrievalLogs   MemoryRetrievalLog[]
-  journalEntries        JournalEntry[]
-  reflectionCandidates  ReflectionCandidate[]
-  insightCandidates     InsightCandidate[]
-  insightRelationships  InsightRelationship[]
-  reviews               Review[]
-  goals                 Goal[]
-  tarotReadings         TarotReading[]
-  paymentOrders         PaymentOrder[]
-  premiumEntitlements   PremiumEntitlement[]
-  numerologyReadings    NumerologyReading[]
+  profile                 UserProfile?
+  preference              UserPreference?
+  onboardingProgress      OnboardingProgress?
+  activityEvents          ActivityEvent[]
+  memoryNotes             MemoryNote[]
+  companionMessages       CompanionMessage[]
+  conversations           Conversation[]
+  aiUsages                AIUsage[]
+  memories                Memory[]
+  memoryCandidates        MemoryCandidate[]
+  memoryConsentSetting    MemoryConsentSetting?
+  memoryTypeConsents      MemoryTypeConsent[]
+  memoryAudits            MemoryAudit[]
+  memoryDuplicates        MemoryDuplicate[]
+  memoryConflicts         MemoryConflict[]
+  memoryMergeSuggestions  MemoryMergeSuggestion[]
+  memoryRetrievalLogs     MemoryRetrievalLog[]
+  journalEntries          JournalEntry[]
+  reflectionCandidates    ReflectionCandidate[]
+  insightCandidates       InsightCandidate[]
+  insightRelationships    InsightRelationship[]
+  reviews                 Review[]
+  goals                   Goal[]
+  tarotReadings           TarotReading[]
+  paymentOrders           PaymentOrder[]
+  premiumEntitlements     PremiumEntitlement[]
+  numerologyReadings      NumerologyReading[]
+  natalCharts             NatalChart[]
 
   @@map("users")
 }
@@ -145,18 +146,18 @@ enum ReflectionFrequency {
 }
 
 model UserPreference {
-  id                  String              @id @default(cuid())
-  userId              String              @unique
-  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  memoryPreference    MemoryPreference    @default(ASK_BEFORE_SAVING)
-  reflectionFrequency ReflectionFrequency @default(NOT_SURE_YET)
-  checkInTime         String?
+  id                        String              @id @default(cuid())
+  userId                    String              @unique
+  user                      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memoryPreference          MemoryPreference    @default(ASK_BEFORE_SAVING)
+  reflectionFrequency       ReflectionFrequency @default(NOT_SURE_YET)
+  checkInTime               String?
   /// Sprint 4A — "Never suggest again" on a Companion journal suggestion. A single toggle, not a
   /// per-type consent table like Memory's: journal suggestions come from one deterministic
   /// detector, not eighteen memory types, so there is no per-type dimension to gate.
-  journalSuggestionsEnabled Boolean       @default(true)
-  createdAt           DateTime            @default(now())
-  updatedAt           DateTime            @updatedAt
+  journalSuggestionsEnabled Boolean             @default(true)
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
 
   @@map("user_preferences")
 }
@@ -177,14 +178,14 @@ enum OnboardingDiscoveryChoice {
 }
 
 model OnboardingProgress {
-  id              String                      @id @default(cuid())
-  userId          String                      @unique
-  user            User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  stage           OnboardingStage             @default(WELCOME)
+  id              String                     @id @default(cuid())
+  userId          String                     @unique
+  user            User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stage           OnboardingStage            @default(WELCOME)
   discoveryChoice OnboardingDiscoveryChoice?
   completedAt     DateTime?
-  createdAt       DateTime                    @default(now())
-  updatedAt       DateTime                    @updatedAt
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
 
   @@map("onboarding_progress")
 }
@@ -207,13 +208,13 @@ enum MessageContext {
 /// untouched and still write here — this table is not being retired, only the
 /// COMPANION half of its use is dormant going forward.
 model CompanionMessage {
-  id        String          @id @default(cuid())
+  id        String         @id @default(cuid())
   userId    String
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   role      MessageRole
   content   String
   context   MessageContext
-  createdAt DateTime        @default(now())
+  createdAt DateTime       @default(now())
 
   @@index([userId, createdAt])
   @@map("companion_messages")
@@ -294,8 +295,8 @@ model Conversation {
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
-  messages  ConversationMessage[]
-  usages    AIUsage[]
+  messages ConversationMessage[]
+  usages   AIUsage[]
 
   @@index([userId, updatedAt])
   @@map("conversations")
@@ -321,18 +322,18 @@ model ConversationMessage {
 /// cost control's daily/monthly/per-user aggregates. `estimatedCostUsd` is an
 /// estimate from the provider pricing table, not a billing record.
 model AIUsage {
-  id               String        @id @default(cuid())
+  id               String         @id @default(cuid())
   userId           String
-  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversationId   String?
-  conversation     Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  conversation     Conversation?  @relation(fields: [conversationId], references: [id], onDelete: SetNull)
   provider         AIProviderName
   model            String
   promptTokens     Int
   completionTokens Int
   totalTokens      Int
-  estimatedCostUsd Decimal       @db.Decimal(10, 6)
-  createdAt        DateTime      @default(now())
+  estimatedCostUsd Decimal        @db.Decimal(10, 6)
+  createdAt        DateTime       @default(now())
 
   @@index([userId, createdAt])
   @@map("ai_usages")
@@ -557,20 +558,20 @@ model Memory {
   /// Never AI-derived; see memory-intelligence.md "Importance algorithm" for the documented
   /// weights. Defaults to 0 until first scored (existing Sprint 3A rows are backfilled by the
   /// migration itself, not left at a misleading 0 — see the migration SQL).
-  importanceScore      Int               @default(0)
+  importanceScore   Int     @default(0)
   /// Structural breakdown of which weighted inputs contributed to importanceScore (e.g.
   /// {"pinned":35,"recency":6,...}) — stored so the frontend can render "why this memory is
   /// important" without recomputing, and so the algorithm's output is auditable, not opaque.
-  importanceFactors    Json?
+  importanceFactors Json?
   /// Manual pin — the one importance input that is a direct user action, not inferred.
   /// Never automatically set by any scoring/detection service.
-  pinned               Boolean           @default(false)
+  pinned            Boolean @default(false)
   /// Bumped by MemoryRetrievalService each time this memory is actually selected into a
   /// recommendation result — used by ranking's frequency factor (Phase 7). Never bumped by a
   /// mere `list()`/`timeline()` read (those already have their own VIEWED audit action).
-  referencedCount      Int               @default(0)
+  referencedCount   Int     @default(0)
 
-  versions             MemoryVersion[]
+  versions MemoryVersion[]
 
   @@index([userId, status, createdAt])
   @@index([userId, type, createdAt])
@@ -583,9 +584,9 @@ model Memory {
 /// different-content). Full content snapshot, unlike MemoryAudit — this IS
 /// memory content and is deleted along with its parent Memory (cascade).
 model MemoryVersion {
-  id                String            @id @default(cuid())
+  id                String           @id @default(cuid())
   memoryId          String
-  memory            Memory            @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+  memory            Memory           @relation(fields: [memoryId], references: [id], onDelete: Cascade)
   version           Int
   type              MemoryType
   title             String
@@ -593,7 +594,7 @@ model MemoryVersion {
   structuredPayload Json?
   visibility        MemoryVisibility
   changeReason      String
-  createdAt         DateTime          @default(now())
+  createdAt         DateTime         @default(now())
 
   @@unique([memoryId, version])
   @@index([memoryId, createdAt])
@@ -795,41 +796,41 @@ enum JournalSourceType {
 /// happens client-side only (no server-side HTML generation/sanitization pipeline this sprint
 /// beyond escaping when displayed as plain text).
 model JournalEntry {
-  id                    String            @id @default(cuid())
-  userId                String
-  user                  User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title                 String
-  content               String
-  state                 JournalState      @default(DRAFT)
+  id                   String            @id @default(cuid())
+  userId               String
+  user                 User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title                String
+  content              String
+  state                JournalState      @default(DRAFT)
   /// Set only when transitioning into ARCHIVED or DELETED — restore() always returns to exactly
   /// this state, never a guessed/default one. Null otherwise.
-  previousState         JournalState?
-  visibility            JournalVisibility @default(PRIVATE)
-  mood                  JournalMood?
-  tags                  String[]          @default([])
+  previousState        JournalState?
+  visibility           JournalVisibility @default(PRIVATE)
+  mood                 JournalMood?
+  tags                 String[]          @default([])
   /// Manual pin only — never automatically set. Surfaced in the timeline's "Pinned" section
   /// (Phase 4), same spirit as Memory.pinned.
-  pinned                Boolean           @default(false)
+  pinned               Boolean           @default(false)
   /// Recomputed server-side on every save from `content` — used by search result display and the
   /// editor's own count without trusting a client-supplied number.
-  wordCount             Int               @default(0)
+  wordCount            Int               @default(0)
   /// Bumped only when a new JournalRevision snapshot is taken (see JournalRevision) — never on a
   /// silent autosave tick. Mirrors Memory.version's "meaningful edit" semantics.
-  version               Int               @default(1)
-  sourceType            JournalSourceType @default(USER)
+  version              Int               @default(1)
+  sourceType           JournalSourceType @default(USER)
   /// Plain string references, not enforced FKs — same reasoning as Memory's own
   /// sourceConversationId/sourceMessageId: Conversation/ConversationMessage belong to the
   /// Companion module, ownership is verified in application code at creation time, never trusted
   /// from the client, never enforced via a cross-module DB constraint.
-  sourceConversationId  String?
-  sourceMessageId       String?
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
-  publishedAt           DateTime?
-  archivedAt            DateTime?
-  deletedAt             DateTime?
+  sourceConversationId String?
+  sourceMessageId      String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  publishedAt          DateTime?
+  archivedAt           DateTime?
+  deletedAt            DateTime?
 
-  revisions             JournalRevision[]
+  revisions JournalRevision[]
 
   @@index([userId, state, createdAt])
   @@index([userId, state, pinned, createdAt])
@@ -953,44 +954,44 @@ enum ReflectionSourceType {
 /// regeneration idempotent and lets a DISMISSED/ARCHIVED decision stick — the same pattern
 /// MemoryDuplicateService already uses to never resurrect a resolved pair.
 model ReflectionCandidate {
-  id            String               @id @default(cuid())
-  userId        String
-  user          User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category      ReflectionCategory
-  trigger       ReflectionTrigger
-  state         ReflectionState      @default(READY)
-  window        ReflectionWindow
-  windowStart   DateTime
-  windowEnd     DateTime
+  id           String               @id @default(cuid())
+  userId       String
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     ReflectionCategory
+  trigger      ReflectionTrigger
+  state        ReflectionState      @default(READY)
+  window       ReflectionWindow
+  windowStart  DateTime
+  windowEnd    DateTime
   /// Plain-language, deterministically templated explanation of why this rule fired — the Product
   /// Bible's "always explain" creed, structural rather than a UI convention. Never free-text
   /// generation.
-  reason        String
+  reason       String
   /// 0-100, see ReflectionScoreService. Never AI-derived — a documented, weighted sum.
-  score         Int                  @default(0)
+  score        Int                  @default(0)
   /// Structural breakdown of which weighted inputs contributed to `score` (frequency/recency/
   /// importance/goalRelevance/journalDensity/activity/pin) — mirrors Memory.importanceFactors so
   /// the frontend can render "why this score" without recomputing.
-  scoreFactors  Json?
+  scoreFactors Json?
   /// Deterministic grouping key (e.g. "GOAL:memory_<id>", "TOPIC:<token>") — see
   /// reflection-foundation.md "Grouping". Never a semantic embedding key.
-  groupKey      String
-  visibility    ReflectionVisibility @default(COMPANION_VISIBLE)
+  groupKey     String
+  visibility   ReflectionVisibility @default(COMPANION_VISIBLE)
   /// Manual pin — the one direct user-action scoring input, never automatically set. Mirrors
   /// Memory.pinned.
-  pinned        Boolean              @default(false)
+  pinned       Boolean              @default(false)
   /// trigger + groupKey + windowStart fingerprint — unique per user so regeneration is an upsert,
   /// never a duplicate row, and a resolved (DISMISSED/ARCHIVED) decision is never overwritten.
-  dedupeKey     String
-  createdAt     DateTime             @default(now())
-  updatedAt     DateTime             @updatedAt
+  dedupeKey    String
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
   /// Set when the user explicitly dismisses or archives this candidate.
-  resolvedAt    DateTime?
+  resolvedAt   DateTime?
   /// Set when ReflectionValidityService finds a cited source is gone/deleted (Phase 11 privacy) —
   /// distinct from resolvedAt, which is only ever set by a real user action.
-  expiredAt     DateTime?
+  expiredAt    DateTime?
 
-  sources       ReflectionSourceRef[]
+  sources                 ReflectionSourceRef[]
   insightEvidence         InsightEvidence[]
   insightRelationshipsAsA InsightRelationship[] @relation("InsightRelationshipA")
   insightRelationshipsAsB InsightRelationship[] @relation("InsightRelationshipB")
@@ -1097,38 +1098,38 @@ enum InsightRelationshipType {
 /// see InsightGenerationService) makes regeneration idempotent and lets an ARCHIVED decision
 /// stick, the same pattern ReflectionCandidate.dedupeKey already uses.
 model InsightCandidate {
-  id               String                @id @default(cuid())
-  userId           String
-  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  category         InsightCategory
-  status           InsightStatus         @default(NOT_READY)
-  window           InsightWindow
-  windowStart      DateTime
-  windowEnd        DateTime
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        InsightCategory
+  status          InsightStatus   @default(NOT_READY)
+  window          InsightWindow
+  windowStart     DateTime
+  windowEnd       DateTime
   /// Plain-language, deterministically templated explanation of which relationships/rules formed
   /// this cluster (e.g. "3 reflections connected by REPEATS and CONTINUES over 21 days") — never
   /// free-text generation. Mirrors ReflectionCandidate.reason.
-  ruleExplanation  String
+  ruleExplanation String
   /// 0-100, see InsightPriorityService. Never AI-derived — a documented, weighted sum.
-  priority         Int                   @default(0)
+  priority        Int             @default(0)
   /// Structural breakdown of which weighted inputs contributed to `priority` (frequency/
   /// consistency/reflectionScore/goalRelevance/activity/journalDensity/memoryImportance) — mirrors
   /// ReflectionCandidate.scoreFactors so confidence explanations never drift from the actual
   /// computation.
-  priorityFactors  Json?
+  priorityFactors Json?
   /// category + anchor ReflectionCandidate id — see InsightGenerationService "Clustering".
-  dedupeKey        String
+  dedupeKey       String
   /// Manual pin — Sprint 5A (Insight Experience) presentation-layer user action, mirrors
   /// ReflectionCandidate.pinned/Memory.pinned. Never set automatically; purely a display flag —
   /// changes no category/priority/evidence and is untouched by regeneration.
-  pinned           Boolean               @default(false)
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
+  pinned          Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   /// Set only when the user explicitly archives this candidate via POST .../archive.
-  resolvedAt       DateTime?
+  resolvedAt      DateTime?
 
-  evidence         InsightEvidence[]
-  relationships    InsightRelationship[]
+  evidence      InsightEvidence[]
+  relationships InsightRelationship[]
 
   @@unique([userId, dedupeKey])
   @@index([userId, status, priority])
@@ -1266,7 +1267,7 @@ model Review {
   /// Set only when the user explicitly archives this review via POST .../archive.
   resolvedAt  DateTime?
 
-  sections    ReviewSection[]
+  sections ReviewSection[]
 
   @@unique([userId, dedupeKey])
   @@index([userId, window, windowStart])
@@ -1288,7 +1289,7 @@ model ReviewSection {
   order     Int
   createdAt DateTime          @default(now())
 
-  evidence  ReviewEvidence[]
+  evidence ReviewEvidence[]
 
   @@unique([reviewId, type])
   @@index([reviewId])
@@ -1523,21 +1524,21 @@ model GoalMilestone {
 /// has no natural time window). previousCompletionPercent/previousComputedAt are captured just
 /// before being overwritten — what makes GoalTrend derivable without a second history table.
 model GoalProgress {
-  id                         String     @id @default(cuid())
-  goalId                     String     @unique
-  goal                       Goal       @relation(fields: [goalId], references: [id], onDelete: Cascade)
-  completionPercent          Int        @default(0)
-  milestoneCompletionPercent Int        @default(0)
+  id                         String    @id @default(cuid())
+  goalId                     String    @unique
+  goal                       Goal      @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  completionPercent          Int       @default(0)
+  milestoneCompletionPercent Int       @default(0)
   /// Structural breakdown of how completionPercent was computed (evidence counts by source,
   /// milestone counts, metric currentValue/targetValue) — mirrors scoreFactors/priorityFactors/
   /// importanceFactors precedent so the frontend never needs to recompute to explain a number.
   factors                    Json?
-  trend                      GoalTrend  @default(NEW)
+  trend                      GoalTrend @default(NEW)
   previousCompletionPercent  Int?
   previousComputedAt         DateTime?
-  computedAt                 DateTime   @default(now())
+  computedAt                 DateTime  @default(now())
 
-  evidence                   GoalEvidence[]
+  evidence GoalEvidence[]
 
   @@map("goal_progress")
 }
@@ -1713,22 +1714,22 @@ model TarotSpread {
 /// (Phase 4) — a reading is fully real and viewable (real cards, real meanings) before that, the
 /// interpretation is additive, never a precondition for the deterministic result to exist.
 model TarotReading {
-  id             String                  @id @default(cuid())
+  id             String                 @id @default(cuid())
   userId         String
-  user           User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   type           TarotReadingType
   spreadId       String
-  spread         TarotSpread             @relation(fields: [spreadId], references: [id])
-  status         TarotReadingStatus      @default(ACTIVE)
-  visibility     TarotReadingVisibility  @default(PRIVATE)
+  spread         TarotSpread            @relation(fields: [spreadId], references: [id])
+  status         TarotReadingStatus     @default(ACTIVE)
+  visibility     TarotReadingVisibility @default(PRIVATE)
   /// Optional — Daily Draw never requires one; Single Card/Three Card may carry the user's own
   /// real question, never fabricated.
   question       String?
   /// AI-narrated interpretation of the real drawn cards (Phase 4) — null until generated, never a
   /// placeholder string in the meantime.
   interpretation String?
-  createdAt      DateTime                @default(now())
-  updatedAt      DateTime                @updatedAt
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
   archivedAt     DateTime?
   deletedAt      DateTime?
 
@@ -1923,21 +1924,21 @@ model PaymentWebhookEvent {
 /// — see EntitlementService.grantPremium). `hasPremiumAccess` is the only path the rest of the app
 /// may use to decide Premium access; never a scattered `user.isPremium`-style check.
 model PremiumEntitlement {
-  id         String                   @id @default(cuid())
-  userId     String
-  user       User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status     PremiumEntitlementStatus @default(ACTIVE)
-  source     PremiumEntitlementSource @default(PAYMENT)
-  startsAt   DateTime                 @default(now())
+  id        String                   @id @default(cuid())
+  userId    String
+  user      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    PremiumEntitlementStatus @default(ACTIVE)
+  source    PremiumEntitlementSource @default(PAYMENT)
+  startsAt  DateTime                 @default(now())
   /// Null would mean lifetime access — never set that way by `grantPremium` this sprint (every grant
   /// is a 30-day window), but left nullable for a future non-expiring grant path.
-  expiresAt  DateTime?
-  grantedAt  DateTime                 @default(now())
-  revokedAt  DateTime?
-  orderId    String                   @unique
-  order      PaymentOrder             @relation(fields: [orderId], references: [id])
-  createdAt  DateTime                 @default(now())
-  updatedAt  DateTime                 @updatedAt
+  expiresAt DateTime?
+  grantedAt DateTime                 @default(now())
+  revokedAt DateTime?
+  orderId   String                   @unique
+  order     PaymentOrder             @relation(fields: [orderId], references: [id])
+  createdAt DateTime                 @default(now())
+  updatedAt DateTime                 @updatedAt
 
   @@index([userId, status])
   @@index([userId, expiresAt])
@@ -2005,11 +2006,11 @@ enum NumerologyValueType {
 /// pin the exact engine/normalization revision used, so a future rule change never
 /// silently reinterprets an old reading (Phase 7: reproducibility/versioning).
 model NumerologyReading {
-  id                   String                        @id @default(cuid())
+  id                   String                      @id @default(cuid())
   userId               String
-  user                 User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status               NumerologyReadingStatus       @default(ACTIVE)
-  visibility           NumerologyReadingVisibility   @default(PRIVATE)
+  user                 User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status               NumerologyReadingStatus     @default(ACTIVE)
+  visibility           NumerologyReadingVisibility @default(PRIVATE)
   /// Exactly as typed by the user — never silently altered.
   birthNameInput       String
   /// The normalized string actually used for letter-value calculation
@@ -2029,8 +2030,8 @@ model NumerologyReading {
   aiModel              String?
   promptVersion        String?
   interpretedAt        DateTime?
-  createdAt            DateTime                      @default(now())
-  updatedAt            DateTime                      @updatedAt
+  createdAt            DateTime                    @default(now())
+  updatedAt            DateTime                    @updatedAt
   archivedAt           DateTime?
   deletedAt            DateTime?
 
@@ -2071,13 +2072,234 @@ model NumerologyValue {
 
 /// Append-only lifecycle event log — mirrors TarotReadingHistory's own precedent exactly.
 model NumerologyReadingHistory {
-  id        String                          @id @default(cuid())
+  id        String                         @id @default(cuid())
   readingId String
-  reading   NumerologyReading               @relation(fields: [readingId], references: [id], onDelete: Cascade)
+  reading   NumerologyReading              @relation(fields: [readingId], references: [id], onDelete: Cascade)
   action    NumerologyReadingHistoryAction
   detail    String
-  createdAt DateTime                        @default(now())
+  createdAt DateTime                       @default(now())
 
   @@index([readingId, createdAt])
   @@map("numerology_reading_history")
+}
+
+// ---------------------------------------------------------------------------
+// Natal Chart Discovery Foundation (Sprint 9)
+// ---------------------------------------------------------------------------
+
+/// Mirrors NumerologyReadingStatus/TarotReadingStatus's own reversible-archive + soft-delete
+/// precedent exactly.
+enum NatalChartStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+/// Mirrors NumerologyReadingVisibility/TarotReadingVisibility's own PRIVATE/COMPANION_VISIBLE
+/// precedent exactly.
+enum NatalChartVisibility {
+  PRIVATE
+  COMPANION_VISIBLE
+}
+
+/// Append-only lifecycle event log — mirrors NumerologyReadingHistoryAction's own precedent
+/// exactly.
+enum NatalChartHistoryAction {
+  CREATED
+  VIEWED
+  INTERPRETED
+  ARCHIVED
+  RESTORED
+  DELETED
+}
+
+/// The twelve tropical zodiac signs — shared by placements, houses, and the Ascendant/Midheaven
+/// angles so every "what sign is this in" fact in the domain uses one enum.
+enum NatalZodiacSign {
+  ARIES
+  TAURUS
+  GEMINI
+  CANCER
+  LEO
+  VIRGO
+  LIBRA
+  SCORPIO
+  SAGITTARIUS
+  CAPRICORN
+  AQUARIUS
+  PISCES
+}
+
+/// The ten classical planets computed as `NatalPlacement` rows (Sprint 9 brief's "at minimum"
+/// list — lunar nodes/Lilith are out of scope this sprint, see
+/// docs/architecture/natal-chart-discovery.md), plus the Ascendant/Midheaven angles, which
+/// `NatalChart` stores directly (not as placement rows, since they're singular per chart with no
+/// house/retrograde concept) but which still participate in `NatalAspect` as aspect points —
+/// hence one shared enum covering both.
+enum NatalChartPoint {
+  SUN
+  MOON
+  MERCURY
+  VENUS
+  MARS
+  JUPITER
+  SATURN
+  URANUS
+  NEPTUNE
+  PLUTO
+  ASCENDANT
+  MIDHEAVEN
+}
+
+/// Major aspects only (Sprint 9 brief Phase 6) — Conjunction/Opposition/Trine/Square/Sextile.
+/// Minor aspects (quincunx, semi-square, etc.) are not computed this sprint.
+enum NatalAspectType {
+  CONJUNCTION
+  OPPOSITION
+  TRINE
+  SQUARE
+  SEXTILE
+}
+
+/// A persisted Natal Chart — one deterministic calculation from real, user-submitted birth data,
+/// computed once by `NatalChartCalculatorService` and never recalculated after the fact. The full
+/// birth input snapshot (`birthDate`/`birthTime`/`birthTimeKnown`) is stored alongside the
+/// server-resolved location (`birthPlaceLabel`/`latitude`/`longitude`/`timezone` — never trusted
+/// from the client directly, see the Geocoding architecture section of
+/// docs/architecture/natal-chart-discovery.md) and the exact calculation configuration
+/// (`zodiacMode`/`houseSystem`/`calculationVersion`/`engineVersion`) so a chart is always
+/// explainable and reproducible under the rules that actually produced it (Phase 5 versioning).
+model NatalChart {
+  id         String               @id @default(cuid())
+  userId     String
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     NatalChartStatus     @default(ACTIVE)
+  visibility NatalChartVisibility @default(PRIVATE)
+
+  /// Date-only, `YYYY-MM-DD` semantics enforced at the application layer — stored as a real
+  /// `DateTime` at UTC midnight (mirrors `NumerologyReading.birthDate`).
+  birthDate       DateTime
+  /// `HH:mm`, local to the birth location — null when the user doesn't know their birth time.
+  birthTime       String?
+  /// Explicit, not merely derived from `birthTime` being null — mirrors the Product Bible's own
+  /// `birth_time_known` field name (Module 13 §17's DB sketch) so "time unknown" is always a
+  /// first-class, intentional fact, not an inferred one.
+  birthTimeKnown  Boolean
+  /// Exactly the label the user confirmed from geocoding search results — never silently altered.
+  birthPlaceLabel String
+  latitude        Float
+  longitude       Float
+  /// IANA timezone identifier, resolved deterministically from `latitude`/`longitude` (and
+  /// corrected for known coarse-geocoder misclassification — see
+  /// `natal-chart-timezone.util.ts` — never the browser's current timezone).
+  timezone        String
+
+  zodiacMode         String  @default("tropical")
+  houseSystem        String  @default("placidus")
+  /// False when the house system is mathematically undefined at this latitude (extreme/polar) or
+  /// when birth time is unknown — houses/Ascendant/Midheaven are then omitted entirely rather
+  /// than fabricated (Phase 6/16 stop-condition).
+  housesAvailable    Boolean @default(true)
+  calculationVersion String
+  /// Pinned `circular-natal-horoscope-js` version actually used, independent of
+  /// `calculationVersion` (Sprint 9 brief Phase 5).
+  engineVersion      String
+
+  ascendantLongitude    Float?
+  ascendantSign         NatalZodiacSign?
+  ascendantDegreeInSign Float?
+  midheavenLongitude    Float?
+  midheavenSign         NatalZodiacSign?
+  midheavenDegreeInSign Float?
+
+  /// Structured, section-keyed AI narrative (Phase 11) — null until generated, never a placeholder
+  /// in the meantime. A chart is fully real and viewable (real placements, real houses, real
+  /// aspects) before this exists; interpretation is additive, never a precondition (mirrors
+  /// NumerologyReading's own "interpretation is additive" precedent).
+  interpretation Json?
+  aiProvider     String?
+  aiModel        String?
+  promptVersion  String?
+  interpretedAt  DateTime?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  archivedAt DateTime?
+  deletedAt  DateTime?
+
+  placements NatalPlacement[]
+  houses     NatalHouse[]
+  aspects    NatalAspect[]
+  history    NatalChartHistory[]
+
+  @@index([userId, status, createdAt])
+  @@map("natal_charts")
+}
+
+/// One row per computed classical planet. Never AI-generated: every field comes directly from
+/// `NatalChartCalculatorService`'s real output.
+model NatalPlacement {
+  id           String          @id @default(cuid())
+  chartId      String
+  chart        NatalChart      @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  body         NatalChartPoint
+  /// Absolute ecliptic longitude, 0-360°.
+  longitude    Float
+  sign         NatalZodiacSign
+  degreeInSign Float
+  /// 1-12, null when `NatalChart.housesAvailable` is false.
+  house        Int?
+  retrograde   Boolean         @default(false)
+  /// Fixed classical display order (Sun -> Pluto) — a real, fixed ordering, never client-supplied.
+  order        Int
+
+  @@unique([chartId, body])
+  @@index([chartId])
+  @@map("natal_placements")
+}
+
+/// One row per house cusp (1-12) — only present when `NatalChart.housesAvailable` is true.
+model NatalHouse {
+  id            String          @id @default(cuid())
+  chartId       String
+  chart         NatalChart      @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  number        Int
+  cuspLongitude Float
+  sign          NatalZodiacSign
+
+  @@unique([chartId, number])
+  @@index([chartId])
+  @@map("natal_houses")
+}
+
+/// One row per detected major aspect between two chart points (planets and/or Ascendant/
+/// Midheaven). Deterministic, centralized-orb detection (`natal-chart-constants.ts`) — never a
+/// per-request or AI-influenced decision.
+model NatalAspect {
+  id      String          @id @default(cuid())
+  chartId String
+  chart   NatalChart      @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  pointA  NatalChartPoint
+  pointB  NatalChartPoint
+  type    NatalAspectType
+  /// Degrees of separation from the aspect's exact angle (e.g. 2.3° from an exact Trine).
+  orb     Float
+  /// The exact angular separation between the two points, 0-180°.
+  angle   Float
+
+  @@index([chartId])
+  @@map("natal_aspects")
+}
+
+/// Append-only lifecycle event log — mirrors NumerologyReadingHistory's own precedent exactly.
+model NatalChartHistory {
+  id        String                  @id @default(cuid())
+  chartId   String
+  chart     NatalChart              @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  action    NatalChartHistoryAction
+  detail    String
+  createdAt DateTime                @default(now())
+
+  @@index([chartId, createdAt])
+  @@map("natal_chart_history")
 }

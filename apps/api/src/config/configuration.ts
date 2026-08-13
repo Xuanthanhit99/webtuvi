@@ -112,6 +112,12 @@ export const appConfig = registerAs('app', () => {
         windowMs: env.PAYMENT_RATE_LIMIT_WINDOW_MS,
       },
     },
+    geocoding: {
+      nominatimBaseUrl: env.GEOCODING_NOMINATIM_BASE_URL,
+      userAgent: env.GEOCODING_USER_AGENT,
+      timeoutMs: env.GEOCODING_TIMEOUT_MS,
+      candidateTtlSeconds: env.GEOCODING_CANDIDATE_TTL_SECONDS,
+    },
   };
 });
 

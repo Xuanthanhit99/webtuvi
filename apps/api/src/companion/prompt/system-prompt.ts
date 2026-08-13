@@ -85,5 +85,12 @@ export function buildSystemPrompt(context: ConversationContext): string {
     );
   }
 
+  if (context.latestNatalChart) {
+    const bigThree = `Sun in ${context.latestNatalChart.sun}, Moon in ${context.latestNatalChart.moon}${context.latestNatalChart.ascendant ? `, Ascendant in ${context.latestNatalChart.ascendant}` : ' (Ascendant unavailable — birth time not known or an extreme birth latitude)'}`;
+    facts.push(
+      `Their most recent Natal Chart calculated: ${bigThree}.${context.latestNatalChart.interpretationOverview ? ` The overview already offered for it: "${context.latestNatalChart.interpretationOverview}"` : ''} You may reference this naturally if it comes up — you never calculate, recalculate, or "correct" a placement yourself; the full chart was already computed deterministically before this conversation, and you never state a placement that isn't exactly what's listed here.`,
+    );
+  }
+
   return `${BASE_RULES}\n\nWhat you actually know about them right now (do not assume anything beyond this):\n${facts.map((f) => `- ${f}`).join('\n')}`;
 }

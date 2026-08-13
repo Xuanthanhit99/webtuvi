@@ -34,6 +34,19 @@ export interface ConversationContext {
     interpretation: string | null;
     createdAt: string;
   } | null;
+  /** The user's most recent ACTIVE, COMPANION_VISIBLE Natal Chart (Sprint 9, Phase 13) — the
+   * real, already-calculated Big Three (Sun/Moon/Ascendant) and, if generated, just the
+   * `overview` section of the real AI interpretation (never the full structured object — bounded,
+   * same "at most one relevant summary" discipline as everything else in this context). Read-only:
+   * Companion never calculates, recalculates, or edits a chart. Null when no such chart exists, or
+   * when the chart's Ascendant is unavailable (unknown birth time / extreme latitude). */
+  latestNatalChart: {
+    sun: string;
+    moon: string;
+    ascendant: string | null;
+    interpretationOverview: string | null;
+    createdAt: string;
+  } | null;
   currentTimeIso: string;
   currentTimeLabel: string;
 }

@@ -1147,6 +1147,135 @@ export interface NumerologyMeaningDto {
   meaning: string;
 }
 
+// --- Natal Chart Discovery Foundation (Sprint 9). The Product Bible's third real Discovery
+// system (Module 13) — a deterministic, ephemeris-based birth chart, persisted once, explored
+// through a chart wheel and progressive-disclosure sections, narrated (never calculated) by AI.
+// See docs/architecture/natal-chart-discovery.md. ---
+
+export type NatalChartStatusValue = 'ACTIVE' | 'ARCHIVED' | 'DELETED';
+export type NatalChartVisibilityValue = 'PRIVATE' | 'COMPANION_VISIBLE';
+export type NatalChartHistoryActionValue = 'CREATED' | 'VIEWED' | 'INTERPRETED' | 'ARCHIVED' | 'RESTORED' | 'DELETED';
+
+export type NatalChartPlanetValue = 'sun' | 'moon' | 'mercury' | 'venus' | 'mars' | 'jupiter' | 'saturn' | 'uranus' | 'neptune' | 'pluto';
+export type NatalChartPointValue = NatalChartPlanetValue | 'ascendant' | 'midheaven';
+export type NatalZodiacSignValue =
+  | 'aries'
+  | 'taurus'
+  | 'gemini'
+  | 'cancer'
+  | 'leo'
+  | 'virgo'
+  | 'libra'
+  | 'scorpio'
+  | 'sagittarius'
+  | 'capricorn'
+  | 'aquarius'
+  | 'pisces';
+export type NatalAspectTypeValue = 'conjunction' | 'opposition' | 'trine' | 'square' | 'sextile';
+
+export interface NatalPlacementDto {
+  body: NatalChartPlanetValue;
+  /** Absolute ecliptic longitude, 0-360°. */
+  longitude: number;
+  sign: NatalZodiacSignValue;
+  degreeInSign: number;
+  /** 1-12, null when `housesAvailable` is false. */
+  house: number | null;
+  retrograde: boolean;
+  /** Fixed traditional meaning, composed from planet+sign(+house) — never AI-generated. */
+  meaning: string;
+}
+
+export interface NatalHouseDto {
+  number: number;
+  cuspLongitude: number;
+  sign: NatalZodiacSignValue;
+}
+
+export interface NatalAspectDto {
+  pointA: NatalChartPointValue;
+  pointB: NatalChartPointValue;
+  type: NatalAspectTypeValue;
+  orb: number;
+  angle: number;
+  /** Fixed traditional meaning — never AI-generated. */
+  meaning: string;
+}
+
+export interface NatalAngleDto {
+  longitude: number;
+  sign: NatalZodiacSignValue;
+  degreeInSign: number;
+  /** Fixed traditional meaning — never AI-generated. */
+  meaning: string;
+}
+
+/** The ten fixed, independently-renderable interpretation sections (Phase 11). */
+export interface NatalChartInterpretationSectionsDto {
+  overview: string;
+  corePersonality: string;
+  emotionalWorld: string;
+  communication: string;
+  loveAndRelationships: string;
+  motivation: string;
+  careerDirection: string;
+  strengths: string;
+  challenges: string;
+  keyAspects: string;
+}
+
+export interface NatalChartDto {
+  id: string;
+  status: NatalChartStatusValue;
+  visibility: NatalChartVisibilityValue;
+  /** `YYYY-MM-DD`. */
+  birthDate: string;
+  /** `HH:mm`, null when birth time is unknown. */
+  birthTime: string | null;
+  birthTimeKnown: boolean;
+  birthPlaceLabel: string;
+  timezone: string;
+  zodiacMode: string;
+  houseSystem: string;
+  /** False when birth time is unknown, or at an extreme/polar birth latitude — houses/Ascendant/
+   * Midheaven are then omitted entirely, never fabricated. */
+  housesAvailable: boolean;
+  calculationVersion: string;
+  engineVersion: string;
+  ascendant: NatalAngleDto | null;
+  midheaven: NatalAngleDto | null;
+  placements: NatalPlacementDto[];
+  houses: NatalHouseDto[];
+  aspects: NatalAspectDto[];
+  /** Structured, AI-narrated sections — null until generated. */
+  interpretation: NatalChartInterpretationSectionsDto | null;
+  interpretedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
+}
+
+export interface NatalChartHistoryDto {
+  id: string;
+  action: NatalChartHistoryActionValue;
+  detail: string;
+  createdAt: string;
+}
+
+export interface ListNatalChartsResultDto {
+  items: NatalChartDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+/** A geocoding search result candidate — `token` is opaque and short-lived; chart creation sends
+ * it back instead of raw coordinates (the server always re-resolves them itself). */
+export interface GeocodingSearchResultDto {
+  token: string;
+  label: string;
+}
+
 export interface ApiErrorShape {
   data: null;
   error: {

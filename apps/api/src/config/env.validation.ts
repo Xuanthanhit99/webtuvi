@@ -118,6 +118,19 @@ const envSchema = z.object({
   PREMIUM_DURATION_DAYS: z.coerce.number().int().positive().default(30),
   PAYMENT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
   PAYMENT_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+
+  // --- Natal Chart Discovery Foundation (Sprint 9) — geocoding. Public Nominatim (OpenStreetMap)
+  // is an MVP/low-volume-appropriate default; the base URL is overridable so a hosted/
+  // self-hosted instance can replace it at production scale without a code change. See
+  // docs/architecture/natal-chart-discovery.md "Geocoding architecture". ---
+  GEOCODING_NOMINATIM_BASE_URL: z.string().url().default('https://nominatim.openstreetmap.org'),
+  // Nominatim's usage policy requires an identifying User-Agent on every request.
+  GEOCODING_USER_AGENT: z.string().min(1).default('BeaconVie/1.0 (natal-chart-geocoding)'),
+  GEOCODING_TIMEOUT_MS: z.coerce.number().int().positive().default(8_000),
+  // How long a search result candidate stays resolvable by its opaque token before chart
+  // creation must re-search — bounds both Redis memory and how stale a "confirmed" location can
+  // be.
+  GEOCODING_CANDIDATE_TTL_SECONDS: z.coerce.number().int().positive().default(900),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

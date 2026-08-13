@@ -26,6 +26,8 @@ import { GoalModule } from './goal/goal.module';
 import { PaymentModule } from './payment/payment.module';
 import { TarotModule } from './tarot/tarot.module';
 import { NumerologyModule } from './numerology/numerology.module';
+import { GeocodingModule } from './geocoding/geocoding.module';
+import { NatalChartModule } from './natal-chart/natal-chart.module';
 
 @Module({
   imports: [
@@ -93,6 +95,8 @@ import { NumerologyModule } from './numerology/numerology.module';
     PaymentModule,
     TarotModule,
     NumerologyModule,
+    GeocodingModule,
+    NatalChartModule,
     CompanionModule,
     DashboardModule,
   ],

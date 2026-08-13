@@ -13,6 +13,21 @@
 
   html {
     @apply scroll-smooth;
+    /* Sprint 9 finding: native scroll-into-view/focus-scroll (keyboard Tab navigation, or any
+       programmatic scrollIntoView) has no awareness of the fixed mobile/tablet bottom nav
+       (MobileNavigation, ~57px tall) — it scrolls an element to the literal viewport edge, which
+       can land it partly underneath the nav. `main`'s own pb-24 only helps once a page is long
+       enough to scroll to its true end; a shorter page (or scrolling to a specific mid-page
+       element) doesn't benefit from it. scroll-padding-bottom fixes this at the root for every
+       page, present and future, rather than per-page. Desktop has no bottom nav, so it's reset
+       to 0 above the same `desktop` breakpoint MobileNavigation itself hides at (1280px). */
+    scroll-padding-bottom: 5rem;
+  }
+
+  @media (min-width: 1280px) {
+    html {
+      scroll-padding-bottom: 0;
+    }
   }
 
   body {

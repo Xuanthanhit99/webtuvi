@@ -34,7 +34,7 @@ export class ContextBuilderService {
     });
     if (!user) throw new NotFoundException();
 
-    const [recentActivity, otherConversations, activeGoals, latestTarotReading, latestNumerologyReading] = await Promise.all([
+    const [recentActivity, otherConversations, activeGoals, latestTarotReading, latestNumerologyReading, latestNatalChart] = await Promise.all([
       this.activitiesService.recent(userId, 5),
       this.prisma.conversation.findMany({
         where: { userId, ...(currentConversationId ? { id: { not: currentConversationId } } : {}) },
@@ -66,6 +66,15 @@ export class ContextBuilderService {
         where: { userId, status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' },
         orderBy: { createdAt: 'desc' },
         include: { values: { orderBy: { order: 'asc' } } },
+      }),
+      // Sprint 9 Phase 13 — read-only Natal Chart bridge: the real, already-calculated Big Three
+      // and (if generated) just the `overview` section of the real interpretation for the user's
+      // most recent visible chart, never recalculated or re-interpreted here. Mirrors the Tarot/
+      // Numerology bridges immediately above exactly.
+      this.prisma.natalChart.findFirst({
+        where: { userId, status: 'ACTIVE', visibility: 'COMPANION_VISIBLE' },
+        orderBy: { createdAt: 'desc' },
+        include: { placements: { where: { body: { in: ['SUN', 'MOON'] } } } },
       }),
     ]);
 
@@ -102,10 +111,39 @@ export class ContextBuilderService {
             createdAt: latestNumerologyReading.createdAt.toISOString(),
           }
         : null,
+      latestNatalChart: latestNatalChart
+        ? {
+            // Every calculated chart always has Sun/Moon placements (created together in the
+            // same transaction, all ten classical planets) — a missing one here would be a data
+            // integrity bug, not an expected null case.
+            sun: capitalizeSign(latestNatalChart.placements.find((p) => p.body === 'SUN')!.sign),
+            moon: capitalizeSign(latestNatalChart.placements.find((p) => p.body === 'MOON')!.sign),
+            ascendant: latestNatalChart.ascendantSign ? capitalizeSign(latestNatalChart.ascendantSign) : null,
+            interpretationOverview: extractOverview(latestNatalChart.interpretation),
+            createdAt: latestNatalChart.createdAt.toISOString(),
+          }
+        : null,
       currentTimeIso: now.toISOString(),
       currentTimeLabel: formatTimeLabel(now, user.profile?.timezone ?? undefined),
     };
   }
+}
+
+/** `NatalZodiacSign` enum values are uppercase (`GEMINI`) — this bridge deliberately doesn't
+ * import natal-chart's own engine/mapping utilities (kept a one-directional dependency, same as
+ * the Tarot/Numerology bridges above, which format their own facts inline rather than importing
+ * from `tarot`/`numerology`). */
+function capitalizeSign(sign: string): string {
+  return sign.charAt(0) + sign.slice(1).toLowerCase();
+}
+
+/** `interpretation` is the full ten-section structured JSON (Sprint 9 Phase 11) — only the
+ * `overview` section is ever surfaced here, the same "bounded, single summary" discipline as
+ * Tarot/Numerology's own already-generated-interpretation fields. */
+function extractOverview(interpretation: unknown): string | null {
+  if (typeof interpretation !== 'object' || interpretation === null) return null;
+  const overview = (interpretation as Record<string, unknown>).overview;
+  return typeof overview === 'string' ? overview : null;
 }
 
 function formatTimeLabel(date: Date, timezone: string | undefined): string {
