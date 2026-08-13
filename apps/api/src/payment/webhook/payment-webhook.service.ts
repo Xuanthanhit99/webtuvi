@@ -96,11 +96,21 @@ export class PaymentWebhookService {
     await this.prisma.$transaction(async (tx) => {
       if (verified.status === 'PAID') {
         // Only transitions a still-PENDING order — a duplicate/late/stale PAID event for an
-        // already-terminal order is a safe no-op, never regrants and never reverts.
+        // already-terminal order is a safe no-op, never regrants and never reverts. The order
+        // itself always transitions to PAID regardless of the account's current status (a real
+        // payment happened; the accounting record must reflect that), but a *new* Premium
+        // entitlement is only granted to a still-ACTIVE account — a late webhook arriving after
+        // the buyer deleted their own account (Sprint 10) must never mint a fresh, dormant
+        // entitlement against a scrubbed user id. See docs/architecture/account-data-rights.md §7.
         const result = await tx.paymentOrder.updateMany({ where: { id: orderId, status: 'PENDING' }, data: { status: 'PAID', paidAt: new Date() } });
         if (result.count > 0) {
-          await this.entitlementService.grantPremium(tx, userId, orderId, config.payment.premium.durationDays);
-          this.logger.log(`payment.entitlement.granted orderId=${orderId} userId=${userId}`);
+          const user = await tx.user.findUnique({ where: { id: userId }, select: { status: true } });
+          if (user?.status === 'ACTIVE') {
+            await this.entitlementService.grantPremium(tx, userId, orderId, config.payment.premium.durationDays);
+            this.logger.log(`payment.entitlement.granted orderId=${orderId} userId=${userId}`);
+          } else {
+            this.logger.log(`payment.entitlement.skipped_inactive_account orderId=${orderId} userId=${userId}`);
+          }
         } else {
           this.logger.log(`payment.webhook.noop_already_terminal orderId=${orderId}`);
         }

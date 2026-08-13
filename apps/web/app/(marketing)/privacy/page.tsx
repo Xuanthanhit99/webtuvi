@@ -13,7 +13,10 @@ export default function PrivacyPage() {
         </p>
         <p>
           You can export a copy of everything we hold about you, or delete your account and its data entirely,
-          at any time from Settings.
+          at any time from Settings. Deleting your account immediately removes your Companion conversations,
+          Memory, Journal entries, and Discovery readings (Tarot, Numerology, Natal Chart), and ends your
+          Premium access. A record of past payments is kept for accounting purposes, but it no longer carries
+          any personal profile information once your account is deleted.
         </p>
         <p>
           We use essential cookies to keep you signed in securely. We don&rsquo;t set marketing or tracking

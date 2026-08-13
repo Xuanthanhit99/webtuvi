@@ -20,7 +20,9 @@ interface OrderRow {
   failedAt: Date | null;
 }
 
-function makeHarness(options: { verifyImpl?: (payload: unknown) => VerifiedWebhookPayment; order?: Partial<OrderRow> } = {}) {
+function makeHarness(
+  options: { verifyImpl?: (payload: unknown) => VerifiedWebhookPayment; order?: Partial<OrderRow>; userStatus?: string } = {},
+) {
   const order: OrderRow = {
     id: ORDER_ID,
     userId: USER_ID,
@@ -32,6 +34,8 @@ function makeHarness(options: { verifyImpl?: (payload: unknown) => VerifiedWebho
     failedAt: null,
     ...options.order,
   };
+
+  const user = { findUnique: jest.fn(async () => ({ status: options.userStatus ?? 'ACTIVE' })) };
   const orders = new Map<string, OrderRow>([[order.id, order]]);
   const webhookEvents: { id: string; provider: string; externalEventId: string; orderId: string | null; status: string; errorCategory: string | null; processedAt: Date | null }[] = [];
 
@@ -68,6 +72,7 @@ function makeHarness(options: { verifyImpl?: (payload: unknown) => VerifiedWebho
   const prisma = {
     paymentOrder,
     paymentWebhookEvent,
+    user,
     $transaction: undefined as unknown as jest.Mock<Promise<unknown>, [(tx: unknown) => Promise<unknown>]>,
   };
   prisma.$transaction = jest.fn(async (fn: (tx: unknown) => Promise<unknown>) => fn(prisma));
@@ -78,7 +83,7 @@ function makeHarness(options: { verifyImpl?: (payload: unknown) => VerifiedWebho
   const configService = { get: jest.fn().mockReturnValue({ payment: { premium: { durationDays: 30 } } }) };
 
   const service = new PaymentWebhookService(prisma as never, configService as never, providerRegistry as never, entitlementService as never);
-  return { service, prisma, orders, webhookEvents, verifyWebhook, entitlementService };
+  return { service, prisma, orders, webhookEvents, verifyWebhook, entitlementService, user };
 }
 
 describe('PaymentWebhookService.handlePayOSWebhook — happy path', () => {
@@ -175,5 +180,22 @@ describe('PaymentWebhookService.handlePayOSWebhook — idempotency & concurrency
     await service.handlePayOSWebhook({}); // PAID first
     await service.handlePayOSWebhook({}); // stale FAILED second
     expect(orders.get(ORDER_ID)!.status).toBe('PAID');
+  });
+});
+
+describe('PaymentWebhookService.handlePayOSWebhook — late delivery after account deletion (Sprint 10 closure)', () => {
+  it('still transitions a late PAID webhook to PAID (accounting stays accurate) but does not grant a new entitlement to a DELETED account', async () => {
+    const { service, orders, entitlementService } = makeHarness({ userStatus: 'DELETED' });
+    await service.handlePayOSWebhook({});
+    expect(orders.get(ORDER_ID)!.status).toBe('PAID');
+    expect(orders.get(ORDER_ID)!.paidAt).not.toBeNull();
+    expect(entitlementService.grantPremium).not.toHaveBeenCalled();
+  });
+
+  it('grants normally when the account is still ACTIVE (no regression)', async () => {
+    const { service, orders, entitlementService } = makeHarness({ userStatus: 'ACTIVE' });
+    await service.handlePayOSWebhook({});
+    expect(orders.get(ORDER_ID)!.status).toBe('PAID');
+    expect(entitlementService.grantPremium).toHaveBeenCalledTimes(1);
   });
 });

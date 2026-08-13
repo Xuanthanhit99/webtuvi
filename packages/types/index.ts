@@ -341,6 +341,38 @@ export interface MemoryExportResultDto {
   activityHistory: { memoryId: string | null; action: string; createdAt: string }[];
 }
 
+// ---------------------------------------------------------------------------
+// Sprint 10 — Account Data Rights (export/deletion). See
+// docs/architecture/account-data-rights.md. `AccountExportResultDto`'s section shapes are
+// deliberately loose (`Record<string, unknown>`/`unknown[]`) — the frontend only ever offers this
+// as a downloadable JSON file, it never renders individual fields, so a tight per-field type here
+// would be maintenance overhead with no real consumer.
+// ---------------------------------------------------------------------------
+
+export interface AccountExportResultDto {
+  exportVersion: number;
+  generatedAt: string;
+  account: { id: string; email: string; displayName: string; createdAt: string; emailVerifiedAt: string | null };
+  preferences: unknown;
+  onboarding: unknown;
+  companion: { onboardingMessages: unknown[]; conversations: unknown[] };
+  memory: { memories: unknown[]; versions: unknown[]; consent: unknown; activityHistory: unknown[]; legacyNotes: unknown[] };
+  journal: unknown[];
+  reflections: unknown[];
+  insights: unknown[];
+  reviews: unknown[];
+  goals: unknown[];
+  discoveries: { tarot: unknown[]; numerology: unknown[]; natalChart: unknown[] };
+  premium: { entitlements: unknown[]; paymentOrders: unknown[] };
+  activity: unknown[];
+}
+
+export interface AccountExportJobDto {
+  jobId: string;
+  status: 'completed';
+  result: AccountExportResultDto;
+}
+
 export interface MemoryExportJobDto {
   jobId: string;
   status: 'completed';
