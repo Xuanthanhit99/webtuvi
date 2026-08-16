@@ -17,6 +17,7 @@ const FREE_STATUS: PremiumStatusDto = {
   priceVnd: 79000,
   currency: 'VND',
   isMvpTestPrice: true,
+  paymentsEnabled: true,
 };
 const PREMIUM_STATUS: PremiumStatusDto = {
   isPremium: true,
@@ -25,6 +26,7 @@ const PREMIUM_STATUS: PremiumStatusDto = {
   priceVnd: 79000,
   currency: 'VND',
   isMvpTestPrice: true,
+  paymentsEnabled: true,
 };
 
 describe('PremiumUpgradePanel', () => {
@@ -96,6 +98,20 @@ describe('PremiumUpgradePanel', () => {
     renderWithQuery(<PremiumUpgradePanel />);
     await user.click(await screen.findByRole('button', { name: 'Upgrade to Premium' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Payment is temporarily unavailable');
+  });
+
+  it('kill-switch off (Sprint 12): hides the upgrade button and shows an honest unavailable message, before any checkout attempt', async () => {
+    (premiumApi.status as jest.Mock).mockResolvedValue({ ...FREE_STATUS, paymentsEnabled: false });
+    renderWithQuery(<PremiumUpgradePanel />);
+    expect(await screen.findByText(/temporarily unavailable/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Upgrade to Premium' })).not.toBeInTheDocument();
+    expect(premiumApi.checkout).not.toHaveBeenCalled();
+  });
+
+  it('kill-switch on (default): the upgrade button is shown', async () => {
+    (premiumApi.status as jest.Mock).mockResolvedValue(FREE_STATUS);
+    renderWithQuery(<PremiumUpgradePanel />);
+    expect(await screen.findByRole('button', { name: 'Upgrade to Premium' })).toBeInTheDocument();
   });
 
   it('never redirects or claims success before the backend actually returns a checkoutUrl', async () => {

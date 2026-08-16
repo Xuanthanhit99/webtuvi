@@ -13,7 +13,12 @@ import { estimateCostUsd } from './pricing';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const API_VERSION = '2023-06-01';
-const DEFAULT_MODEL = 'claude-3-5-sonnet-20241022';
+// Sprint 12 pricing sanity check — claude-3-5-sonnet-20241022 no longer appears anywhere on
+// Anthropic's official pricing page (platform.claude.com/docs/en/about-claude/pricing, fetched
+// live), not even in its "retired" tier (which only lists back to Opus 4/Sonnet 4/Haiku 3.5) —
+// strong evidence the model id itself is fully sunset, not just superseded. Current default per
+// the same source: Claude Sonnet 5 ($2/$10 per MTok). See pricing.ts for the matching cost entry.
+const DEFAULT_MODEL = 'claude-sonnet-5';
 const DEFAULT_MAX_TOKENS = 1024;
 
 /** Plain `fetch` against the Anthropic Messages API — no SDK dependency. */

@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProviderOrchestratorService } from '../../companion/providers/provider-orchestrator.service';
 import { SafetyService } from '../../companion/safety/safety.service';
-import type { ChatMessage } from '../../companion/providers/provider.types';
+import { CostControlService } from '../../companion/cost/cost-control.service';
+import { ObservabilityService } from '../../companion/observability/observability.service';
+import type { AIProviderName, ChatMessage, TokenUsage } from '../../companion/providers/provider.types';
 import { getNumerologyMeaning } from '../engine/numerology-meanings';
 import type { InterpretationInput } from '../numerology.types';
 
@@ -57,6 +59,11 @@ function buildUserMessage(input: InterpretationInput): string {
  * structured number data -> prompt -> interpretation: this service never decides what a core
  * number is, only narrates the real result it's handed. Non-streaming — Numerology has no live
  * chat UI to stream into.
+ *
+ * Sprint 12 — plays the same role as `TarotInterpretationService`: forwards `feature`/`sourceId`
+ * attribution to the orchestrator and records `AIUsage` once a real provider call completes,
+ * regardless of safety-refusal outcome. Budget check and the concurrency lock live one layer up in
+ * `NumerologyRecordService` (mirrors Tarot's own split exactly).
  */
 @Injectable()
 export class NumerologyInterpretationService {
@@ -65,9 +72,11 @@ export class NumerologyInterpretationService {
   constructor(
     private readonly orchestrator: ProviderOrchestratorService,
     private readonly safety: SafetyService,
+    private readonly costControl: CostControlService,
+    private readonly observability: ObservabilityService,
   ) {}
 
-  async interpret(input: InterpretationInput): Promise<string | null> {
+  async interpret(input: InterpretationInput, attribution: { userId: string; sourceId: string }): Promise<string | null> {
     // Release-closure audit finding (Phase 8) — `fullBirthName` is user-controlled free text.
     // The DTO regex only restricts the *character set* (letters/marks/space/period/apostrophe/
     // hyphen), not semantic content: phrases like "ignore previous instructions" or "want to die"
@@ -87,9 +96,21 @@ export class NumerologyInterpretationService {
     ];
 
     let content = '';
+    let usage: TokenUsage | null = null;
+    let model = '';
+    let provider: AIProviderName | null = null;
     try {
-      for await (const chunk of this.orchestrator.stream(messages, { maxTokens: MAX_TOKENS_BY_TIER[input.tier], temperature: 0.7 })) {
+      for await (const chunk of this.orchestrator.stream(
+        messages,
+        { maxTokens: MAX_TOKENS_BY_TIER[input.tier], temperature: 0.7 },
+        { feature: 'numerology', sourceId: attribution.sourceId },
+      )) {
         if (chunk.type === 'token') content += chunk.content;
+        if (chunk.type === 'done') {
+          usage = chunk.usage;
+          model = chunk.model;
+          provider = chunk.provider;
+        }
         if (chunk.type === 'error') {
           this.logger.warn(`Numerology interpretation provider error: code=${chunk.code ?? 'unknown'}`);
           return null;
@@ -103,11 +124,33 @@ export class NumerologyInterpretationService {
     if (!content.trim()) return null;
 
     const outputCheck = this.safety.checkOutput(content);
+    const result = outputCheck.allowed ? content.trim() : (outputCheck.refusalMessage ?? null);
     if (!outputCheck.allowed) {
       this.logger.warn(`Numerology interpretation output refused: category=${outputCheck.category}`);
-      return outputCheck.refusalMessage ?? null;
     }
 
-    return content.trim();
+    if (usage && provider) {
+      const estimatedCostUsd = await this.costControl.record({
+        userId: attribution.userId,
+        feature: 'numerology',
+        sourceId: attribution.sourceId,
+        provider,
+        model,
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+      });
+      this.observability.logUsage({
+        userId: attribution.userId,
+        feature: 'numerology',
+        sourceId: attribution.sourceId,
+        provider,
+        model,
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+        estimatedCostUsd,
+      });
+    }
+
+    return result;
   }
 }

@@ -6,6 +6,8 @@ import { EntitlementService } from '../../payment/entitlement/entitlement.servic
 import { GeocodingService } from '../../geocoding/geocoding.service';
 import { NatalChartCalculatorService } from '../engine/natal-chart-calculator.service';
 import { NatalChartInterpretationService } from '../interpretation/natal-chart-interpretation.service';
+import { CostControlService } from '../../companion/cost/cost-control.service';
+import { GenerationLockService } from '../../companion/concurrency/generation-lock.service';
 import { BirthInputValidationError, normalizeBirthDate, normalizeBirthTime } from '../engine/natal-chart-birth-input.util';
 import { composeAngleMeaning, composeAspectMeaning, composePlacementMeaning } from '../engine/natal-chart-meanings';
 import {
@@ -62,6 +64,8 @@ export class NatalChartRecordService {
     private readonly interpretation: NatalChartInterpretationService,
     private readonly memoryRetrieval: MemoryRetrievalService,
     private readonly entitlementService: EntitlementService,
+    private readonly costControl: CostControlService,
+    private readonly generationLock: GenerationLockService,
   ) {}
 
   async create(userId: string, dto: CreateNatalChartDto): Promise<NatalChartDto> {
@@ -168,9 +172,24 @@ export class NatalChartRecordService {
     return this.getOne(userId, chart.id);
   }
 
-  /** Best-effort — never throws; a provider failure leaves `interpretation: null`, retryable via
-   * `POST /natal-charts/:id/interpret` (mirrors `NumerologyRecordService.generateInterpretation`). */
+  /** Best-effort — never throws; a provider failure, an exhausted AI budget, or a concurrent
+   * generation already in flight for this exact chart all leave `interpretation: null`, retryable
+   * via `POST /natal-charts/:id/interpret` (mirrors `NumerologyRecordService.generateInterpretation`
+   * exactly, including the Sprint 12 budget/lock additions — see that method's docstring for the
+   * full reasoning). */
   private async generateInterpretation(userId: string, chartId: string): Promise<void> {
+    const budget = await this.costControl.checkBudget(userId);
+    if (!budget.allowed) {
+      this.logger.warn(`Natal Chart interpretation skipped for chart=${chartId}: ${budget.reason}`);
+      return;
+    }
+
+    const acquired = await this.generationLock.tryAcquireDiscovery('natal_chart', userId, chartId);
+    if (!acquired) {
+      this.logger.warn(`Natal Chart interpretation skipped for chart=${chartId}: concurrent generation already in flight`);
+      return;
+    }
+
     try {
       const full = await this.prisma.natalChart.findUniqueOrThrow({ where: { id: chartId }, include: INCLUDE });
       const isPremium = await this.entitlementService.hasPremiumAccess(userId);
@@ -202,16 +221,19 @@ export class NatalChartRecordService {
           return { pointA, pointB, type, orb: a.orb, meaning: composeAspectMeaning(pointA, pointB, type) };
         });
 
-      const interpretation = await this.interpretation.interpret({
-        placements,
-        housesAvailable: full.housesAvailable,
-        ascendant: full.ascendantSign ? { sign: fromPrismaSign(full.ascendantSign), meaning: composeAngleMeaning('ascendant', fromPrismaSign(full.ascendantSign)) } : null,
-        midheaven: full.midheavenSign ? { sign: fromPrismaSign(full.midheavenSign), meaning: composeAngleMeaning('midheaven', fromPrismaSign(full.midheavenSign)) } : null,
-        keyAspects,
-        birthPlaceLabel: full.birthPlaceLabel,
-        tier: isPremium ? 'PREMIUM' : 'FREE',
-        memoryReference,
-      });
+      const interpretation = await this.interpretation.interpret(
+        {
+          placements,
+          housesAvailable: full.housesAvailable,
+          ascendant: full.ascendantSign ? { sign: fromPrismaSign(full.ascendantSign), meaning: composeAngleMeaning('ascendant', fromPrismaSign(full.ascendantSign)) } : null,
+          midheaven: full.midheavenSign ? { sign: fromPrismaSign(full.midheavenSign), meaning: composeAngleMeaning('midheaven', fromPrismaSign(full.midheavenSign)) } : null,
+          keyAspects,
+          birthPlaceLabel: full.birthPlaceLabel,
+          tier: isPremium ? 'PREMIUM' : 'FREE',
+          memoryReference,
+        },
+        { userId, sourceId: chartId },
+      );
 
       if (interpretation) {
         await this.prisma.natalChart.update({
@@ -222,6 +244,8 @@ export class NatalChartRecordService {
       }
     } catch (error) {
       this.logger.warn(`Natal Chart interpretation generation failed for chart=${chartId}: ${error instanceof Error ? error.message : 'unknown'}`);
+    } finally {
+      await this.generationLock.releaseDiscovery('natal_chart', userId, chartId);
     }
   }
 

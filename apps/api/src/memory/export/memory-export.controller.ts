@@ -17,7 +17,7 @@ export class MemoryExportController {
   // 1000/60s — 'auth'/'companion'/'companion-ip' are unrelated to this route
   // and are skipped so only this override applies.
   @UseGuards(ThrottlerGuard)
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true })
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true })
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Export the caller’s own memories, versions, consent settings, and activity history' })
   create(@CurrentUser() user: AuthenticatedUser): Promise<MemoryExportJobDto> {

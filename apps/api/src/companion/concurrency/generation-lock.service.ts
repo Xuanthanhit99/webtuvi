@@ -2,8 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { AppConfiguration } from '../../config/configuration';
 import { RedisService } from '../../redis/redis.service';
+import type { DiscoveryAIFeature } from '../providers/ai-feature.types';
 
-const KEY_PREFIX = 'companion:concurrency';
+const COMPANION_KEY_PREFIX = 'companion:concurrency';
+const DISCOVERY_KEY_PREFIX = 'discovery:concurrency';
 
 /**
  * Caps how many generations one user can have in flight at once
@@ -38,8 +40,36 @@ export class GenerationLockService {
   ) {}
 
   async tryAcquire(userId: string): Promise<boolean> {
+    return this.tryAcquireKey(`${COMPANION_KEY_PREFIX}:${userId}`);
+  }
+
+  async release(userId: string): Promise<void> {
+    return this.releaseKey(`${COMPANION_KEY_PREFIX}:${userId}`);
+  }
+
+  /**
+   * Sprint 12 — Discovery AI parity (Tarot/Numerology/Natal Chart). Scoped per
+   * `(feature, user, reading)` rather than per-user-globally like Companion's own lock above: two
+   * concurrent interpret retries against the SAME reading are blocked (the confirmed abuse vector
+   * — Sprint 12 audit §30), but Tarot/Numerology/Natal Chart never block each other, and two
+   * different readings of the same feature never block each other either. A lock as broad as
+   * Companion's (one global slot per user across every AI surface) would be unnecessarily
+   * restrictive here — Discovery has no live-chat UX where "only one generation in flight at a
+   * time" is a meaningful product constraint the way it is for Companion. Reuses the exact same
+   * `AI_MAX_CONCURRENT_GENERATIONS_PER_USER`/`AI_CONCURRENCY_LOCK_TTL_MS` config (same fail-open/
+   * TTL-self-heal semantics) since the mechanism is identical, just a different key namespace. See
+   * docs/architecture/discovery-ai-cost-control.md "Concurrency lock".
+   */
+  async tryAcquireDiscovery(feature: DiscoveryAIFeature, userId: string, sourceId: string): Promise<boolean> {
+    return this.tryAcquireKey(`${DISCOVERY_KEY_PREFIX}:${feature}:${userId}:${sourceId}`);
+  }
+
+  async releaseDiscovery(feature: DiscoveryAIFeature, userId: string, sourceId: string): Promise<void> {
+    return this.releaseKey(`${DISCOVERY_KEY_PREFIX}:${feature}:${userId}:${sourceId}`);
+  }
+
+  private async tryAcquireKey(key: string): Promise<boolean> {
     const config = this.configService.get<AppConfiguration>('app')!.ai.concurrency;
-    const key = `${KEY_PREFIX}:${userId}`;
 
     try {
       const count = await this.redis.client.incr(key);
@@ -61,15 +91,14 @@ export class GenerationLockService {
     }
   }
 
-  async release(userId: string): Promise<void> {
-    const key = `${KEY_PREFIX}:${userId}`;
+  private async releaseKey(key: string): Promise<void> {
     try {
       const remaining = await this.redis.client.decr(key);
       if (remaining <= 0) {
         await this.redis.client.del(key);
       }
     } catch (error) {
-      // Best-effort — the TTL set in tryAcquire() self-heals a missed release.
+      // Best-effort — the TTL set in tryAcquireKey() self-heals a missed release.
       this.logger.warn(
         `Redis unavailable while releasing a concurrency lock — the TTL will self-heal it: ${
           error instanceof Error ? error.message : String(error)

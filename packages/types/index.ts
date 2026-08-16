@@ -1081,6 +1081,12 @@ export interface PremiumStatusDto {
   /** True until Product has signed off on a validated production price — see
    * docs/architecture/premium-entitlements.md. The frontend must disclose this when true. */
   isMvpTestPrice: boolean;
+  /** Sprint 12 — mirrors the backend `PAYMENTS_ENABLED` kill switch (PaymentCheckoutService
+   * already rejects checkout with `PAYMENTS_DISABLED` when false; this field lets the frontend
+   * show that honestly *before* the user clicks "Upgrade", not just as an error after the fact).
+   * Backend remains authoritative — this is a display hint only, never itself a security
+   * boundary. See docs/progress/payos-production-readiness.md "Payment kill switch". */
+  paymentsEnabled: boolean;
 }
 
 // --- Numerology Discovery Foundation (Sprint 8). The Product Bible's second real Discovery

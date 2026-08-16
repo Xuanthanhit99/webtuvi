@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProviderOrchestratorService } from '../../companion/providers/provider-orchestrator.service';
 import { SafetyService } from '../../companion/safety/safety.service';
-import type { ChatMessage } from '../../companion/providers/provider.types';
+import { CostControlService } from '../../companion/cost/cost-control.service';
+import { ObservabilityService } from '../../companion/observability/observability.service';
+import type { AIProviderName, ChatMessage, TokenUsage } from '../../companion/providers/provider.types';
 import { NATAL_CHART_INTERPRETATION_MAX_TOKENS } from '../engine/natal-chart-constants';
 import { NATAL_CHART_INTERPRETATION_SECTIONS, type NatalChartInterpretationInput, type NatalChartInterpretationSections } from '../natal-chart.types';
 
@@ -90,6 +92,14 @@ function parseSections(raw: string): NatalChartInterpretationSections | null {
  * prompt -> structured interpretation: this service never decides what a placement is, only
  * narrates the real result it's handed, and only ever writes to the `interpretation` JSON column
  * — it has no access to (and cannot mutate) `NatalPlacement`/`NatalHouse`/`NatalAspect` rows.
+ *
+ * Sprint 12 — plays the same role as `TarotInterpretationService`/`NumerologyInterpretationService`:
+ * forwards `feature`/`sourceId` attribution to the orchestrator and records `AIUsage` once a real
+ * provider call completes, regardless of whether the output was ultimately safety-refused or
+ * failed structured-JSON parsing — a real token cost was incurred either way (Natal Chart prompts
+ * are the largest of the three surfaces, so this attribution matters most here). Budget check and
+ * the concurrency lock live one layer up in `NatalChartRecordService` (mirrors Tarot/Numerology's
+ * own split exactly).
  */
 @Injectable()
 export class NatalChartInterpretationService {
@@ -98,9 +108,14 @@ export class NatalChartInterpretationService {
   constructor(
     private readonly orchestrator: ProviderOrchestratorService,
     private readonly safety: SafetyService,
+    private readonly costControl: CostControlService,
+    private readonly observability: ObservabilityService,
   ) {}
 
-  async interpret(input: NatalChartInterpretationInput): Promise<NatalChartInterpretationSections | null> {
+  async interpret(
+    input: NatalChartInterpretationInput,
+    attribution: { userId: string; sourceId: string },
+  ): Promise<NatalChartInterpretationSections | null> {
     // Mirrors NumerologyInterpretationService's own `checkInput()` call exactly — `birthPlaceLabel`
     // is the one piece of this feature's free text that traces back to user-influenced input (the
     // search query that produced it), so it gets the same crisis/prompt-injection screening before
@@ -117,9 +132,21 @@ export class NatalChartInterpretationService {
     ];
 
     let content = '';
+    let usage: TokenUsage | null = null;
+    let model = '';
+    let provider: AIProviderName | null = null;
     try {
-      for await (const chunk of this.orchestrator.stream(messages, { maxTokens: NATAL_CHART_INTERPRETATION_MAX_TOKENS[input.tier], temperature: 0.7 })) {
+      for await (const chunk of this.orchestrator.stream(
+        messages,
+        { maxTokens: NATAL_CHART_INTERPRETATION_MAX_TOKENS[input.tier], temperature: 0.7 },
+        { feature: 'natal_chart', sourceId: attribution.sourceId },
+      )) {
         if (chunk.type === 'token') content += chunk.content;
+        if (chunk.type === 'done') {
+          usage = chunk.usage;
+          model = chunk.model;
+          provider = chunk.provider;
+        }
         if (chunk.type === 'error') {
           this.logger.warn(`Natal Chart interpretation provider error: code=${chunk.code ?? 'unknown'}`);
           return null;
@@ -130,18 +157,40 @@ export class NatalChartInterpretationService {
       return null;
     }
 
-    if (!content.trim()) return null;
-
-    const outputCheck = this.safety.checkOutput(content);
-    if (!outputCheck.allowed) {
-      this.logger.warn(`Natal Chart interpretation output refused: category=${outputCheck.category}`);
-      return null;
+    let sections: NatalChartInterpretationSections | null = null;
+    if (content.trim()) {
+      const outputCheck = this.safety.checkOutput(content);
+      if (!outputCheck.allowed) {
+        this.logger.warn(`Natal Chart interpretation output refused: category=${outputCheck.category}`);
+      } else {
+        sections = parseSections(content);
+        if (!sections) this.logger.warn('Natal Chart interpretation output was not valid structured JSON — discarding.');
+      }
     }
 
-    const sections = parseSections(content);
-    if (!sections) {
-      this.logger.warn('Natal Chart interpretation output was not valid structured JSON — discarding.');
-      return null;
+    // A real provider call completed (we reached a `done` chunk) — record the actual cost
+    // incurred regardless of whether the output was ultimately usable (safety-refused or failed
+    // JSON parsing still cost real tokens).
+    if (usage && provider) {
+      const estimatedCostUsd = await this.costControl.record({
+        userId: attribution.userId,
+        feature: 'natal_chart',
+        sourceId: attribution.sourceId,
+        provider,
+        model,
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+      });
+      this.observability.logUsage({
+        userId: attribution.userId,
+        feature: 'natal_chart',
+        sourceId: attribution.sourceId,
+        provider,
+        model,
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+        estimatedCostUsd,
+      });
     }
 
     return sections;

@@ -288,6 +288,18 @@ enum AIProviderName {
   MOCK
 }
 
+/// Sprint 12 — which product surface produced an AIUsage/ProviderLog row. Mirrors the existing
+/// `sourceType`/`sourceId` precedent used elsewhere in this schema (MemorySourceType,
+/// JournalSourceType, ReflectionSourceType, ReviewEvidenceSourceType, GoalEvidenceSourceType) for a
+/// plain, unenforced cross-module reference — Tarot/Numerology/NatalChart readings live in separate
+/// tables, so `sourceId` below is intentionally not an FK, exactly like those precedents.
+enum AIFeature {
+  COMPANION
+  TAROT
+  NUMEROLOGY
+  NATAL_CHART
+}
+
 model Conversation {
   id        String             @id @default(cuid())
   userId    String
@@ -323,12 +335,19 @@ model ConversationMessage {
 /// One row per completed (or cancelled) assistant generation — the basis for
 /// cost control's daily/monthly/per-user aggregates. `estimatedCostUsd` is an
 /// estimate from the provider pricing table, not a billing record.
+/// `feature` defaults to COMPANION — safe and factually accurate for every pre-Sprint-12 row,
+/// since Companion was the sole writer of this table before Discovery AI parity (Sprint 12
+/// audit §24-26/§28). `sourceId` is the Discovery reading's id (Tarot/Numerology/NatalChart) when
+/// `feature` isn't COMPANION — Companion rows keep using `conversationId` instead, so `sourceId`
+/// stays null for them. See docs/architecture/discovery-ai-cost-control.md.
 model AIUsage {
   id               String         @id @default(cuid())
   userId           String
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversationId   String?
   conversation     Conversation?  @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  feature          AIFeature      @default(COMPANION)
+  sourceId         String?
   provider         AIProviderName
   model            String
   promptTokens     Int
@@ -338,13 +357,17 @@ model AIUsage {
   createdAt        DateTime       @default(now())
 
   @@index([userId, createdAt])
+  @@index([feature, createdAt])
   @@map("ai_usages")
 }
 
 /// AI observability trail — deliberately excludes conversation content, PII,
 /// and any request/response body. See docs/security/ai-safety.md "Observability".
+/// `feature`/`sourceId` follow the exact same Sprint 12 attribution convention as AIUsage above.
 model ProviderLog {
   id               String         @id @default(cuid())
+  feature          AIFeature      @default(COMPANION)
+  sourceId         String?
   provider         AIProviderName
   model            String
   latencyMs        Int
@@ -355,6 +378,7 @@ model ProviderLog {
   createdAt        DateTime       @default(now())
 
   @@index([provider, createdAt])
+  @@index([feature, createdAt])
   @@map("provider_logs")
 }
 

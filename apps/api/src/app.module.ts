@@ -78,6 +78,24 @@ import { NotificationsModule } from './notifications/notifications.module';
                 return user?.id ?? String(req.ip ?? 'unknown-ip');
               },
             },
+            // Discovery AI generation (Sprint 12): Tarot/Numerology/Natal Chart's `:id/interpret`
+            // retry endpoints — the confirmed abuse vector (audit §30). Isolated the same way
+            // `companion`/`companion-ip` and `payment` are; routes opt in via
+            // DiscoveryThrottlerGuard and skip the unrelated buckets explicitly.
+            {
+              name: 'discovery',
+              ttl: config.discovery.rateLimit.windowMs,
+              limit: config.discovery.rateLimit.max,
+              getTracker: (req: Record<string, unknown>) => {
+                const user = req.user as { id?: string } | undefined;
+                return user?.id ?? String(req.ip ?? 'unknown-ip');
+              },
+            },
+            {
+              name: 'discovery-ip',
+              ttl: config.discovery.rateLimit.windowMs,
+              limit: config.discovery.rateLimit.ipMax,
+            },
           ],
           storage: new RedisThrottlerStorageService(redisService, configService),
         };

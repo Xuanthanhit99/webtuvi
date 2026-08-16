@@ -59,8 +59,14 @@ test('Daily Draw, Three Card Spread, history, delete, and the Companion bridge',
   await expect(drawSection.getByRole('status')).not.toBeVisible({ timeout: 10000 });
 
   // A real, already-drawn card (the Daily Draw spread's "Today" position) and a generated
-  // interpretation appear — never a placeholder.
-  await expect(page.getByText('Today')).toBeVisible();
+  // interpretation appear — never a placeholder. `exact: true` targets the position-label
+  // caption's own text node specifically (tarot-reading-view.tsx's `rc.positionLabel` span) —
+  // Release Closure finding: a non-exact substring match here can collide with a real (non-mock)
+  // AI provider's generated interpretation prose if it happens to contain the word "today"
+  // (e.g. "...appears reversed today, pointing..."), which is genuinely possible reflective
+  // narration text, not a fabricated edge case. `exact: true` cannot match that longer sentence,
+  // since its own text content is never literally just "Today".
+  await expect(page.getByText('Today', { exact: true })).toBeVisible();
   await expect(page.getByText('Interpretation isn’t ready yet.')).not.toBeVisible({ timeout: 15000 });
 
   // A second Daily Draw the same day is blocked — reset to the selector and try again.
@@ -74,9 +80,11 @@ test('Daily Draw, Three Card Spread, history, delete, and the Companion bridge',
   await page.getByLabel(/your question/i).fill('What should I know about this new chapter?');
   await page.getByRole('button', { name: 'Draw', exact: true }).click();
   await expect(drawSection.getByRole('status')).not.toBeVisible({ timeout: 10000 });
-  await expect(page.getByText('Past')).toBeVisible();
-  await expect(page.getByText('Present')).toBeVisible();
-  await expect(page.getByText('Future')).toBeVisible();
+  // `exact: true` for the same reason as the Daily Draw's "Today" assertion above — these are
+  // common English words a real AI provider's reflective narration can plausibly contain verbatim.
+  await expect(page.getByText('Past', { exact: true })).toBeVisible();
+  await expect(page.getByText('Present', { exact: true })).toBeVisible();
+  await expect(page.getByText('Future', { exact: true })).toBeVisible();
 
   // Delete this reading, reversibly.
   await page.getByRole('button', { name: 'Delete' }).click();

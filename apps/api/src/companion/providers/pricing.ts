@@ -18,12 +18,18 @@ const PRICING: Record<AIProviderName, Record<string, ModelPricing>> = {
     'gpt-4o-mini': { promptPer1k: 0.00015, completionPer1k: 0.0006 },
   },
   anthropic: {
-    'claude-3-5-sonnet-20241022': { promptPer1k: 0.003, completionPer1k: 0.015 },
-    'claude-3-haiku-20240307': { promptPer1k: 0.00025, completionPer1k: 0.00125 },
+    // Sprint 12 pricing sanity check (2026-08-16) — claude-3-5-sonnet-20241022/claude-3-haiku-
+    // 20240307 no longer appear anywhere on Anthropic's official pricing page (fetched live via
+    // platform.claude.com/docs/en/about-claude/pricing), not even in its "retired" tier — replaced
+    // with the current Claude 5 family. Sonnet 5: $2/$10 per MTok; Haiku 4.5: $1/$5 per MTok.
+    'claude-sonnet-5': { promptPer1k: 0.002, completionPer1k: 0.01 },
+    'claude-haiku-4-5-20251001': { promptPer1k: 0.001, completionPer1k: 0.005 },
   },
   gemini: {
     // gemini-1.5-pro/-flash were shut down 2025-09-29 — see gemini.provider.ts's DEFAULT_MODEL
-    // comment. Pricing below is gemini-3.5-flash-lite (current default) per official pricing docs.
+    // comment. Pricing below is gemini-3.5-flash-lite (current default) — re-confirmed live via
+    // web search 2026-08-16 (released 2026-07-21, $0.30/$2.50 per MTok, matches this entry exactly,
+    // no change needed).
     'gemini-3.5-flash-lite': { promptPer1k: 0.0003, completionPer1k: 0.0025 },
   },
   mock: {

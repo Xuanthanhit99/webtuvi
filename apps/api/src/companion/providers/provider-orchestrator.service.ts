@@ -4,8 +4,18 @@ import type { AppConfiguration } from '../../config/configuration';
 import { ObservabilityService } from '../observability/observability.service';
 import { ProviderRegistryService } from './provider-registry.service';
 import { AIProviderError, type AIProviderName, type ChatMessage, type ChatOptions, type StreamChunk } from './provider.types';
+import type { AIFeature } from './ai-feature.types';
 
 export type OrchestratedStreamChunk = StreamChunk & { provider: AIProviderName };
+
+/** Sprint 12 — observability-only metadata, deliberately kept separate from `ChatOptions` (which
+ * flows straight through to the raw provider implementations and shouldn't carry feature-
+ * attribution concerns). Omitting it defaults to `'companion'` — preserves pre-Sprint-12 callers
+ * (like `StreamService`) exactly as-is without requiring every call site to be touched. */
+export interface StreamAttribution {
+  feature: AIFeature;
+  sourceId?: string;
+}
 
 function backoffDelayMs(attempt: number): number {
   const exponential = Math.min(500 * 2 ** attempt, 8000);
@@ -56,9 +66,15 @@ export class ProviderOrchestratorService {
     return chain.filter((name) => this.registry.has(name));
   }
 
-  async *stream(messages: ChatMessage[], options?: ChatOptions): AsyncGenerator<OrchestratedStreamChunk> {
+  async *stream(
+    messages: ChatMessage[],
+    options?: ChatOptions,
+    attribution?: StreamAttribution,
+  ): AsyncGenerator<OrchestratedStreamChunk> {
     const chain = this.chain();
     const maxRetries = this.configService.get<AppConfiguration>('app')!.ai.maxRetries;
+    const feature = attribution?.feature ?? 'companion';
+    const sourceId = attribution?.sourceId;
 
     for (const providerName of chain) {
       const provider = this.registry.get(providerName);
@@ -78,6 +94,8 @@ export class ProviderOrchestratorService {
             yield { ...chunk, provider: providerName };
             if (chunk.type === 'done') {
               await this.observability.logProviderCall({
+                feature,
+                sourceId,
                 provider: providerName,
                 model: chunk.model,
                 latencyMs: Date.now() - startedAt,
@@ -98,6 +116,8 @@ export class ProviderOrchestratorService {
           }
           failed = true;
           await this.observability.logProviderCall({
+            feature,
+            sourceId,
             provider: providerName,
             model: options?.model ?? 'unknown',
             latencyMs: Date.now() - startedAt,

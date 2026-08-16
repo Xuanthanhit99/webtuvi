@@ -1,3 +1,4 @@
+import './instrument';
 import 'reflect-metadata';
 import { NestFactory, Reflector } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';

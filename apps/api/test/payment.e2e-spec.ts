@@ -42,6 +42,7 @@ interface PremiumStatusApi {
   priceVnd: number;
   currency: string;
   isMvpTestPrice: boolean;
+  paymentsEnabled: boolean;
 }
 
 function buildWebhookPayload(
@@ -151,6 +152,7 @@ describe('Payment & Premium (e2e)', () => {
         priceVnd: 79000,
         currency: 'VND',
         isMvpTestPrice: true,
+        paymentsEnabled: true,
       });
     });
   });

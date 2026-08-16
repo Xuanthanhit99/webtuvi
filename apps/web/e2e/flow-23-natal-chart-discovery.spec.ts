@@ -102,9 +102,10 @@ test('Discover -> calculate a real chart, verify Big Three/wheel/planet/aspect, 
   // Mars) — asserting at least one match exists, not a unique one.
   await expect(planetsSection.getByText(/in Gemini/).first()).toBeVisible();
 
-  // Inspect a real aspect.
-  await page.getByRole('button', { name: 'Key Aspects' }).click();
-  const aspectsSection = page.locator('#natal-chart-section-key-aspects');
+  // Inspect a real aspect. "Major Aspects" is the raw deterministic list (distinct accessible name
+  // from the AI-narrated "Key Aspects" interpretation section below — see natal-chart-view.tsx).
+  await page.getByRole('button', { name: 'Major Aspects' }).click();
+  const aspectsSection = page.locator('#natal-chart-section-major-aspects');
   await expect(aspectsSection.getByRole('listitem').first()).toBeVisible();
 
   // AI interpretation (mock provider) — either a real generated result, or a truthful "isn't

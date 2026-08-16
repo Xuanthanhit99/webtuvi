@@ -96,15 +96,27 @@ export function PremiumUpgradePanel() {
         {status.isMvpTestPrice && (
           <p className="text-caption text-text-disabled">MVP test price — not yet finalized.</p>
         )}
-        <Button variant="primary" onClick={() => checkout.mutate()} loading={checkout.isPending}>
-          Upgrade to Premium
-        </Button>
-        {checkout.isError && (
-          <p role="alert" className="text-body-sm text-caution">
-            {checkoutErrorMessage(checkout.error)}
+        {status.paymentsEnabled ? (
+          <>
+            <Button variant="primary" onClick={() => checkout.mutate()} loading={checkout.isPending}>
+              Upgrade to Premium
+            </Button>
+            {checkout.isError && (
+              <p role="alert" className="text-body-sm text-caution">
+                {checkoutErrorMessage(checkout.error)}
+              </p>
+            )}
+            <p className="text-caption text-text-disabled">You&rsquo;ll pay securely on PayOS&rsquo;s hosted checkout page.</p>
+          </>
+        ) : (
+          // Sprint 12 — mirrors the backend PAYMENTS_ENABLED kill switch honestly upfront, rather
+          // than letting the user click through to a checkout attempt that would only fail after
+          // the fact with PAYMENTS_DISABLED (see docs/progress/payos-production-readiness.md
+          // "Payment kill switch"). Backend remains the actual enforcement point either way.
+          <p role="status" className="text-body-sm text-text-secondary">
+            Upgrades are temporarily unavailable. Please check back soon.
           </p>
         )}
-        <p className="text-caption text-text-disabled">You&rsquo;ll pay securely on PayOS&rsquo;s hosted checkout page.</p>
       </div>
       <PremiumMatrix />
     </div>

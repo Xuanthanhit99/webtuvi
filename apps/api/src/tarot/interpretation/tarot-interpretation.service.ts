@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProviderOrchestratorService } from '../../companion/providers/provider-orchestrator.service';
 import { SafetyService } from '../../companion/safety/safety.service';
-import type { ChatMessage } from '../../companion/providers/provider.types';
+import { CostControlService } from '../../companion/cost/cost-control.service';
+import { ObservabilityService } from '../../companion/observability/observability.service';
+import type { AIProviderName, ChatMessage, TokenUsage } from '../../companion/providers/provider.types';
 import type { InterpretationInput } from '../tarot.types';
 
 const HARD_RULES = `Hard rules — never break these:
@@ -58,6 +60,14 @@ function buildUserMessage(input: InterpretationInput): string {
  * interpretation: this service never decides which cards were drawn, only narrates the real
  * result it's handed. Non-streaming (a single buffered call) — Tarot has no live chat UI to
  * stream into, unlike Companion's own conversation flow.
+ *
+ * Sprint 12 — plays the same role Companion's `StreamService` plays for its own generation:
+ * forwards `feature`/`sourceId` attribution to the orchestrator (so `ProviderLog` rows are
+ * attributable) and records `AIUsage` via `CostControlService.record()` once a real provider call
+ * completes, regardless of whether the output was ultimately safety-refused — a real token cost
+ * was incurred either way. Budget checking and the concurrency lock live one layer up, in
+ * `TarotRecordService`, which owns the retry-vs-draw call sites (mirrors `ConversationService`
+ * owning the budget check while `StreamService` owns the lock/recording for Companion).
  */
 @Injectable()
 export class TarotInterpretationService {
@@ -66,9 +76,11 @@ export class TarotInterpretationService {
   constructor(
     private readonly orchestrator: ProviderOrchestratorService,
     private readonly safety: SafetyService,
+    private readonly costControl: CostControlService,
+    private readonly observability: ObservabilityService,
   ) {}
 
-  async interpret(input: InterpretationInput): Promise<string | null> {
+  async interpret(input: InterpretationInput, attribution: { userId: string; sourceId: string }): Promise<string | null> {
     if (input.question) {
       const inputCheck = this.safety.checkInput(input.question);
       if (!inputCheck.allowed) {
@@ -83,9 +95,21 @@ export class TarotInterpretationService {
     ];
 
     let content = '';
+    let usage: TokenUsage | null = null;
+    let model = '';
+    let provider: AIProviderName | null = null;
     try {
-      for await (const chunk of this.orchestrator.stream(messages, { maxTokens: MAX_TOKENS_BY_TIER[input.tier], temperature: 0.7 })) {
+      for await (const chunk of this.orchestrator.stream(
+        messages,
+        { maxTokens: MAX_TOKENS_BY_TIER[input.tier], temperature: 0.7 },
+        { feature: 'tarot', sourceId: attribution.sourceId },
+      )) {
         if (chunk.type === 'token') content += chunk.content;
+        if (chunk.type === 'done') {
+          usage = chunk.usage;
+          model = chunk.model;
+          provider = chunk.provider;
+        }
         if (chunk.type === 'error') {
           this.logger.warn(`Tarot interpretation provider error: code=${chunk.code ?? 'unknown'}`);
           return null;
@@ -99,11 +123,36 @@ export class TarotInterpretationService {
     if (!content.trim()) return null;
 
     const outputCheck = this.safety.checkOutput(content);
+    const result = outputCheck.allowed ? content.trim() : (outputCheck.refusalMessage ?? null);
     if (!outputCheck.allowed) {
       this.logger.warn(`Tarot interpretation output refused: category=${outputCheck.category}`);
-      return outputCheck.refusalMessage ?? null;
     }
 
-    return content.trim();
+    // A real provider call completed (we reached a `done` chunk) — record the actual cost
+    // incurred regardless of whether the output was ultimately safety-refused. Never fabricated:
+    // only recorded when `usage`/`provider` came from a genuine `done` chunk above.
+    if (usage && provider) {
+      const estimatedCostUsd = await this.costControl.record({
+        userId: attribution.userId,
+        feature: 'tarot',
+        sourceId: attribution.sourceId,
+        provider,
+        model,
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+      });
+      this.observability.logUsage({
+        userId: attribution.userId,
+        feature: 'tarot',
+        sourceId: attribution.sourceId,
+        provider,
+        model,
+        promptTokens: usage.promptTokens,
+        completionTokens: usage.completionTokens,
+        estimatedCostUsd,
+      });
+    }
+
+    return result;
   }
 }

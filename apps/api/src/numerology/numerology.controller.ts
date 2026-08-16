@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { DiscoveryThrottlerGuard } from '../common/guards/discovery-throttler.guard';
 import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { listNumerologyMeanings, type NumerologyMeaning } from './engine/numerology-meanings';
 import { NumerologyRecordService, type ListReadingsResult } from './record/numerology-record.service';
@@ -12,10 +14,12 @@ import type { NumerologyReadingDto, NumerologyReadingHistoryDto } from './numero
  * Phase 10 — API. Every route sits behind `JwtAuthGuard` + the project-wide `CsrfGuard`; every
  * reading query is `userId`-scoped. `meanings` is read-only reference data (not user-owned) but
  * still auth-gated for consistency with the rest of this app (mirrors `TarotController`'s own
- * `deck` routes). No throttler guard is applied — Numerology has no Companion/auth-adjacent
- * traffic pattern to isolate from, and its own abuse ceiling is enforced at the DB-count level in
- * `NumerologyRecordService` (see that service's `assertWithinDailyLimit` for why this sidesteps
- * the throttler-bucket-isolation bug fixed in `f8fcba1`).
+ * `deck` routes). Calculation itself keeps its DB-count-level daily ceiling
+ * (`NumerologyRecordService.assertWithinDailyLimit`) — read/lifecycle routes still carry no
+ * throttler.
+ *
+ * Sprint 12 — `retryInterpretation` (the confirmed AI-cost abuse vector, audit §30) now carries
+ * `DiscoveryThrottlerGuard`, the same shared Discovery rate-limit bucket Tarot/Natal Chart use.
  */
 @ApiTags('numerology')
 @Controller('numerology')
@@ -54,6 +58,8 @@ export class NumerologyController {
   }
 
   @Post('readings/:id/interpret')
+  @UseGuards(DiscoveryThrottlerGuard)
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true })
   @ApiOperation({ summary: 'Retry AI interpretation for a reading whose interpretation is still null' })
   retryInterpretation(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string): Promise<NumerologyReadingDto> {
     return this.records.retryInterpretation(user.id, id);

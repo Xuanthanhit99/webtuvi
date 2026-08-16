@@ -32,7 +32,7 @@ import type { NotificationDto } from './notifications.mappers';
 @ApiTags('notifications')
 @Controller('notifications')
 @UseGuards(JwtAuthGuard, ThrottlerGuard)
-@SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true })
+@SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true, discovery: true, 'discovery-ip': true })
 @Throttle({ default: { limit: 120, ttl: 60_000 } })
 export class NotificationsController {
   constructor(

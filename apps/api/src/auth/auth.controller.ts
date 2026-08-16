@@ -46,7 +46,7 @@ const AUTH_THROTTLE = { default: { limit: AUTH_RATE_LIMIT_MAX, ttl: AUTH_RATE_LI
 // generation endpoints — unrelated to registration/login/password flows, and easily tripped by
 // legitimate traffic (or a test suite) making more than ~20 auth requests from one IP within a
 // minute, long before the real 200-per-15-minutes auth ceiling is anywhere close to being reached.
-const SKIP_UNRELATED_THROTTLERS = { companion: true, 'companion-ip': true };
+const SKIP_UNRELATED_THROTTLERS = { companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true };
 
 @ApiTags('auth')
 @Controller('auth')

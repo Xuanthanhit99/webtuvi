@@ -49,7 +49,7 @@ describe('NotificationsSchedulerService.evaluateTarotDailyReminder', () => {
     const result = await scheduler.evaluateTarotDailyReminder(NOW);
 
     expect(notifications.create).not.toHaveBeenCalled();
-    expect(result).toEqual({ evaluated: 1, created: 0, emailed: 0 });
+    expect(result).toEqual({ evaluated: 1, created: 0, emailed: 0, failed: 0 });
   });
 
   it('creates an in-app notification with the correct deterministic dedupeKey for an eligible, opted-in user', async () => {
@@ -108,12 +108,69 @@ describe('NotificationsSchedulerService.evaluateTarotDailyReminder', () => {
 
     const result = await scheduler.evaluateTarotDailyReminder(NOW);
 
-    expect(result).toEqual({ evaluated: 2, created: 2, emailed: 0 });
+    expect(result).toEqual({ evaluated: 2, created: 2, emailed: 0, failed: 0 });
   });
 
   it('yields all-NO_ACTION (zero created) when there are no eligible candidates at all — the expected default', async () => {
     const { scheduler } = makeHarness({ candidates: [] });
     const result = await scheduler.evaluateTarotDailyReminder(NOW);
-    expect(result).toEqual({ evaluated: 0, created: 0, emailed: 0 });
+    expect(result).toEqual({ evaluated: 0, created: 0, emailed: 0, failed: 0 });
+  });
+
+  it('a candidate that throws mid-evaluation is isolated — logged, counted as failed, and does not abort the rest of the batch', async () => {
+    const { scheduler, preferences, notifications } = makeHarness({
+      candidates: [
+        { userId: 'u1', email: 'u1@example.com' },
+        { userId: 'u2', email: 'u2@example.com' },
+      ],
+    });
+    preferences.resolve.mockImplementationOnce(async () => {
+      throw new Error('transient db blip');
+    });
+    const loggerErrorSpy = jest.spyOn((scheduler as unknown as { logger: { error: jest.Mock } }).logger, 'error');
+
+    const result = await scheduler.evaluateTarotDailyReminder(NOW);
+
+    expect(result.evaluated).toBe(2);
+    expect(result.failed).toBe(1);
+    expect(result.created).toBe(1); // u2 still processed successfully despite u1's failure
+    expect(notifications.create).toHaveBeenCalledTimes(1);
+    expect(notifications.create).toHaveBeenCalledWith(expect.objectContaining({ userId: 'u2' }));
+    expect(loggerErrorSpy).toHaveBeenCalledWith(expect.stringContaining('candidate_failed'));
+    // Never logs the candidate's email or any notification content.
+    const loggedMessage = loggerErrorSpy.mock.calls[0]?.[0] as string;
+    expect(loggedMessage).not.toContain('@example.com');
+    expect(loggedMessage).not.toContain("Today's card is ready");
+    loggerErrorSpy.mockRestore();
+  });
+
+  it('runTarotDailyReminder (the @Cron entry point) never throws, even when evaluation fails entirely — logs and returns cleanly', async () => {
+    const { scheduler, tarotEligibility } = makeHarness({ candidates: [] });
+    tarotEligibility.findEligibleBatches.mockImplementation(() => {
+      throw new Error('eligibility query failed');
+    });
+    const loggerErrorSpy = jest.spyOn((scheduler as unknown as { logger: { error: jest.Mock } }).logger, 'error');
+
+    await expect(scheduler.runTarotDailyReminder()).resolves.toBeUndefined();
+
+    expect(loggerErrorSpy).toHaveBeenCalledWith(expect.stringContaining('run_failed'), expect.anything());
+    loggerErrorSpy.mockRestore();
+  });
+
+  it('a run failure does not create a duplicate notification on a later successful run for the same day', async () => {
+    const { scheduler, preferences, notifications } = makeHarness({
+      candidates: [{ userId: 'u1', email: 'u1@example.com' }],
+    });
+    preferences.resolve.mockImplementationOnce(async () => {
+      throw new Error('transient failure');
+    });
+    const first = await scheduler.evaluateTarotDailyReminder(NOW);
+    expect(first.failed).toBe(1);
+    expect(first.created).toBe(0);
+
+    const second = await scheduler.evaluateTarotDailyReminder(NOW);
+
+    expect(second.created).toBe(1);
+    expect(notifications.create).toHaveBeenCalledTimes(1); // only the successful second attempt ever created a row
   });
 });

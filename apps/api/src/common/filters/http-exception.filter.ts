@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import * as Sentry from '@sentry/nestjs';
 
 interface ErrorBody {
   data: null;
@@ -88,6 +89,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
         `[${requestId}] ${request.method} ${request.originalUrl} -> ${status}`,
         exception instanceof Error ? exception.stack : undefined,
       );
+      // Genuine server errors only — never the expected 4xx control flow (validation,
+      // not-found, rate-limited, budget-exceeded) that already has its own normalized error
+      // shape above. No-ops safely when Sentry is disabled (no DSN). Scrubbed via
+      // `beforeSend` (sentry-scrub.util.ts) before this ever leaves the process.
+      Sentry.captureException(exception, { tags: { requestId } });
     }
 
     const body: ErrorBody = {

@@ -113,7 +113,7 @@ export class StreamService {
       let finishedCleanly = false;
       const startedAt = Date.now();
 
-      for await (const chunk of this.orchestrator.stream(promptMessages, { signal })) {
+      for await (const chunk of this.orchestrator.stream(promptMessages, { signal }, { feature: 'companion' })) {
         if (signal.aborted) break;
 
         if (chunk.type === 'token') {
@@ -164,6 +164,7 @@ export class StreamService {
           // separately via ObservabilityService/ProviderLog, not AIUsage).
           const estimatedCostUsd = await this.costControl.record({
             userId,
+            feature: 'companion',
             conversationId,
             provider: chunk.provider,
             model: chunk.model,
@@ -172,6 +173,7 @@ export class StreamService {
           });
           this.observability.logUsage({
             userId,
+            feature: 'companion',
             conversationId,
             provider: chunk.provider,
             model: chunk.model,

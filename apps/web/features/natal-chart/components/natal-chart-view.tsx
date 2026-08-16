@@ -126,7 +126,7 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
         <HouseList chart={chart} />
       </Section>
 
-      <Section title="Key Aspects">
+      <Section title="Major Aspects">
         <AspectList aspects={chart.aspects} />
       </Section>
 

@@ -86,6 +86,13 @@ export const appConfig = registerAs('app', () => {
         monthlyTokenLimit: env.AI_MONTHLY_TOKEN_LIMIT,
       },
     },
+    discovery: {
+      rateLimit: {
+        max: env.DISCOVERY_RATE_LIMIT_MAX,
+        windowMs: env.DISCOVERY_RATE_LIMIT_WINDOW_MS,
+        ipMax: env.DISCOVERY_RATE_LIMIT_IP_MAX,
+      },
+    },
     memory: {
       contextBudget: {
         totalWindowTokens: env.MEMORY_CONTEXT_WINDOW_TOKENS,
@@ -117,6 +124,9 @@ export const appConfig = registerAs('app', () => {
       userAgent: env.GEOCODING_USER_AGENT,
       timeoutMs: env.GEOCODING_TIMEOUT_MS,
       candidateTtlSeconds: env.GEOCODING_CANDIDATE_TTL_SECONDS,
+    },
+    sentry: {
+      dsn: env.SENTRY_DSN,
     },
   };
 });

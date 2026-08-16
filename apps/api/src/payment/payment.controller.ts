@@ -16,7 +16,7 @@ import { EntitlementService } from './entitlement/entitlement.service';
 // by default — see PaymentThrottlerGuard's docstring, mirroring the exact isolation f8fcba1 added
 // for auth vs companion. The `payment` bucket's own limit/ttl come from its registration in
 // app.module.ts (config.payment.rateLimit.*) — no per-route override needed here.
-const SKIP_UNRELATED_THROTTLERS = { companion: true, 'companion-ip': true, auth: true };
+const SKIP_UNRELATED_THROTTLERS = { companion: true, 'companion-ip': true, auth: true, discovery: true, 'discovery-ip': true };
 
 /**
  * Checkout/status routes sit behind `JwtAuthGuard` + the project-wide `CsrfGuard` (neither is
@@ -65,6 +65,9 @@ export class PaymentController {
       // docs/architecture/premium-entitlements.md) — always disclosed as unvalidated until one does,
       // never inferred from NODE_ENV (that would wrongly imply production pricing is validated).
       isMvpTestPrice: true,
+      // Sprint 12 — mirrors the same kill switch PaymentCheckoutService.createCheckout() already
+      // enforces server-side; this only lets the frontend show it honestly upfront.
+      paymentsEnabled: config.payment.enabled,
     };
   }
 

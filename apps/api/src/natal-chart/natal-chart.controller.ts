@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { DiscoveryThrottlerGuard } from '../common/guards/discovery-throttler.guard';
 import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { NatalChartRecordService, type ListNatalChartsResult } from './record/natal-chart-record.service';
 import { CreateNatalChartDto } from './dto/create-natal-chart.dto';
@@ -45,6 +47,8 @@ export class NatalChartController {
   }
 
   @Post(':id/interpret')
+  @UseGuards(DiscoveryThrottlerGuard)
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true })
   @ApiOperation({ summary: 'Retry AI interpretation for a chart whose interpretation is still null' })
   retryInterpretation(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string): Promise<NatalChartDto> {
     return this.records.retryInterpretation(user.id, id);

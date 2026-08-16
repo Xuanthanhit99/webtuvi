@@ -1,6 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { DiscoveryThrottlerGuard } from '../common/guards/discovery-throttler.guard';
 import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { TarotDeckService } from './deck/tarot-deck.service';
 import { TarotRecordService, type ListReadingsResult } from './record/tarot-record.service';
@@ -61,6 +63,8 @@ export class TarotController {
   }
 
   @Post('readings/:id/interpret')
+  @UseGuards(DiscoveryThrottlerGuard)
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true })
   @ApiOperation({ summary: 'Retry AI interpretation for a reading whose interpretation is still null' })
   retryInterpretation(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string): Promise<TarotReadingDto> {
     return this.records.retryInterpretation(user.id, id);

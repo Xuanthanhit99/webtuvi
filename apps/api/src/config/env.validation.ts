@@ -1,5 +1,25 @@
 import { z } from 'zod';
 
+/**
+ * Release Closure finding (fixed here, not merely noted): `z.coerce.boolean()` is a real footgun
+ * for string-valued env vars — it just runs JavaScript's `Boolean(x)` coercion, which is `true`
+ * for ANY non-empty string, including the literal string `"false"`. Every boolean env var in this
+ * file previously used `z.coerce.boolean()`, meaning `SOME_FLAG=false` in any `.env` file has
+ * always silently parsed to `true` — discovered live during Sprint 12 release closure while
+ * verifying the `PAYMENTS_ENABLED` kill switch: setting it to `false` had zero effect. Confirmed
+ * also silently active for `AUTH_COOKIE_SECURE=false` (explicitly set in both `.env` and
+ * `.env.test`) — its real-world impact was masked only by Chrome's "localhost is a trustworthy
+ * origin" exception, which lets a `Secure`-flagged cookie work over plain HTTP on `localhost`
+ * regardless. This helper actually parses the string instead of coercing it.
+ */
+function zBooleanString(defaultValue: boolean) {
+  return z.preprocess((val) => {
+    if (val === undefined) return defaultValue;
+    if (typeof val === 'string') return val.toLowerCase() === 'true';
+    return val;
+  }, z.boolean());
+}
+
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   API_PORT: z.coerce.number().int().positive().default(4000),
@@ -23,7 +43,7 @@ const envSchema = z.object({
   CSRF_SECRET: z.string().min(32, 'CSRF_SECRET must be at least 32 characters'),
 
   AUTH_COOKIE_DOMAIN: z.string().min(1),
-  AUTH_COOKIE_SECURE: z.coerce.boolean().default(false),
+  AUTH_COOKIE_SECURE: zBooleanString(false),
   AUTH_COOKIE_SAME_SITE: z.enum(['lax', 'strict', 'none']).default('lax'),
 
   PASSWORD_RESET_EXPIRES_IN: z.string().default('1h'),
@@ -65,7 +85,7 @@ const envSchema = z.object({
   // is registered whenever NODE_ENV !== 'production' regardless of this flag)
   // — it exists as a second, independent gate alongside the NODE_ENV check
   // (defense in depth), and production boot fails fast if it's ever true.
-  AI_ENABLE_MOCK_PROVIDER: z.coerce.boolean().default(false),
+  AI_ENABLE_MOCK_PROVIDER: zBooleanString(false),
 
   // --- Companion Core (Sprint 2B) — rate limiting, concurrency, usage budget ---
   // Per-authenticated-user request rate limit on Companion generation endpoints.
@@ -85,6 +105,17 @@ const envSchema = z.object({
   AI_DAILY_REQUEST_LIMIT: z.coerce.number().int().positive().default(50),
   AI_DAILY_TOKEN_LIMIT: z.coerce.number().int().positive().default(200_000),
   AI_MONTHLY_TOKEN_LIMIT: z.coerce.number().int().positive().default(2_000_000),
+
+  // --- Discovery AI cost-control parity (Sprint 12) — Tarot/Numerology/Natal Chart's own
+  // rate-limit bucket, isolated from `companion`/`companion-ip`/`auth`/`payment` (same isolation
+  // convention `f8fcba1` established). Tighter default than Companion's 20/60s: a Discovery
+  // interpret call is a single heavier generation (not a chat message), and this is the confirmed
+  // abuse vector (Sprint 12 audit §30 — the unlimited `:id/interpret` retry endpoint). Budget
+  // ceilings (daily/monthly token limits) remain the AI_* ones above, checked GLOBALLY per user
+  // across every feature — see CostControlService.checkBudget's docstring.
+  DISCOVERY_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
+  DISCOVERY_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
+  DISCOVERY_RATE_LIMIT_IP_MAX: z.coerce.number().int().positive().default(50),
 
   // --- Memory Intelligence (Sprint 3B) — deterministic context token budgeting. Token counts
   // are all estimated via a fixed chars/4 heuristic (ContextBudgetService.estimateTokens), not
@@ -107,13 +138,13 @@ const envSchema = z.object({
   // real-signature) response, so checkout order-creation is testable without a network dependency
   // on PayOS. Webhook signature VERIFICATION is always real — this flag never touches it. See
   // PayOSProvider and docs/security/ai-safety.md "Mock provider" for the precedent this mirrors.
-  PAYOS_MOCK_CHECKOUT: z.coerce.boolean().default(false),
+  PAYOS_MOCK_CHECKOUT: zBooleanString(false),
   // Kill switch (PayOS Production Readiness Gate): flips checkout off without a redeploy while
   // existing entitlements and webhook processing stay untouched — see PaymentCheckoutService and
   // docs/progress/payos-production-readiness.md "Payment kill switch". Already-created orders may
   // still legitimately receive a real webhook after checkout is disabled, so the webhook route never
   // checks this flag.
-  PAYMENTS_ENABLED: z.coerce.boolean().default(true),
+  PAYMENTS_ENABLED: zBooleanString(true),
   PREMIUM_PRICE_VND: z.coerce.number().int().positive().default(79_000),
   PREMIUM_DURATION_DAYS: z.coerce.number().int().positive().default(30),
   PAYMENT_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
@@ -131,6 +162,12 @@ const envSchema = z.object({
   // creation must re-search — bounds both Redis memory and how stale a "confirmed" location can
   // be.
   GEOCODING_CANDIDATE_TTL_SECONDS: z.coerce.number().int().positive().default(900),
+
+  // --- Production error tracking (Sprint 12) — optional. Absent DSN = Sentry fully disabled
+  // (SentryModule.forRoot's `enabled: !!dsn`), never a boot failure either way. A DSN is a
+  // write-only ingestion identifier, not a secret credential (see Sentry's own docs) — safe to
+  // read from a plain env var, no different in sensitivity from e.g. CORS_ORIGINS. ---
+  SENTRY_DSN: z.string().url().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

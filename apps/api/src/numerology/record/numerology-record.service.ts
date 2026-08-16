@@ -7,6 +7,8 @@ import { BirthDateValidationError } from '../engine/numerology-date.util';
 import { calculateNumerology, NUMEROLOGY_ENGINE_VERSION, NUMEROLOGY_VALUE_TYPES, type NumerologyCalculationResult } from '../engine/numerology-engine';
 import { NUMEROLOGY_NAME_NORMALIZATION_VERSION, NameValidationError } from '../engine/numerology-name.util';
 import { NumerologyInterpretationService } from '../interpretation/numerology-interpretation.service';
+import { CostControlService } from '../../companion/cost/cost-control.service';
+import { GenerationLockService } from '../../companion/concurrency/generation-lock.service';
 import {
   toNumerologyReadingDto,
   toNumerologyReadingHistoryDto,
@@ -65,6 +67,8 @@ export class NumerologyRecordService {
     private readonly interpretation: NumerologyInterpretationService,
     private readonly memoryRetrieval: MemoryRetrievalService,
     private readonly entitlementService: EntitlementService,
+    private readonly costControl: CostControlService,
+    private readonly generationLock: GenerationLockService,
   ) {}
 
   async calculate(userId: string, dto: CalculateNumerologyDto): Promise<NumerologyReadingDto> {
@@ -126,9 +130,24 @@ export class NumerologyRecordService {
     return this.getOne(userId, reading.id);
   }
 
-  /** Best-effort — never throws; a provider failure leaves `interpretation: null`, retryable via
-   * `POST /numerology/readings/:id/interpret` (mirrors `TarotRecordService.generateInterpretation`). */
+  /** Best-effort — never throws; a provider failure, an exhausted AI budget, or a concurrent
+   * generation already in flight for this exact reading all leave `interpretation: null`,
+   * retryable via `POST /numerology/readings/:id/interpret` (mirrors
+   * `TarotRecordService.generateInterpretation` exactly, including the Sprint 12 budget/lock
+   * additions — see that method's docstring for the full reasoning). */
   private async generateInterpretation(userId: string, readingId: string): Promise<void> {
+    const budget = await this.costControl.checkBudget(userId);
+    if (!budget.allowed) {
+      this.logger.warn(`Numerology interpretation skipped for reading=${readingId}: ${budget.reason}`);
+      return;
+    }
+
+    const acquired = await this.generationLock.tryAcquireDiscovery('numerology', userId, readingId);
+    if (!acquired) {
+      this.logger.warn(`Numerology interpretation skipped for reading=${readingId}: concurrent generation already in flight`);
+      return;
+    }
+
     try {
       const full = await this.prisma.numerologyReading.findUniqueOrThrow({ where: { id: readingId }, include: INCLUDE });
       const isPremium = await this.entitlementService.hasPremiumAccess(userId);
@@ -144,14 +163,17 @@ export class NumerologyRecordService {
         }
       }
 
-      const interpretation = await this.interpretation.interpret({
-        normalizedBirthName: full.normalizedBirthName,
-        values: [...full.values]
-          .sort((a, b) => a.order - b.order)
-          .map((v) => ({ type: v.type, value: v.value, isMasterNumber: v.isMasterNumber })),
-        tier: isPremium ? 'PREMIUM' : 'FREE',
-        memoryReference,
-      });
+      const interpretation = await this.interpretation.interpret(
+        {
+          normalizedBirthName: full.normalizedBirthName,
+          values: [...full.values]
+            .sort((a, b) => a.order - b.order)
+            .map((v) => ({ type: v.type, value: v.value, isMasterNumber: v.isMasterNumber })),
+          tier: isPremium ? 'PREMIUM' : 'FREE',
+          memoryReference,
+        },
+        { userId, sourceId: readingId },
+      );
 
       if (interpretation) {
         await this.prisma.numerologyReading.update({ where: { id: readingId }, data: { interpretation, interpretedAt: new Date() } });
@@ -159,6 +181,8 @@ export class NumerologyRecordService {
       }
     } catch (error) {
       this.logger.warn(`Numerology interpretation generation failed for reading=${readingId}: ${error instanceof Error ? error.message : 'unknown'}`);
+    } finally {
+      await this.generationLock.releaseDiscovery('numerology', userId, readingId);
     }
   }
 

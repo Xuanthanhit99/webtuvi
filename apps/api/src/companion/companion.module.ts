@@ -38,11 +38,18 @@ import { CompanionReflectionController } from './reflection/companion-reflection
  * endpoint — Companion still never generates, fabricates, or summarizes a reflection; see
  * docs/architecture/reflection-foundation.md "Companion integration".
  *
- * Sprint 6 exports `ProviderOrchestratorService` and `SafetyService` — and only those two —
- * so `TarotModule`'s AI interpretation layer reuses the exact same retry/fallback provider chain
- * and input/output safety checks Companion already has, rather than standing up a second AI
- * client (see docs/architecture/tarot-discovery.md "AI interpretation"). Nothing else here is
- * exported; Tarot never touches Conversation/Memory/Journal/Reflection state.
+ * Sprint 6 exports `ProviderOrchestratorService` and `SafetyService` so `TarotModule`'s AI
+ * interpretation layer reuses the exact same retry/fallback provider chain and input/output safety
+ * checks Companion already has, rather than standing up a second AI client (see
+ * docs/architecture/tarot-discovery.md "AI interpretation"). Nothing else here is exported to
+ * Discovery modules; Tarot/Numerology/Natal Chart never touch Conversation/Memory/Journal/
+ * Reflection state.
+ *
+ * Sprint 12 additionally exports `CostControlService`, `ObservabilityService`, and
+ * `GenerationLockService` — the same reasoning, generalized: Discovery AI cost-control parity
+ * reuses these proven services (with feature attribution, see `ai-feature.types.ts`) rather than
+ * three divergent `TarotCostService`/`NumerologyCostService`/`NatalChartCostService` copies. See
+ * docs/architecture/discovery-ai-cost-control.md.
  */
 @Module({
   imports: [ActivitiesModule, MemoryModule, JournalModule, ReflectionModule],
@@ -65,6 +72,6 @@ import { CompanionReflectionController } from './reflection/companion-reflection
     CompanionForgetService,
     CompanionJournalService,
   ],
-  exports: [ProviderOrchestratorService, SafetyService],
+  exports: [ProviderOrchestratorService, SafetyService, CostControlService, ObservabilityService, GenerationLockService],
 })
 export class CompanionModule {}

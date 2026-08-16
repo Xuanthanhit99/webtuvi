@@ -1,8 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AIProviderName } from '../providers/provider.types';
+import { toPrismaAIFeature, type AIFeature } from '../providers/ai-feature.types';
 
 export interface ProviderCallLog {
+  /** Sprint 12 — which product surface produced this attempt (Companion or a Discovery
+   * surface). Required so every ProviderLog row is attributable — see
+   * docs/architecture/discovery-ai-cost-control.md. */
+  feature: AIFeature;
+  /** Discovery reading id (Tarot/Numerology/NatalChart) — omitted for Companion. Unenforced,
+   * mirrors this schema's existing sourceType/sourceId precedent. */
+  sourceId?: string;
   provider: AIProviderName;
   model: string;
   latencyMs: number;
@@ -28,7 +36,7 @@ export class ObservabilityService {
   async logProviderCall(entry: ProviderCallLog): Promise<void> {
     const level = entry.success ? 'log' : 'warn';
     this.logger[level](
-      `provider=${entry.provider} model=${entry.model} latencyMs=${entry.latencyMs} ` +
+      `feature=${entry.feature} provider=${entry.provider} model=${entry.model} latencyMs=${entry.latencyMs} ` +
         `success=${entry.success} retryCount=${entry.retryCount}` +
         (entry.errorCode ? ` errorCode=${entry.errorCode}` : '') +
         (entry.streamDurationMs !== undefined ? ` streamDurationMs=${entry.streamDurationMs}` : ''),
@@ -37,6 +45,8 @@ export class ObservabilityService {
     try {
       await this.prisma.providerLog.create({
         data: {
+          feature: toPrismaAIFeature(entry.feature),
+          sourceId: entry.sourceId,
           provider: toPrismaProviderName(entry.provider),
           model: entry.model,
           latencyMs: entry.latencyMs,
@@ -52,9 +62,19 @@ export class ObservabilityService {
     }
   }
 
-  logUsage(params: { userId: string; conversationId: string; provider: AIProviderName; model: string; promptTokens: number; completionTokens: number; estimatedCostUsd: number }): void {
+  logUsage(params: {
+    userId: string;
+    feature: AIFeature;
+    conversationId?: string;
+    sourceId?: string;
+    provider: AIProviderName;
+    model: string;
+    promptTokens: number;
+    completionTokens: number;
+    estimatedCostUsd: number;
+  }): void {
     this.logger.log(
-      `usage provider=${params.provider} model=${params.model} promptTokens=${params.promptTokens} ` +
+      `feature=${params.feature} provider=${params.provider} model=${params.model} promptTokens=${params.promptTokens} ` +
         `completionTokens=${params.completionTokens} estimatedCostUsd=${params.estimatedCostUsd.toFixed(6)}`,
     );
   }

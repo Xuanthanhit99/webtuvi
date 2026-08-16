@@ -5,6 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import type { AIProviderName } from '../providers/provider.types';
 import { estimateCostUsd } from '../providers/pricing';
 import { toPrismaProviderName } from '../observability/observability.service';
+import { toPrismaAIFeature, type AIFeature } from '../providers/ai-feature.types';
 
 export interface UsageSummary {
   totalPromptTokens: number;
@@ -51,6 +52,14 @@ export class CostControlService {
    * already-persisted `AIUsage` rows (billable/final usage), so a burst of
    * retries or failed provider attempts within a single generation — which
    * never reach `record()` — can't push a user over budget on their own.
+   *
+   * Sprint 12 — deliberately kept GLOBAL per user across every AI feature (Companion + Tarot +
+   * Numerology + Natal Chart combined), not a separate budget per feature. The query below has no
+   * `feature` filter and never gained one: it aggregates every `AIUsage` row for this user
+   * regardless of which surface produced it. This is a security decision, not an oversight —
+   * adding Discovery attribution must not let a user quadruple their effective AI spend ceiling by
+   * switching features (Sprint 12 audit §Phase 7's explicit bypass concern). See
+   * docs/architecture/discovery-ai-cost-control.md "Budget semantics" for the full reasoning.
    */
   async checkBudget(userId: string): Promise<BudgetCheckResult> {
     const budget = this.configService.get<AppConfiguration>('app')!.ai.budget;
@@ -88,7 +97,12 @@ export class CostControlService {
 
   async record(params: {
     userId: string;
-    conversationId: string;
+    /** Sprint 12 — which surface produced this usage row. Explicit at every call site (Companion
+     * included) rather than defaulted, so attribution is never accidentally implicit. */
+    feature: AIFeature;
+    conversationId?: string;
+    /** Discovery reading id (Tarot/Numerology/NatalChart) — omitted for Companion. */
+    sourceId?: string;
     provider: AIProviderName;
     model: string;
     promptTokens: number;
@@ -104,7 +118,9 @@ export class CostControlService {
     await this.prisma.aIUsage.create({
       data: {
         userId: params.userId,
+        feature: toPrismaAIFeature(params.feature),
         conversationId: params.conversationId,
+        sourceId: params.sourceId,
         provider: toPrismaProviderName(params.provider),
         model: params.model,
         promptTokens: params.promptTokens,

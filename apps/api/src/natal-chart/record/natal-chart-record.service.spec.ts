@@ -207,8 +207,19 @@ function makeService(
   const interpretation = { interpret: jest.fn().mockResolvedValue(interpretResult) } as unknown as NatalChartInterpretationService;
   const memoryRetrieval = { recommend: jest.fn().mockResolvedValue({ items: [] }) } as unknown as MemoryRetrievalService;
   const entitlementService = { hasPremiumAccess: jest.fn().mockResolvedValue(isPremium) } as unknown as EntitlementService;
-  const service = new NatalChartRecordService(prisma as never, calculator, geocoding, interpretation, memoryRetrieval, entitlementService);
-  return { service, prisma, calculator, geocoding, entitlementService, interpretation };
+  const costControl = { checkBudget: jest.fn().mockResolvedValue({ allowed: true }) };
+  const generationLock = { tryAcquireDiscovery: jest.fn().mockResolvedValue(true), releaseDiscovery: jest.fn().mockResolvedValue(undefined) };
+  const service = new NatalChartRecordService(
+    prisma as never,
+    calculator,
+    geocoding,
+    interpretation,
+    memoryRetrieval,
+    entitlementService,
+    costControl as never,
+    generationLock as never,
+  );
+  return { service, prisma, calculator, geocoding, entitlementService, interpretation, costControl, generationLock };
 }
 
 const VALID_DTO: CreateNatalChartDto = { birthDate: '2000-06-15', birthTime: '14:30', locationToken: '11111111-1111-4111-8111-111111111111' };
@@ -421,5 +432,41 @@ describe('NatalChartRecordService — Free history cap', () => {
     const result = await service.list(OWNER, { page: 2 });
     expect(result.items).toHaveLength(10);
     expect(result.total).toBe(30);
+  });
+});
+
+describe('NatalChartRecordService — Sprint 12 AI cost-control/concurrency parity (retryInterpretation)', () => {
+  it('retryInterpretation acquires and releases the Discovery lock scoped to (natal_chart, user, chart)', async () => {
+    const { service, generationLock } = makeService([makeChart({ id: 'c1' })]);
+    await service.retryInterpretation(OWNER, 'c1');
+    expect(generationLock.tryAcquireDiscovery).toHaveBeenCalledWith('natal_chart', OWNER, 'c1');
+    expect(generationLock.releaseDiscovery).toHaveBeenCalledWith('natal_chart', OWNER, 'c1');
+  });
+
+  it('when the budget is exceeded, retryInterpretation does not throw and never attempts a generation', async () => {
+    const { service, interpretation, costControl } = makeService([makeChart({ id: 'c1' })]);
+    costControl.checkBudget.mockResolvedValue({ allowed: false, reason: 'daily_request_limit', message: 'over budget' });
+
+    const result = await service.retryInterpretation(OWNER, 'c1');
+
+    expect(interpretation.interpret).not.toHaveBeenCalled();
+    expect(result.id).toBe('c1');
+  });
+
+  it('when the Discovery lock is already held, retryInterpretation does not throw and never attempts a second generation', async () => {
+    const { service, interpretation, generationLock } = makeService([makeChart({ id: 'c1' })]);
+    generationLock.tryAcquireDiscovery.mockResolvedValue(false);
+
+    const result = await service.retryInterpretation(OWNER, 'c1');
+
+    expect(interpretation.interpret).not.toHaveBeenCalled();
+    expect(generationLock.releaseDiscovery).not.toHaveBeenCalled();
+    expect(result.id).toBe('c1');
+  });
+
+  it('passes { userId, sourceId } attribution through to interpret()', async () => {
+    const { service, interpretation } = makeService([makeChart({ id: 'c1' })]);
+    await service.retryInterpretation(OWNER, 'c1');
+    expect(interpretation.interpret).toHaveBeenCalledWith(expect.anything(), { userId: OWNER, sourceId: 'c1' });
   });
 });

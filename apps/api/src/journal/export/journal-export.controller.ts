@@ -15,7 +15,7 @@ export class JournalExportController {
   // Same reasoning as MemoryExportController — a full account export is heavier than an
   // ordinary request, so it gets its own tight rate limit.
   @UseGuards(ThrottlerGuard)
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true })
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true })
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Export all of the caller’s own journal entries as JSON' })
   create(@CurrentUser() user: AuthenticatedUser): Promise<JournalAccountExportJobDto> {

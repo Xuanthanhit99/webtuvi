@@ -35,7 +35,7 @@ export class ConversationController {
 
   @Post(':id/messages')
   @UseGuards(CompanionThrottlerGuard)
-  @SkipThrottle({ auth: true })
+  @SkipThrottle({ auth: true, discovery: true, 'discovery-ip': true })
   @ApiOperation({
     summary: 'Send a user message. If it passes the safety check, open GET .../messages/stream next to generate the reply.',
   })

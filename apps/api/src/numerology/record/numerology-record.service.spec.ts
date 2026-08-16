@@ -182,8 +182,10 @@ function makeService(seed: ReadingRow[] = [], isPremium = false, interpretResult
   const interpretation = { interpret: jest.fn().mockResolvedValue(interpretResult) } as unknown as NumerologyInterpretationService;
   const memoryRetrieval = { recommend: jest.fn().mockResolvedValue({ items: [] }) } as unknown as MemoryRetrievalService;
   const entitlementService = { hasPremiumAccess: jest.fn().mockResolvedValue(isPremium) } as unknown as EntitlementService;
-  const service = new NumerologyRecordService(prisma as never, interpretation, memoryRetrieval, entitlementService);
-  return { service, prisma, entitlementService, interpretation };
+  const costControl = { checkBudget: jest.fn().mockResolvedValue({ allowed: true }) };
+  const generationLock = { tryAcquireDiscovery: jest.fn().mockResolvedValue(true), releaseDiscovery: jest.fn().mockResolvedValue(undefined) };
+  const service = new NumerologyRecordService(prisma as never, interpretation, memoryRetrieval, entitlementService, costControl as never, generationLock as never);
+  return { service, prisma, entitlementService, interpretation, costControl, generationLock };
 }
 
 describe('NumerologyRecordService — calculate() persists the real deterministic result', () => {
@@ -343,5 +345,41 @@ describe('NumerologyRecordService — Free history cap', () => {
     const result = await service.list(OWNER, { page: 2, pageSize: 20 });
     expect(result.items).toHaveLength(15);
     expect(result.total).toBe(35);
+  });
+});
+
+describe('NumerologyRecordService — Sprint 12 AI cost-control/concurrency parity (retryInterpretation)', () => {
+  it('retryInterpretation acquires and releases the Discovery lock scoped to (numerology, user, reading)', async () => {
+    const { service, generationLock } = makeService([makeReading({ id: 'r1' })]);
+    await service.retryInterpretation(OWNER, 'r1');
+    expect(generationLock.tryAcquireDiscovery).toHaveBeenCalledWith('numerology', OWNER, 'r1');
+    expect(generationLock.releaseDiscovery).toHaveBeenCalledWith('numerology', OWNER, 'r1');
+  });
+
+  it('when the budget is exceeded, retryInterpretation does not throw and never attempts a generation', async () => {
+    const { service, interpretation, costControl } = makeService([makeReading({ id: 'r1' })]);
+    costControl.checkBudget.mockResolvedValue({ allowed: false, reason: 'daily_request_limit', message: 'over budget' });
+
+    const result = await service.retryInterpretation(OWNER, 'r1');
+
+    expect(interpretation.interpret).not.toHaveBeenCalled();
+    expect(result.id).toBe('r1');
+  });
+
+  it('when the Discovery lock is already held, retryInterpretation does not throw and never attempts a second generation', async () => {
+    const { service, interpretation, generationLock } = makeService([makeReading({ id: 'r1' })]);
+    generationLock.tryAcquireDiscovery.mockResolvedValue(false);
+
+    const result = await service.retryInterpretation(OWNER, 'r1');
+
+    expect(interpretation.interpret).not.toHaveBeenCalled();
+    expect(generationLock.releaseDiscovery).not.toHaveBeenCalled();
+    expect(result.id).toBe('r1');
+  });
+
+  it('passes { userId, sourceId } attribution through to interpret()', async () => {
+    const { service, interpretation } = makeService([makeReading({ id: 'r1' })]);
+    await service.retryInterpretation(OWNER, 'r1');
+    expect(interpretation.interpret).toHaveBeenCalledWith(expect.anything(), { userId: OWNER, sourceId: 'r1' });
   });
 });

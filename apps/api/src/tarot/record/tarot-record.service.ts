@@ -3,6 +3,8 @@ import type { Prisma, TarotReadingStatus, TarotReadingType } from '@prisma/clien
 import { PrismaService } from '../../prisma/prisma.service';
 import { MemoryRetrievalService } from '../../memory/retrieval/memory-retrieval.service';
 import { EntitlementService } from '../../payment/entitlement/entitlement.service';
+import { CostControlService } from '../../companion/cost/cost-control.service';
+import { GenerationLockService } from '../../companion/concurrency/generation-lock.service';
 import { drawCards } from '../draw/tarot-draw-engine.util';
 import { TarotInterpretationService } from '../interpretation/tarot-interpretation.service';
 import { toTarotReadingDto, toTarotReadingHistoryDto, type TarotReadingDto, type TarotReadingHistoryDto } from '../tarot.mappers';
@@ -63,6 +65,8 @@ export class TarotRecordService {
     private readonly interpretation: TarotInterpretationService,
     private readonly memoryRetrieval: MemoryRetrievalService,
     private readonly entitlementService: EntitlementService,
+    private readonly costControl: CostControlService,
+    private readonly generationLock: GenerationLockService,
   ) {}
 
   async draw(userId: string, dto: DrawReadingDto): Promise<TarotReadingDto> {
@@ -118,9 +122,28 @@ export class TarotRecordService {
     return this.getOne(userId, reading.id);
   }
 
-  /** Best-effort — never throws; a provider failure leaves `interpretation: null`, which the
-   * caller (and `POST /tarot/readings/:id/interpret`) can retry later. */
+  /** Best-effort — never throws; a provider failure, an exhausted AI budget, or a concurrent
+   * generation already in flight for this exact reading all leave `interpretation: null` exactly
+   * like a provider failure would, which the caller (and `POST /tarot/readings/:id/interpret`) can
+   * retry later. Sprint 12 — deliberately does NOT surface a distinct error to the caller for a
+   * budget/lock rejection: the existing "Interpretation isn't ready yet" + retry UX already covers
+   * this honestly, and inventing a new error state here would mean redesigning Discovery UX this
+   * sprint is explicitly not supposed to touch. The budget check is GLOBAL per user (shared with
+   * Companion — see CostControlService.checkBudget), and the lock is scoped to this exact
+   * (feature, user, reading) — see GenerationLockService.tryAcquireDiscovery's docstring. */
   private async generateInterpretation(userId: string, readingId: string): Promise<void> {
+    const budget = await this.costControl.checkBudget(userId);
+    if (!budget.allowed) {
+      this.logger.warn(`Tarot interpretation skipped for reading=${readingId}: ${budget.reason}`);
+      return;
+    }
+
+    const acquired = await this.generationLock.tryAcquireDiscovery('tarot', userId, readingId);
+    if (!acquired) {
+      this.logger.warn(`Tarot interpretation skipped for reading=${readingId}: concurrent generation already in flight`);
+      return;
+    }
+
     try {
       const full = await this.prisma.tarotReading.findUniqueOrThrow({ where: { id: readingId }, include: INCLUDE });
       const isPremium = await this.entitlementService.hasPremiumAccess(userId);
@@ -140,15 +163,18 @@ export class TarotRecordService {
         }
       }
 
-      const interpretation = await this.interpretation.interpret({
-        readingType: full.type,
-        question: full.question,
-        cards: [...full.cards]
-          .sort((a, b) => a.position - b.position)
-          .map((rc) => ({ card: rc.card, position: rc.position, positionLabel: rc.positionLabel, isReversed: rc.isReversed })),
-        tier: isPremium ? 'PREMIUM' : 'FREE',
-        memoryReference,
-      });
+      const interpretation = await this.interpretation.interpret(
+        {
+          readingType: full.type,
+          question: full.question,
+          cards: [...full.cards]
+            .sort((a, b) => a.position - b.position)
+            .map((rc) => ({ card: rc.card, position: rc.position, positionLabel: rc.positionLabel, isReversed: rc.isReversed })),
+          tier: isPremium ? 'PREMIUM' : 'FREE',
+          memoryReference,
+        },
+        { userId, sourceId: readingId },
+      );
 
       if (interpretation) {
         await this.prisma.tarotReading.update({ where: { id: readingId }, data: { interpretation } });
@@ -156,6 +182,8 @@ export class TarotRecordService {
       }
     } catch (error) {
       this.logger.warn(`Tarot interpretation generation failed for reading=${readingId}: ${error instanceof Error ? error.message : 'unknown'}`);
+    } finally {
+      await this.generationLock.releaseDiscovery('tarot', userId, readingId);
     }
   }
 

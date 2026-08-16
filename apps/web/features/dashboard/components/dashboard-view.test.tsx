@@ -12,7 +12,7 @@ jest.mock('@/features/premium/api/premium-api', () => ({
   premiumApi: { status: jest.fn(), checkout: jest.fn() },
 }));
 
-const FREE_STATUS = { isPremium: false, status: 'NONE', expiresAt: null, priceVnd: 79000, currency: 'VND', isMvpTestPrice: true };
+const FREE_STATUS = { isPremium: false, status: 'NONE', expiresAt: null, priceVnd: 79000, currency: 'VND', isMvpTestPrice: true, paymentsEnabled: true };
 
 describe('DashboardView', () => {
   beforeEach(() => {
