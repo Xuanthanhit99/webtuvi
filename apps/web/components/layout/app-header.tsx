@@ -8,6 +8,7 @@ import { IconButton } from '@/components/ui/icon-button';
 import { authApi } from '@/features/auth/api/auth-api';
 import { toast } from '@/components/ui/toast';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
+import { resetAnonymousId } from '@/lib/analytics';
 
 export function AppHeader() {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ export function AppHeader() {
       // Logout is best-effort client-side too — cookies are cleared server-side
       // regardless of whether this network call itself succeeds.
     }
+    resetAnonymousId();
     invalidateAuth();
     toast.success("You've been logged out.");
     router.push('/login');

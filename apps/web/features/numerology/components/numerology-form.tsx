@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { ApiError } from '@/lib/api-error';
+import { trackEvent } from '@/lib/analytics';
 import { numerologyApi } from '../api/numerology-api';
 import { NumerologyReadingView } from './numerology-reading-view';
 
@@ -88,6 +89,7 @@ export function NumerologyForm({ onCalculated }: { onCalculated?: (reading: Nume
     }
 
     setPhase('calculating');
+    trackEvent('numerology_started', { feature: 'numerology' });
     calculate.mutate();
   }
 

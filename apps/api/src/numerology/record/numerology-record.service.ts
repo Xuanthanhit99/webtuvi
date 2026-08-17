@@ -9,6 +9,7 @@ import { NUMEROLOGY_NAME_NORMALIZATION_VERSION, NameValidationError } from '../e
 import { NumerologyInterpretationService } from '../interpretation/numerology-interpretation.service';
 import { CostControlService } from '../../companion/cost/cost-control.service';
 import { GenerationLockService } from '../../companion/concurrency/generation-lock.service';
+import { AnalyticsService } from '../../analytics/analytics.service';
 import {
   toNumerologyReadingDto,
   toNumerologyReadingHistoryDto,
@@ -69,6 +70,7 @@ export class NumerologyRecordService {
     private readonly entitlementService: EntitlementService,
     private readonly costControl: CostControlService,
     private readonly generationLock: GenerationLockService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async calculate(userId: string, dto: CalculateNumerologyDto): Promise<NumerologyReadingDto> {
@@ -124,6 +126,7 @@ export class NumerologyRecordService {
     });
 
     this.logger.log(`Numerology reading calculated id=${reading.id}`);
+    void this.analyticsService.trackServerEvent({ event: 'numerology_completed', userId, properties: { feature: 'numerology' } });
 
     await this.generateInterpretation(userId, reading.id);
 
@@ -178,6 +181,7 @@ export class NumerologyRecordService {
       if (interpretation) {
         await this.prisma.numerologyReading.update({ where: { id: readingId }, data: { interpretation, interpretedAt: new Date() } });
         await this.prisma.numerologyReadingHistory.create({ data: { readingId, action: 'INTERPRETED', detail: 'AI interpretation generated.' } });
+        void this.analyticsService.trackServerEvent({ event: 'numerology_interpretation_completed', userId, properties: { feature: 'numerology' } });
       }
     } catch (error) {
       this.logger.warn(`Numerology interpretation generation failed for reading=${readingId}: ${error instanceof Error ? error.message : 'unknown'}`);

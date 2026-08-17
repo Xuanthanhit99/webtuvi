@@ -5,6 +5,7 @@ import { MemoryRetrievalService } from '../../memory/retrieval/memory-retrieval.
 import { EntitlementService } from '../../payment/entitlement/entitlement.service';
 import { CostControlService } from '../../companion/cost/cost-control.service';
 import { GenerationLockService } from '../../companion/concurrency/generation-lock.service';
+import { AnalyticsService } from '../../analytics/analytics.service';
 import { drawCards } from '../draw/tarot-draw-engine.util';
 import { TarotInterpretationService } from '../interpretation/tarot-interpretation.service';
 import { toTarotReadingDto, toTarotReadingHistoryDto, type TarotReadingDto, type TarotReadingHistoryDto } from '../tarot.mappers';
@@ -34,6 +35,12 @@ const SPREAD_SLUG_BY_TYPE: Record<TarotReadingType, string> = {
   DAILY_DRAW: 'daily-draw',
   SINGLE_CARD: 'single-card',
   THREE_CARD: 'three-card-ppf',
+};
+
+const TAROT_ANALYTICS_SPREAD_TYPE: Record<TarotReadingType, 'daily_draw' | 'single_card' | 'three_card'> = {
+  DAILY_DRAW: 'daily_draw',
+  SINGLE_CARD: 'single_card',
+  THREE_CARD: 'three_card',
 };
 
 // Sprint 7, Phase 8 — documented product change: Single Card and Three Card Spread were unlimited
@@ -67,6 +74,7 @@ export class TarotRecordService {
     private readonly entitlementService: EntitlementService,
     private readonly costControl: CostControlService,
     private readonly generationLock: GenerationLockService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async draw(userId: string, dto: DrawReadingDto): Promise<TarotReadingDto> {
@@ -116,6 +124,11 @@ export class TarotRecordService {
     });
 
     this.logger.log(`Tarot reading drawn id=${reading.id} type=${dto.type} cards=${draw.drawnCards.length}`);
+    void this.analyticsService.trackServerEvent({
+      event: 'tarot_completed',
+      userId,
+      properties: { feature: 'tarot', spreadType: TAROT_ANALYTICS_SPREAD_TYPE[dto.type] },
+    });
 
     await this.generateInterpretation(userId, reading.id);
 
@@ -179,6 +192,7 @@ export class TarotRecordService {
       if (interpretation) {
         await this.prisma.tarotReading.update({ where: { id: readingId }, data: { interpretation } });
         await this.prisma.tarotReadingHistory.create({ data: { readingId, action: 'INTERPRETED', detail: 'AI interpretation generated.' } });
+        void this.analyticsService.trackServerEvent({ event: 'tarot_interpretation_completed', userId, properties: { feature: 'tarot' } });
       }
     } catch (error) {
       this.logger.warn(`Tarot interpretation generation failed for reading=${readingId}: ${error instanceof Error ? error.message : 'unknown'}`);

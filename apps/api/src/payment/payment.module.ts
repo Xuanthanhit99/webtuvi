@@ -6,6 +6,7 @@ import { PaymentWebhookService } from './webhook/payment-webhook.service';
 import { EntitlementService } from './entitlement/entitlement.service';
 import { PremiumGuard } from './entitlement/premium.guard';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 /**
  * Premium & Payment Foundation (Sprint 7) — the product's first real monetization path (Product
@@ -22,7 +23,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
  * docs/architecture/notification-retention.md "Payment integration").
  */
 @Module({
-  imports: [NotificationsModule],
+  imports: [NotificationsModule, AnalyticsModule],
   controllers: [PaymentController],
   providers: [PaymentProviderRegistryService, PaymentCheckoutService, PaymentWebhookService, EntitlementService, PremiumGuard],
   exports: [EntitlementService, PremiumGuard],

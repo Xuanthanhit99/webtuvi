@@ -1363,3 +1363,91 @@ export interface ApiSuccessShape<T> {
   meta: Record<string, unknown>;
   requestId: string;
 }
+
+// --- Product Analytics (Sprint 13). Product Completion Roadmap V2 §3 (P0 — "Product analytics
+// instrumentation"). See docs/architecture/product-analytics.md for the full architecture and
+// privacy rationale. The event/property lists here are the single source of truth on both sides
+// of the HTTP boundary — the backend DTO (`apps/api/src/analytics/dto`) enforces them at runtime
+// via `class-validator`'s `whitelist: true, forbidNonWhitelisted: true` global pipe, so any event
+// name or property outside these lists is rejected outright, not silently dropped. ---
+
+/** Events a client is allowed to submit directly — none of these represent an authoritative
+ * business outcome (a signup, a payment, a persisted reading) on their own; they mark user intent
+ * or a page/view being reached. */
+export type ClientAnalyticsEventName =
+  | 'landing_view'
+  | 'signup_started'
+  | 'onboarding_started'
+  | 'dashboard_viewed'
+  | 'discover_viewed'
+  | 'tarot_started'
+  | 'tarot_interpretation_requested'
+  | 'numerology_started'
+  | 'numerology_interpretation_requested'
+  | 'natal_started'
+  | 'natal_interpretation_requested'
+  | 'notification_opened'
+  | 'premium_viewed'
+  | 'checkout_completed';
+
+/** Events only the backend may emit, in-process, at the exact point the underlying fact becomes
+ * true (a row was persisted, a webhook flipped an order to PAID). A client can never cause one of
+ * these to fire directly — the public `/analytics/events` endpoint's DTO cannot express them. */
+export type ServerAnalyticsEventName =
+  | 'signup_completed'
+  | 'onboarding_completed'
+  | 'tarot_completed'
+  | 'tarot_interpretation_completed'
+  | 'numerology_completed'
+  | 'numerology_interpretation_completed'
+  | 'natal_completed'
+  | 'natal_interpretation_completed'
+  | 'checkout_started'
+  | 'payment_success';
+
+export type AnalyticsEventName = ClientAnalyticsEventName | ServerAnalyticsEventName;
+
+export type AnalyticsFeature =
+  | 'auth'
+  | 'onboarding'
+  | 'dashboard'
+  | 'discover'
+  | 'tarot'
+  | 'numerology'
+  | 'natal_chart'
+  | 'notifications'
+  | 'premium';
+
+/** Deliberately flat and small. No free-text field exists anywhere in this shape — every property
+ * is either a bounded enum or a route pathname (query string stripped server-side). This is the
+ * complete list of dimensions analytics is allowed to know about; nothing else (name, email, birth
+ * data, journal/memory/companion content, tarot questions, calculated numbers or chart placements)
+ * has a place to go. See docs/architecture/product-analytics.md §"Privacy model". */
+export interface AnalyticsEventProperties {
+  feature?: AnalyticsFeature;
+  /** Pathname only (e.g. `/discover/tarot`) — no query string, no hash, no origin. */
+  route?: string;
+  resultStatus?: 'success' | 'failure';
+  /** Free-text-shaped but bounded: where the user came from within the product, e.g.
+   * `'dashboard_card' | 'nav' | 'notification'` — never referrer/UTM/marketing data. */
+  source?: string;
+  premiumStatus?: 'free' | 'premium';
+  notificationCategory?: NotificationCategoryValue;
+  spreadType?: 'daily_draw' | 'single_card' | 'three_card';
+}
+
+export interface AnalyticsEventInput {
+  event: ClientAnalyticsEventName;
+  /** Client-generated v4 UUID, persisted in a first-party cookie/localStorage — never derived from
+   * anything identifying (no email/IP/fingerprint). See docs/architecture/product-analytics.md
+   * §"Identity model". */
+  anonymousId: string;
+  properties?: AnalyticsEventProperties;
+  /** ISO 8601, client clock — advisory only; the server's own receipt time is authoritative for
+   * ordering. */
+  clientTimestamp?: string;
+}
+
+export interface TrackAnalyticsEventsRequestDto {
+  events: AnalyticsEventInput[];
+}

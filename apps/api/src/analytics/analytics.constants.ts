@@ -1,0 +1,66 @@
+import type { ClientAnalyticsEventName, ServerAnalyticsEventName } from '@beaconvie/types';
+
+/**
+ * Runtime mirror of the `ClientAnalyticsEventName`/`ServerAnalyticsEventName` unions in
+ * `packages/types` — TypeScript unions don't exist at runtime, so the DTO (which needs an actual
+ * array for `@IsIn`) needs its own copy. Keep these two lists in sync with `packages/types/index.ts`
+ * by hand; `analytics.constants.spec.ts` cross-checks the counts so a drift is at least caught.
+ */
+export const CLIENT_ANALYTICS_EVENT_NAMES: ClientAnalyticsEventName[] = [
+  'landing_view',
+  'signup_started',
+  'onboarding_started',
+  'dashboard_viewed',
+  'discover_viewed',
+  'tarot_started',
+  'tarot_interpretation_requested',
+  'numerology_started',
+  'numerology_interpretation_requested',
+  'natal_started',
+  'natal_interpretation_requested',
+  'notification_opened',
+  'premium_viewed',
+  'checkout_completed',
+];
+
+export const SERVER_ANALYTICS_EVENT_NAMES: ServerAnalyticsEventName[] = [
+  'signup_completed',
+  'onboarding_completed',
+  'tarot_completed',
+  'tarot_interpretation_completed',
+  'numerology_completed',
+  'numerology_interpretation_completed',
+  'natal_completed',
+  'natal_interpretation_completed',
+  'checkout_started',
+  'payment_success',
+];
+
+export const ANALYTICS_FEATURES = [
+  'auth',
+  'onboarding',
+  'dashboard',
+  'discover',
+  'tarot',
+  'numerology',
+  'natal_chart',
+  'notifications',
+  'premium',
+] as const;
+
+export const ANALYTICS_RESULT_STATUSES = ['success', 'failure'] as const;
+export const ANALYTICS_PREMIUM_STATUSES = ['free', 'premium'] as const;
+export const ANALYTICS_SPREAD_TYPES = ['daily_draw', 'single_card', 'three_card'] as const;
+export const ANALYTICS_NOTIFICATION_CATEGORIES = ['SECURITY', 'PREMIUM', 'DISCOVERY'] as const;
+
+/** A batch POST is one page's worth of near-simultaneous events, never a bulk-import mechanism —
+ * capped low enough that even a buggy client retry-looping this endpoint can't turn it into a
+ * meaningful amplification vector. */
+export const MAX_EVENTS_PER_BATCH = 20;
+
+/** Route pathnames are accepted as analytics context but must never leak query strings (some of
+ * which could carry state, e.g. `/premium?reason=...`) — enforced by truncating at the first `?`
+ * or `#` before anything is stored or forwarded, and by a hard length cap against pathological
+ * input. */
+export const MAX_ROUTE_LENGTH = 200;
+export const MAX_SOURCE_LENGTH = 100;

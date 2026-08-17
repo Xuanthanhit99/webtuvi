@@ -46,7 +46,19 @@ const AUTH_THROTTLE = { default: { limit: AUTH_RATE_LIMIT_MAX, ttl: AUTH_RATE_LI
 // generation endpoints — unrelated to registration/login/password flows, and easily tripped by
 // legitimate traffic (or a test suite) making more than ~20 auth requests from one IP within a
 // minute, long before the real 200-per-15-minutes auth ceiling is anywhere close to being reached.
-const SKIP_UNRELATED_THROTTLERS = { companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true };
+//
+// `payment` (Sprint 13 fix): PaymentController's checkout route already skips `auth`, but this side
+// of the isolation was missing — an anonymous IP could exhaust the `payment` bucket's per-IP quota
+// via unrelated login/register attempts (both fall back to IP-tracking pre-auth), then see false
+// 429s on an actual checkout attempt shortly after. Symmetric with every other route pair in this
+// module set, none of which is meant to share a bucket with another.
+const SKIP_UNRELATED_THROTTLERS = {
+  companion: true,
+  'companion-ip': true,
+  discovery: true,
+  'discovery-ip': true,
+  payment: true,
+};
 
 @ApiTags('auth')
 @Controller('auth')

@@ -8,6 +8,7 @@ import { NatalChartCalculatorService } from '../engine/natal-chart-calculator.se
 import { NatalChartInterpretationService } from '../interpretation/natal-chart-interpretation.service';
 import { CostControlService } from '../../companion/cost/cost-control.service';
 import { GenerationLockService } from '../../companion/concurrency/generation-lock.service';
+import { AnalyticsService } from '../../analytics/analytics.service';
 import { BirthInputValidationError, normalizeBirthDate, normalizeBirthTime } from '../engine/natal-chart-birth-input.util';
 import { composeAngleMeaning, composeAspectMeaning, composePlacementMeaning } from '../engine/natal-chart-meanings';
 import {
@@ -66,6 +67,7 @@ export class NatalChartRecordService {
     private readonly entitlementService: EntitlementService,
     private readonly costControl: CostControlService,
     private readonly generationLock: GenerationLockService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async create(userId: string, dto: CreateNatalChartDto): Promise<NatalChartDto> {
@@ -166,6 +168,7 @@ export class NatalChartRecordService {
     });
 
     this.logger.log(`Natal chart calculated id=${chart.id}`);
+    void this.analyticsService.trackServerEvent({ event: 'natal_completed', userId, properties: { feature: 'natal_chart' } });
 
     await this.generateInterpretation(userId, chart.id);
 
@@ -241,6 +244,7 @@ export class NatalChartRecordService {
           data: { interpretation: interpretation as unknown as Prisma.InputJsonValue, interpretedAt: new Date() },
         });
         await this.prisma.natalChartHistory.create({ data: { chartId, action: 'INTERPRETED', detail: 'AI interpretation generated.' } });
+        void this.analyticsService.trackServerEvent({ event: 'natal_interpretation_completed', userId, properties: { feature: 'natal_chart' } });
       }
     } catch (error) {
       this.logger.warn(`Natal Chart interpretation generation failed for chart=${chartId}: ${error instanceof Error ? error.message : 'unknown'}`);

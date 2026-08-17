@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { PaymentProviderRegistryService } from '../providers/payment-provider-registry.service';
 import { generateOrderCode } from '../providers/payos-signature.util';
 import { toPaymentOrderDto } from '../payment.mappers';
+import { AnalyticsService } from '../../analytics/analytics.service';
 
 const PRODUCT = 'PREMIUM_30D' as const;
 const PROVIDER = 'PAYOS' as const;
@@ -29,6 +30,7 @@ export class PaymentCheckoutService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly providerRegistry: PaymentProviderRegistryService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async createCheckout(userId: string): Promise<PaymentOrderDto> {
@@ -72,6 +74,7 @@ export class PaymentCheckoutService {
       });
 
       this.logger.log(`payment.order.created id=${updated.id} userId=${userId} amount=${amount} ${currency}`);
+      void this.analyticsService.trackServerEvent({ event: 'checkout_started', userId, properties: { feature: 'premium' } });
       return toPaymentOrderDto(updated);
     } catch (error) {
       await this.prisma.paymentOrder.update({ where: { id: order.id }, data: { status: 'FAILED', failedAt: new Date() } });

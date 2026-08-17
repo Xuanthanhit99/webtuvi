@@ -168,6 +168,18 @@ const envSchema = z.object({
   // write-only ingestion identifier, not a secret credential (see Sentry's own docs) — safe to
   // read from a plain env var, no different in sensitivity from e.g. CORS_ORIGINS. ---
   SENTRY_DSN: z.string().url().optional(),
+
+  // --- Product Analytics (Sprint 13) — optional, mirrors SENTRY_DSN's own contract exactly:
+  // absent key = analytics fully disabled (NoopAnalyticsSink), never a boot failure either way.
+  // See docs/architecture/product-analytics.md. Provider: PostHog, reached via a minimal direct
+  // HTTP client (no SDK dependency — see PostHogHttpSink) rather than posthog-node/posthog-js,
+  // specifically to avoid inheriting their autocapture/session-replay defaults, which would need
+  // to be fought rather than simply not existing (see product-analytics.md §"Why not the SDK").
+  POSTHOG_API_KEY: z.string().optional(),
+  POSTHOG_HOST: z.string().url().default('https://us.i.posthog.com'),
+  // Master kill switch, independent of whether a key is configured — lets ops disable analytics
+  // delivery instantly (e.g. mid-incident) without touching the key itself.
+  ANALYTICS_ENABLED: zBooleanString(true),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

@@ -14,10 +14,10 @@ export class MemoryExportController {
   @Post()
   // A full data export is heavier than an ordinary request, so it gets its
   // own tight rate limit rather than the 'default' throttler's normal
-  // 1000/60s — 'auth'/'companion'/'companion-ip' are unrelated to this route
-  // and are skipped so only this override applies.
+  // 1000/60s — every other named throttler is unrelated to this route and is
+  // skipped so only this override applies (Sprint 13: `payment` was missing).
   @UseGuards(ThrottlerGuard)
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true })
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true, payment: true })
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Export the caller’s own memories, versions, consent settings, and activity history' })
   create(@CurrentUser() user: AuthenticatedUser): Promise<MemoryExportJobDto> {

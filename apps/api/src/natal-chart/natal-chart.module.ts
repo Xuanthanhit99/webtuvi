@@ -3,6 +3,7 @@ import { CompanionModule } from '../companion/companion.module';
 import { MemoryModule } from '../memory/memory.module';
 import { PaymentModule } from '../payment/payment.module';
 import { GeocodingModule } from '../geocoding/geocoding.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 import { NatalChartCalculatorService } from './engine/natal-chart-calculator.service';
 import { NatalChartInterpretationService } from './interpretation/natal-chart-interpretation.service';
 import { NatalChartRecordService } from './record/natal-chart-record.service';
@@ -24,7 +25,7 @@ import { NatalChartController } from './natal-chart.controller';
  * (Phase 8).
  */
 @Module({
-  imports: [CompanionModule, MemoryModule, PaymentModule, GeocodingModule],
+  imports: [CompanionModule, MemoryModule, PaymentModule, GeocodingModule, AnalyticsModule],
   controllers: [NatalChartController],
   providers: [NatalChartCalculatorService, NatalChartInterpretationService, NatalChartRecordService],
 })

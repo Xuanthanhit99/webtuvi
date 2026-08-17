@@ -15,6 +15,7 @@ import { FormField, fieldDescribedBy } from '@/components/ui/form-field';
 import { Alert } from '@/components/ui/alert';
 import { useInvalidateAuth } from '@/providers/auth-provider';
 import { ApiError } from '@/lib/api-error';
+import { trackEvent } from '@/lib/analytics';
 
 const PASSWORD_RULES = 'At least 8 characters, with a number or symbol.';
 
@@ -32,6 +33,7 @@ export function RegisterForm() {
 
   async function onSubmit(values: RegisterFormValues) {
     setFormError(null);
+    trackEvent('signup_started', { feature: 'auth' });
     try {
       await authApi.register(values);
       invalidateAuth();

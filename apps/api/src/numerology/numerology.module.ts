@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CompanionModule } from '../companion/companion.module';
 import { MemoryModule } from '../memory/memory.module';
 import { PaymentModule } from '../payment/payment.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 import { NumerologyInterpretationService } from './interpretation/numerology-interpretation.service';
 import { NumerologyRecordService } from './record/numerology-record.service';
 import { NumerologyController } from './numerology.controller';
@@ -22,7 +23,7 @@ import { NumerologyController } from './numerology.controller';
  * interpretation depth/history depth (see docs/architecture/premium-entitlements.md).
  */
 @Module({
-  imports: [CompanionModule, MemoryModule, PaymentModule],
+  imports: [CompanionModule, MemoryModule, PaymentModule, AnalyticsModule],
   controllers: [NumerologyController],
   providers: [NumerologyRecordService, NumerologyInterpretationService],
 })

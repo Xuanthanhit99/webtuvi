@@ -37,8 +37,9 @@ function makeHarness(options: { providerAvailable?: boolean; paymentsEnabled?: b
     get: jest.fn().mockReturnValue({ createPayment }),
   };
 
-  const service = new PaymentCheckoutService(prisma as never, configService as never, providerRegistry as never);
-  return { service, prisma, orders, createPayment, providerRegistry };
+  const analyticsService = { trackServerEvent: jest.fn().mockResolvedValue(undefined) };
+  const service = new PaymentCheckoutService(prisma as never, configService as never, providerRegistry as never, analyticsService as never);
+  return { service, prisma, orders, createPayment, providerRegistry, analyticsService };
 }
 
 describe('PaymentCheckoutService.createCheckout', () => {

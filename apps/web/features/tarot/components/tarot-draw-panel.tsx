@@ -10,11 +10,18 @@ import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { toast } from '@/components/ui/toast';
 import { ApiError } from '@/lib/api-error';
+import { trackEvent } from '@/lib/analytics';
 import { tarotApi } from '../api/tarot-api';
 import { TarotReadingView } from './tarot-reading-view';
 import { READING_TYPE_DESCRIPTIONS, READING_TYPE_LABELS } from '../labels';
 
 const READING_TYPES: TarotReadingTypeValue[] = ['DAILY_DRAW', 'SINGLE_CARD', 'THREE_CARD'];
+
+const ANALYTICS_SPREAD_TYPE: Record<TarotReadingTypeValue, 'daily_draw' | 'single_card' | 'three_card'> = {
+  DAILY_DRAW: 'daily_draw',
+  SINGLE_CARD: 'single_card',
+  THREE_CARD: 'three_card',
+};
 
 /** Sprint 7 Phase 11 — Tarot UI must clearly explain Premium boundaries, not just show a generic
  * error toast. `PREMIUM_REQUIRED` means upgrading would actually raise this specific ceiling;
@@ -64,6 +71,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     setPhase('shuffling');
     setResult(null);
     setLimitBanner(null);
+    trackEvent('tarot_started', { feature: 'tarot', spreadType: ANALYTICS_SPREAD_TYPE[type] });
     draw.mutate();
   }
 

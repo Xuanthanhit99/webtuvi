@@ -1,0 +1,16 @@
+# Sprint 13 — shared root .dockerignore, applies to both apps/api/Dockerfile and
+# apps/web/Dockerfile since both are built with the repo root as build context.
+node_modules
+**/node_modules
+**/.next
+**/dist
+**/coverage
+**/.turbo
+.git
+.env
+.env.*
+!.env.example
+**/*.log
+docs
+.claude
+.vscode

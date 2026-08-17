@@ -209,6 +209,7 @@ function makeService(
   const entitlementService = { hasPremiumAccess: jest.fn().mockResolvedValue(isPremium) } as unknown as EntitlementService;
   const costControl = { checkBudget: jest.fn().mockResolvedValue({ allowed: true }) };
   const generationLock = { tryAcquireDiscovery: jest.fn().mockResolvedValue(true), releaseDiscovery: jest.fn().mockResolvedValue(undefined) };
+  const analyticsService = { trackServerEvent: jest.fn().mockResolvedValue(undefined) };
   const service = new NatalChartRecordService(
     prisma as never,
     calculator,
@@ -218,8 +219,9 @@ function makeService(
     entitlementService,
     costControl as never,
     generationLock as never,
+    analyticsService as never,
   );
-  return { service, prisma, calculator, geocoding, entitlementService, interpretation, costControl, generationLock };
+  return { service, prisma, calculator, geocoding, entitlementService, interpretation, costControl, generationLock, analyticsService };
 }
 
 const VALID_DTO: CreateNatalChartDto = { birthDate: '2000-06-15', birthTime: '14:30', locationToken: '11111111-1111-4111-8111-111111111111' };

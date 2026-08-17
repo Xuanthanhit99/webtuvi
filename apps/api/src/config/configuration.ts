@@ -128,6 +128,11 @@ export const appConfig = registerAs('app', () => {
     sentry: {
       dsn: env.SENTRY_DSN,
     },
+    analytics: {
+      enabled: env.ANALYTICS_ENABLED,
+      posthogApiKey: env.POSTHOG_API_KEY,
+      posthogHost: env.POSTHOG_HOST,
+    },
   };
 });
 

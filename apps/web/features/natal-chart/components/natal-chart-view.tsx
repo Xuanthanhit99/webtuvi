@@ -7,6 +7,7 @@ import type { NatalChartDto } from '@beaconvie/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
+import { trackEvent } from '@/lib/analytics';
 import { natalChartApi } from '../api/natal-chart-api';
 import { CHART_STATUS_BADGE_VARIANT, CHART_STATUS_LABELS } from '../labels';
 import { NatalChartWheel } from './natal-chart-wheel';
@@ -130,7 +131,14 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
         <AspectList aspects={chart.aspects} />
       </Section>
 
-      <InterpretationSections interpretation={chart.interpretation} isGenerating={retryInterpretation.isPending} onGenerate={() => retryInterpretation.mutate()} />
+      <InterpretationSections
+        interpretation={chart.interpretation}
+        isGenerating={retryInterpretation.isPending}
+        onGenerate={() => {
+          trackEvent('natal_interpretation_requested', { feature: 'natal_chart' });
+          retryInterpretation.mutate();
+        }}
+      />
 
       <Section title="Calculation details">
         <dl className="grid grid-cols-2 gap-2 text-body-sm">

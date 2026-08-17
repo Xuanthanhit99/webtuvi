@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/components/ui/toast';
+import { trackEvent } from '@/lib/analytics';
 
 /** Sprint 11 Release Closure — defense-in-depth: `deepLink` is always server-generated today (no
  * client-facing create endpoint exists for it — see notifications.controller.ts), so this is not
@@ -63,6 +64,7 @@ export function NotificationCenter({ onNavigate }: { onNavigate: () => void }) {
 
   function handleOpen(notification: NotificationDto) {
     if (!notification.read) markRead.mutate(notification.id);
+    trackEvent('notification_opened', { feature: 'notifications', notificationCategory: notification.category });
     onNavigate();
     if (notification.deepLink && isSafeDeepLink(notification.deepLink)) router.push(notification.deepLink);
   }

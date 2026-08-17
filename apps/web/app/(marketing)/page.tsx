@@ -1,3 +1,4 @@
+import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
 import { Hero } from '@/components/marketing/hero';
 import { TrustSection } from '@/components/marketing/trust-section';
 import { ProblemSolution } from '@/components/marketing/problem-solution';
@@ -14,6 +15,7 @@ import { FinalCta } from '@/components/marketing/final-cta';
 export default function LandingPage() {
   return (
     <>
+      <AnalyticsPageView event="landing_view" />
       <Hero />
       <TrustSection />
       <ProblemSolution />

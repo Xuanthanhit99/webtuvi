@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AiInterpretation } from '@/components/ui/ai-interpretation';
 import { toast } from '@/components/ui/toast';
+import { trackEvent } from '@/lib/analytics';
 import { numerologyApi } from '../api/numerology-api';
 import { NumerologyValueCard } from './numerology-value-card';
 import { READING_STATUS_BADGE_VARIANT, READING_STATUS_LABELS, VALUE_TYPE_ORDER } from '../labels';
@@ -96,7 +97,10 @@ export function NumerologyReadingView({ reading, onChanged }: { reading: Numerol
       <AiInterpretation
         interpretation={reading.interpretation}
         isGenerating={retryInterpretation.isPending}
-        onGenerate={() => retryInterpretation.mutate()}
+        onGenerate={() => {
+          trackEvent('numerology_interpretation_requested', { feature: 'numerology' });
+          retryInterpretation.mutate();
+        }}
       />
     </div>
   );

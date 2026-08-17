@@ -9,6 +9,7 @@ import { PaymentProviderRegistryService } from '../providers/payment-provider-re
 import { PaymentProviderSignatureError, type VerifiedWebhookPayment } from '../providers/payment-provider.interface';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { dedupeKeyForPremiumActivated } from '../../notifications/eligibility/date-key.util';
+import { AnalyticsService } from '../../analytics/analytics.service';
 
 const REJECTED = Symbol('rejected');
 
@@ -42,6 +43,7 @@ export class PaymentWebhookService {
     private readonly providerRegistry: PaymentProviderRegistryService,
     private readonly entitlementService: EntitlementService,
     private readonly notifications: NotificationsService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async handlePayOSWebhook(rawPayload: unknown): Promise<void> {
@@ -71,7 +73,7 @@ export class PaymentWebhookService {
       return;
     }
 
-    const { granted } = await this.applyPaymentResult(order.id, order.userId, verified, event.id);
+    const { granted, paidNow } = await this.applyPaymentResult(order.id, order.userId, verified, event.id);
 
     // Sprint 11 — strictly downstream of the transaction above, never inside it: a notification
     // failure must never roll back a real entitlement grant (see
@@ -85,6 +87,18 @@ export class PaymentWebhookService {
       await this.notifyPremiumActivated(order.userId, order.id).catch((error) => {
         this.logger.warn(`payment.notification.premium_activated_failed orderId=${order.id} error=${error instanceof Error ? error.message : 'unknown'}`);
       });
+    }
+
+    // Sprint 13 — same "downstream, never inside the transaction, best-effort" discipline as the
+    // notification above. `paidNow` (not `granted`) is the right signal for this event: it means
+    // this call is the one that actually flipped the order PENDING→PAID (real money received),
+    // which is the fact `payment_success` represents — independent of the separate, rarer
+    // ACTIVE-account gate that decides whether an entitlement was also minted. The PENDING-only
+    // `updateMany` gate `applyPaymentResult` already uses for `paidNow` is exactly what makes this
+    // structurally impossible to double-fire on a duplicate/retried webhook delivery, with no
+    // second dedup mechanism needed.
+    if (paidNow) {
+      void this.analyticsService.trackServerEvent({ event: 'payment_success', userId: order.userId, properties: { feature: 'premium' } });
     }
   }
 
@@ -125,11 +139,12 @@ export class PaymentWebhookService {
     userId: string,
     verified: VerifiedWebhookPayment,
     webhookEventId: string,
-  ): Promise<{ granted: boolean }> {
+  ): Promise<{ granted: boolean; paidNow: boolean }> {
     const config = this.configService.get<AppConfiguration>('app')!;
 
     return this.prisma.$transaction(async (tx) => {
       let granted = false;
+      let paidNow = false;
 
       if (verified.status === 'PAID') {
         // Only transitions a still-PENDING order — a duplicate/late/stale PAID event for an
@@ -141,6 +156,7 @@ export class PaymentWebhookService {
         // entitlement against a scrubbed user id. See docs/architecture/account-data-rights.md §7.
         const result = await tx.paymentOrder.updateMany({ where: { id: orderId, status: 'PENDING' }, data: { status: 'PAID', paidAt: new Date() } });
         if (result.count > 0) {
+          paidNow = true;
           const user = await tx.user.findUnique({ where: { id: userId }, select: { status: true } });
           if (user?.status === 'ACTIVE') {
             await this.entitlementService.grantPremium(tx, userId, orderId, config.payment.premium.durationDays);
@@ -159,7 +175,7 @@ export class PaymentWebhookService {
 
       await tx.paymentWebhookEvent.update({ where: { id: webhookEventId }, data: { status: 'PROCESSED', processedAt: new Date() } });
 
-      return { granted };
+      return { granted, paidNow };
     });
   }
 

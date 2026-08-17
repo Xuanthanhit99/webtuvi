@@ -30,6 +30,7 @@ import { NumerologyModule } from './numerology/numerology.module';
 import { GeocodingModule } from './geocoding/geocoding.module';
 import { NatalChartModule } from './natal-chart/natal-chart.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -125,6 +126,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     CompanionModule,
     DashboardModule,
     NotificationsModule,
+    AnalyticsModule,
   ],
 })
 export class AppModule implements NestModule {

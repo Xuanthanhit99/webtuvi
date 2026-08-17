@@ -15,6 +15,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { MailService } from '../mail/mail.service';
 import { ActivitiesService } from '../activities/activities.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 import { EmailVerificationService } from './email-verification.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -54,6 +55,7 @@ export class AuthService {
     private readonly mailService: MailService,
     private readonly activitiesService: ActivitiesService,
     private readonly emailVerificationService: EmailVerificationService,
+    private readonly analyticsService: AnalyticsService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
@@ -85,6 +87,7 @@ export class AuthService {
     await this.activitiesService.record(user.id, 'ACCOUNT_CREATED');
     void this.mailService.sendWelcomeEmail(user.email, user.displayName);
     void this.emailVerificationService.sendVerificationForUser(user);
+    void this.analyticsService.trackServerEvent({ event: 'signup_completed', userId: user.id, properties: { feature: 'auth' } });
 
     const tokens = await this.issueTokens(user.id, userAgent);
     return { user, tokens };

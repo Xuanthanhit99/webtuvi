@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { AiInterpretation } from '@/components/ui/ai-interpretation';
 import { toast } from '@/components/ui/toast';
 import { tarotApi } from '../api/tarot-api';
+import { trackEvent } from '@/lib/analytics';
 import { TarotCardFace } from './tarot-card-face';
 import { TarotCardDetailDialog } from './tarot-card-detail-dialog';
 import { READING_STATUS_BADGE_VARIANT, READING_STATUS_LABELS, READING_TYPE_LABELS } from '../labels';
@@ -94,7 +95,10 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
       <AiInterpretation
         interpretation={reading.interpretation}
         isGenerating={retryInterpretation.isPending}
-        onGenerate={() => retryInterpretation.mutate()}
+        onGenerate={() => {
+          trackEvent('tarot_interpretation_requested', { feature: 'tarot' });
+          retryInterpretation.mutate();
+        }}
       />
 
       <TarotCardDetailDialog

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
 
 export const metadata: Metadata = { title: 'Discover' };
 
@@ -29,6 +30,7 @@ const SYSTEMS = [
 export default function DiscoverPage() {
   return (
     <div className="flex flex-col gap-6">
+      <AnalyticsPageView event="discover_viewed" properties={{ feature: 'discover' }} />
       <h1 className="font-display text-heading-lg text-text-primary">Discover</h1>
       <p className="text-body-sm text-text-secondary">Tarot, Numerology, and Natal Chart are live. Your horoscope is on its way.</p>
       <div className="grid gap-4 desktop:grid-cols-2">

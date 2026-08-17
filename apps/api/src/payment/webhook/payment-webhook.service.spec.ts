@@ -83,6 +83,7 @@ function makeHarness(
   const entitlementService = { grantPremium: jest.fn().mockResolvedValue(undefined) };
   const configService = { get: jest.fn().mockReturnValue({ payment: { premium: { durationDays: 30 } } }) };
   const notificationsService = { create: jest.fn().mockResolvedValue({ notification: { id: 'notif-1' }, created: true }) };
+  const analyticsService = { trackServerEvent: jest.fn().mockResolvedValue(undefined) };
 
   const service = new PaymentWebhookService(
     prisma as never,
@@ -90,8 +91,9 @@ function makeHarness(
     providerRegistry as never,
     entitlementService as never,
     notificationsService as never,
+    analyticsService as never,
   );
-  return { service, prisma, orders, webhookEvents, verifyWebhook, entitlementService, notificationsService, user };
+  return { service, prisma, orders, webhookEvents, verifyWebhook, entitlementService, notificationsService, user, analyticsService };
 }
 
 describe('PaymentWebhookService.handlePayOSWebhook — happy path', () => {
@@ -195,6 +197,47 @@ describe('PaymentWebhookService.handlePayOSWebhook — premium.activated notific
     notificationsService.create.mockRejectedValueOnce(new Error('notification db unavailable'));
     await expect(service.handlePayOSWebhook({})).resolves.toBeUndefined();
     expect(orders.get(ORDER_ID)!.status).toBe('PAID');
+  });
+});
+
+// Sprint 13 — `payment_success` analytics event, fired from the same `paidNow` signal the
+// idempotency suite below already exercises for the order transition itself, deliberately never a
+// second/separate dedup mechanism (see PaymentWebhookService's own docstring on this call site).
+describe('PaymentWebhookService.handlePayOSWebhook — payment_success analytics event (Sprint 13)', () => {
+  it('fires payment_success exactly once on the happy path', async () => {
+    const { service, analyticsService } = makeHarness();
+    await service.handlePayOSWebhook({});
+    expect(analyticsService.trackServerEvent).toHaveBeenCalledTimes(1);
+    expect(analyticsService.trackServerEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ event: 'payment_success', userId: USER_ID }),
+    );
+  });
+
+  it('does not fire when the webhook reports FAILED', async () => {
+    const { service, analyticsService } = makeHarness({ verifyImpl: () => paidPayload({ status: 'FAILED' }) });
+    await service.handlePayOSWebhook({});
+    expect(analyticsService.trackServerEvent).not.toHaveBeenCalled();
+  });
+
+  it('still fires for a real payment even when the account is inactive — unlike the notification, this event represents money received, independent of whether an entitlement was also granted', async () => {
+    const { service, analyticsService, entitlementService } = makeHarness({ userStatus: 'DELETED' });
+    await service.handlePayOSWebhook({});
+    expect(entitlementService.grantPremium).not.toHaveBeenCalled();
+    expect(analyticsService.trackServerEvent).toHaveBeenCalledTimes(1);
+    expect(analyticsService.trackServerEvent).toHaveBeenCalledWith(expect.objectContaining({ event: 'payment_success' }));
+  });
+
+  it('does not fire on a duplicate/already-terminal delivery (structurally idempotent via the same PENDING-only gate as the order transition, no second dedup mechanism)', async () => {
+    const { service, analyticsService } = makeHarness({ order: { status: 'PAID', paidAt: new Date() } });
+    await service.handlePayOSWebhook({});
+    expect(analyticsService.trackServerEvent).not.toHaveBeenCalled();
+  });
+
+  it('does not double-fire on a byte-for-byte duplicate webhook delivery', async () => {
+    const { service, analyticsService } = makeHarness();
+    await service.handlePayOSWebhook({});
+    await service.handlePayOSWebhook({});
+    expect(analyticsService.trackServerEvent).toHaveBeenCalledTimes(1);
   });
 });
 

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { CompanionModule } from '../companion/companion.module';
 import { MemoryModule } from '../memory/memory.module';
 import { PaymentModule } from '../payment/payment.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 import { TarotDeckService } from './deck/tarot-deck.service';
 import { TarotInterpretationService } from './interpretation/tarot-interpretation.service';
 import { TarotRecordService } from './record/tarot-record.service';
@@ -22,7 +23,7 @@ import { TarotController } from './tarot.controller';
  * docs/architecture/premium-entitlements.md).
  */
 @Module({
-  imports: [CompanionModule, MemoryModule, PaymentModule],
+  imports: [CompanionModule, MemoryModule, PaymentModule, AnalyticsModule],
   controllers: [TarotController],
   providers: [TarotDeckService, TarotRecordService, TarotInterpretationService],
 })

@@ -19,7 +19,9 @@ export class AccountExportController {
 
   @Post()
   @UseGuards(ThrottlerGuard)
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true })
+  // Sprint 13: `payment` was missing here — every named throttler applies to every guarded route
+  // by default unless skipped.
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true, payment: true })
   // Mirrors MemoryExportController's own precedent value exactly (5/60s, IP-tracked — the
   // `default` throttler has no per-user getTracker, same as MemoryExportController's).
   @Throttle({ default: { limit: 5, ttl: 60_000 } })

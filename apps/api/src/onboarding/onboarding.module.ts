@@ -3,9 +3,10 @@ import { OnboardingController } from './onboarding.controller';
 import { OnboardingService } from './onboarding.service';
 import { MemoryModule } from '../memory/memory.module';
 import { ActivitiesModule } from '../activities/activities.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
-  imports: [MemoryModule, ActivitiesModule],
+  imports: [MemoryModule, ActivitiesModule, AnalyticsModule],
   controllers: [OnboardingController],
   providers: [OnboardingService],
 })

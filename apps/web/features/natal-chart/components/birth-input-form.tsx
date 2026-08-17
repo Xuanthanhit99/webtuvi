@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ApiError } from '@/lib/api-error';
+import { trackEvent } from '@/lib/analytics';
 import { geocodingApi, natalChartApi } from '../api/natal-chart-api';
 import { NatalChartView } from './natal-chart-view';
 
@@ -135,6 +136,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
     }
 
     setPhase('calculating');
+    trackEvent('natal_started', { feature: 'natal_chart' });
     create.mutate();
   }
 

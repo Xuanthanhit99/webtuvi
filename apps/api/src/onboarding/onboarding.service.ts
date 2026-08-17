@@ -4,6 +4,7 @@ import type { OnboardingMessageDto, OnboardingStateDto } from '@beaconvie/types'
 import { PrismaService } from '../prisma/prisma.service';
 import { MemoryCandidateService } from '../memory/candidate/memory-candidate.service';
 import { ActivitiesService } from '../activities/activities.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 import * as script from './conversation-script';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class OnboardingService {
     private readonly prisma: PrismaService,
     private readonly memoryCandidateService: MemoryCandidateService,
     private readonly activitiesService: ActivitiesService,
+    private readonly analyticsService: AnalyticsService,
   ) {}
 
   async getState(userId: string): Promise<OnboardingStateDto> {
@@ -166,6 +168,7 @@ export class OnboardingService {
     ]);
 
     await this.activitiesService.record(userId, 'ONBOARDING_COMPLETED');
+    void this.analyticsService.trackServerEvent({ event: 'onboarding_completed', userId, properties: { feature: 'onboarding' } });
   }
 
   /**
@@ -191,6 +194,7 @@ export class OnboardingService {
     ]);
 
     await this.activitiesService.record(userId, 'ONBOARDING_COMPLETED');
+    void this.analyticsService.trackServerEvent({ event: 'onboarding_completed', userId, properties: { feature: 'onboarding' } });
   }
 
   private async getOrCreateProgress(userId: string) {

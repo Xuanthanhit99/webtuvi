@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { PremiumUpgradePanel } from '@/features/premium/components/premium-upgrade-panel';
+import { useTrackEvent } from '@/hooks/use-track-event';
 
 function PremiumBoundaryBanner() {
   const searchParams = useSearchParams();
@@ -27,6 +28,8 @@ function PremiumBoundaryBanner() {
 }
 
 export default function PremiumPage() {
+  useTrackEvent('premium_viewed', { feature: 'premium' });
+
   return (
     <div className="flex flex-col gap-6">
       <div>

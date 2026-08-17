@@ -184,8 +184,17 @@ function makeService(seed: ReadingRow[] = [], isPremium = false, interpretResult
   const entitlementService = { hasPremiumAccess: jest.fn().mockResolvedValue(isPremium) } as unknown as EntitlementService;
   const costControl = { checkBudget: jest.fn().mockResolvedValue({ allowed: true }) };
   const generationLock = { tryAcquireDiscovery: jest.fn().mockResolvedValue(true), releaseDiscovery: jest.fn().mockResolvedValue(undefined) };
-  const service = new NumerologyRecordService(prisma as never, interpretation, memoryRetrieval, entitlementService, costControl as never, generationLock as never);
-  return { service, prisma, entitlementService, interpretation, costControl, generationLock };
+  const analyticsService = { trackServerEvent: jest.fn().mockResolvedValue(undefined) };
+  const service = new NumerologyRecordService(
+    prisma as never,
+    interpretation,
+    memoryRetrieval,
+    entitlementService,
+    costControl as never,
+    generationLock as never,
+    analyticsService as never,
+  );
+  return { service, prisma, entitlementService, interpretation, costControl, generationLock, analyticsService };
 }
 
 describe('NumerologyRecordService — calculate() persists the real deterministic result', () => {
