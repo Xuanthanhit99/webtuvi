@@ -1,8 +1,11 @@
-# BeaconVie — Sprint 1
+# BeaconVie
 
-An AI Companion that remembers you. This repository contains Sprint 1 of BeaconVie:
-Landing, Authentication, a conversational Onboarding, and a Dashboard, built on a
-real NestJS + PostgreSQL + Redis backend and a Next.js App Router frontend.
+An AI Companion that remembers you. Started as Sprint 1 (Landing, Authentication, a
+conversational Onboarding, and a Dashboard) and has grown since through active sprint
+development — real Tarot/Numerology/Natal Chart Discovery, Premium/Payment, and
+Notifications now ship alongside it, all on a real NestJS + PostgreSQL + Redis backend
+and a Next.js App Router frontend. See "What's real vs simplified" below and
+`docs/progress/` for the current state.
 
 See `docs/architecture/sprint-1-decisions.md` for the product/architecture
 decisions behind this build (where it follows `docs/reference` vs. the Sprint 1
@@ -116,7 +119,8 @@ apps/
     src/
       auth/       Register/login/refresh/logout/forgot-reset password
       onboarding/ Conversational onboarding state machine
-      companion/  Minimal rule-based post-onboarding chat
+      companion/  Real, LLM-backed post-onboarding chat (OpenAI/Anthropic/Gemini,
+                  see "What's real vs simplified" below)
       dashboard/  Aggregation endpoint + decision engine
       memory/     Memory Foundation (Sprint 3A) — consent, candidates, CRUD,
                   versioning, audit, timeline, export; see
@@ -225,10 +229,19 @@ Two things remain deliberately simplified (and disclosed, not hidden):
 - **Google/Apple login buttons are visible but disabled** ("Coming soon") — no
   OAuth credentials are configured for this environment, and requirements
   explicitly forbid faking a successful social login.
-- Of Discovery's four systems, only **Tarot** is real. Natal Chart, Eastern
-  Horoscope, and Numerology remain out of scope, as do Reports and Community.
-  Their nav entries and/or landing mentions exist, but route to structured
-  "Coming soon" pages — never a dead link or a page that pretends to be a
-  working feature. Tarot cards have no illustrated artwork yet — a
-  typographic/symbolic card face is used instead (see
-  `docs/architecture/tarot-discovery.md` "No card artwork").
+- Of Discovery's systems, **Tarot** (Sprint 6), **Numerology** (Sprint 8), and
+  **Natal Chart** (Sprint 9, displayed as "Bản Đồ Sao" in the Discover hub) are
+  real. **Eastern Horoscope** remains "Coming soon" — never a dead link or a
+  page that pretends to be a working feature. **Reports** and **Community**
+  remain out of scope; Vietnamese **Tử Vi Lá Số** is a separate, planned
+  future module with no code yet (see
+  `docs/product/vietnamese-tu-vi-product-definition.md`). Tarot cards have no
+  illustrated artwork yet — a typographic/symbolic card face is used instead
+  (see `docs/architecture/tarot-discovery.md` "No card artwork").
+- **Reflection, Insight, Review, and Goal are frozen modules** (built in
+  Sprints 4B–5C, functionally complete, untouched since) — hidden from
+  primary navigation and Settings as of Sprint 14 (Ambiguity Cleanup); code
+  and data remain intact and direct routes still work.
+- **`/menh-vi/*` is an archived internal design prototype**, not a product
+  surface — it returns 404 as of Sprint 14. Its reusable components live
+  under `apps/web/features/menh-vi` for future reuse.

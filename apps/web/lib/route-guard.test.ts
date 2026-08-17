@@ -1,4 +1,4 @@
-import { resolveRedirect } from './route-guard';
+import { isArchivedRoute, resolveRedirect } from './route-guard';
 
 describe('resolveRedirect (protected route behavior)', () => {
   it('redirects an unauthenticated visitor away from app routes to /login', () => {
@@ -67,5 +67,20 @@ describe('resolveRedirect (protected route behavior)', () => {
     expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: true, session: notOnboarded })).toBeNull();
     expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: true, session: onboarded })).toBeNull();
     expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: true, session: null })).toBeNull();
+  });
+});
+
+describe('isArchivedRoute (Sprint 14 — /menh-vi archival)', () => {
+  it('matches the root /menh-vi route and every sub-route', () => {
+    expect(isArchivedRoute('/menh-vi')).toBe(true);
+    expect(isArchivedRoute('/menh-vi/la-so')).toBe(true);
+    expect(isArchivedRoute('/menh-vi/tarot')).toBe(true);
+    expect(isArchivedRoute('/menh-vi/anything/deeply/nested')).toBe(true);
+  });
+
+  it('does not match real product routes, including ones that merely start similarly', () => {
+    expect(isArchivedRoute('/discover')).toBe(false);
+    expect(isArchivedRoute('/dashboard')).toBe(false);
+    expect(isArchivedRoute('/menh-vi-something-else')).toBe(false);
   });
 });

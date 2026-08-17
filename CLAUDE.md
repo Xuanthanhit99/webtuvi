@@ -2,13 +2,27 @@
 
 ## Project overview
 
-BeaconVie is a monorepo for a Sprint 1 AI companion product with:
+BeaconVie is a monorepo for an AI companion product (currently in active sprint development, past
+Sprint 1) with:
 
 - Next.js 15 App Router frontend in apps/web
 - NestJS backend in apps/api
 - Shared packages in packages/*
 
 The project is a real full-stack app with PostgreSQL, Redis, Prisma, and Docker-based local infrastructure.
+
+Shipped Discovery systems: Tarot, Numerology, Natal Chart (displayed as "Bản Đồ Sao" in the
+Discover hub). Eastern Horoscope (Ngũ Hành Phương Đông) is spec'd but not yet built. Vietnamese Tử
+Vi Lá Số is a separate, founder-greenlit future module — see
+`docs/product/vietnamese-tu-vi-product-definition.md` and
+`docs/product/product-completion-roadmap-v2.md`; it has no code, route, or engine yet and must
+never be confused with Eastern Horoscope or Natal Chart.
+
+`/menh-vi/*` is an archived internal design prototype (returns 404 as of Sprint 14) — not a
+product surface. Its components under `apps/web/features/menh-vi` are preserved for reuse but
+unreachable publicly. Reflection, Insight, Review, and Goal are frozen modules: fully implemented,
+code and data intact, but hidden from primary navigation/Settings since Sprint 14 (direct routes
+remain reachable, unlisted).
 
 ## Key commands
 
@@ -46,13 +60,14 @@ Before running the app locally:
 - Keep feature code colocated with its related files where possible.
 - Follow TypeScript strictness and existing NestJS/Next.js conventions.
 - Avoid introducing mock behavior when a real implementation is available.
-- Preserve the Sprint 1 scope and product constraints.
+- Preserve existing product scope and constraints; don't build out-of-scope modules ahead of their scheduled sprint (see the roadmap docs above).
 
 ## Product constraints
 
-- The companion is rule-based, not an LLM, for Sprint 1.
+- The Companion is LLM-based (OpenAI/Anthropic/Gemini, selected via `DEFAULT_AI_PROVIDER`), not rule-based — real since Sprint 2B. A Mock provider exists for local dev only and is blocked from running when `NODE_ENV=production`.
+- Discovery systems (Tarot, Numerology, Natal Chart) are deterministic-first: the underlying calculation is fixed/curated code, never AI-generated; only the narrated interpretation on top is AI-generated. The same discipline applies to any future Discovery system (Eastern Horoscope, Tử Vi).
 - Social login buttons may be present but should remain disabled unless the feature is actually implemented.
-- Do not pretend features are complete when they are intentionally out of scope for Sprint 1.
+- Do not pretend features are complete when they are intentionally out of scope for the current sprint.
 
 ## Working expectations
 

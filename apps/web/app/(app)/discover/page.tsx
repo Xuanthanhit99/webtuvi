@@ -7,20 +7,26 @@ import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
 
 export const metadata: Metadata = { title: 'Discover' };
 
-/** Tarot (Sprint 6), Numerology (Sprint 8), and Natal Chart (Sprint 9) are real. Eastern
- * Horoscope stays honestly labeled "Coming soon" — never claimed as available until it actually
- * is (see docs/audit/web-tu-vi-remediation-roadmap.md). */
+/** Tarot (Sprint 6), Numerology (Sprint 8), and Natal Chart (Sprint 9, displayed as "Bản Đồ Sao"
+ * per docs/product/vietnamese-tu-vi-product-definition.md §1) are real. Eastern Horoscope
+ * (Ngũ Hành Phương Đông — Chinese Zodiac/Five Elements) stays honestly labeled "Coming soon" and
+ * is a distinct, separate module from the future, not-yet-built Tử Vi Lá Số — never conflate the
+ * two (see docs/product/vietnamese-tu-vi-product-definition.md §1). */
 const SYSTEMS = [
   { title: 'Tarot', description: 'A real, deterministic 78-card draw — no card ever chosen or invented by AI.', href: '/discover/tarot', available: true },
   {
-    title: 'Natal Chart',
-    description: 'A real, deterministic birth chart calculated from your birth date, time, and place — what it says about how you move through the world.',
+    title: 'Bản Đồ Sao',
+    description: 'A real, deterministic Western birth chart calculated from your birth date, time, and place — what it says about how you move through the world.',
     href: '/discover/natal-chart',
     available: true,
   },
-  { title: 'Eastern Horoscope', description: 'An old lens on a familiar question: who am I, really?', available: false },
   {
-    title: 'Numerology',
+    title: 'Ngũ Hành Phương Đông',
+    description: 'Chinese Zodiac and Five Elements — an old lens on a familiar question: who am I, really? (Not Vietnamese Tử Vi Lá Số, a separate future module.)',
+    available: false,
+  },
+  {
+    title: 'Thần Số Học',
     description: 'The numbers already in your life, given a second look — no number ever chosen or invented by AI.',
     href: '/discover/numerology',
     available: true,
@@ -32,7 +38,7 @@ export default function DiscoverPage() {
     <div className="flex flex-col gap-6">
       <AnalyticsPageView event="discover_viewed" properties={{ feature: 'discover' }} />
       <h1 className="font-display text-heading-lg text-text-primary">Discover</h1>
-      <p className="text-body-sm text-text-secondary">Tarot, Numerology, and Natal Chart are live. Your horoscope is on its way.</p>
+      <p className="text-body-sm text-text-secondary">Tarot, Thần Số Học, and Bản Đồ Sao are live. Ngũ Hành Phương Đông is on its way.</p>
       <div className="grid gap-4 desktop:grid-cols-2">
         {SYSTEMS.map((system) => (
           <Card key={system.title}>

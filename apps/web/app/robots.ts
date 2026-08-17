@@ -8,7 +8,9 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
       // Authenticated app surfaces — nothing behind the login wall should ever be crawled.
-      disallow: ['/dashboard', '/companion', '/journal', '/memory', '/reflections', '/insights', '/reviews', '/goals', '/discover', '/settings'],
+      // '/menh-vi' is a Sprint 14-archived design prototype (returns 404) — excluded here too so
+      // it's never crawled or indexed as a second, differently-branded public surface.
+      disallow: ['/dashboard', '/companion', '/journal', '/memory', '/reflections', '/insights', '/reviews', '/goals', '/discover', '/settings', '/menh-vi'],
     },
     sitemap: `${baseUrl}/sitemap.xml`,
   };

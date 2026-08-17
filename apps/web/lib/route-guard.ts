@@ -20,6 +20,14 @@ export const APP_ROUTES = [
 ];
 export const ONBOARDING_ROUTE = '/onboarding';
 
+// Sprint 14 (Ambiguity Cleanup) — `/menh-vi/*` is archived from public routing (see
+// app/menh-vi/layout.tsx and middleware.ts). Kept as a pure, unit-testable predicate for the same
+// reason resolveRedirect() is: middleware.ts can't be exercised directly without constructing a
+// real NextRequest.
+export function isArchivedRoute(pathname: string): boolean {
+  return pathname === '/menh-vi' || pathname.startsWith('/menh-vi/');
+}
+
 export interface RouteGuardInput {
   pathname: string;
   hasAccessToken: boolean;

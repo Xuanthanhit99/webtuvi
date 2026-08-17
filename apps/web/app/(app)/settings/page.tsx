@@ -131,27 +131,6 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      <Card>
-        <p className="mb-1 text-body-sm font-semibold text-text-secondary">More tools</p>
-        <p className="mb-3 text-body-sm text-text-secondary">
-          Deterministic, never AI-generated — always shown with the reason and evidence behind them.
-        </p>
-        <div className="flex flex-col divide-y divide-border-subtle">
-          <Link href="/reflections" className="flex items-center justify-between py-2.5 text-body-sm text-text-primary hover:text-insight">
-            Reflections
-          </Link>
-          <Link href="/insights" className="flex items-center justify-between py-2.5 text-body-sm text-text-primary hover:text-insight">
-            Insights
-          </Link>
-          <Link href="/reviews" className="flex items-center justify-between py-2.5 text-body-sm text-text-primary hover:text-insight">
-            Reviews
-          </Link>
-          <Link href="/goals" className="flex items-center justify-between py-2.5 text-body-sm text-text-primary hover:text-insight">
-            Goals
-          </Link>
-        </div>
-      </Card>
-
       <AccountDataSection />
 
       <NotificationPreferencesSection />
