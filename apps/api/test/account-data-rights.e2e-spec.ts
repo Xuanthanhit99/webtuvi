@@ -121,11 +121,12 @@ describe('Account Data Rights (e2e)', () => {
       const res = await request(app.getHttpServer()).post('/users/me/export').set(headers).expect(201);
       const result = res.body.data.result;
 
-      expect(result.exportVersion).toBe(2); // bumped Sprint 11
+      expect(result.exportVersion).toBe(3); // bumped Sprint 16 — see AccountExportResult doc comment
       expect(result.account.id).toBe(userId);
       expect(result.journal).toHaveLength(1);
       expect(result.discoveries.tarot).toHaveLength(1);
       expect(result.discoveries.numerology).toHaveLength(1);
+      expect(result.destinyReports).toEqual([]); // Sprint 16 — present, empty for a user who never generated one
       expect(result.memory.memories).toHaveLength(1);
       expect(result.memory.legacyNotes).toHaveLength(1);
       expect(result.premium.entitlements).toHaveLength(1);

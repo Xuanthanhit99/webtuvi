@@ -6,7 +6,7 @@ import type { AIFeature as PrismaAIFeature } from '@prisma/client';
  * uppercase Prisma `AIFeature` enum via `toPrismaAIFeature()` exactly like `toPrismaProviderName()`
  * already does for providers. See docs/architecture/discovery-ai-cost-control.md.
  */
-export type AIFeature = 'companion' | 'tarot' | 'numerology' | 'natal_chart';
+export type AIFeature = 'companion' | 'tarot' | 'numerology' | 'natal_chart' | 'reports';
 
 /** The three Discovery surfaces — everything except Companion. */
 export type DiscoveryAIFeature = Exclude<AIFeature, 'companion'>;

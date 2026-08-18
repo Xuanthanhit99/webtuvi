@@ -1316,6 +1316,110 @@ export interface GeocodingSearchResultDto {
   label: string;
 }
 
+// --- Personal Destiny Report (Sprint 16). Required sources: Natal Chart + Numerology. Optional:
+// Tarot, Memory. See docs/product/personal-destiny-report-decisions.md — the authoritative,
+// founder-locked scope this frontend implements against.
+
+export interface ReportReadinessDto {
+  ready: boolean;
+  natalChart: { available: boolean; sourceId: string | null };
+  numerology: { available: boolean; sourceId: string | null };
+  tarot: { available: boolean; count: number };
+  memory: { available: boolean };
+}
+
+export interface ReportNarrativeSectionDto {
+  narrative: string;
+  evidenceRefs: string[];
+}
+
+export interface ReportTitledSectionDto extends ReportNarrativeSectionDto {
+  title: string;
+}
+
+/** The validated, schema-conforming AI synthesis — kept strictly separate from
+ * `ReportDto['sourceSnapshot']` (calculated facts) at every layer, including here. */
+export interface ReportStructuredResultDto {
+  overview: string;
+  coreIdentity: ReportNarrativeSectionDto;
+  strengths: ReportTitledSectionDto[];
+  growthAreas: ReportTitledSectionDto[];
+  relationships: ReportNarrativeSectionDto;
+  careerDirection: ReportNarrativeSectionDto;
+  /** Null when no Tarot context was used for this report — never invented from nothing. */
+  currentThemes: ReportNarrativeSectionDto | null;
+  /** Null when no Memory context was used for this report — never invented from nothing. */
+  personalizedReflection: ReportNarrativeSectionDto | null;
+  sourceHighlights: { source: string; fact: string }[];
+  methodology: string;
+}
+
+export interface ReportNatalChartSnapshotDto {
+  sourceId: string;
+  calculationVersion: string;
+  engineVersion: string;
+  ascendant: { sign: string; degreeInSign: number } | null;
+  midheaven: { sign: string; degreeInSign: number } | null;
+  placements: { body: string; sign: string; degreeInSign: number; house: number | null; retrograde: boolean; meaning: string }[];
+  aspects: { pointA: string; pointB: string; type: string; meaning: string }[];
+}
+
+export interface ReportNumerologySnapshotDto {
+  sourceId: string;
+  calculationVersion: string;
+  values: { type: string; value: number; isMasterNumber: boolean; meaning: string }[];
+}
+
+export interface ReportTarotSnapshotDto {
+  sourceId: string;
+  drawnAt: string;
+  type: string;
+  cards: { name: string; isReversed: boolean; positionLabel: string | null }[];
+}
+
+export interface ReportMemorySnapshotDto {
+  title: string;
+  summary: string;
+}
+
+/** The canonical, immutable calculated-facts snapshot a report was generated from (locked decision
+ * #9 — captured once, never mutated). Rendered as the report's "Calculated Facts" section, always
+ * visually distinguished from `ReportStructuredResultDto` (AI narrative). */
+export interface ReportSourceSnapshotDto {
+  natalChart: ReportNatalChartSnapshotDto;
+  numerology: ReportNumerologySnapshotDto;
+  tarot: ReportTarotSnapshotDto[] | null;
+  memory: ReportMemorySnapshotDto[] | null;
+}
+
+export type DestinyReportStatusValue = 'GENERATING' | 'READY' | 'FAILED';
+export type DestinyReportFailureReasonValue = 'PROVIDER_UNAVAILABLE' | 'BUDGET_EXCEEDED' | 'VALIDATION_FAILED' | 'SAFETY_REFUSED' | 'INTERNAL_ERROR';
+
+export interface ReportSummaryDto {
+  id: string;
+  status: DestinyReportStatusValue;
+  createdAt: string;
+  completedAt: string | null;
+}
+
+export interface ReportDto extends ReportSummaryDto {
+  reportSchemaVersion: string;
+  reportTemplateVersion: string;
+  aiPromptVersion: string;
+  sourceSnapshot: ReportSourceSnapshotDto;
+  result: ReportStructuredResultDto | null;
+  aiProvider: string | null;
+  aiModel: string | null;
+  failureReason: DestinyReportFailureReasonValue | null;
+}
+
+export interface ListReportsResultDto {
+  items: ReportSummaryDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 // --- Notification & Retention Foundation (Sprint 11). Product Bible Module 19, V1 tier — see
 // docs/audit/sprint-11-pre-implementation-audit.md and docs/architecture/notification-retention.md.
 // Deterministic, silence-by-default: no AI decides whether/when to notify. No push channel. ---
@@ -1388,7 +1492,14 @@ export type ClientAnalyticsEventName =
   | 'natal_interpretation_requested'
   | 'notification_opened'
   | 'premium_viewed'
-  | 'checkout_completed';
+  | 'checkout_completed'
+  /** Sprint 16 — Personal Destiny Report. `report_generation_started` fires when the user clicks
+   * Generate/Regenerate, mirroring `tarot_started`'s "client marks intent, server confirms the
+   * resulting fact" split — see `report_generation_completed`/`report_generation_failed` below and
+   * docs/product/personal-destiny-report-decisions.md. */
+  | 'report_viewed'
+  | 'report_generation_started'
+  | 'report_upgrade_clicked';
 
 /** Events only the backend may emit, in-process, at the exact point the underlying fact becomes
  * true (a row was persisted, a webhook flipped an order to PAID). A client can never cause one of
@@ -1403,7 +1514,14 @@ export type ServerAnalyticsEventName =
   | 'natal_completed'
   | 'natal_interpretation_completed'
   | 'checkout_started'
-  | 'payment_success';
+  | 'payment_success'
+  /** Sprint 16 — fired in-process at the exact moment a `DestinyReport` row transitions to
+   * READY/FAILED, matching `tarot_completed`'s pattern. Unlike the Discovery systems, Reports also
+   * has a `_failed` server event — no Discovery generation currently emits one, but Reports'
+   * heavier synthesis/higher stakes (docs/architecture/personal-destiny-report.md §30) makes
+   * failure-rate visibility worth this small, deliberate contract extension. */
+  | 'report_generation_completed'
+  | 'report_generation_failed';
 
 export type AnalyticsEventName = ClientAnalyticsEventName | ServerAnalyticsEventName;
 
@@ -1416,7 +1534,8 @@ export type AnalyticsFeature =
   | 'numerology'
   | 'natal_chart'
   | 'notifications'
-  | 'premium';
+  | 'premium'
+  | 'reports';
 
 /** Deliberately flat and small. No free-text field exists anywhere in this shape — every property
  * is either a bounded enum or a route pathname (query string stripped server-side). This is the

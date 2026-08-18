@@ -31,6 +31,9 @@ function assertExhaustiveClientEventName(name: ClientAnalyticsEventName): true {
     case 'notification_opened':
     case 'premium_viewed':
     case 'checkout_completed':
+    case 'report_viewed':
+    case 'report_generation_started':
+    case 'report_upgrade_clicked':
       return true;
     default: {
       const exhaustive: never = name;
@@ -51,6 +54,8 @@ function assertExhaustiveServerEventName(name: ServerAnalyticsEventName): true {
     case 'natal_interpretation_completed':
     case 'checkout_started':
     case 'payment_success':
+    case 'report_generation_completed':
+    case 'report_generation_failed':
       return true;
     default: {
       const exhaustive: never = name;
@@ -79,12 +84,14 @@ describe('analytics event name lists stay in sync with packages/types', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('matches the Sprint 13 brief §5 total of 24 distinct analytics events', () => {
+  it('matches the Sprint 13 brief §5 total of 24 distinct analytics events, plus Sprint 16’s 5 Reports events', () => {
     // landing_view, signup_started/completed, onboarding_started/completed, dashboard_viewed,
     // discover_viewed, {tarot,numerology,natal}_{started,completed,interpretation_requested,
     // interpretation_completed} (4×3=12), notification_opened, premium_viewed, checkout_started/
     // completed, payment_success — 24 total, one more than the brief's own prose count (its list
-    // has 24 bullet lines; "23" was this test's own miscount, not a contract change).
-    expect(CLIENT_ANALYTICS_EVENT_NAMES.length + SERVER_ANALYTICS_EVENT_NAMES.length).toBe(24);
+    // has 24 bullet lines; "23" was this test's own miscount, not a contract change). Sprint 16
+    // (Personal Destiny Report) adds 5: report_viewed, report_generation_started/completed/failed,
+    // report_upgrade_clicked — see docs/product/personal-destiny-report-decisions.md.
+    expect(CLIENT_ANALYTICS_EVENT_NAMES.length + SERVER_ANALYTICS_EVENT_NAMES.length).toBe(29);
   });
 });

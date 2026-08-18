@@ -21,6 +21,9 @@ export const CLIENT_ANALYTICS_EVENT_NAMES: ClientAnalyticsEventName[] = [
   'notification_opened',
   'premium_viewed',
   'checkout_completed',
+  'report_viewed',
+  'report_generation_started',
+  'report_upgrade_clicked',
 ];
 
 export const SERVER_ANALYTICS_EVENT_NAMES: ServerAnalyticsEventName[] = [
@@ -34,6 +37,8 @@ export const SERVER_ANALYTICS_EVENT_NAMES: ServerAnalyticsEventName[] = [
   'natal_interpretation_completed',
   'checkout_started',
   'payment_success',
+  'report_generation_completed',
+  'report_generation_failed',
 ];
 
 export const ANALYTICS_FEATURES = [
@@ -46,6 +51,7 @@ export const ANALYTICS_FEATURES = [
   'natal_chart',
   'notifications',
   'premium',
+  'reports',
 ] as const;
 
 export const ANALYTICS_RESULT_STATUSES = ['success', 'failure'] as const;

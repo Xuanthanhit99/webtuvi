@@ -31,6 +31,7 @@ import { GeocodingModule } from './geocoding/geocoding.module';
 import { NatalChartModule } from './natal-chart/natal-chart.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -127,6 +128,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     DashboardModule,
     NotificationsModule,
     AnalyticsModule,
+    ReportsModule,
   ],
 })
 export class AppModule implements NestModule {

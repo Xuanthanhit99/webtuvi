@@ -85,6 +85,12 @@ export class AccountDeletionService {
       this.prisma.tarotReading.deleteMany({ where: { userId } }), // cascades TarotReadingCard/Session/History
       this.prisma.numerologyReading.deleteMany({ where: { userId } }), // cascades NumerologyValue/History
       this.prisma.natalChart.deleteMany({ where: { userId } }), // cascades NatalPlacement/House/Aspect/History
+      // --- Personal Destiny Reports (Sprint 16) — no financial-style retention exception; see
+      // docs/product/personal-destiny-report-decisions.md "Account export/deletion". Deleted
+      // independently of Natal Chart/Numerology above: `natalChartId`/`numerologyReadingId` are
+      // deliberately plain references, not foreign keys (see the schema comment on DestinyReport),
+      // so nothing here relies on ordering relative to those two deletes. ---
+      this.prisma.destinyReport.deleteMany({ where: { userId } }),
       // --- Non-sensitive activity log (personal, not an accounting record) ---
       this.prisma.activityEvent.deleteMany({ where: { userId } }),
       // --- Deliberately NOT deleted: PaymentOrder, PaymentWebhookEvent, PremiumEntitlement ---

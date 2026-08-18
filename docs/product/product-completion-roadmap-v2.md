@@ -134,7 +134,15 @@ This yields: **Production/Analytics first → cleanup → Tử Vi specification 
 **In scope:** Evidence Engine, grounding-verification pipeline, canonical-facts/AI-synthesis boundary.
 **Out of scope:** Tử Vi or Eastern Horoscope as inputs (both added as separate follow-up increments once each ships).
 **Dependencies:** none blocking.
-**DoD:** at least 3 of the Bible's 15 report types shipped with automated grounding tests; evidence-threshold gating verified.
+**DoD:** ~~at least 3 of the Bible's 15 report types shipped with automated grounding tests~~ —
+**clarified at Sprint 16 Release Closure, per the founder-locked decision in
+`docs/product/personal-destiny-report-decisions.md`:** one Personal Destiny Report, with its 11
+locked internal sections, shipped with automated grounding tests and evidence-threshold gating
+verified. This wording originally assumed Product Bible Module 16's report-*type* model (Monthly
+Reflection, Growth Report, etc. as separately generatable artifacts); the founder locked a single
+cross-Discovery-synthesis report instead. This is a wording correction to match the already-locked
+product decision, not a scope change — see the architecture doc's §23/§24 and the decision record's
+"Flagged, unresolved → Roadmap V2 DoD-language tension" section for the original analysis.
 
 ### Sprint 17 — Eastern Horoscope (Chinese Zodiac / Five Elements)
 **Goal:** ship the Bible's actual, narrowly-scoped, already-spec'd V1.5 Discovery module — independent of Tử Vi, unblocks the SEO calculator idea later.

@@ -65,6 +65,7 @@ model User {
   natalCharts             NatalChart[]
   notifications           Notification[]
   notificationPreference  NotificationPreference?
+  destinyReports          DestinyReport[]
 
   @@map("users")
 }
@@ -298,6 +299,9 @@ enum AIFeature {
   TAROT
   NUMEROLOGY
   NATAL_CHART
+  /// Sprint 16 — Personal Destiny Report. Additive to the Sprint 12 attribution convention; existing
+  /// rows/queries for the other four values are unaffected.
+  REPORTS
 }
 
 model Conversation {
@@ -2415,4 +2419,78 @@ model NotificationPreference {
   updatedAt     DateTime @updatedAt
 
   @@map("notification_preferences")
+}
+
+/// Sprint 16 — Personal Destiny Report generation lifecycle. Synchronous generation only (locked
+/// product decision, docs/product/personal-destiny-report-decisions.md) — no separate REQUESTED
+/// state, since a row is created already GENERATING at the start of the one HTTP request that
+/// produces it.
+enum DestinyReportStatus {
+  GENERATING
+  READY
+  FAILED
+}
+
+/// Safe, bounded failure classification only — never a raw provider error string or prompt content
+/// (mirrors the "no sensitive prompts/errors" rule in the locked decisions). Stored on `FAILED` rows
+/// so history/observability can distinguish failure modes without exposing internals.
+enum DestinyReportFailureReason {
+  PROVIDER_UNAVAILABLE
+  BUDGET_EXCEEDED
+  VALIDATION_FAILED
+  SAFETY_REFUSED
+  INTERNAL_ERROR
+}
+
+/// A persisted Personal Destiny Report — one synthesis of a user's Natal Chart + Numerology
+/// (required) and optionally recent Tarot history / consented Memory, computed once and never
+/// mutated in place (locked decision #9, personal-destiny-report.md "PRODUCT DECISIONS LOCKED").
+/// `sourceSnapshot` is the full canonical-facts snapshot captured at generation time — a report
+/// remains historically reproducible even if the underlying Natal/Numerology records are later
+/// archived, deleted, or recalculated under a newer engine version (locked decision #9/#10).
+/// `structuredResult` is the validated AI synthesis (locked decision #13's schema), kept strictly
+/// separate from `sourceSnapshot` so calculated facts and AI narrative are never conflated in
+/// storage, mirroring the same discipline already enforced for NatalChart/NumerologyReading.
+/// Regeneration (locked decision #22) creates an entirely new row rather than updating an existing
+/// one — report history is just this table's own rows for a user, ordered by `createdAt`.
+model DestinyReport {
+  id     String              @id @default(cuid())
+  userId String
+  user   User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status DestinyReportStatus @default(GENERATING)
+
+  /// Traceability only — correctness comes from `sourceSnapshot`, not these ids (the referenced
+  /// records are never re-read after generation). Intentionally not a foreign key, mirroring the
+  /// existing `sourceId`/`sourceType` plain-reference precedent used across this schema
+  /// (AIUsage/ProviderLog, MemorySourceType, etc.) — a report must remain valid even if its source
+  /// Natal Chart or Numerology reading is later archived or deleted.
+  natalChartId        String
+  numerologyReadingId String
+
+  reportSchemaVersion   String
+  reportTemplateVersion String
+  aiPromptVersion       String
+
+  /// Canonical, immutable input facts captured at generation time — Natal Chart + Numerology
+  /// (required) plus optional bounded Tarot/Memory context, each carrying its own source
+  /// calculation version. Shape: `ReportSourceSnapshot` (apps/api/src/reports/reports.types.ts).
+  /// Never mutated after creation (locked decision #9).
+  sourceSnapshot Json
+
+  /// The validated, schema-conforming AI synthesis (locked decision #13) — null until `READY`.
+  /// Shape: `ReportStructuredResult` (apps/api/src/reports/reports.types.ts).
+  structuredResult Json?
+
+  aiProvider AIProviderName?
+  aiModel    String?
+
+  failureReason DestinyReportFailureReason?
+
+  generationStartedAt DateTime  @default(now())
+  completedAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([userId, status, createdAt])
+  @@map("destiny_reports")
 }

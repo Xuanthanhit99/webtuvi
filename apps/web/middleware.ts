@@ -66,6 +66,8 @@ export const config = {
     '/insights/:path*',
     '/reviews/:path*',
     '/premium/:path*',
+    // Sprint 16 — Personal Destiny Report.
+    '/reports/:path*',
     // Sprint 14 (Ambiguity Cleanup) — archived prototype, see the handler above.
     '/menh-vi',
     '/menh-vi/:path*',

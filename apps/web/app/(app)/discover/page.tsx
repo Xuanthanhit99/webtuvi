@@ -57,6 +57,25 @@ export default function DiscoverPage() {
           </Card>
         ))}
       </div>
+
+      {/* Sprint 16 — a synthesis across Discovery systems, not a Discovery system itself (Product
+       * Bible Module 16 §2's "convergence point" framing) — kept as its own section rather than a
+       * SYSTEMS grid entry. Requires a completed Bản Đồ Sao + Thần Số Học first (locked decision,
+       * docs/product/personal-destiny-report-decisions.md); Premium to generate. */}
+      <Card>
+        <div className="mb-2 flex items-center justify-between">
+          <p className="font-display text-body-lg text-text-primary">Personal Destiny Report</p>
+          <Badge variant="insight">Premium</Badge>
+        </div>
+        <p className="mb-3 text-body-sm text-text-secondary">
+          Once you have both a Bản Đồ Sao and a Thần Số Học reading, bring them together into one long-form report.
+        </p>
+        <Link href="/reports">
+          <Button variant="secondary" size="sm">
+            Open Personal Destiny Report
+          </Button>
+        </Link>
+      </Card>
     </div>
   );
 }

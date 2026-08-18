@@ -17,6 +17,8 @@ export const APP_ROUTES = [
   '/insights',
   '/reviews',
   '/premium',
+  // Sprint 16 — Personal Destiny Report.
+  '/reports',
 ];
 export const ONBOARDING_ROUTE = '/onboarding';
 

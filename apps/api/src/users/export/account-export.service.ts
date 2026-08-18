@@ -9,11 +9,9 @@ const EXPORT_CACHE_TTL_MS = 15 * 60 * 1000;
 const EXPORT_CACHE_PREFIX = 'account:export';
 const EXPORT_LOCK_PREFIX = 'account:export:lock';
 const EXPORT_LOCK_TTL_MS = 60_000;
-// Sprint 11 — bumped from 1: an additive structural change (new top-level `notifications` key,
-// see AccountExportResult below), not a breaking one — existing consumers reading older keys are
-// unaffected, but the version is bumped anyway per this codebase's own documented contract that a
-// structural addition, not just a bugfix, earns a version bump.
-const EXPORT_VERSION = 2;
+// Sprint 16 — bumped from 2: another additive structural change (new top-level `destinyReports`
+// key, see AccountExportResult below) — same documented contract as the Sprint 11 bump above.
+const EXPORT_VERSION = 3;
 
 export interface AccountExportResult {
   exportVersion: number;
@@ -29,6 +27,11 @@ export interface AccountExportResult {
   reviews: unknown[];
   goals: unknown[];
   discoveries: { tarot: unknown[]; numerology: unknown[]; natalChart: unknown[] };
+  /** Sprint 16 — Personal Destiny Reports. `sourceSnapshot`/`structuredResult` are included as-is
+   * (the same real, persisted content the user sees in-app); never `aiProvider`/internal metadata
+   * beyond what's already user-facing (mirrors the "content fields only" rule already applied to
+   * `notifications` below). */
+  destinyReports: unknown[];
   premium: { entitlements: unknown[]; paymentOrders: unknown[] };
   /** Sprint 11. Content fields only — `emailStatus`/`emailAttemptedAt`/`emailError` are internal
    * delivery/operational metadata, deliberately excluded (Sprint 11 brief §28: "do not expose
@@ -111,6 +114,7 @@ export class AccountExportService {
       tarot,
       numerology,
       natalChart,
+      destinyReports,
       entitlements,
       paymentOrders,
       notifications,
@@ -179,6 +183,7 @@ export class AccountExportService {
         include: { placements: true, houses: true, aspects: true },
         orderBy: { createdAt: 'asc' },
       }),
+      this.prisma.destinyReport.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
       this.prisma.premiumEntitlement.findMany({
         where: { userId },
         select: { id: true, status: true, source: true, startsAt: true, expiresAt: true, grantedAt: true, createdAt: true },
@@ -227,6 +232,7 @@ export class AccountExportService {
       reviews,
       goals,
       discoveries: { tarot, numerology, natalChart },
+      destinyReports,
       premium: { entitlements, paymentOrders },
       notifications: { items: notifications, preferences: notificationPreferences },
       activity,
