@@ -7,11 +7,11 @@ import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
 
 export const metadata: Metadata = { title: 'Discover' };
 
-/** Tarot (Sprint 6), Numerology (Sprint 8), and Natal Chart (Sprint 9, displayed as "Bản Đồ Sao"
- * per docs/product/vietnamese-tu-vi-product-definition.md §1) are real. Eastern Horoscope
- * (Ngũ Hành Phương Đông — Chinese Zodiac/Five Elements) stays honestly labeled "Coming soon" and
- * is a distinct, separate module from the future, not-yet-built Tử Vi Lá Số — never conflate the
- * two (see docs/product/vietnamese-tu-vi-product-definition.md §1). */
+/** Tarot (Sprint 6), Numerology (Sprint 8), Natal Chart (Sprint 9, displayed as "Bản Đồ Sao"
+ * per docs/product/vietnamese-tu-vi-product-definition.md §1), and Eastern Horoscope (Sprint 17,
+ * Ngũ Hành Phương Đông — Chinese Zodiac/Five Elements) are real. Eastern Horoscope is a distinct,
+ * separate module from the future, not-yet-built Tử Vi Lá Số — never conflate the two (see
+ * docs/product/vietnamese-tu-vi-product-definition.md §1). */
 const SYSTEMS = [
   { title: 'Tarot', description: 'A real, deterministic 78-card draw — no card ever chosen or invented by AI.', href: '/discover/tarot', available: true },
   {
@@ -23,7 +23,8 @@ const SYSTEMS = [
   {
     title: 'Ngũ Hành Phương Đông',
     description: 'Chinese Zodiac and Five Elements — an old lens on a familiar question: who am I, really? (Not Vietnamese Tử Vi Lá Số, a separate future module.)',
-    available: false,
+    href: '/discover/eastern-horoscope',
+    available: true,
   },
   {
     title: 'Thần Số Học',
@@ -38,7 +39,7 @@ export default function DiscoverPage() {
     <div className="flex flex-col gap-6">
       <AnalyticsPageView event="discover_viewed" properties={{ feature: 'discover' }} />
       <h1 className="font-display text-heading-lg text-text-primary">Discover</h1>
-      <p className="text-body-sm text-text-secondary">Tarot, Thần Số Học, and Bản Đồ Sao are live. Ngũ Hành Phương Đông is on its way.</p>
+      <p className="text-body-sm text-text-secondary">Tarot, Thần Số Học, Bản Đồ Sao, and Ngũ Hành Phương Đông are live.</p>
       <div className="grid gap-4 desktop:grid-cols-2">
         {SYSTEMS.map((system) => (
           <Card key={system.title}>

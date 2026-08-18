@@ -24,6 +24,7 @@ export const CLIENT_ANALYTICS_EVENT_NAMES: ClientAnalyticsEventName[] = [
   'report_viewed',
   'report_generation_started',
   'report_upgrade_clicked',
+  'eastern_horoscope_started',
 ];
 
 export const SERVER_ANALYTICS_EVENT_NAMES: ServerAnalyticsEventName[] = [
@@ -39,6 +40,7 @@ export const SERVER_ANALYTICS_EVENT_NAMES: ServerAnalyticsEventName[] = [
   'payment_success',
   'report_generation_completed',
   'report_generation_failed',
+  'eastern_horoscope_completed',
 ];
 
 export const ANALYTICS_FEATURES = [
@@ -52,6 +54,7 @@ export const ANALYTICS_FEATURES = [
   'notifications',
   'premium',
   'reports',
+  'eastern_horoscope',
 ] as const;
 
 export const ANALYTICS_RESULT_STATUSES = ['success', 'failure'] as const;

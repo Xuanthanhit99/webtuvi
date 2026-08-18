@@ -66,6 +66,7 @@ model User {
   notifications           Notification[]
   notificationPreference  NotificationPreference?
   destinyReports          DestinyReport[]
+  easternHoroscopeProfiles EasternHoroscopeProfile[]
 
   @@map("users")
 }
@@ -302,6 +303,9 @@ enum AIFeature {
   /// Sprint 16 — Personal Destiny Report. Additive to the Sprint 12 attribution convention; existing
   /// rows/queries for the other four values are unaffected.
   REPORTS
+  /// Sprint 17 — Eastern Horoscope. Additive; existing rows/queries for the other five values are
+  /// unaffected.
+  EASTERN_HOROSCOPE
 }
 
 model Conversation {
@@ -2493,4 +2497,101 @@ model DestinyReport {
 
   @@index([userId, status, createdAt])
   @@map("destiny_reports")
+}
+
+// ---------------------------------------------------------------------------
+// Eastern Horoscope Discovery Foundation (Sprint 17)
+// ---------------------------------------------------------------------------
+// Additive only — no existing table altered. Mirrors NumerologyReading's own shape exactly
+// (deterministic profile persisted once, AI interpretation additive/nullable, append-only
+// lifecycle history) — the same reuse discipline the Sprint 17 audit recommended
+// (docs/audit/sprint-17-pre-implementation-audit.md §9). Canonical facts (stem/branch/element/
+// yinYang/zodiacAnimal) are computed once by the deterministic engine
+// (apps/api/src/eastern-horoscope/engine/) and never modified by AI. `interpretation` covers the
+// Year Energy relationship for `interpretationYear` specifically — annual by design (Bible Module
+// 14 §1/§12) — and is treated as stale once the current calendar year moves past it, mirroring
+// NumerologyValue's own PERSONAL_YEAR/`appliesToYear` precedent.
+
+/// Mirrors NumerologyReadingStatus's own ACTIVE/ARCHIVED/DELETED precedent exactly.
+enum EasternHoroscopeProfileStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+/// Append-only lifecycle event log — mirrors NumerologyReadingHistoryAction's own precedent exactly.
+enum EasternHoroscopeProfileHistoryAction {
+  CREATED
+  VIEWED
+  INTERPRETED
+  ARCHIVED
+  RESTORED
+  DELETED
+}
+
+model EasternHoroscopeProfile {
+  id     String                        @id @default(cuid())
+  userId String
+  user   User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status EasternHoroscopeProfileStatus @default(ACTIVE)
+
+  /// Date-only, `YYYY-MM-DD` semantics enforced at the application layer
+  /// (`eastern-horoscope-engine.ts`) — stored as a real `DateTime` at UTC midnight, mirrors
+  /// NumerologyReading's own `birthDate` column exactly.
+  birthDate DateTime
+
+  /// Three persisted version identifiers (product definition-equivalent pattern, Sprint 17 audit
+  /// §21) — a historical profile remains explainable even after the engine/calendar/ruleset
+  /// evolve. `rulesetVersion` encodes the two Sprint 17 Domain Decision Closure founder decisions
+  /// (YEAR_BOUNDARY=LUNAR_NEW_YEAR, ELEMENT_SYSTEM=HEAVENLY_STEM_ELEMENT) —
+  /// see `docs/domain/eastern-horoscope-rules.md` §0.
+  engineVersion   String
+  calendarVersion String
+  rulesetVersion  String
+
+  /// Canonical, deterministic birth-profile facts — never AI-generated, never recomputed by
+  /// anything downstream. Small closed sets stored as plain strings (mirrors NumerologyValue's own
+  /// `type` column), not Prisma enums — avoids a schema migration every time a reference-table
+  /// value is merely re-labeled in copy.
+  stem        String
+  branch      String
+  element     String
+  yinYang     String
+  zodiacAnimalEn String
+  zodiacAnimalVi String
+
+  /// AI-narrated interpretation of the CURRENT calendar year's Year Energy relationship — null
+  /// until generated, never a placeholder in the meantime. A profile is fully real and viewable
+  /// (real stem/branch/element facts) before this exists; interpretation is additive, never a
+  /// precondition (mirrors NumerologyReading's own "interpretation is additive" precedent).
+  interpretation     String?
+  /// Which calendar year `interpretation` describes — stale (offer regenerate) once the current
+  /// calendar year has moved past this, mirrors NumerologyValue's own `appliesToYear` precedent.
+  interpretationYear Int?
+  aiProvider         String?
+  aiModel            String?
+  promptVersion      String?
+  interpretedAt      DateTime?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  archivedAt DateTime?
+  deletedAt  DateTime?
+
+  history EasternHoroscopeProfileHistory[]
+
+  @@index([userId, status, createdAt])
+  @@map("eastern_horoscope_profiles")
+}
+
+model EasternHoroscopeProfileHistory {
+  id        String                               @id @default(cuid())
+  profileId String
+  profile   EasternHoroscopeProfile              @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  action    EasternHoroscopeProfileHistoryAction
+  detail    String
+  createdAt DateTime                             @default(now())
+
+  @@index([profileId, createdAt])
+  @@map("eastern_horoscope_profile_history")
 }

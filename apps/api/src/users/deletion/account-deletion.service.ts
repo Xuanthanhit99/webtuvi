@@ -91,6 +91,9 @@ export class AccountDeletionService {
       // deliberately plain references, not foreign keys (see the schema comment on DestinyReport),
       // so nothing here relies on ordering relative to those two deletes. ---
       this.prisma.destinyReport.deleteMany({ where: { userId } }),
+      // --- Eastern Horoscope (Sprint 17) — no financial-style retention exception; deleted like
+      // every other Discovery system above (cascades EasternHoroscopeProfileHistory). ---
+      this.prisma.easternHoroscopeProfile.deleteMany({ where: { userId } }),
       // --- Non-sensitive activity log (personal, not an accounting record) ---
       this.prisma.activityEvent.deleteMany({ where: { userId } }),
       // --- Deliberately NOT deleted: PaymentOrder, PaymentWebhookEvent, PremiumEntitlement ---

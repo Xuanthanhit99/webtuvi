@@ -32,6 +32,7 @@ import { NatalChartModule } from './natal-chart/natal-chart.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ReportsModule } from './reports/reports.module';
+import { EasternHoroscopeModule } from './eastern-horoscope/eastern-horoscope.module';
 
 @Module({
   imports: [
@@ -129,6 +130,7 @@ import { ReportsModule } from './reports/reports.module';
     NotificationsModule,
     AnalyticsModule,
     ReportsModule,
+    EasternHoroscopeModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -1187,6 +1187,72 @@ export interface NumerologyMeaningDto {
   meaning: string;
 }
 
+// --- Eastern Horoscope Discovery Foundation (Sprint 17). The Product Bible's Chinese Zodiac /
+// Five Elements Discovery module (Module 14) — deterministic, versioned lunisolar-calendar +
+// Stem/Branch/Element engine, plus a narrow AI interpretation layer that only ever narrates an
+// already-real, already-calculated result. Independent of, and never conflated with, Vietnamese
+// Tử Vi Đẩu Số (a separate, later track). Domain rules locked in
+// docs/domain/eastern-horoscope-rules.md (Sprint 17 Domain Decision Closure):
+// EASTERN_HOROSCOPE_YEAR_BOUNDARY = LUNAR_NEW_YEAR, EASTERN_HOROSCOPE_ELEMENT_SYSTEM =
+// HEAVENLY_STEM_ELEMENT. ---
+
+export type EasternHoroscopeProfileStatusValue = 'ACTIVE' | 'ARCHIVED' | 'DELETED';
+export type EasternHoroscopeProfileHistoryActionValue = 'CREATED' | 'VIEWED' | 'INTERPRETED' | 'ARCHIVED' | 'RESTORED' | 'DELETED';
+export type HeavenlyStemValue = 'Giáp' | 'Ất' | 'Bính' | 'Đinh' | 'Mậu' | 'Kỷ' | 'Canh' | 'Tân' | 'Nhâm' | 'Quý';
+export type EarthlyBranchValue = 'Tý' | 'Sửu' | 'Dần' | 'Mão' | 'Thìn' | 'Tỵ' | 'Ngọ' | 'Mùi' | 'Thân' | 'Dậu' | 'Tuất' | 'Hợi';
+export type FiveElementValue = 'Mộc' | 'Hỏa' | 'Thổ' | 'Kim' | 'Thủy';
+export type YinYangValue = 'Dương' | 'Âm';
+export type YearEnergyRelationshipValue = 'GENERATES' | 'IS_GENERATED_BY' | 'CONTROLS' | 'IS_CONTROLLED_BY' | 'SAME';
+
+export interface EasternHoroscopeYearEnergyDto {
+  calendarYear: number;
+  yearStem: HeavenlyStemValue;
+  yearBranch: EarthlyBranchValue;
+  yearElement: FiveElementValue;
+  yearYinYang: YinYangValue;
+  yearZodiacAnimal: { vi: string; en: string };
+  relationship: YearEnergyRelationshipValue;
+}
+
+export interface EasternHoroscopeProfileDto {
+  id: string;
+  status: EasternHoroscopeProfileStatusValue;
+  /** `YYYY-MM-DD`. */
+  birthDate: string;
+  engineVersion: string;
+  calendarVersion: string;
+  rulesetVersion: string;
+  stem: HeavenlyStemValue;
+  branch: EarthlyBranchValue;
+  element: FiveElementValue;
+  yinYang: YinYangValue;
+  zodiacAnimal: { vi: string; en: string };
+  /** Recomputed fresh on every read — never persisted, since it changes every calendar year. */
+  yearEnergy: EasternHoroscopeYearEnergyDto;
+  interpretation: string | null;
+  interpretationYear: number | null;
+  /** True once the current calendar year has moved past `interpretationYear` — the UI should offer
+   * regeneration rather than silently show a stale interpretation as current. */
+  interpretationStale: boolean;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
+}
+
+export interface EasternHoroscopeProfileHistoryDto {
+  id: string;
+  action: EasternHoroscopeProfileHistoryActionValue;
+  detail: string;
+  createdAt: string;
+}
+
+export interface ListEasternHoroscopeProfilesResultDto {
+  items: EasternHoroscopeProfileDto[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 // --- Natal Chart Discovery Foundation (Sprint 9). The Product Bible's third real Discovery
 // system (Module 13) — a deterministic, ephemeris-based birth chart, persisted once, explored
 // through a chart wheel and progressive-disclosure sections, narrated (never calculated) by AI.
@@ -1499,7 +1565,13 @@ export type ClientAnalyticsEventName =
    * docs/product/personal-destiny-report-decisions.md. */
   | 'report_viewed'
   | 'report_generation_started'
-  | 'report_upgrade_clicked';
+  | 'report_upgrade_clicked'
+  /** Sprint 17 — Eastern Horoscope. Fires on the Calculate button click, mirroring
+   * `tarot_started`/`numerology_started` exactly. Deliberately no separate
+   * `interpret_requested` event — the audit
+   * (docs/audit/sprint-17-pre-implementation-audit.md §31) found no funnel question this would
+   * answer beyond what `eastern_horoscope_completed` already covers. */
+  | 'eastern_horoscope_started';
 
 /** Events only the backend may emit, in-process, at the exact point the underlying fact becomes
  * true (a row was persisted, a webhook flipped an order to PAID). A client can never cause one of
@@ -1521,7 +1593,10 @@ export type ServerAnalyticsEventName =
    * heavier synthesis/higher stakes (docs/architecture/personal-destiny-report.md §30) makes
    * failure-rate visibility worth this small, deliberate contract extension. */
   | 'report_generation_completed'
-  | 'report_generation_failed';
+  | 'report_generation_failed'
+  /** Sprint 17 — fired in-process once a new `EasternHoroscopeProfile` row is persisted, matching
+   * `numerology_completed`'s pattern. */
+  | 'eastern_horoscope_completed';
 
 export type AnalyticsEventName = ClientAnalyticsEventName | ServerAnalyticsEventName;
 
@@ -1535,7 +1610,8 @@ export type AnalyticsFeature =
   | 'natal_chart'
   | 'notifications'
   | 'premium'
-  | 'reports';
+  | 'reports'
+  | 'eastern_horoscope';
 
 /** Deliberately flat and small. No free-text field exists anywhere in this shape — every property
  * is either a bounded enum or a route pathname (query string stripped server-side). This is the

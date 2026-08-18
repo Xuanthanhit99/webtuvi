@@ -595,3 +595,88 @@ still without pushing, still without starting Sprint 17.
 
 SPRINT 16 RELEASE CLOSURE — NOT READY — REMEDIATION REQUIRED (ENVIRONMENTAL: DOCKER ACCESS ONLY —
 ZERO CODE DEFECTS FOUND)
+
+---
+
+## RELEASE CLOSURE — FRESH RUNTIME CONFIRMATION (2026-08-18, this session)
+
+**Purpose:** resume the closure from the exact blocked gate above once Docker access was restored.
+Nothing from the two sections above was reused as evidence — every gate below was executed fresh in
+this session, against the working tree as it actually stood at session start.
+
+**Working-tree state discrepancy found and resolved first:** the two sections above describe 27+
+files sitting uncommitted, explicitly not committed/pushed pending a founder decision. At the start
+of this session the working tree was instead found clean, with HEAD at `dd029a2` ("[update]") —
+already containing every Sprint 16 file described above, in a single commit, already on
+`origin/master`. This happened outside this session's visibility. Raised directly with the user, who
+confirmed it was their own intentional action; treated as the accepted final state, and no attempt
+was made to retroactively apply the three-commit strategy the earlier sections describe.
+
+**1. Docker/Postgres/Redis/Mailpit health.** Not reachable at session start — `docker info`/`docker
+ps` failed against the named pipe, `com.docker.service` was `Stopped`, and this session has no
+Windows admin privilege to start it (same root cause as the blocked pass above). Launching `Docker
+Desktop.exe` directly from this session also failed silently (process exits immediately, code 0, no
+backend comes up) — consistent with the GUI needing the same elevation this session doesn't have.
+Resolved only after the user started Docker Desktop manually outside this sandboxed session. Once up:
+`docker info` → server version 29.6.1; `docker ps` showed `beaconvie-postgres`, `beaconvie-redis`,
+`beaconvie-mailpit` all `Up` and `(healthy)`.
+
+**2. Prisma generate/validate/migrate status.** `prisma validate` — schema valid. `prisma migrate
+status` initially reported the Sprint 16 migration
+(`20260817154354_sprint16_destiny_reports`) as **not yet applied** to either the dev (`beaconvie`) or
+test (`beaconvie_test`) database — expected, since these containers had just come back up after the
+extended Docker outage. Applied via `prisma migrate deploy` against both databases; both now report
+all 19 migrations applied cleanly. `prisma generate` re-run, succeeded.
+
+**3. Reports e2e suite, fresh, standalone.** `reports.e2e-spec.ts` — **17/17 passed** (82.2 s).
+
+**4. Full backend e2e suite, fresh — the gate that was blocked.** `pnpm --filter @beaconvie/api
+test:e2e` — **21/21 suites, 282/282 tests, all passing**, zero failures, run to completion against
+the current committed tree (`dd029a2`). This is a genuinely fresh execution, not a reuse of the
+282/282 figure quoted earlier in this document from the interrupted implementation-session run.
+Noted, non-blocking: under the concurrent 7-worker load of the full suite, a number of
+`MailService`-logged `Failed to send welcome/verification email — Greeting never received` errors
+appeared (Mailpit SMTP under contention); every affected suite still passed — the app's existing
+fire-and-forget email error handling absorbed this, it did not fail any assertion. Recorded here as
+an environmental observation for awareness, not as a defect.
+
+**5–6. Remaining fast runtime gates, fresh; one failure root-caused.** Backend unit
+suite's first run (executed immediately after the 282-test e2e run completed) showed **1 failure**:
+`account-deletion.service.spec.ts` — a `5000ms` Jest timeout, not a content/assertion failure.
+Root-caused before retrying: confirmed zero leftover node processes after the e2e run exited, then
+re-ran the single spec file in isolation — passed cleanly in 383 ms, more than 10x under the timeout.
+Re-ran the full backend unit suite fresh on the now-idle system: **114/114 suites, 1095/1095 tests,
+zero failures.** Conclusion: the single failure was resource-contention flakiness from launching unit
+tests immediately after a 7-worker e2e run, not a code regression — consistent with this repo's own
+documented Windows-environment flakiness pattern ([[beaconvie-windows-env-quirks]]). Frontend unit
+suite: **76/76 suites, 378/378 tests**, clean on the first run. Lint: 0 errors, only the same
+pre-existing warnings in untouched `insight` test fixtures already noted above. Typecheck: clean, both
+apps. `git status`/`git diff --check`: clean throughout, no stray artifacts.
+
+**Not re-executed this session (unchanged from the open-items list above):** `flow-27` Playwright
+spec (requires a live dev-server pair and real Gemini provider calls — cost/time tradeoff, not
+attempted without separate confirmation), the full Playwright regression pass, and independent
+desktop/tablet/mobile manual QA. These remain exactly as disclosed in the section above — not
+fabricated as passing, not silently dropped either.
+
+**7. Commit strategy.** Moot — see the working-tree discrepancy note above. `dd029a2` already stands
+as the accepted, single, already-pushed commit for all of Sprint 16. No new commit was created or
+attempted this session.
+
+**8. Push.** Not performed this session (already on `origin/master` from the pre-existing commit).
+
+**9. Sprint 17.** Not started.
+
+### Verdict
+
+Every mandatory, previously-blocked runtime gate — Docker/Postgres/Redis/Mailpit health, Prisma
+migration state, the Reports e2e suite standalone, and the full backend e2e suite — passed fresh, on
+the current final tree, with zero code-level defects. The one test failure encountered
+(`account-deletion.service.spec.ts`) was root-caused as environmental flakiness, not a regression, and
+confirmed passing on both an isolated re-run and a full clean suite re-run. Combined with the
+independent code-level/security audit already completed in the section above (zero defects, 12/12
+items PASS), this closes the single open gate that previously blocked a READY verdict.
+
+**SPRINT 16 RELEASE CLOSURE — READY.** (Playwright `flow-27` re-confirmation and manual
+tablet/mobile/desktop QA remain optional, non-blocking follow-ups per the open-items list above, not
+executed this session.)
