@@ -5,13 +5,16 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/cn';
 import { NAV_ITEMS } from './nav-items';
 
+// Accessibility + Product Polish (2026-08-19): was `desktop:hidden`, so every tablet width
+// (768-1279px) got this phone-style bottom-tab bar instead of Sidebar's new tablet:-width icon
+// rail. Now strictly phone-only (<768px) — see sidebar.tsx for the tablet/desktop split.
 export function MobileNavigation() {
   const pathname = usePathname();
 
   return (
     <nav
       aria-label="Main navigation"
-      className="fixed inset-x-0 bottom-0 z-drawer flex border-t border-border-subtle bg-surface pb-[env(safe-area-inset-bottom)] desktop:hidden"
+      className="fixed inset-x-0 bottom-0 z-drawer flex border-t border-border-subtle bg-surface pb-[env(safe-area-inset-bottom)] tablet:hidden"
     >
       {NAV_ITEMS.map((item) => {
         const active = pathname.startsWith(item.href);

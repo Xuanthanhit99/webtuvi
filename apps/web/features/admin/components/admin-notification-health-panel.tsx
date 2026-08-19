@@ -28,8 +28,13 @@ export function AdminNotificationHealthPanel() {
         </p>
       </div>
 
-      {query.isLoading && <Skeleton className="h-24 w-full" />}
-      {query.isError && <ErrorState title="Couldn’t load notification health" />}
+      {query.isLoading && (
+        <div role="status">
+          <span className="sr-only">Loading notification health…</span>
+          <Skeleton className="h-24 w-full" />
+        </div>
+      )}
+      {query.isError && <ErrorState title="Couldn’t load notification health" onRetry={() => query.refetch()} />}
 
       {query.data && (
         <div className="flex flex-col gap-4">

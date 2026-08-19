@@ -45,7 +45,7 @@ export function AspectList({ aspects }: { aspects: NatalAspectDto[] }) {
               )}
               {pointLabel(aspect.pointB)}
             </span>
-            <span className="text-caption text-text-disabled">orb {aspect.orb.toFixed(1)}°</span>
+            <span className="text-caption text-text-tertiary">orb {aspect.orb.toFixed(1)}°</span>
           </div>
           <p className="text-body-sm text-text-secondary">{aspect.meaning}</p>
         </li>

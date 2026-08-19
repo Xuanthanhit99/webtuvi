@@ -84,7 +84,11 @@ export function SessionsPanel() {
       </div>
 
       {isLoading && (
-        <div className="flex flex-col gap-2">
+        // Accessibility + Product Polish (2026-08-19): Skeleton itself is aria-hidden (correct —
+        // it shouldn't be read literally); this sr-only status text is the announcement it needs,
+        // matching the role="status" pattern already used elsewhere (verify-email-status.tsx etc).
+        <div className="flex flex-col gap-2" role="status">
+          <span className="sr-only">Loading sessions…</span>
           <Skeleton className="h-14 w-full" />
           <Skeleton className="h-14 w-full" />
         </div>

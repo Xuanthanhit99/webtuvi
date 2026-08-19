@@ -64,12 +64,18 @@ export function AdminUserLookupPanel() {
         </Button>
       </form>
 
-      {lookup.isFetching && <Skeleton className="h-24 w-full" />}
+      {lookup.isFetching && (
+        <div role="status">
+          <span className="sr-only">Searching…</span>
+          <Skeleton className="h-24 w-full" />
+        </div>
+      )}
 
       {lookup.isError && (
         <ErrorState
           title={lookup.error instanceof ApiError && lookup.error.status === 404 ? 'No user found' : 'Lookup failed'}
           description={lookup.error instanceof ApiError ? lookup.error.message : 'Something went wrong. Please try again.'}
+          onRetry={lookup.error instanceof ApiError && lookup.error.status === 404 ? undefined : () => lookup.refetch()}
         />
       )}
 

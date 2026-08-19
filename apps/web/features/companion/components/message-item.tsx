@@ -39,7 +39,7 @@ export function MessageItem({
         <div className="mb-1 flex items-center justify-between gap-2">
           <p className="text-caption font-medium text-text-secondary">{isAssistant ? 'Companion' : 'You'}</p>
           {!isAssistant && conversationId && (
-            <RememberThisButton conversationId={conversationId} messageId={message.id} content={message.content} />
+            <RememberThisButton conversationId={conversationId} messageId={message.id} content={message.content} createdAt={message.createdAt} />
           )}
         </div>
         <p className="whitespace-pre-wrap text-body-md text-text-primary">{message.content}</p>

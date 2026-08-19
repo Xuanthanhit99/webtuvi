@@ -43,7 +43,7 @@ export function NumerologyHistoryList({ filters, onSelect }: { filters: ListRead
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={READING_STATUS_BADGE_VARIANT[reading.status]}>{READING_STATUS_LABELS[reading.status]}</Badge>
-                <span className="text-caption text-text-disabled">{new Date(reading.createdAt).toLocaleDateString()}</span>
+                <span className="text-caption text-text-tertiary">{new Date(reading.createdAt).toLocaleDateString()}</span>
               </div>
             </button>
           </li>

@@ -114,7 +114,7 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
         </div>
       </div>
 
-      <p className="text-caption text-text-disabled">Được tính toán từ dữ liệu sinh — calculated from your birth data, never chosen by AI.</p>
+      <p className="text-caption text-text-tertiary">Được tính toán từ dữ liệu sinh — calculated from your birth data, never chosen by AI.</p>
 
       <NatalChartWheel chart={chart} />
       <BigThreeSummary chart={chart} />

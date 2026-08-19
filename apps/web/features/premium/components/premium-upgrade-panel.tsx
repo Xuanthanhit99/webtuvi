@@ -94,7 +94,7 @@ export function PremiumUpgradePanel() {
           <span className="ml-1 text-body-sm font-normal text-text-secondary">/ 30 days</span>
         </p>
         {status.isMvpTestPrice && (
-          <p className="text-caption text-text-disabled">MVP test price — not yet finalized.</p>
+          <p className="text-caption text-text-tertiary">MVP test price — not yet finalized.</p>
         )}
         {status.paymentsEnabled ? (
           <>
@@ -106,7 +106,7 @@ export function PremiumUpgradePanel() {
                 {checkoutErrorMessage(checkout.error)}
               </p>
             )}
-            <p className="text-caption text-text-disabled">You&rsquo;ll pay securely on PayOS&rsquo;s hosted checkout page.</p>
+            <p className="text-caption text-text-tertiary">You&rsquo;ll pay securely on PayOS&rsquo;s hosted checkout page.</p>
           </>
         ) : (
           // Sprint 12 — mirrors the backend PAYMENTS_ENABLED kill switch honestly upfront, rather

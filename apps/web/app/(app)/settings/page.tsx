@@ -89,7 +89,10 @@ export default function SettingsPage() {
           Controls only the very first reflections BeaconVie saved during onboarding.
         </p>
         {isLoading || !data ? (
-          <Skeleton className="h-11 w-full" />
+          <div role="status">
+            <span className="sr-only">Loading memory preference…</span>
+            <Skeleton className="h-11 w-full" />
+          </div>
         ) : (
           <Dropdown
             id="memory-preference"

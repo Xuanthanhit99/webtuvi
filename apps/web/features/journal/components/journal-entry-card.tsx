@@ -37,7 +37,7 @@ export function JournalEntryCard({ entry, onSelect }: { entry: JournalEntryDto; 
         </div>
         <p className="font-display text-heading-sm text-text-primary">{entry.title || 'Untitled entry'}</p>
         {entry.content && <p className="text-body-sm text-text-secondary">{excerptOf(entry.content)}</p>}
-        <p className="text-caption text-text-disabled">
+        <p className="text-caption text-text-tertiary">
           {new Date(entry.createdAt).toLocaleDateString()} · {entry.wordCount} {entry.wordCount === 1 ? 'word' : 'words'} · {entry.readingTimeMinutes} min
           read
         </p>

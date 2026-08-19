@@ -128,3 +128,23 @@ describe('NotificationCenter', () => {
     expect(screen.queryByRole('button', { name: /mark all read/i })).not.toBeInTheDocument();
   });
 });
+
+describe('NotificationCenter — unread semantic state', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('announces "Unread" for an unread notification, not conveyed by color/dot alone', async () => {
+    (notificationsApi.list as jest.Mock).mockResolvedValue({ items: [NOTIFICATION], total: 1, page: 1, pageSize: 20 });
+    renderCenter();
+
+    const item = await screen.findByRole('button', { name: /unread.*today.s card is ready/i });
+    expect(item).toBeInTheDocument();
+  });
+
+  it('does not announce "Unread" for a read notification — no false state, no excess verbosity', async () => {
+    (notificationsApi.list as jest.Mock).mockResolvedValue({ items: [{ ...NOTIFICATION, read: true }], total: 1, page: 1, pageSize: 20 });
+    renderCenter();
+
+    const item = (await screen.findByText("Today's card is ready")).closest('button')!;
+    expect(item).not.toHaveTextContent(/unread/i);
+  });
+});

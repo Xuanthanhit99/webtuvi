@@ -67,7 +67,7 @@ export function ConversationSidebar({
               )}
             >
               <span className="truncate text-body-sm font-medium">{conversation.title ?? 'Untitled conversation'}</span>
-              <span className="text-caption text-text-disabled">{timeAgo(conversation.updatedAt)}</span>
+              <span className="text-caption text-text-tertiary">{timeAgo(conversation.updatedAt)}</span>
             </button>
           </li>
         ))}

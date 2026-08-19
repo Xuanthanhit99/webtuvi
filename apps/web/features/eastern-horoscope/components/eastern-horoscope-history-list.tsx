@@ -41,7 +41,7 @@ export function EasternHoroscopeHistoryList({ filters, onSelect }: { filters: Li
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={PROFILE_STATUS_BADGE_VARIANT[profile.status]}>{PROFILE_STATUS_LABELS[profile.status]}</Badge>
-                <span className="text-caption text-text-disabled">{new Date(profile.createdAt).toLocaleDateString()}</span>
+                <span className="text-caption text-text-tertiary">{new Date(profile.createdAt).toLocaleDateString()}</span>
               </div>
             </button>
           </li>

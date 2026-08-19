@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import type { ReportDto } from '@beaconvie/types';
 import { renderWithQuery } from '@/test/render-with-query';
 import { ReportDetail } from './report-detail';
@@ -106,5 +106,31 @@ describe('ReportDetail', () => {
     expect(screen.getByText('A real Memory-derived reflection.')).toBeInTheDocument();
     expect(screen.getByText('From recent Tarot context')).toBeInTheDocument();
     expect(screen.getByText('From your Memory')).toBeInTheDocument();
+  });
+});
+
+describe('ReportDetail — GENERATING status accessibility + polling', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('exposes the GENERATING card as an accessible status region', async () => {
+    (reportsApi.getReport as jest.Mock).mockResolvedValue({ ...BASE_REPORT, status: 'GENERATING', result: null, failureReason: null });
+    renderWithQuery(<ReportDetail id="report-1" onClose={jest.fn()} onRegenerated={jest.fn()} />);
+
+    const status = await screen.findByRole('status');
+    expect(status).toHaveTextContent(/connecting a few things/i);
+  });
+
+  it('polls while GENERATING and stops once the report resolves — regression for the confirmed no-polling gap', async () => {
+    (reportsApi.getReport as jest.Mock)
+      .mockResolvedValueOnce({ ...BASE_REPORT, status: 'GENERATING', result: null, failureReason: null })
+      .mockResolvedValue({ ...BASE_REPORT, status: 'READY', result: READY_RESULT, failureReason: null });
+    renderWithQuery(<ReportDetail id="report-1" onClose={jest.fn()} onRegenerated={jest.fn()} />);
+
+    await screen.findByRole('status');
+
+    // The refetchInterval (2s) will fire in real time; wait for the transition to the resolved view.
+    await waitFor(() => expect(screen.getByText('An honest overview of your report.')).toBeInTheDocument(), { timeout: 5000 });
+    expect((reportsApi.getReport as jest.Mock).mock.calls.length).toBeGreaterThanOrEqual(2);
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 });

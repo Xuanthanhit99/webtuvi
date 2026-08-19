@@ -114,7 +114,7 @@ export function JournalTimeline({ onSelect }: { onSelect: (id: string) => void }
             )}
             {timeline.data && groupPages(timeline.data.pages).map((group) => (
               <div key={group.groupKey} className="mb-6">
-                <h3 className="mb-2 text-caption font-semibold uppercase tracking-wide text-text-disabled">{group.groupLabel}</h3>
+                <h3 className="mb-2 text-caption font-semibold uppercase tracking-wide text-text-tertiary">{group.groupLabel}</h3>
                 <ul className="flex flex-col gap-2">
                   {group.items.map((entry) => (
                     <JournalEntryCard key={entry.id} entry={entry} onSelect={onSelect} />

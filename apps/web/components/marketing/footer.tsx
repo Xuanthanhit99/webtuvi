@@ -14,7 +14,7 @@ export function Footer() {
           <FooterColumn title="Legal" links={footer.legalLinks} />
         </div>
       </div>
-      <p className="mt-8 text-center text-caption text-text-disabled">{footer.copyright}</p>
+      <p className="mt-8 text-center text-caption text-text-tertiary">{footer.copyright}</p>
     </footer>
   );
 }

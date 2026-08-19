@@ -119,13 +119,13 @@ export function MemoryTimeline({ onSelect }: MemoryTimelineProps) {
                     <Badge variant="insight">{item.type.replace(/_/g, ' ').toLowerCase()}</Badge>
                     <ImportanceBadge score={item.importanceScore} explanations={item.importanceExplanations} pinned={item.pinned} />
                   </div>
-                  <time className="text-caption text-text-disabled" dateTime={item.createdAt}>
+                  <time className="text-caption text-text-tertiary" dateTime={item.createdAt}>
                     {new Date(item.createdAt).toLocaleDateString()}
                   </time>
                 </div>
                 <p className="font-medium text-text-primary">{item.title}</p>
                 <p className="mt-1 line-clamp-2 text-body-sm text-text-secondary">{item.summary}</p>
-                <p className="mt-2 text-caption text-text-disabled">
+                <p className="mt-2 text-caption text-text-tertiary">
                   {item.whyThisMemory} {item.sourceAvailable ? '' : '(source no longer available)'}
                 </p>
               </Card>

@@ -6,6 +6,12 @@
       "runtimeExecutable": "C:\\Users\\Admin\\AppData\\Roaming\\npm\\pnpm.cmd",
       "runtimeArgs": ["--filter", "@beaconvie/web", "dev"],
       "port": 3000
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "C:\\Users\\Admin\\AppData\\Roaming\\npm\\pnpm.cmd",
+      "runtimeArgs": ["--filter", "@beaconvie/api", "start:dev"],
+      "port": 4000
     }
   ]
 }

@@ -36,6 +36,10 @@ export interface RememberThisButtonProps {
   conversationId: string;
   messageId: string;
   content: string;
+  /** ISO timestamp of the message this button belongs to — used only to give each button in a
+   * conversation with multiple user messages a distinguishable accessible name (see below).
+   * Already visible elsewhere in the UI; never a substitute for the message content itself. */
+  createdAt: string;
 }
 
 /**
@@ -47,7 +51,7 @@ export interface RememberThisButtonProps {
  * currently blocks it, the memory lands in Settings → Memory → Pending
  * instead of silently failing.
  */
-export function RememberThisButton({ conversationId, messageId, content }: RememberThisButtonProps) {
+export function RememberThisButton({ conversationId, messageId, content, createdAt }: RememberThisButtonProps) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<MemoryTypeValue>('GOAL');
@@ -83,9 +87,16 @@ export function RememberThisButton({ conversationId, messageId, content }: Remem
     onError: () => toast.error("Couldn't remember that right now. Please try again."),
   });
 
+  // Accessibility + Product Polish (2026-08-19): every "Remember this" button in a conversation
+  // previously shared the exact same accessible name, making them indistinguishable to a
+  // screen-reader user browsing a long conversation via an elements/buttons list. Disambiguated
+  // with the message's own timestamp — already visible elsewhere in the conversation UI, never the
+  // message content or any AI text (which the locked decision explicitly forbids putting here).
+  const formattedTime = new Date(createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+
   return (
     <>
-      <IconButton aria-label="Remember this" onClick={() => setOpen(true)}>
+      <IconButton aria-label={`Remember this message from ${formattedTime}`} onClick={() => setOpen(true)}>
         <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
       </IconButton>
 

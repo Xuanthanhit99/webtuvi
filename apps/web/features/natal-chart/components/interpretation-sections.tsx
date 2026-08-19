@@ -75,7 +75,7 @@ export function InterpretationSections({
         </div>
       )}
 
-      <p className="mt-2 text-caption text-text-disabled">Written by AI to narrate the chart above — it never changes a calculated placement.</p>
+      <p className="mt-2 text-caption text-text-tertiary">Written by AI to narrate the chart above — it never changes a calculated placement.</p>
     </div>
   );
 }

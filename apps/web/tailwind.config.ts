@@ -17,6 +17,10 @@ const config: Config = {
         'surface-light': '#FFFFFF',
         'text-primary': '#F1ECE4',
         'text-secondary': '#B7AFC9',
+        // Accessibility + Product Polish (2026-08-19) — see packages/config/tokens.ts for the
+        // full rationale: `disabled` is reserved for genuinely-inactive controls (WCAG 1.4.3
+        // exempt), `tertiary` is for readable secondary/supporting text and must stay >=4.5:1.
+        'text-tertiary': '#9A93AE',
         'text-disabled': '#6E6785',
         'text-primary-light': '#211D33',
         insight: '#E3B368',

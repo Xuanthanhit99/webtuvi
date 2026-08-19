@@ -54,7 +54,7 @@ export function JournalSuggestionCard({ suggestion, sourceConversationId, source
         <Badge variant="new">This might be worth saving as a journal entry</Badge>
       </div>
       <p className="text-body-sm text-text-secondary">{suggestion.reason}</p>
-      <p className="text-body-sm italic text-text-disabled">“{suggestion.excerpt}”</p>
+      <p className="text-body-sm italic text-text-tertiary">“{suggestion.excerpt}”</p>
       <div className="flex flex-wrap gap-2 pt-1">
         <Button size="sm" onClick={() => save.mutate()} loading={save.isPending} disabled={pending}>
           Save as Journal

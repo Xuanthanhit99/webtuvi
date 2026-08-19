@@ -28,7 +28,7 @@ export function ReportHistoryList({ filters, onSelect }: { filters: ListReportsF
             <span className="text-body-sm font-semibold text-text-primary">Personal Destiny Report</span>
             <div className="flex items-center gap-2">
               <Badge variant={REPORT_STATUS_BADGE_VARIANT[report.status]}>{REPORT_STATUS_LABELS[report.status]}</Badge>
-              <span className="text-caption text-text-disabled">{new Date(report.createdAt).toLocaleDateString()}</span>
+              <span className="text-caption text-text-tertiary">{new Date(report.createdAt).toLocaleDateString()}</span>
             </div>
           </button>
         </li>

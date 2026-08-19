@@ -109,9 +109,13 @@ export function JournalEditor({ entry }: { entry: JournalEntryDto }) {
           onChange={(e) => draft.setTitle(e.target.value)}
           placeholder="Untitled entry"
           maxLength={200}
-          className="border-none bg-transparent px-0 font-display text-heading-md focus-visible:outline-none"
+          // Accessibility + Product Polish (2026-08-19): previously included
+          // focus-visible:outline-none with no replacement, silently dropping the app-wide
+          // focus ring convention (Input's own base classes already provide
+          // focus-visible:outline-insight — this override was suppressing it, not replacing it).
+          className="border-none bg-transparent px-0 font-display text-heading-md"
         />
-        <span role="status" aria-live="polite" className="shrink-0 text-caption text-text-disabled">
+        <span role="status" aria-live="polite" className="shrink-0 text-caption text-text-tertiary">
           {statusLabel(draft.status, draft.lastSavedAt)}
         </span>
       </div>
@@ -154,7 +158,7 @@ export function JournalEditor({ entry }: { entry: JournalEntryDto }) {
         onChange={(e) => draft.setContent(e.target.value)}
         placeholder="What's on your mind?"
         rows={16}
-        className="min-h-[300px] w-full resize-y rounded-md border border-border-subtle bg-surface p-4 font-mono text-body-md text-text-primary placeholder:text-text-disabled focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
+        className="min-h-[300px] w-full resize-y rounded-md border border-border-subtle bg-surface p-4 font-mono text-body-md text-text-primary placeholder:text-text-tertiary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
       />
 
       <div className="flex flex-wrap items-center justify-between gap-3 text-caption text-text-secondary">

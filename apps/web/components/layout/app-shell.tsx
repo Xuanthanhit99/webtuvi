@@ -10,7 +10,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-dvh flex-1 flex-col">
         <AppHeader />
         <VerifyEmailBanner />
-        <main id="main-content" className="flex-1 px-4 pb-24 pt-6 desktop:px-8 desktop:pb-10">
+        {/* Accessibility + Product Polish (2026-08-19): pb-24 clears MobileNavigation's fixed
+            bottom bar, which is now phone-only (<768px, see mobile-navigation.tsx) — tablet no
+            longer needs that clearance, so it drops to the same pb-10 desktop already used. */}
+        <main id="main-content" className="flex-1 px-4 pb-24 pt-6 tablet:px-8 tablet:pb-10">
           <div className="mx-auto w-full max-w-content">{children}</div>
         </main>
         <MobileNavigation />

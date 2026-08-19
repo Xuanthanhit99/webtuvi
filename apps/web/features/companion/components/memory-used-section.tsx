@@ -11,7 +11,22 @@ function formatExplanation(dto: MemoryExplanationDto): string {
   return `${dto.headline} ${dto.reason} ${dto.source} ${dto.consent}`;
 }
 
-function MemoryUsedItem({ conversationId, messageId, reference }: { conversationId: string; messageId: string; reference: MemoryReferenceDto }) {
+function MemoryUsedItem({
+  conversationId,
+  messageId,
+  reference,
+  position,
+  total,
+}: {
+  conversationId: string;
+  messageId: string;
+  reference: MemoryReferenceDto;
+  /** 1-based position among this message's used-memory items — used only to disambiguate this
+   * button's accessible name when several appear together (see below); never shown when there's
+   * only one, to avoid unnecessary verbosity. */
+  position: number;
+  total: number;
+}) {
   const [showWhy, setShowWhy] = useState(false);
 
   const { data: explanation, isLoading } = useQuery({
@@ -20,13 +35,20 @@ function MemoryUsedItem({ conversationId, messageId, reference }: { conversation
     enabled: showWhy,
   });
 
+  // Accessibility + Product Polish (2026-08-19): every instance of this button in a message with
+  // 2+ used memories previously shared the identical accessible name ("Why I remembered this").
+  // Disambiguated with a bounded ordinal ("1 of 3") rather than memory content — visible text stays
+  // concise ("Why I remembered this"/"Hide").
+  const suffix = total > 1 ? ` (${position} of ${total})` : '';
+
   return (
     <div className="flex flex-col gap-1">
       <MemoryCard reference={reference} explanationText={showWhy && explanation ? formatExplanation(explanation) : undefined} />
       <button
         type="button"
         onClick={() => setShowWhy((v) => !v)}
-        className="self-start text-caption text-text-disabled underline decoration-dotted hover:text-text-secondary"
+        aria-label={`${showWhy ? 'Hide why I remembered this' : 'Why I remembered this'}${suffix}`}
+        className="self-start text-caption text-text-tertiary underline decoration-dotted hover:text-text-secondary"
       >
         {showWhy ? 'Hide' : 'Why I remembered this'}
       </button>
@@ -88,8 +110,15 @@ export function MemoryUsedSection({ conversationId, messageId, used, skipped }: 
 
       {expanded && (
         <div className="flex flex-col gap-3">
-          {used.map((reference) => (
-            <MemoryUsedItem key={reference.memoryId} conversationId={conversationId} messageId={messageId} reference={reference} />
+          {used.map((reference, index) => (
+            <MemoryUsedItem
+              key={reference.memoryId}
+              conversationId={conversationId}
+              messageId={messageId}
+              reference={reference}
+              position={index + 1}
+              total={used.length}
+            />
           ))}
         </div>
       )}

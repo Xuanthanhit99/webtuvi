@@ -87,7 +87,7 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
         {reading.cards.map((rc) => (
           <div key={rc.position} className="flex flex-col items-center gap-2">
             <TarotCardFace card={rc.card} isReversed={rc.isReversed} onClick={() => setDetailCard({ card: rc.card, isReversed: rc.isReversed })} />
-            {rc.positionLabel && <span className="text-caption text-text-disabled">{rc.positionLabel}</span>}
+            {rc.positionLabel && <span className="text-caption text-text-tertiary">{rc.positionLabel}</span>}
           </div>
         ))}
       </div>

@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import path from 'path';
 import { test, expect, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 // Flow 29: Admin Operator Tooling (Interim Sprint, while Vietnamese Tử Vi Sprint 18 remains
 // BLOCKED_BY_DOMAIN_REFERENCE — see docs/audit/sprint-18-pre-implementation-audit.md). Verifies the
@@ -108,6 +109,13 @@ test('ADMIN can reach Operator Tools and run all five read-only lookups against 
   // 5. AI spend (aggregate, always loaded, defaults to "today")
   await expect(page.getByText('Estimated cost')).toBeVisible({ timeout: 10000 });
   await expect(page.getByText('Requests')).toBeVisible();
+
+  // Accessibility + Product Polish (2026-08-19): Admin surface scan with all five lookups in
+  // their real, populated result state (loading-status wiring and retry wiring both target the
+  // loading/error branches specifically, not this happy path — but the surrounding page structure,
+  // headings, and result markup are exercised here at their real, stable state).
+  const adminScan = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
+  expect(adminScan.violations, JSON.stringify(adminScan.violations, null, 2)).toEqual([]);
 });
 
 test('a normal USER cannot reach Operator Tools — denied at the UI, and denied by the API itself, not just a hidden link', async ({ page }) => {

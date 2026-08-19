@@ -115,9 +115,9 @@ export function MemoryCard({ reference, explanationText, onViewed }: MemoryCardP
 
       <p className="text-body-sm text-text-secondary">{memory.summary}</p>
 
-      {explanationText && <p className="text-caption text-text-disabled">{explanationText}</p>}
+      {explanationText && <p className="text-caption text-text-tertiary">{explanationText}</p>}
 
-      <p className="text-caption text-text-disabled">Created {new Date(memory.createdAt).toLocaleDateString()}</p>
+      <p className="text-caption text-text-tertiary">Created {new Date(memory.createdAt).toLocaleDateString()}</p>
 
       <div className="flex flex-wrap gap-2 pt-1">
         <Button

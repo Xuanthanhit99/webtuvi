@@ -24,7 +24,7 @@ export function BigThreeSummary({ chart }: { chart: NatalChartDto }) {
           {item.sign ? (
             <span className="text-body-md font-semibold text-text-primary">{item.sign}</span>
           ) : (
-            <span className="text-body-sm text-text-disabled">Unavailable</span>
+            <span className="text-body-sm text-text-tertiary">Unavailable</span>
           )}
         </div>
       ))}

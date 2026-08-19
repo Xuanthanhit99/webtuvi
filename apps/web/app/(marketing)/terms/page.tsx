@@ -21,7 +21,7 @@ export default function TermsPage() {
           By creating an account, you agree to use BeaconVie in good faith and not to misuse the service to
           harm others.
         </p>
-        <p className="text-body-sm text-text-disabled">
+        <p className="text-body-sm text-text-tertiary">
           This is a placeholder summary for Sprint 1. Complete legal Terms of Service will be published before
           general availability.
         </p>

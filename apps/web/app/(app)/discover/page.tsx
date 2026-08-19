@@ -44,7 +44,7 @@ export default function DiscoverPage() {
         {SYSTEMS.map((system) => (
           <Card key={system.title}>
             <div className="mb-2 flex items-center justify-between">
-              <p className="font-display text-body-lg text-text-primary">{system.title}</p>
+              <h2 className="font-display text-body-lg text-text-primary">{system.title}</h2>
               {!system.available && <Badge>Coming soon</Badge>}
             </div>
             <p className="mb-3 text-body-sm text-text-secondary">{system.description}</p>
@@ -65,7 +65,7 @@ export default function DiscoverPage() {
        * docs/product/personal-destiny-report-decisions.md); Premium to generate. */}
       <Card>
         <div className="mb-2 flex items-center justify-between">
-          <p className="font-display text-body-lg text-text-primary">Personal Destiny Report</p>
+          <h2 className="font-display text-body-lg text-text-primary">Personal Destiny Report</h2>
           <Badge variant="insight">Premium</Badge>
         </div>
         <p className="mb-3 text-body-sm text-text-secondary">

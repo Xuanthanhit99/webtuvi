@@ -31,13 +31,13 @@ export function TarotCardDetailDialog({
         <div>
           <p className="mb-1 text-body-sm font-semibold text-text-secondary">Upright</p>
           <p className="mb-2 text-body-sm text-text-primary">{card.uprightMeaning}</p>
-          <p className="text-caption text-text-disabled">{card.uprightKeywords.join(' · ')}</p>
+          <p className="text-caption text-text-tertiary">{card.uprightKeywords.join(' · ')}</p>
         </div>
 
         <div>
           <p className="mb-1 text-body-sm font-semibold text-text-secondary">Reversed</p>
           <p className="mb-2 text-body-sm text-text-primary">{card.reversedMeaning}</p>
-          <p className="text-caption text-text-disabled">{card.reversedKeywords.join(' · ')}</p>
+          <p className="text-caption text-text-tertiary">{card.reversedKeywords.join(' · ')}</p>
         </div>
       </div>
     </Dialog>

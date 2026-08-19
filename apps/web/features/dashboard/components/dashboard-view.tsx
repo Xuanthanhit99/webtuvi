@@ -101,7 +101,7 @@ export function DashboardView() {
             {data.recentActivity.map((activity, i) => (
               <li key={i} className="flex justify-between text-body-sm text-text-secondary">
                 <span>{activity.label}</span>
-                <span className="text-text-disabled">{timeAgo(activity.createdAt)}</span>
+                <span className="text-text-tertiary">{timeAgo(activity.createdAt)}</span>
               </li>
             ))}
           </ul>

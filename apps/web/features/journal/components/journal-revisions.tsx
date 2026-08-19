@@ -33,7 +33,7 @@ export function JournalRevisions({ id }: { id: string }) {
               <span>
                 Version {revision.version} — {revision.changeReason}
               </span>
-              <span className="text-caption text-text-disabled">{new Date(revision.createdAt).toLocaleString()}</span>
+              <span className="text-caption text-text-tertiary">{new Date(revision.createdAt).toLocaleString()}</span>
             </button>
             {expanded === revision.version && (
               <div className="mt-2 border-t border-border-subtle pt-2">

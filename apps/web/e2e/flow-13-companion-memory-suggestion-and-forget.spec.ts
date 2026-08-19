@@ -1,4 +1,5 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 // Flow 13: Companion + Memory Integration (Sprint 3C) — the release-closure browser flow:
 // Conversation -> Memory suggestion appears -> Remember -> Memory is accepted -> a later
@@ -87,6 +88,12 @@ test.describe('Companion + Memory Integration (Sprint 3C)', () => {
     await composerA.fill(`My goal is to ${uniqueGoal}.`);
     await page.getByRole('button', { name: /send message/i }).click();
     await expect(page.getByRole('log', { name: 'Conversation' }).getByText(uniqueGoal, { exact: false })).toBeVisible();
+
+    // Accessibility + Product Polish (2026-08-19): Companion surface scan, with a real user
+    // message rendered (exercises the "Remember this" accessible-name-disambiguation fix — see
+    // remember-this-button.tsx — at its real, populated state, not an empty conversation).
+    const companionScan = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
+    expect(companionScan.violations, JSON.stringify(companionScan.violations, null, 2)).toEqual([]);
 
     // A real MemorySuggestionCard, not a placeholder — badge + all five real actions.
     const suggestionCardA = page.getByLabel('Memory suggestion');

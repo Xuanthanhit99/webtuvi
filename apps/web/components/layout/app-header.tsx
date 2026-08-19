@@ -31,8 +31,10 @@ export function AppHeader() {
   }
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-border-subtle px-4 desktop:px-8">
-      <div className="desktop:hidden">
+    <header className="flex h-16 shrink-0 items-center justify-between border-b border-border-subtle px-4 tablet:px-8">
+      {/* Accessibility + Product Polish (2026-08-19): Sidebar now renders its own logo at
+          tablet:+ (see sidebar.tsx), so this text-only fallback brand mark is phone-only too. */}
+      <div className="tablet:hidden">
         <span className="font-display text-body-lg font-medium text-text-primary">BeaconVie</span>
       </div>
       <div className="ml-auto flex items-center gap-3">

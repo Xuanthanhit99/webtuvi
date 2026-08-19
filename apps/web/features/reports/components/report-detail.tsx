@@ -15,6 +15,10 @@ import { ApiError } from '@/lib/api-error';
 import { reportsApi } from '../api/reports-api';
 import { REPORT_FAILURE_REASON_MESSAGES } from '../labels';
 
+// Accessibility + Product Polish (2026-08-19): matches the existing polling convention already
+// used for another async-generation status (premium-return-status.tsx's PENDING order polling).
+const GENERATING_POLL_INTERVAL_MS = 2000;
+
 const SECTIONS: { id: string; heading: string }[] = [
   { id: 'overview', heading: 'Overview' },
   { id: 'core-identity', heading: 'Core Identity' },
@@ -30,7 +34,15 @@ const SECTIONS: { id: string; heading: string }[] = [
 ];
 
 export function ReportDetail({ id, onClose, onRegenerated }: { id: string; onClose: () => void; onRegenerated: (id: string) => void }) {
-  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['reports', id], queryFn: () => reportsApi.getReport(id) });
+  // Accessibility + Product Polish (2026-08-19): a report opened while still GENERATING (a
+  // bookmark, a shared link, or a second tab — not the primary generate-button flow, which already
+  // blocks synchronously until the real status is known) previously showed a static card forever,
+  // with no way to discover completion short of a manual reload.
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['reports', id],
+    queryFn: () => reportsApi.getReport(id),
+    refetchInterval: (query) => (query.state.data?.status === 'GENERATING' ? GENERATING_POLL_INTERVAL_MS : false),
+  });
 
   return (
     <div className="flex flex-col gap-4">
@@ -63,7 +75,7 @@ function ReportView({ report, onRegenerated }: { report: ReportDto; onRegenerate
 
   if (report.status === 'GENERATING') {
     return (
-      <Card className="flex flex-col items-center gap-3 py-10 text-center">
+      <Card className="flex flex-col items-center gap-3 py-10 text-center" role="status">
         <Skeleton className="h-6 w-48" />
         <p className="text-body-sm text-text-secondary">Connecting a few things you&rsquo;ve shared…</p>
       </Card>

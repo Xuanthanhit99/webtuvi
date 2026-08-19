@@ -48,7 +48,7 @@ export function RecommendationPanel() {
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-caption text-text-disabled">
+      <p className="text-caption text-text-tertiary">
         {data!.items.length} of {data!.candidateCount} memories shown, deterministically ranked — not AI-selected.
       </p>
       <ul className="flex flex-col gap-3" aria-label="Recommended memories">
@@ -61,7 +61,7 @@ export function RecommendationPanel() {
               </div>
               <p className="font-medium text-text-primary">{item.title}</p>
               <p className="text-body-sm text-text-secondary">{item.summary}</p>
-              <p className="text-caption text-text-disabled">{item.whyRecommended}</p>
+              <p className="text-caption text-text-tertiary">{item.whyRecommended}</p>
             </Card>
           </li>
         ))}

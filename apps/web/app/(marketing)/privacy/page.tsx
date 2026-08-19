@@ -33,7 +33,7 @@ export default function PrivacyPage() {
           help explain or reflect on a result that&rsquo;s already been calculated. It never chooses a card, picks a
           number, or determines a chart placement.
         </p>
-        <p className="text-body-sm text-text-disabled">
+        <p className="text-body-sm text-text-tertiary">
           This is a plain-language summary for Sprint 1. A complete legal Privacy Policy will be published
           before general availability.
         </p>

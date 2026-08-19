@@ -35,8 +35,13 @@ export function AdminAiSpendPanel() {
 
       <Dropdown id="admin-ai-spend-window" label="Window" value={window} options={WINDOW_OPTIONS} onChange={(v) => setWindow(v as 'today' | '7d')} className="max-w-xs" />
 
-      {query.isLoading && <Skeleton className="h-24 w-full" />}
-      {query.isError && <ErrorState title="Couldn’t load AI spend" />}
+      {query.isLoading && (
+        <div role="status">
+          <span className="sr-only">Loading AI spend…</span>
+          <Skeleton className="h-24 w-full" />
+        </div>
+      )}
+      {query.isError && <ErrorState title="Couldn’t load AI spend" onRetry={() => query.refetch()} />}
 
       {query.data && (
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-body-sm tablet:grid-cols-3">

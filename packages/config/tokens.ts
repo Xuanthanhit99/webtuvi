@@ -15,6 +15,16 @@ export const color = {
   text: {
     primary: '#F1ECE4',
     secondary: '#B7AFC9',
+    // Accessibility + Product Polish (2026-08-19): `disabled` measured 3.09-3.38:1 against
+    // canvas/surface — fails WCAG AA's 4.5:1 for normal text — yet was used for real readable
+    // content (timestamps, disclosure copy) almost everywhere, not just genuinely-disabled
+    // controls. Split rather than redefined: `disabled` keeps its original value, reserved for
+    // text that is part of an inactive/disabled UI control (WCAG 1.4.3's own explicit exemption —
+    // see oauth-buttons.tsx, the one remaining legitimate usage). `tertiary` is the new token for
+    // readable secondary/supporting/disclosure text, verified >=4.5:1 against both canvas and
+    // surface — see docs/progress/accessibility-product-polish-final-report.md for the full
+    // contrast table.
+    tertiary: '#9A93AE',
     disabled: '#6E6785',
     primaryLight: '#211D33',
   },

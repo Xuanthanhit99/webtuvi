@@ -109,14 +109,23 @@ export function NotificationCenter({ onNavigate }: { onNavigate: () => void }) {
               className="flex w-full flex-col gap-1 py-3 text-left hover:bg-surface"
             >
               <div className="flex items-center gap-2">
-                {!notification.read && <span className="h-2 w-2 shrink-0 rounded-full bg-insight" aria-hidden="true" />}
+                {!notification.read && (
+                  <>
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-insight" aria-hidden="true" />
+                    {/* Accessibility + Product Polish (2026-08-19): the dot above is aria-hidden,
+                        so unread state previously had no screen-reader-facing signal at all inside
+                        the list (the bell's own aggregate "N unread" count is separate and already
+                        correct). Read items get no extra text — only unread ones announce it. */}
+                    <span className="sr-only">Unread</span>
+                  </>
+                )}
                 <span className="text-body-sm font-medium text-text-primary">{notification.title}</span>
                 <Badge variant="neutral" className="ml-auto shrink-0">
                   {CATEGORY_BADGE_LABEL[notification.category]}
                 </Badge>
               </div>
               <p className="text-body-sm text-text-secondary">{notification.body}</p>
-              <span className="text-caption text-text-disabled">{new Date(notification.createdAt).toLocaleDateString()}</span>
+              <span className="text-caption text-text-tertiary">{new Date(notification.createdAt).toLocaleDateString()}</span>
             </button>
           </li>
         ))}

@@ -132,7 +132,7 @@ export function ConsentSettings() {
         )}
       </Card>
 
-      <p className="text-caption text-text-disabled">
+      <p className="text-caption text-text-tertiary">
         Health memories are never remembered automatically — you must explicitly set &ldquo;Allow this type
         automatically&rdquo; for Health specifically, no matter what your global setting is.
       </p>

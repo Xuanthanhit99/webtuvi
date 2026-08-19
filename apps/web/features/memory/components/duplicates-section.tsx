@@ -41,7 +41,7 @@ export function DuplicatesSection() {
           <Card className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <Badge variant="neutral">{MATCH_TYPE_LABELS[dup.matchType] ?? dup.matchType}</Badge>
-              <span className="text-caption text-text-disabled">{dup.similarity}% match</span>
+              <span className="text-caption text-text-tertiary">{dup.similarity}% match</span>
             </div>
             <p className="text-body-sm text-text-secondary">{dup.reason}</p>
           </Card>

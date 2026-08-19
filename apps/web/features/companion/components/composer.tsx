@@ -117,7 +117,7 @@ export function Composer({ status, errorMessage, draft, onDraftChange, onSend, o
           disabled={busy}
           maxLength={MAX_LENGTH}
           rows={2}
-          className="h-11 max-h-40 min-h-11 w-full flex-1 resize-y rounded-md border border-border-subtle bg-surface px-3 py-2.5 text-body-md text-text-primary placeholder:text-text-disabled focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-11 max-h-40 min-h-11 w-full flex-1 resize-y rounded-md border border-border-subtle bg-surface px-3 py-2.5 text-body-md text-text-primary placeholder:text-text-tertiary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight disabled:cursor-not-allowed disabled:opacity-60"
         />
         <Button type="submit" loading={status === 'sending'} disabled={busy || !draft.trim()} aria-label="Send message">
           <Send className="h-4 w-4" aria-hidden="true" />

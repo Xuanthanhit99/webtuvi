@@ -2,6 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { renderWithQuery } from '@/test/render-with-query';
 import { MessageItem, StreamingMessageItem } from './message-item';
 import { memoryApi } from '@/features/memory/api/memory-api';
+import type { ConversationMessageDto } from '@beaconvie/types';
 
 jest.mock('@/features/memory/api/memory-api', () => ({
   memoryApi: {
@@ -127,5 +128,42 @@ describe('StreamingMessageItem', () => {
 
     rerender(<StreamingMessageItem text="One two three" />);
     expect(container.firstElementChild).toHaveAttribute('aria-hidden', 'true');
+  });
+});
+
+function userMessage(id: string, createdAt: string, content: string): ConversationMessageDto {
+  return { id, role: 'user', content, createdAt, memoryUsed: null };
+}
+
+describe('MessageItem — "Remember this" accessible names', () => {
+  it('gives two user messages in the same conversation distinguishable "Remember this" accessible names', () => {
+    renderWithQuery(
+      <>
+        <MessageItem message={userMessage('m1', '2026-08-19T09:00:00.000Z', 'First message')} conversationId="c1" />
+        <MessageItem message={userMessage('m2', '2026-08-19T14:30:00.000Z', 'Second message')} conversationId="c1" />
+      </>,
+    );
+
+    const buttons = screen.getAllByRole('button', { name: /remember this message from/i });
+    expect(buttons).toHaveLength(2);
+
+    const names = buttons.map((b) => b.getAttribute('aria-label'));
+    expect(new Set(names).size).toBe(2);
+
+    // Privacy bound: the accessible name must never contain the message content itself.
+    for (const name of names) {
+      expect(name).not.toContain('First message');
+      expect(name).not.toContain('Second message');
+    }
+  });
+
+  it('does not render a "Remember this" button on assistant messages', () => {
+    renderWithQuery(
+      <MessageItem
+        message={{ id: 'a1', role: 'assistant', content: 'A reply', createdAt: '2026-08-19T09:00:00.000Z', memoryUsed: null }}
+        conversationId="c1"
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /remember this/i })).not.toBeInTheDocument();
   });
 });

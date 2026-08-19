@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 // Flow 24: Account Data Rights (Sprint 10 — Launch Hardening). Verifies the real "Export my
 // data" / "Delete my account" controls in Settings against real production builds: a fresh,
@@ -41,8 +42,26 @@ test('Settings -> export my data -> delete my account -> session truly ends -> p
   const email = `flow24-data-rights-${Date.now()}@example.com`;
   await registerAndOnboard(page, email);
 
+  // Accessibility + Product Polish (2026-08-19): tablet icon-rail nav (Sidebar) targeted axe scan.
+  // Dashboard is already loaded at this point (registerAndOnboard's last assertion); resizing here
+  // reuses that navigation rather than a second page load. Reset to the default viewport
+  // immediately after so the rest of this flow's own assertions are unaffected.
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await expect(page.getByRole('navigation', { name: 'Main navigation' })).toBeVisible();
+  const tabletNavScan = await new AxeBuilder({ page }).include('nav[aria-label="Main navigation"]').analyze();
+  expect(tabletNavScan.violations, JSON.stringify(tabletNavScan.violations, null, 2)).toEqual([]);
+  await page.setViewportSize({ width: 1280, height: 800 });
+
   await page.goto('/settings');
   await expect(page.getByRole('heading', { name: 'Settings' })).toBeVisible({ timeout: 10000 });
+
+  // Accessibility + Product Polish (2026-08-19): Settings loading-state accessibility fix +
+  // general page structure. `disable(['color-contrast'])`: axe's static contrast check
+  // flags dynamic/gradient/image backgrounds it can't reliably resolve — this pass's actual
+  // contrast work is independently verified with real computed ratios (see the final report),
+  // not by relying on axe's contrast heuristic; every other rule stays enabled.
+  const settingsScan = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
+  expect(settingsScan.violations, JSON.stringify(settingsScan.violations, null, 2)).toEqual([]);
 
   // --- Export ---
   const downloadPromise = page.waitForEvent('download');
@@ -55,6 +74,11 @@ test('Settings -> export my data -> delete my account -> session truly ends -> p
   await expect(page.getByRole('heading', { name: /delete your account/i })).toBeVisible();
   const confirmButton = page.getByRole('button', { name: /permanently delete my account/i });
   await expect(confirmButton).toBeDisabled();
+
+  // Accessibility + Product Polish (2026-08-19): Dialog id-collision fix (unique useId()
+  // labelledby/describedby) — scanned with the dialog open and populated, its real stable state.
+  const dialogScan = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
+  expect(dialogScan.violations, JSON.stringify(dialogScan.violations, null, 2)).toEqual([]);
 
   // Wrong password is rejected, account remains usable.
   await page.getByLabel(/confirm your password/i).fill('WrongPassword1!');

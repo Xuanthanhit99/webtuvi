@@ -1,5 +1,6 @@
 import { createHmac } from 'crypto';
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 // Flow 25: Notification & Retention Foundation (Sprint 11) — the product's only unshipped V1
 // Product Bible module. See docs/audit/sprint-11-pre-implementation-audit.md and
@@ -129,6 +130,11 @@ test('a real premium.activated notification appears in the Notification Center, 
   // Scoped to the row itself — the bare page also has an unrelated "Premium" heading from the
   // dashboard's PremiumStatusCard underneath the dialog overlay, which a page-wide locator matches too.
   await expect(notificationRow.getByText('Premium', { exact: true })).toBeVisible(); // category badge
+
+  // Accessibility + Product Polish (2026-08-19): unread-semantics fix (sr-only "Unread" text,
+  // not conveyed by the dot alone) — scanned while a real unread item is present, its real state.
+  const notificationScan = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
+  expect(notificationScan.violations, JSON.stringify(notificationScan.violations, null, 2)).toEqual([]);
 
   // Clicking it marks it read and follows the real deep link (`/settings`).
   await notificationRow.click();

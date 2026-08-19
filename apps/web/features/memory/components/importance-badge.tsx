@@ -37,7 +37,7 @@ export function ImportanceBadge({ score = 0, explanations = [], pinned = false }
             e.stopPropagation();
             setExpanded((v) => !v);
           }}
-          className="text-caption text-text-disabled underline decoration-dotted hover:text-text-secondary"
+          className="text-caption text-text-tertiary underline decoration-dotted hover:text-text-secondary"
           aria-expanded={expanded}
         >
           Why?

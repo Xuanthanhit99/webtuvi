@@ -1,3 +1,6 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { Logo } from '@/components/ui/logo';
 
@@ -8,7 +11,44 @@ const NAV_LINKS = [
   { label: 'About', href: '/about' },
 ];
 
+// Accessibility + Product Polish (2026-08-19): native <details>/<summary> gives no Escape-to-close
+// or outside-click-to-close for free (confirmed live: opened the menu, dispatched Escape and an
+// outside click, both left it open) — this wires both, while leaving the existing <details> markup
+// and its own toggle behavior untouched.
 export function MarketingHeader() {
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const node = detailsRef.current;
+    if (!node) return;
+
+    function close() {
+      // Setting `.open` alone isn't a reliable state-sync signal on its own: whether that fires a
+      // native `toggle` event (which onToggle below listens for) varies across engines — call
+      // setMenuOpen directly too so aria-expanded/aria-label update deterministically either way.
+      if (node!.open) {
+        node!.open = false;
+        setMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') close();
+    }
+
+    function handlePointerDown(e: PointerEvent) {
+      if (node!.open && e.target instanceof Node && !node!.contains(e.target)) close();
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('pointerdown', handlePointerDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('pointerdown', handlePointerDown);
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-drawer border-b border-border-subtle bg-canvas/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-content items-center justify-between px-4 desktop:px-8">
@@ -36,9 +76,14 @@ export function MarketingHeader() {
           </Link>
         </div>
 
-        <details className="group relative desktop:hidden">
+        <details
+          ref={detailsRef}
+          className="group relative desktop:hidden"
+          onToggle={(e) => setMenuOpen(e.currentTarget.open)}
+        >
           <summary
-            aria-label="Open menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={menuOpen}
             className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md text-text-primary [&::-webkit-details-marker]:hidden"
           >
             <span className="sr-only">Menu</span>

@@ -20,7 +20,7 @@ export function CompanionPreview() {
             </Badge>
           </div>
         </div>
-        <p className="mt-4 text-center text-caption text-text-disabled">
+        <p className="mt-4 text-center text-caption text-text-tertiary">
           Example conversation. Your Companion remembers what you share and brings it back when it&rsquo;s relevant.
         </p>
       </div>

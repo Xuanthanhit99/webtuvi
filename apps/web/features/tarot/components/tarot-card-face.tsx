@@ -37,7 +37,7 @@ export function TarotCardFace({
     >
       <Icon className="h-5 w-5 text-insight" aria-hidden="true" />
       <span className="font-display leading-tight text-text-primary">{card.name}</span>
-      <span className="text-caption text-text-disabled">{String(card.number).padStart(2, '0')}</span>
+      <span className="text-caption text-text-tertiary">{String(card.number).padStart(2, '0')}</span>
     </button>
   );
 }
