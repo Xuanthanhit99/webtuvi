@@ -62,11 +62,17 @@ async function registerAndOnboard(page: Page, label: string): Promise<{ email: s
   return { email };
 }
 
-test('ADMIN can reach Operator Tools and run all five read-only lookups against real data', async ({ page }) => {
+test('ADMIN can reach Operator Tools and run all five read-only lookups against real data', async ({ page, request }) => {
   // A second, target user for the lookup fixtures — created directly over the API, not through the
   // UI, matching flow-27's own "direct API calls for setup, not the system under test" precedent.
+  // Uses the standalone `request` fixture, not `page.request`: the latter shares its cookie jar
+  // with `page`'s browser context, so the target user's access-token cookie would land on `page`
+  // and leave it authenticated (as an unonboarded user) before the admin's own
+  // `registerAndOnboard` gets a chance to hit `/register` — middleware then correctly redirects
+  // that as an authenticated-but-unonboarded visit to `/onboarding` instead of showing the
+  // register form. `request` is an isolated APIRequestContext with no such cookie sharing.
   const targetEmail = `flow29-target-${Date.now()}@example.com`;
-  await page.request.post(`${API_BASE_URL}/auth/register`, {
+  await request.post(`${API_BASE_URL}/auth/register`, {
     data: { email: targetEmail, displayName: 'Flow TwentyNine Target', password: 'Sup3r$ecretPass', confirmPassword: 'Sup3r$ecretPass', acceptedTerms: true },
   });
 
@@ -85,7 +91,10 @@ test('ADMIN can reach Operator Tools and run all five read-only lookups against 
   await page.getByLabel('Email or user id').fill(targetEmail);
   await page.getByRole('button', { name: 'Search' }).click();
   await expect(page.getByText(targetEmail)).toBeVisible({ timeout: 10000 });
-  await expect(page.getByText('USER', { exact: true }).first()).toBeVisible();
+  // Role only ever surfaces as a badge, and only for ADMIN (see AdminUserResult in
+  // admin-user-lookup-panel.tsx) — a plain USER gets no role badge at all by design. The target
+  // fixture is a plain USER, so the correct check is that no ADMIN badge renders for it.
+  await expect(page.getByText('ADMIN', { exact: true })).not.toBeVisible();
 
   // 2. Entitlement lookup (real, empty — target user never purchased Premium)
   await expect(page.getByText('No entitlement history')).toBeVisible({ timeout: 10000 });
