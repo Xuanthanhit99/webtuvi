@@ -42,7 +42,7 @@ export const landingCopy = {
     steps: [
       {
         number: 1,
-        text: 'Start with a real Tarot draw or a real Numerology reading — your chart is on its way.',
+        text: 'Start with a real Tarot draw, Numerology reading, Natal Chart, or Eastern Horoscope calculation.',
       },
       { number: 2, text: 'Talk it through with your Companion.' },
       { number: 3, text: 'Come back — it remembers, and the picture gets clearer.' },

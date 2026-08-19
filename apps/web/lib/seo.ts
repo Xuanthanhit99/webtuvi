@@ -46,16 +46,23 @@ export interface BuildMetadataOptions {
 export function buildMetadata({ title, description = DEFAULT_DESCRIPTION, path, noindex = false }: BuildMetadataOptions): Metadata {
   const canonical = path === '/' ? '/' : path;
   const resolvedTitle = title ?? SITE_NAME;
+  // Next.js merges a route's metadata into its parent layout's shallowly, key by key. A `title`
+  // key that is *present* but `undefined` still overwrites the parent's inherited title (it
+  // isn't treated as "unset") — so this key must be omitted entirely, not just left undefined,
+  // whenever no page-specific title was given. Omitting it lets the root layout's
+  // `title.default`/`template` apply, which is what every caller that doesn't pass `title`
+  // (currently just the homepage) actually wants.
+  const titleField = title !== undefined ? { title } : {};
 
   if (noindex) {
     return {
-      title,
+      ...titleField,
       robots: { index: false, follow: false },
     };
   }
 
   return {
-    title,
+    ...titleField,
     description,
     alternates: { canonical },
     openGraph: {

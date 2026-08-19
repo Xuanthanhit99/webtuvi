@@ -393,3 +393,253 @@ Stop-Condition-H product decision, not a gap in what this foundation pass itself
 5. Sprint 24 (Product Complete Release Gate) remains the next roadmap milestone after any
    remaining P1/P2 items; Sprint 18 (Tử Vi) remains `BLOCKED_BY_DOMAIN_REFERENCE`, unaffected by
    this pass.
+
+---
+
+# RELEASE CLOSURE (independent verification pass)
+
+Date: 2026-08-19 (same day, separate pass). Per rule 0 ("repository reality wins"), every claim
+below was independently re-derived from the repository/runtime, not copied from the report above.
+
+1. **Recovered HEAD:** `45c6a29` ("[update][commit] update code seo") — **not** `5050160` as the
+   closure prompt assumed.
+2. **origin/master:** `45c6a29` — identical to HEAD, 0 ahead / 0 behind.
+3. **Initial ahead/behind assumed by the prompt:** "origin/master behind local HEAD by 1 commit" —
+   **false**. Actual: equal.
+4. **Initial working tree assumed by the prompt:** "~25 uncommitted files" — **false**. Actual:
+   clean (`git status --short` empty) at closure start. **Discrepancy, documented per rule 2:** the
+   24 files described in the report above were committed as `45c6a29` (25 files — the report itself
+   became file #25) and already fast-forward-*pulled* into this checkout from `origin` (see
+   `git reflog`: `45c6a29 HEAD@{0}: pull ... origin: Fast-forward`), meaning the commit was already
+   **pushed to origin by some other process/session** before this closure task began — not "no push
+   has occurred" as the prompt assumed. This closure did not push anything itself (0/0 ahead-behind
+   throughout) and did not attempt to unwind the existing push (would require a destructive
+   history-rewrite on a shared branch, explicitly out of scope/prohibited). Closure proceeded by
+   auditing the actual committed state at `45c6a29` instead of a since-superseded uncommitted state.
+5. **Changed-file classification (the 45c6a29 diff vs. its parent `5050160`):** all 25 files are
+   SEO_CORE / METADATA / ROBOTS / SITEMAP / PUBLIC_PAGE_COPY / SHAREABILITY / TESTS / DOCUMENTATION
+   — matches the file list in §55–56 above exactly, plus the report itself. Zero files under
+   `apps/api`, `packages/`, or any Tử Vi-related path (`git diff --stat` confirmed empty for
+   `packages/` and `apps/api/`). Zero UNKNOWN-category paths.
+6. **Public route inventory:** independently re-derived from `apps/web/app/**` + `middleware.ts` +
+   `route-guard.ts` (not copied from the report): `/`, `/about`, `/contact`, `/privacy`, `/terms`,
+   `/login`, `/register` — PUBLIC_INDEXABLE. `/forgot-password`, `/reset-password`, `/verify-email`,
+   `/verify-email/pending` — SENSITIVE_TOKEN_ROUTE / PUBLIC_NOINDEX (reachable logged-out, must
+   never index). `/onboarding` — AUTHENTICATED_PRIVATE. Confirmed accurate.
+7. **Private route inventory:** everything under `(app)/` (dashboard, companion, journal,
+   discover×5, settings, memory, goals, reflections, insights×2, reviews×2, premium×2, reports,
+   admin) — AUTHENTICATED_PRIVATE, group-level `noindex` via `(app)/layout.tsx`, confirmed by
+   grepping every child page for its own `metadata` export: none of them set their own `robots`
+   field (except `/admin`, identical value, no conflict), so all inherit the layout's
+   `noindex,follow` per Next.js's per-key metadata merge. `/menh-vi/*` — ARCHIVED (hard 404 via
+   `notFound()` in `app/menh-vi/layout.tsx`, pre-existing, untouched).
+8. **Unknown route count: 0.**
+9. **Metadata architecture:** `lib/seo.ts` confirmed as the real single source of truth for
+   `SITE_NAME`/`SITE_URL`/`DEFAULT_DESCRIPTION`/`buildMetadata`/JSON-LD builders, reused by every
+   indexable page and `ShareButton`. **One HIGH-severity defect found and fixed** — see §30 below.
+10. **Canonical result:** correct on every indexable page after the fix in §30 (canonical itself
+    was already correct before the fix — the defect was `title`, not `alternates.canonical`).
+11. **Canonical adversarial tests:** ran real HTTP requests against the dev server for
+    `/menh-vi`, `/menh-vi/`, `/menh-vi/la-so`, `/menh-vi?foo=bar`, `/menh-vi/la-so/`,
+    `/menh-vi%2Fla-so`, `/menh-vi/../menh-vi`, `/Menh-Vi` — every variant resolves to a true 404
+    (trailing-slash variants redirect once, then 404; no bypass found for query string, encoding,
+    case, or dot-segment traversal).
+12. **Homepage metadata:** before the fix, **zero `<title>` tag rendered** (see §30). After the fix,
+    confirmed live: tab title `"BeaconVie — An AI Companion That Remembers You"`, canonical
+    `http://localhost:3000/`, meta description present, OG/Twitter present, exactly 2 JSON-LD
+    scripts (`WebSite` + `Organization`) in the raw server HTML (a transient dev-mode double-render
+    to 4 scripts was observed once after repeated forced navigations/HMR — reproducibility-tested on
+    a fresh full navigation and did not recur; classified TEST_DEFECT-adjacent dev artifact, not a
+    production defect, since the raw `fetch('/')` response body always contained exactly 2).
+13. **About metadata:** title "About — BeaconVie", canonical `/about`, description present — correct
+    both in source and live-rendered.
+14. **Contact metadata:** title/description/canonical present and correct, source-verified.
+15. **Privacy metadata:** title/description/canonical present and correct, source-verified.
+16. **Terms metadata:** title/description/canonical present and correct, source-verified.
+17. **login/register metadata policy:** both indexable (real, public, unauthenticated-only pages),
+    real titles/descriptions/canonicals, correct.
+18. **reset-password policy:** `noindex,follow` at the metadata level, confirmed live with a
+    sentinel token (`?token=SENTINEL_RESET_TOKEN_12345`) in the URL — robots meta correctly
+    `noindex, nofollow`, no canonical/OG tag emitted at all, token absent from `<head>` entirely
+    (present only in the request URL/body form value, as expected).
+19. **verify-email policy:** same pattern, source-verified identical to reset-password.
+20. **Private noindex result:** defense-in-depth confirmed structurally (Next.js metadata
+    inheritance, verified by grepping every `(app)` child page's `metadata` export) — matches §7.
+21. **robots result:** rendered `/robots.txt` on the live dev server fetched and compared
+    line-by-line against `APP_ROUTES`/`ONBOARDING_ROUTE` from `route-guard.ts` — exact match, no
+    drift. `/menh-vi`, `/forgot-password`, `/reset-password`, `/verify-email` all present.
+22. **sitemap result:** rendered `/sitemap.xml` fetched and compared entry-by-entry — exactly the 7
+    intended public URLs, no dashboard/admin/account/Memory/Journal/Companion/Reports/Discovery/
+    frozen-module/`/menh-vi`/token route present, no duplicates, `lastmod` is a real build-time
+    timestamp (not a fabricated future date), priority/changeFrequency values conservative and
+    pre-existing.
+23. **`/menh-vi` result:** true 404 confirmed under 8 adversarial variants (§11). Sprint 14 archival
+    mechanism untouched.
+24. **Admin indexing result:** `/admin` disallowed in `robots.ts`, noindex at both its own page level
+    and the `(app)` group level (redundant, no conflict), absent from sitemap, and functionally
+    redirects unauthenticated visitors to `/login` (live-tested).
+25. **Frozen-module result:** Reflection/Insight/Review/Goal routes remain reachable-but-unlisted,
+    untouched by this pass, correctly noindex'd via the same `(app)` group mechanism.
+26. **Brand result:** no live-surface "Mệnh Vi"/"BeaconSoul" leak found (grep confined to the
+    already-archived `/menh-vi` tree). BeaconVie is the sole live brand.
+27. **Stale-copy result:** the two fixes claimed in the original report (`landing-copy.ts`
+    `discoverySystems` comingSoon flags, About page wording) verified live-rendered correctly.
+    **One additional stale-copy instance found by this closure pass, missed by the original pass,
+    and fixed:** `landing-copy.ts`'s `howItWorks.steps[0].text` still read "your chart is on its
+    way" despite Natal Chart being marked live three lines below in the same file — same root cause
+    as the bugs the original pass already fixed, just a different string. Fixed to "Start with a
+    real Tarot draw, Numerology reading, Natal Chart, or Eastern Horoscope calculation." — verified
+    live-rendered on the homepage after the fix.
+28. **Eastern Horoscope/Tử Vi naming result:** `/discover/page.tsx`'s own doc comment explicitly
+    warns against conflating Eastern Horoscope with the future Tử Vi module; no copy anywhere
+    conflates them. Confirmed, unchanged.
+29. **JSON-LD result:** `WebSite` + `Organization` on the homepage only, live-fetched and diffed
+    against `seo.test.ts`'s assertions — exact match, no fabricated fields.
+30. **Fabricated-claim audit:** none found. **Real defect found and fixed instead (HIGH severity):**
+    `buildMetadata()` returned an object literal with an explicit `title: undefined` key whenever no
+    `title` option was passed. Next.js's per-segment metadata merge treats a *present* key as an
+    override even when its value is `undefined` (reproduced directly: `Object.assign({title:'Parent'},
+    {title:undefined})` → `{title:undefined}`) — it does not fall through to the parent layout's
+    `title.default`. The homepage is the only `buildMetadata()` caller that omits `title`
+    (`buildMetadata({ path: '/' })`), and its rendered production HTML had **zero `<title>` element** —
+    confirmed both via raw `fetch('/')` response body (`document.querySelectorAll('title').length`
+    → 0, no title anywhere in the HTML string) and via the browser tab literally reading
+    "localhost:3000" instead of the site title. This was not caught by the original pass's own
+    `seo.test.ts`, which only unit-tests `buildMetadata()`'s return object in isolation and never
+    exercises Next.js's actual metadata-resolution/merge behavior. **Fixed:** `title` is now only
+    included in the returned object when defined (`...(title !== undefined ? { title } : {})`),
+    letting the root layout's `title.default`/`template` apply correctly when omitted. Added a
+    regression test (`seo.test.ts`) asserting `'title' in meta === false` — not merely
+    `meta.title === undefined`, since the object-literal distinction is exactly what caused the bug.
+    Verified live post-fix: homepage tab title now reads
+    "BeaconVie — An AI Companion That Remembers You".
+31. **OG-image result:** confirmed independently — no favicon/logo/OG asset exists anywhere under
+    `apps/web/public` or `apps/web/app` (`find`-equivalent glob returned zero matches). Not
+    fabricated. Documented as a follow-up only, per rule 13/§13 of the original prompt.
+32. **ShareButton result:** line-by-line review confirms the share payload is exactly
+    `{ title: SITE_NAME, text: DEFAULT_DESCRIPTION, url: SITE_URL }` — three module-level constants,
+    no parameters, no code path for user/session/reading data. Live-exercised in a real browser
+    (not just unit tests): clicked the actual rendered button, confirmed
+    `navigator.clipboard.writeText` was called with exactly `"http://localhost:3000"` (no query
+    string, no private data) and the accessible success toast appeared.
+33. **Web Share behavior:** `navigator.share` branch tried first; verified via source review and the
+    existing test suite (this dev environment's `navigator.share` is `undefined`, so live-exercise
+    used the fallback path instead — Web Share itself was verified via the unit test suite, which
+    mocks it, per §38 below).
+34. **Clipboard fallback:** live-verified in a real browser (§32) — works correctly.
+35. **Cancellation/error behavior:** `AbortError` (native share-sheet dismissal) correctly produces
+    no toast, verified via the existing test (`does not announce anything when the user closes the
+    native share sheet`), source-reviewed and confirmed correct.
+36. **Accessibility result:** real `<button>`, visible "Share" text label (not icon-only), accessible
+    name `"Share BeaconVie"` confirmed live via `aria-label` inspection in the rendered DOM.
+37. **Analytics result:** confirmed independently — `packages/types/index.ts`'s
+    `ClientAnalyticsEventName` union contains no `share_clicked` entry; no analytics contract change
+    was made. Matches the original pass's documented, reasoned scope exclusion.
+38. **Privacy sentinel attack result:** ran a live adversarial test against the running dev server —
+    `GET /reset-password?token=SENTINEL_RESET_TOKEN_12345` — confirmed the token appears nowhere in
+    `<head>` (no canonical, no OG, no JSON-LD, no meta leak), `robots` meta correctly
+    `noindex, nofollow`. Combined with the existing `share-button.test.tsx`/`seo.test.ts` sentinel
+    assertions (unchanged, re-run, passing) covering the birth-date/tarot-question/AI-interpretation
+    sentinel classes. **Gate passes.**
+39. **Auth/middleware regression:** live-tested via real HTTP requests (`redirect: 'follow'`) —
+    `/dashboard`, `/discover`, `/settings`, `/admin` all correctly redirect an unauthenticated
+    visitor to `/login` (200 at final URL `/login`); `/`, `/about`, `/login`, `/register` all resolve
+    at their own URL with no redirect. No regression from the `robots.ts` refactor sharing
+    `route-guard.ts`'s `APP_ROUTES`.
+40. **Desktop 1440 QA:** live-resized the real running dev server to 1440×900 — `document.body.
+    scrollWidth` (1425) ≤ `window.innerWidth` (1440), no horizontal overflow.
+41. **Tablet 1024 QA:** same method, 1024×900 — scrollWidth 1009 ≤ 1024, no overflow.
+42. **Tablet 768 QA:** same method, 768×1024 — scrollWidth 753 ≤ 768, no overflow.
+43. **Mobile 390 QA:** same method, 390×844 — scrollWidth 390 ≤ 390, no overflow.
+44. **Mobile 375 QA:** same method, 375×812 — scrollWidth 375 ≤ 375, no overflow. (This closure pass
+    performed the live-viewport QA the original pass explicitly disclosed skipping — all 5
+    breakpoints pass with zero horizontal overflow on the modified homepage/About surfaces.)
+45. **Targeted tests:** `lib/seo.test.ts` (11, incl. the new regression test), `app/robots.test.ts`
+    (7), `app/sitemap.test.ts` (6), `components/marketing/share-button.test.tsx` (5) — **27/27
+    passing** after the fix.
+46. **Full frontend tests:** re-ran clean — **81 suites / 412 tests, 100% pass**, no flake this run
+    (the original report's one previously-noted transient flake did not reproduce).
+47. **Playwright:** not run — same reasoning as the original pass (no new multi-step interactive
+    journey; a single homepage button using already-tested primitives). Judged proportionate,
+    consistent with rule 22's scope-expansion prohibition against building new e2e coverage
+    disproportionate to the change.
+48. **Lint:** clean, 0 errors/warnings, re-run independently after the fix.
+49. **Typecheck:** clean, 0 errors, re-run independently after the fix.
+50. **Production build:** `✓ Compiled successfully` (72s), `✓ Generating static pages (51/51)`,
+    then fails at "Collecting build traces" with `EPERM: operation not permitted, symlink ...` for
+    `react`, `@opentelemetry/api`, `@jridgewell/gen-mapping` — pure third-party `node_modules`
+    packages inside the Windows-only `output: 'standalone'` trace-copy step, none of them files this
+    session touched. Per rule 20's own evidence bar: compile succeeded ✓, typecheck succeeded ✓,
+    static generation succeeded ✓ (51/51, matching the count in every prior report), failure
+    signature matches the prior documented issue (`sprint-17-final-report.md` §42,
+    `admin-operator-tooling-final-report.md` §30.20, and the original pass's own §44) ✓, no new SEO
+    file caused the trace failure (all three failing symlinks are pre-existing dependency packages)
+    ✓. Classified **PRE_EXISTING_ENVIRONMENTAL.**
+51. **diff-check:** clean (`git diff --check` on the full `5050160..45c6a29` range, and again on this
+    closure pass's own uncommitted changes) — no whitespace errors.
+52. **Conflict scan:** no conflict markers found anywhere in the diff.
+53. **Secret scan:** heuristic scan of every changed file (API keys, private-key headers, bearer
+    tokens, hardcoded passwords) — zero matches outside expected sentinel/test/comment strings.
+54. **Bugs discovered (this closure pass, beyond the 5 already fixed by the original pass):**
+    1. `landing-copy.ts`'s `howItWorks` step 1 stale "chart is on its way" copy (§27).
+    2. `buildMetadata()`'s `title: undefined`-key bug causing a missing `<title>` on the homepage
+       (§30) — **HIGH**.
+55. **Bugs fixed:** both #1 and #2 above, plus a regression test for #2.
+56. **Open Blocker: 0.**
+57. **Open Critical: 0.**
+58. **Open High: 0** (the one HIGH found — missing homepage `<title>` — was fixed within this pass,
+    not left open).
+59. **Open Medium: 0.**
+60. **Open Low: 0.**
+61. **Public Discovery SEO decision status:** unchanged —
+    `PUBLIC_DISCOVERY_SEO = PRODUCT_DECISION_REQUIRED`. Independently re-confirmed: all four
+    Discovery system routes live entirely under the authenticated `(app)` group; exposing any of
+    them pre-login is a real product/funnel/privacy decision (Option A/B/C per rule 28 of the
+    closure prompt), not an implementation defect. Not resolved by this closure, per rule 28's own
+    instruction not to.
+62. **Files committed:** `apps/web/content/landing-copy.ts`, `apps/web/lib/seo.ts`,
+    `apps/web/lib/seo.test.ts` (this closure pass's 2 fixes + 1 regression test), plus this report
+    update — 4 files. The 24 SEO/shareability implementation files from the original pass were
+    already committed as part of `45c6a29` before this closure task began (see §3–4 above) and are
+    not re-committed here.
+63. **Commit hash:** recorded after commit, below.
+64. **Push status: not pushed** by this closure pass (consistent with rule 18). Note per §4: the
+    prior `45c6a29` commit was already on `origin/master` before this pass started, independent of
+    this pass's own actions.
+65. **Final working tree:** clean after commit (verified below).
+66. **Final ahead/behind:** local HEAD ahead of `origin/master` by this pass's own closure commit
+    only (recorded below); no other divergence.
+67. **Sprint 18 status:** unchanged, `BLOCKED_BY_DOMAIN_REFERENCE`.
+68. **Tử Vi isolation result:** confirmed — zero files under any Tử Vi-related path read or modified
+    by this closure pass; the only files touched are `landing-copy.ts`, `lib/seo.ts`,
+    `lib/seo.test.ts`, and this report.
+69. **Closure verdict:** see below.
+70. **Recommended next roadmap item:** unchanged from §65 above — bring the Stop-Condition-H public
+    Discovery SEO decision to the founder/product owner; Sprint 24 (Product Complete Release Gate)
+    is the next roadmap milestone; Sprint 18 (Tử Vi) remains blocked.
+
+## Closure git-state note
+
+Because the SEO/shareability implementation commit (`45c6a29`) was already committed and already
+present on `origin/master` before this closure task began (see §1–4), this closure pass's own
+commit contains only the incremental fixes found during independent verification: the two-file
+stale-copy correction, the `buildMetadata()` title-key fix, and its regression test, plus this
+report section. This is a smaller, honestly-scoped commit — not a re-statement of the original
+24-file implementation, which needed no re-committing.
+
+## Verdict
+
+**SEO + SHAREABILITY FOUNDATION RELEASE CLOSURE COMPLETE — READY FOR NEXT ROADMAP ITEM**
+
+All mandatory gates pass: 0 UNKNOWN routes, no private/sensitive route became indexable, canonical
+URLs are safe (and now, post-fix, so is the page title), token/query values cannot leak (adversarial
+sentinel-tested live), sitemap contains only the 7 intended public routes, robots behavior is
+correct and structurally can't drift, `/menh-vi` remains archived (8 adversarial bypass attempts all
+fail), BeaconVie remains the sole live brand, Eastern Horoscope is never called Tử Vi, stale
+shipped-feature copy is corrected (including one instance the original pass missed), JSON-LD
+contains no fabricated claims, ShareButton cannot expose private data (live-verified), adversarial
+privacy sentinel tests pass, auth behavior did not regress, all frontend tests pass (412/412), lint
+and typecheck are clean, the production build's only failure is the same pre-existing Windows
+artifact documented twice before with full evidence proving it (compile/typecheck/static-gen all
+succeeded), 0 open Blocker/Critical/High/Medium/Low, and Sprint 18/Tử Vi remain completely
+untouched.

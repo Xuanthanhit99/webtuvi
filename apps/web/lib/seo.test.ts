@@ -38,6 +38,20 @@ describe('buildMetadata', () => {
     const meta = buildMetadata({ path: '/' });
     expect(meta.alternates?.canonical).toBe('/');
   });
+
+  it('omits the title key entirely when none is given, so the root layout default applies', () => {
+    // Regression test: Next.js merges a route's metadata into its parent layout's shallowly,
+    // key by key. A `title` key that is *present* but `undefined` still overwrites the parent's
+    // inherited title instead of being treated as "unset" — verified against real `next dev`
+    // output, where the homepage (the only caller that omits `title`) rendered with zero
+    // `<title>` tag until this was fixed. `'title' in meta` must be false, not merely
+    // `meta.title === undefined` (an object literal with `title: undefined` still has the key).
+    const meta = buildMetadata({ path: '/' });
+    expect('title' in meta).toBe(false);
+
+    const noindexMeta = buildMetadata({ path: '/dashboard', noindex: true });
+    expect('title' in noindexMeta).toBe(false);
+  });
 });
 
 describe('structured data', () => {
