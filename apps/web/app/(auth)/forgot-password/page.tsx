@@ -3,7 +3,9 @@ import Link from 'next/link';
 import { AuthCard } from '@/features/auth/components/auth-card';
 import { ForgotPasswordForm } from '@/features/auth/components/forgot-password-form';
 
-export const metadata: Metadata = { title: 'Reset your password' };
+// SEO + Shareability Foundation — thin, transactional, no SEO value; noindex at the metadata
+// level (defense-in-depth, not currently covered by robots.ts's disallow list either).
+export const metadata: Metadata = { title: 'Reset your password', robots: { index: false, follow: false } };
 
 export default function ForgotPasswordPage() {
   return (

@@ -50,8 +50,18 @@ export const landingCopy = {
   },
   discoverySystems: [
     { title: 'Tarot', description: 'A real, deterministic 78-card draw — live today.', comingSoon: false, href: '/discover/tarot' },
-    { title: 'Natal Chart', description: 'What your chart says about how you move through the world.', comingSoon: true },
-    { title: 'Eastern Horoscope', description: 'An old lens on a familiar question: who am I, really?', comingSoon: true },
+    {
+      title: 'Natal Chart',
+      description: 'A real, deterministic birth chart calculated from your birth date, time, and place — live today.',
+      comingSoon: false,
+      href: '/discover/natal-chart',
+    },
+    {
+      title: 'Eastern Horoscope',
+      description: 'A real, deterministic Chinese Zodiac and Five Elements calculation — live today.',
+      comingSoon: false,
+      href: '/discover/eastern-horoscope',
+    },
     {
       title: 'Numerology',
       description: 'The numbers already in your life, given a second look — no number ever chosen or invented by AI.',

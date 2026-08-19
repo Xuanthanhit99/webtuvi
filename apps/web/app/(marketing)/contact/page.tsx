@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = { title: 'Contact' };
+export const metadata: Metadata = buildMetadata({
+  title: 'Contact',
+  description: 'Get in touch with the BeaconVie team with questions or feedback.',
+  path: '/contact',
+});
 
 export default function ContactPage() {
   return (

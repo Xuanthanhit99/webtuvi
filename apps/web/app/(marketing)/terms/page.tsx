@@ -1,6 +1,11 @@
 import type { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 
-export const metadata: Metadata = { title: 'Terms of Service' };
+export const metadata: Metadata = buildMetadata({
+  title: 'Terms of Service',
+  description: 'The terms governing your use of BeaconVie.',
+  path: '/terms',
+});
 
 export default function TermsPage() {
   return (

@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { AuthCard } from '@/features/auth/components/auth-card';
 import { ResendVerificationForm } from '@/features/auth/components/resend-verification-form';
 
-export const metadata: Metadata = { title: 'Verify your email' };
+// SEO + Shareability Foundation — thin, transactional, no SEO value.
+export const metadata: Metadata = { title: 'Verify your email', robots: { index: false, follow: false } };
 
 export default function VerifyEmailPendingPage() {
   return (
