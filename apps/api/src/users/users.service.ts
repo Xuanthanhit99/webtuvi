@@ -32,6 +32,7 @@ export class UsersService {
       emailVerifiedAt: user.emailVerifiedAt ? user.emailVerifiedAt.toISOString() : null,
       onboardingCompletedAt: user.onboardingCompletedAt ? user.onboardingCompletedAt.toISOString() : null,
       createdAt: user.createdAt.toISOString(),
+      role: user.role,
     };
   }
 

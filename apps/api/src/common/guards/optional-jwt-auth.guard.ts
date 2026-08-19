@@ -45,12 +45,12 @@ export class OptionalJwtAuthGuard implements CanActivate {
       return true;
     }
 
-    const user = await this.prisma.user.findUnique({ where: { id: payload.sub }, select: { status: true } });
+    const user = await this.prisma.user.findUnique({ where: { id: payload.sub }, select: { status: true, role: true } });
     if (!user || user.status !== 'ACTIVE') {
       return true;
     }
 
-    request.user = { id: payload.sub, email: payload.email, sessionId: payload.sid };
+    request.user = { id: payload.sub, email: payload.email, sessionId: payload.sid, role: user.role };
     return true;
   }
 }

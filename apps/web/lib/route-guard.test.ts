@@ -1,4 +1,4 @@
-import { isArchivedRoute, resolveRedirect } from './route-guard';
+import { isArchivedRoute, isAdminRoute, resolveRedirect } from './route-guard';
 
 describe('resolveRedirect (protected route behavior)', () => {
   it('redirects an unauthenticated visitor away from app routes to /login', () => {
@@ -67,6 +67,35 @@ describe('resolveRedirect (protected route behavior)', () => {
     expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: true, session: notOnboarded })).toBeNull();
     expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: true, session: onboarded })).toBeNull();
     expect(resolveRedirect({ pathname: '/verify-email', hasAccessToken: true, session: null })).toBeNull();
+  });
+});
+
+describe('resolveRedirect — Interim Sprint Admin Operator Tooling: /admin gets the standard auth/onboarding gate', () => {
+  it('redirects an unauthenticated visitor away from /admin to /login, same as any other app route', () => {
+    expect(resolveRedirect({ pathname: '/admin', hasAccessToken: false, session: null })).toBe('/login');
+  });
+
+  it('sends an authenticated-but-not-onboarded visitor from /admin to /onboarding', () => {
+    expect(resolveRedirect({ pathname: '/admin', hasAccessToken: true, session: { onboardingCompletedAt: null } })).toBe('/onboarding');
+  });
+
+  it('lets a fully onboarded visitor reach /admin at the resolveRedirect layer — the role check itself is a separate, later gate (isAdminRoute + middleware.ts), not this function\'s concern', () => {
+    const session = { onboardingCompletedAt: '2026-01-01T00:00:00.000Z' };
+    expect(resolveRedirect({ pathname: '/admin', hasAccessToken: true, session })).toBeNull();
+  });
+});
+
+describe('isAdminRoute (Interim Sprint — Admin Operator Tooling)', () => {
+  it('matches the root /admin route and every sub-route', () => {
+    expect(isAdminRoute('/admin')).toBe(true);
+    expect(isAdminRoute('/admin/users')).toBe(true);
+    expect(isAdminRoute('/admin/anything/deeply/nested')).toBe(true);
+  });
+
+  it('does not match real product routes, including ones that merely start similarly', () => {
+    expect(isAdminRoute('/dashboard')).toBe(false);
+    expect(isAdminRoute('/discover')).toBe(false);
+    expect(isAdminRoute('/admin-something-else')).toBe(false);
   });
 });
 

@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isArchivedRoute, resolveRedirect } from '@/lib/route-guard';
+import { isArchivedRoute, isAdminRoute, resolveRedirect } from '@/lib/route-guard';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 const ACCESS_TOKEN_COOKIE = 'beaconvie_access_token';
 
+// Interim Sprint — Admin Operator Tooling: `role` rides along on the same `/auth/me` call every
+// authenticated page already makes — no second round-trip. This is a UI-gating convenience only;
+// the real authorization boundary is the API's own AdminGuard (re-checked live from the DB on every
+// `/admin/*` request), never this value alone.
 interface MeResponse {
-  data: { onboardingCompletedAt: string | null } | null;
+  data: { onboardingCompletedAt: string | null; role: 'USER' | 'ADMIN' } | null;
 }
 
-async function fetchMe(cookieHeader: string): Promise<{ onboardingCompletedAt: string | null } | null> {
+async function fetchMe(cookieHeader: string): Promise<{ onboardingCompletedAt: string | null; role: 'USER' | 'ADMIN' } | null> {
   try {
     const res = await fetch(`${API_URL}/auth/me`, {
       headers: { cookie: cookieHeader },
@@ -44,6 +48,18 @@ export async function middleware(req: NextRequest) {
   if (redirectTo) {
     return NextResponse.redirect(new URL(redirectTo, req.url));
   }
+
+  // Interim Sprint — Admin Operator Tooling: reached only once the visitor is confirmed
+  // authenticated + onboarded (resolveRedirect above already handled anonymous/unonboarded
+  // visitors). A non-admin gets the real Next.js not-found rendering, not a "you don't have
+  // permission" page — the same rewrite-to-a-genuinely-nonexistent-path technique already proven
+  // for `/menh-vi` above, so a curious authenticated user can't distinguish "this route doesn't
+  // exist" from "you're not allowed here." The API's own AdminGuard is the actual security
+  // boundary regardless of what this branch does.
+  if (isAdminRoute(pathname) && session?.role !== 'ADMIN') {
+    return NextResponse.rewrite(new URL('/__admin-not-found__', req.url));
+  }
+
   return NextResponse.next();
 }
 
@@ -71,5 +87,8 @@ export const config = {
     // Sprint 14 (Ambiguity Cleanup) — archived prototype, see the handler above.
     '/menh-vi',
     '/menh-vi/:path*',
+    // Interim Sprint — Admin Operator Tooling.
+    '/admin',
+    '/admin/:path*',
   ],
 };

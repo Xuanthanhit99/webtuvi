@@ -21,12 +21,27 @@ enum UserStatus {
   DELETED
 }
 
+/// Interim Sprint — Admin Operator Tooling. A single binary operational-trust flag, deliberately not
+/// a tiered/permissions system — see docs/audit/admin-operator-tooling-pre-implementation-audit.md
+/// §11 for why a dedicated AdminUser model or a permissions JSON was rejected as disproportionate to
+/// this requirement. No row is ever created as ADMIN by a migration or seed script — the only
+/// provisioning path is a manual, documented DB promotion (see docs/operations/
+/// production-deployment-runbook.md). Read live on every request by JwtAuthGuard, the same
+/// "computed at read time, no caching" pattern already used for `status` (Sprint 10) and
+/// PremiumEntitlement (EntitlementService) — this is what makes admin demotion take effect
+/// immediately, on the very next request, even with a still-valid JWT.
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id                    String     @id @default(cuid())
   email                 String     @unique
   passwordHash          String
   displayName           String
   status                UserStatus @default(ACTIVE)
+  role                  UserRole   @default(USER)
   emailVerifiedAt       DateTime?
   onboardingCompletedAt DateTime?
   createdAt             DateTime   @default(now())

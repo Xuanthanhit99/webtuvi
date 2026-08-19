@@ -19,6 +19,10 @@ export const APP_ROUTES = [
   '/premium',
   // Sprint 16 — Personal Destiny Report.
   '/reports',
+  // Interim Sprint — Admin Operator Tooling. Gains the same auth/onboarding gate as every other
+  // app route here; the ADMIN-role check itself is a separate, later check (requiresAdminRole
+  // below) — kept distinct from this onboarding-focused predicate on purpose.
+  '/admin',
 ];
 export const ONBOARDING_ROUTE = '/onboarding';
 
@@ -28,6 +32,15 @@ export const ONBOARDING_ROUTE = '/onboarding';
 // real NextRequest.
 export function isArchivedRoute(pathname: string): boolean {
   return pathname === '/menh-vi' || pathname.startsWith('/menh-vi/');
+}
+
+/** Interim Sprint — Admin Operator Tooling. Deliberately a separate predicate from
+ * `resolveRedirect`'s onboarding/auth logic, factored out for the same unit-testability reason —
+ * this is a second, independent gate layered on top, not a variant of the first one. The API is the
+ * real security boundary (AdminGuard, re-checked live from the DB on every request) — this only
+ * decides whether middleware.ts should hide the route's existence from a non-admin. */
+export function isAdminRoute(pathname: string): boolean {
+  return pathname === '/admin' || pathname.startsWith('/admin/');
 }
 
 export interface RouteGuardInput {

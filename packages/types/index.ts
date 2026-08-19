@@ -1,5 +1,12 @@
 // Shared types between apps/web and apps/api. Keep in sync with backend DTOs.
 
+/** Interim Sprint — Admin Operator Tooling. Not sensitive on its own (just USER/ADMIN) — safe to
+ * carry on the general-purpose `/auth/me` response every authenticated page already fetches, so the
+ * frontend has a live, server-verified role to gate `/admin` on, without a second round-trip. The
+ * actual authorization decision is always re-checked server-side by AdminGuard on every `/admin/*`
+ * API call — this value is for UI/route-gating only, never trusted as the security boundary. */
+export type UserRoleValue = 'USER' | 'ADMIN';
+
 export interface UserDto {
   id: string;
   email: string;
@@ -7,6 +14,70 @@ export interface UserDto {
   emailVerifiedAt: string | null;
   onboardingCompletedAt: string | null;
   createdAt: string;
+  role: UserRoleValue;
+}
+
+// ---------------------------------------------------------------------------
+// Interim Sprint — Admin Operator Tooling. Response shapes for the five
+// read-only operator lookups. Every field is an explicit ALLOW-listed value —
+// see docs/audit/admin-operator-tooling-pre-implementation-audit.md §6/§9/§10.
+// ---------------------------------------------------------------------------
+
+export interface AdminUserLookupDto {
+  id: string;
+  email: string;
+  displayName: string;
+  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+  role: UserRoleValue;
+  createdAt: string;
+  emailVerifiedAt: string | null;
+  onboardingCompletedAt: string | null;
+  isPremium: boolean;
+}
+
+export interface AdminEntitlementRecordDto {
+  id: string;
+  status: 'ACTIVE' | 'EXPIRED' | 'REVOKED';
+  source: 'PAYMENT';
+  startsAt: string;
+  expiresAt: string | null;
+  grantedAt: string;
+  orderId: string;
+}
+
+export interface AdminPaymentOrderDto {
+  id: string;
+  product: string;
+  amount: number;
+  currency: string;
+  provider: string;
+  providerOrderCode: string;
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'EXPIRED' | 'CANCELLED';
+  createdAt: string;
+  paidAt: string | null;
+  failedAt: string | null;
+  expiresAt: string | null;
+  entitlement: { id: string } | null;
+}
+
+export interface AdminNotificationHealthWindowDto {
+  type: string;
+  emailStatus: 'PENDING' | 'SENT' | 'FAILED' | 'SKIPPED';
+  count: number;
+}
+
+export interface AdminNotificationHealthDto {
+  schedulerRunTelemetry: 'NOT_COLLECTED';
+  last24h: AdminNotificationHealthWindowDto[];
+  last7d: AdminNotificationHealthWindowDto[];
+}
+
+export interface AdminAiSpendDto {
+  window: 'today' | '7d';
+  filters: { feature: string | null; provider: string | null; userId: string | null };
+  estimatedCostUsd: number;
+  requestCount: number;
+  failureCount: number | null;
 }
 
 export interface SessionDto {

@@ -33,6 +33,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ReportsModule } from './reports/reports.module';
 import { EasternHoroscopeModule } from './eastern-horoscope/eastern-horoscope.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -99,6 +100,20 @@ import { EasternHoroscopeModule } from './eastern-horoscope/eastern-horoscope.mo
               ttl: config.discovery.rateLimit.windowMs,
               limit: config.discovery.rateLimit.ipMax,
             },
+            // Interim Sprint — Admin Operator Tooling: own per-authenticated-user bucket, isolated
+            // from every other named throttler the same way `payment`/`discovery` are. A literal
+            // inline limit (not env-configured) — a handful of named operator accounts, not a
+            // per-environment tuning knob — generous enough for interactive support work while still
+            // bounding a compromised-or-scripted admin session.
+            {
+              name: 'admin',
+              ttl: 60_000,
+              limit: 120,
+              getTracker: (req: Record<string, unknown>) => {
+                const user = req.user as { id?: string } | undefined;
+                return user?.id ?? String(req.ip ?? 'unknown-ip');
+              },
+            },
           ],
           storage: new RedisThrottlerStorageService(redisService, configService),
         };
@@ -131,6 +146,7 @@ import { EasternHoroscopeModule } from './eastern-horoscope/eastern-horoscope.mo
     AnalyticsModule,
     ReportsModule,
     EasternHoroscopeModule,
+    AdminModule,
   ],
 })
 export class AppModule implements NestModule {

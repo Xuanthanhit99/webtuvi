@@ -44,12 +44,17 @@ export class JwtAuthGuard implements CanActivate {
     // account is deleted (or ever suspended). One indexed point-lookup per request; the same
     // "computed at read time, no caching" tradeoff EntitlementService.hasPremiumAccess() already
     // makes at this scale (see docs/architecture/account-data-rights.md §4).
-    const user = await this.prisma.user.findUnique({ where: { id: payload.sub }, select: { status: true } });
+    //
+    // Interim Sprint — Admin Operator Tooling: `role` rides along on this same already-happening
+    // lookup (no second query, no JWT payload change). This is what makes admin demotion take
+    // effect on the very next request, with zero new revocation machinery — see
+    // docs/audit/admin-operator-tooling-pre-implementation-audit.md §4/§12.
+    const user = await this.prisma.user.findUnique({ where: { id: payload.sub }, select: { status: true, role: true } });
     if (!user || user.status !== 'ACTIVE') {
       throw new UnauthorizedException('Your session has expired. Please log in again.');
     }
 
-    request.user = { id: payload.sub, email: payload.email, sessionId: payload.sid };
+    request.user = { id: payload.sub, email: payload.email, sessionId: payload.sid, role: user.role };
     return true;
   }
 }

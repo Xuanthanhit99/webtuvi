@@ -39,12 +39,23 @@ describe('JwtAuthGuard', () => {
 
   it('allows a valid token for an ACTIVE user', async () => {
     const token = signToken({ sub: 'user-1', email: 'user@example.com' });
-    const prisma = { user: { findUnique: jest.fn(async () => ({ status: 'ACTIVE' })) } };
+    const prisma = { user: { findUnique: jest.fn(async () => ({ status: 'ACTIVE', role: 'USER' })) } };
     const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
 
     const context = makeContext({ beaconvie_access_token: token });
     await expect(guard.canActivate(context)).resolves.toBe(true);
-    expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'user-1' }, select: { status: true } });
+    expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'user-1' }, select: { status: true, role: true } });
+  });
+
+  it('Interim Sprint — Admin Operator Tooling: attaches the live DB role to request.user, never a JWT claim (the token carries no role)', async () => {
+    const token = signToken({ sub: 'user-1', email: 'user@example.com' });
+    const prisma = { user: { findUnique: jest.fn(async () => ({ status: 'ACTIVE', role: 'ADMIN' })) } };
+    const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
+
+    const request: { cookies: Record<string, string>; user?: { role?: string } } = { cookies: { beaconvie_access_token: token } };
+    const context = { switchToHttp: () => ({ getRequest: () => request }) } as unknown as ExecutionContext;
+    await guard.canActivate(context);
+    expect(request.user?.role).toBe('ADMIN');
   });
 
   it('Sprint 10 — rejects a still-valid, unexpired token for a DELETED user', async () => {

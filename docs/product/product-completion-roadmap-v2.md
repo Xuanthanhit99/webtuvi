@@ -242,3 +242,48 @@ Unless future evidence demonstrates one is essential:
 ## 9. Sprint Count Summary
 
 **12 engineering sprints from Sprint 13 to the Product Complete gate (Sprint 24)** — up from the prior roadmap's ~6-sprint unconditional path, reflecting Tử Vi's move from conditional to unconditional scope. Of these, 5 sprints (15, 18, 19, 20, 21) plus part of 22 are Tử Vi-specific — consistent with the prior audit's estimate that a full Tử Vi build adds roughly 5–6 sprints, now confirmed as the accurate estimate rather than a conditional placeholder.
+
+---
+
+## 10. EXECUTION RESEQUENCING — TỬ VI DOMAIN BLOCK
+
+**Added:** after Sprint 18 was formally blocked (`docs/audit/sprint-18-pre-implementation-audit.md`,
+verdict B — domain references / golden vectors incomplete) and a domain-resolution intake pack was
+produced (`docs/domain/tu-vi/domain-resolution-pack.md`). Full detail, scoring, and rationale:
+`docs/audit/roadmap-resequencing-after-tuvi-block.md`. **This section is additive only — nothing
+above it in this document is edited, erased, or renumbered.** Vietnamese Tử Vi remains a founder-
+greenlit, unconditional Product Complete requirement (§2 above); this section records a *temporary
+execution-order* change, not a scope change.
+
+**Sprint 13–17 status (verified against actual git history, not this document's own stale §1
+baseline):** all shipped and, for Sprint 17, formally closed. See the resequencing audit §2 for the
+full commit-by-commit reconstruction.
+
+**Tử Vi track status (unchanged sprint numbers, current execution state):**
+
+| Sprint | Status |
+|---|---|
+| 18 — Tử Vi Deterministic Core Engine | `BLOCKED_BY_DOMAIN_REFERENCE` |
+| 19 — Tử Vi Golden Verification & Domain Audit Gate | `BLOCKED_BY_SPRINT_18` |
+| 20 — Tử Vi Product Experience | `BLOCKED_BY_SPRINT_18/19` |
+| 21 — Tử Vi AI Interpretation | `BLOCKED_BY_SPRINT_18/19/20` |
+| 22 — Tử Vi Vận Depth | `BLOCKED_BY_SPRINT_18+` (also independently gated on decision-register item 12) |
+
+**Interim next sprint (pulled forward temporarily; does not renumber or redefine Sprint 23):**
+**Admin Operator Tooling** — a scoped subset of Sprint 23's existing "Admin minimal tooling (5
+lookups)" item (§3 P2), pulled forward because zero admin/operator infrastructure currently exists
+in the codebase (no role concept, no lookup endpoints) and this work has complete Tử Vi independence,
+low risk, and high reversibility. Exact scope, out-of-scope, and safety rationale: resequencing audit
+§6. Sprint 23's remaining components (SEO content, shareability) stay in Sprint 23 for a later pass,
+not bundled into this interim sprint.
+
+**Parallel, non-engineering Tử Vi domain-resolution track** (no sprint number, not scheduled against
+engineering capacity): source acquisition → school selection → expert review → table transcription →
+cross-check → golden-vector population → expert confirmation → Sprint 18 Domain Gate rerun. Full
+detail: resequencing audit §7.
+
+**Critical path:** the engineering path (interim admin sprint → later SEO/shareability/accessibility
+→ credential wiring once provided) and the Tử Vi domain/founder path both feed the same Product
+Complete Gate (§7 above). **Engineering finishing its independent work first does not and must not be
+read as grounds to declare Product Complete without Tử Vi** — §7's own checklist already names the
+fulfilled Tử Vi promise as a required line item. Full diagram: resequencing audit §9.
