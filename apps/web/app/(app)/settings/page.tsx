@@ -16,6 +16,7 @@ import { NotificationPreferencesSection } from '@/features/notifications/compone
 import { ConsentSettings } from '@/features/memory/components/consent-settings';
 import { memoryApi } from '@/features/memory/api/memory-api';
 import { PremiumStatusCard } from '@/features/premium/components/premium-status-card';
+import { LegalLinksSection } from '@/features/settings/components/legal-links-section';
 import type { MemoryPreferenceValue } from '@beaconvie/types';
 
 const MEMORY_OPTIONS: { value: MemoryPreferenceValue; label: string }[] = [
@@ -86,7 +87,7 @@ export default function SettingsPage() {
       <Card>
         <p className="mb-3 text-body-sm font-semibold text-text-secondary">Onboarding memory (legacy)</p>
         <p className="mb-4 text-body-sm text-text-secondary">
-          Controls only the very first reflections BeaconVie saved during onboarding.
+          Controls only the very first reflections Tử Vi Tarot saved during onboarding.
         </p>
         {isLoading || !data ? (
           <div role="status">
@@ -109,7 +110,7 @@ export default function SettingsPage() {
           <div>
             <p className="text-body-sm font-semibold text-text-secondary">Memory</p>
             <p className="text-body-sm text-text-secondary">
-              Control what BeaconVie is allowed to remember, review what&rsquo;s waiting for your approval, and see, export, or
+              Control what Tử Vi Tarot is allowed to remember, review what&rsquo;s waiting for your approval, and see, export, or
               delete everything it has saved.
             </p>
           </div>
@@ -137,6 +138,8 @@ export default function SettingsPage() {
       <AccountDataSection />
 
       <NotificationPreferencesSection />
+
+      <LegalLinksSection />
     </div>
   );
 }

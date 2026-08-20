@@ -8,7 +8,6 @@ import { DiscoverySystems } from '@/components/marketing/discovery-systems';
 import { CompanionPreview } from '@/components/marketing/companion-preview';
 import { MemorySection } from '@/components/marketing/memory-section';
 import { PrivacySection } from '@/components/marketing/privacy-section';
-import { Testimonials } from '@/components/marketing/testimonials';
 import { PricingSection } from '@/components/marketing/pricing-section';
 import { FaqSection } from '@/components/marketing/faq-section';
 import { FinalCta } from '@/components/marketing/final-cta';
@@ -40,7 +39,11 @@ export default function LandingPage() {
       <CompanionPreview />
       <MemorySection />
       <PrivacySection />
-      <Testimonials />
+      {/* Testimonials intentionally not rendered — Pre-Live Product Experience Completion Audit
+          (finding #4): the copy in content/landing-copy.ts is original marketing text attributed
+          to "Early user", not verified real-user quotes. The <Testimonials/> component and the
+          testimonials array are preserved for reuse once real, verified testimonials exist —
+          see docs/progress/pre-live-product-experience-remediation-final-report.md. */}
       <PricingSection />
       <FaqSection />
       <FinalCta />

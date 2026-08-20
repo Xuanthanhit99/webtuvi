@@ -12,17 +12,22 @@ import type { Metadata } from 'next';
  * without one. Documented as a design follow-up, not silently worked around.
  */
 
-export const SITE_NAME = 'BeaconVie';
+// Domain + Brand Production Lock (superseding founder decision — see
+// docs/progress/domain-brand-production-lock-final-report.md and product-completion-roadmap-v2.md's
+// appended superseding-decision note): brand renamed from BeaconVie to Tử Vi Tarot, production
+// domain tuvitarot.vn. This is the single point every other metadata/copy/JSON-LD/share call in
+// this app derives from — no other file should hardcode either name.
+export const SITE_NAME = 'Tử Vi Tarot';
 
 /** Matches the env var every other metadata/canonical call in this app already reads
  * (`app/layout.tsx`, `robots.ts`, `sitemap.ts`) — reusing it here, not introducing a second name. */
 export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 export const DEFAULT_DESCRIPTION =
-  'BeaconVie starts with a real Tarot draw, then remembers what you share — so every conversation builds on the last. A reflection practice with real memory.';
+  'Tử Vi Tarot starts with a real Tarot draw, then remembers what you share — so every conversation builds on the last. A reflection practice with real memory.';
 
 export interface BuildMetadataOptions {
-  /** Page-specific title. Combined with the root layout's `%s — BeaconVie` template
+  /** Page-specific title. Combined with the root layout's `%s — Tử Vi Tarot` template
    * automatically by Next.js — do not append the site name here yourself. */
   title?: string;
   description?: string;

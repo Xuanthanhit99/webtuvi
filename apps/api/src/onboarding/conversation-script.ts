@@ -43,7 +43,7 @@ export const DISCOVERY_OFFER_MESSAGE =
   'Want to see what Discovery has to offer — tarot, your chart, your numbers? Totally optional — we can also just keep talking.';
 
 export const DISCOVERY_ACCEPTED_MESSAGE =
-  "Discovery is still warming up on our end — I'll let you know the moment it's ready. For now, I'll keep what you've shared in mind.";
+  "Discovery is ready for you whenever you want it — a real Tarot draw, your chart, your numbers, all live right now. For now, I'll keep what you've shared in mind.";
 
 export const DISCOVERY_SKIPPED_MESSAGE =
   "That's completely fine — we can always come back to it whenever you're curious.";

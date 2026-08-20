@@ -1,4 +1,9 @@
-import { firstFollowUp, memoryNoteContent, reflectionMessage } from './conversation-script';
+import {
+  DISCOVERY_ACCEPTED_MESSAGE,
+  firstFollowUp,
+  memoryNoteContent,
+  reflectionMessage,
+} from './conversation-script';
 
 describe('conversation-script', () => {
   it('quotes back an excerpt of what the user wrote in the first follow-up', () => {
@@ -19,5 +24,12 @@ describe('conversation-script', () => {
 
   it('memoryNoteContent is always prefixed for downstream display', () => {
     expect(memoryNoteContent('feeling nervous about a new job')).toMatch(/^Remembered: /);
+  });
+
+  it('the Discovery-accepted message tells the user Discovery is available now, not still warming up', () => {
+    expect(DISCOVERY_ACCEPTED_MESSAGE).not.toMatch(/warming up/i);
+    expect(DISCOVERY_ACCEPTED_MESSAGE).not.toMatch(/coming soon/i);
+    expect(DISCOVERY_ACCEPTED_MESSAGE).not.toMatch(/let you know the moment/i);
+    expect(DISCOVERY_ACCEPTED_MESSAGE).toMatch(/ready|live/i);
   });
 });

@@ -6,7 +6,7 @@ export function TrustSection() {
   return (
     <section aria-labelledby="trust-heading" className="border-b border-border-subtle bg-surface py-16">
       <h2 id="trust-heading" className="sr-only">
-        What BeaconVie is and isn&rsquo;t
+        What Tử Vi Tarot is and isn&rsquo;t
       </h2>
       <div className="mx-auto grid max-w-content gap-8 px-4 desktop:grid-cols-2 desktop:px-8">
         <div>

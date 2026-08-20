@@ -52,7 +52,7 @@ export function NotificationPreferencesSection() {
       <div>
         <p className="mb-1 text-body-sm font-semibold text-text-secondary">Notifications</p>
         <p className="text-body-sm text-text-secondary">
-          BeaconVie only notifies you when there&rsquo;s a genuine reason to — silence is the expected default, not a
+          Tử Vi Tarot only notifies you when there&rsquo;s a genuine reason to — silence is the expected default, not a
           missed opportunity. Theme preferences are still coming soon.
         </p>
       </div>

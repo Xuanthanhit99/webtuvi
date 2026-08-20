@@ -15,7 +15,7 @@ export const landingCopy = {
     headline: 'An AI that actually remembers you.',
     headlineHighlight: 'remembers you',
     subheadline:
-      "BeaconVie starts with a real Tarot draw as a way to get to know you — then carries what it learns forward, conversation after conversation, so you're never starting over.",
+      "Tử Vi Tarot starts with a real Tarot draw as a way to get to know you — then carries what it learns forward, conversation after conversation, so you're never starting over.",
     primaryCta: 'Meet your Companion',
     secondaryCta: 'See how it works',
   },
@@ -36,7 +36,7 @@ export const landingCopy = {
     ],
   },
   solution: {
-    text: 'BeaconVie starts with a real Tarot draw and carries what you share forward. Every conversation adds to what your Companion knows. Nothing is lost between visits.',
+    text: 'Tử Vi Tarot starts with a real Tarot draw and carries what you share forward. Every conversation adds to what your Companion knows. Nothing is lost between visits.',
   },
   howItWorks: {
     steps: [
@@ -85,7 +85,7 @@ export const landingCopy = {
     text: 'Three weeks ago, someone told their Companion they were nervous about a job change. This week, without being asked, it brought it up again — because it remembered.',
   },
   reportsLine:
-    'As your conversations build up, a monthly reflection report pulls the threads together — a V1.5 feature, on its way.',
+    'Once you have a Natal Chart and Numerology reading, your Personal Destiny Report brings them together into one long-form narrative — a Premium feature, ready today.',
   communityLine: 'As more people reflect, patterns emerge — always anonymized, never a public feed.',
   security: {
     privacy: 'your journal is private by default, and you can export or delete everything, anytime',
@@ -103,15 +103,25 @@ export const landingCopy = {
     },
     premium: {
       name: 'Premium',
-      description: 'Premium remembers across every conversation, not just today’s.',
+      description:
+        'A one-time, 30-day pass — not a subscription. Memory across every conversation, higher Discovery limits, unlimited reading history, and your Personal Destiny Report.',
     },
+    // Pre-Live Product Experience Completion Audit finding #7: no exact price is shown pre-login.
+    // The real price lives only in backend config (`PREMIUM_PRICE_VND`, single source of truth) and
+    // is currently explicitly disclosed there as `isMvpTestPrice: true` — unvalidated, not yet
+    // finalized. Advertising an explicitly-unfinalized number on public marketing copy risks
+    // publishing a price that changes before launch. Until it's finalized, the honest choice is to
+    // be transparent about pricing *structure* (one-time, 30-day, no subscription) and exactly where
+    // the real number is shown — not to duplicate or fetch a number that isn't final yet. Revisit
+    // once the price is signed off (see docs/architecture/premium-entitlements.md).
+    priceNote: 'See the exact current price — free to look, no card required — right after you sign up.',
     cta: 'Meet your Companion',
   },
   faq: [
     {
       question: 'Is this a horoscope app?',
       answer:
-        "No. A real Tarot draw is how BeaconVie starts getting to know you — not what it sells you. The Companion and its memory of you are the actual product.",
+        "No. A real Tarot draw is how Tử Vi Tarot starts getting to know you — not what it sells you. The Companion and its memory of you are the actual product.",
     },
     {
       question: 'Is my data private?',
@@ -121,11 +131,12 @@ export const landingCopy = {
     {
       question: 'Is this therapy?',
       answer:
-        "No. BeaconVie is a reflection companion, not a clinical or medical service, and it doesn't diagnose or treat anything.",
+        "No. Tử Vi Tarot is a reflection companion, not a clinical or medical service, and it doesn't diagnose or treat anything.",
     },
     {
       question: 'What does Premium actually add?',
-      answer: 'Persistent memory across every conversation, not just today’s, and full reflection reports.',
+      answer:
+        'Persistent memory across every conversation, not just today’s, higher Discovery limits, and your Personal Destiny Report — a long-form reading built from your Natal Chart and Numerology.',
     },
   ],
   finalCta: {
@@ -144,6 +155,6 @@ export const landingCopy = {
       { label: 'Terms', href: '/terms' },
       { label: 'Contact', href: '/contact' },
     ],
-    copyright: `© ${new Date().getFullYear()} BeaconVie. All rights reserved.`,
+    copyright: `© ${new Date().getFullYear()} Tử Vi Tarot. All rights reserved.`,
   },
 } as const;

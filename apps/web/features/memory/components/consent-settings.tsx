@@ -80,7 +80,7 @@ export function ConsentSettings() {
         </p>
         <Dropdown
           id="global-consent"
-          label="When BeaconVie could remember something"
+          label="When Tử Vi Tarot could remember something"
           value={data.globalMode}
           options={MODE_OPTIONS}
           onChange={(value) => updateGlobal.mutate(value as MemoryConsentModeValue)}

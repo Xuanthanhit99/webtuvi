@@ -125,9 +125,15 @@ export class DashboardService {
       // since Sprint 6) and Numerology (live since Sprint 8) alike. Natal Chart/Eastern Horoscope
       // remain genuinely pending, so `comingSoon` now reflects the section honestly rather than
       // being permanently true.
+      //
+      // Pre-Live Product Experience Completion Audit remediation pass (dead-copy search, item 17):
+      // the description text itself was never revisited after that fix — it still said "your chart
+      // is on its way", which was accurate pre-Sprint 9 but became false once Natal Chart (Bản Đồ
+      // Sao) shipped in Sprint 9, and Eastern Horoscope in Sprint 17. Fixed to describe the real,
+      // current set of live systems.
       discoverySuggestion: {
         title: 'Discovery',
-        description: 'A real Tarot draw and a real Numerology reading — your chart is on its way.',
+        description: 'A real Tarot draw, Numerology reading, and birth chart — all live now.',
         href: '/discover',
         comingSoon: false,
       },

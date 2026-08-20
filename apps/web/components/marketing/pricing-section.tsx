@@ -20,6 +20,7 @@ export function PricingSection() {
             <p className="mt-2 text-body-sm text-text-secondary">{pricing.premium.description}</p>
           </Card>
         </div>
+        <p className="mt-6 text-center text-body-sm text-text-secondary">{pricing.priceNote}</p>
         <div className="mt-8 text-center">
           <Link
             href="/register"

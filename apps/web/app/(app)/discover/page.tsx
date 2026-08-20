@@ -11,7 +11,15 @@ export const metadata: Metadata = { title: 'Discover' };
  * per docs/product/vietnamese-tu-vi-product-definition.md §1), and Eastern Horoscope (Sprint 17,
  * Ngũ Hành Phương Đông — Chinese Zodiac/Five Elements) are real. Eastern Horoscope is a distinct,
  * separate module from the future, not-yet-built Tử Vi Lá Số — never conflate the two (see
- * docs/product/vietnamese-tu-vi-product-definition.md §1). */
+ * docs/product/vietnamese-tu-vi-product-definition.md §1).
+ *
+ * The Tử Vi Lá Số entry below is Pre-Live Product Experience Completion Audit finding #3 (see
+ * docs/audit/pre-live-product-experience-completion-audit.md and
+ * docs/progress/pre-live-product-experience-remediation-final-report.md): an honest roadmap
+ * acknowledgment, not a feature. `available: false` and the deliberate absence of `href` means no
+ * CTA renders for it (see the render logic below) — no calculation, no sample result, no AI
+ * substitute, no link anywhere, including not to the archived/unreachable `/menh-vi` prototype.
+ * Sprint 18 (the real Tử Vi engine) remains BLOCKED_BY_DOMAIN_REFERENCE, unaffected by this card. */
 const SYSTEMS = [
   { title: 'Tarot', description: 'A real, deterministic 78-card draw — no card ever chosen or invented by AI.', href: '/discover/tarot', available: true },
   {
@@ -32,6 +40,13 @@ const SYSTEMS = [
     href: '/discover/numerology',
     available: true,
   },
+  {
+    title: 'Tử Vi Lá Số',
+    description:
+      'Đang được phát triển dựa trên nguồn quy tắc được kiểm chứng — in development, built from verified traditional sources, never invented. Not the same as Ngũ Hành Phương Đông above, and not available yet.',
+    href: undefined,
+    available: false,
+  },
 ];
 
 export default function DiscoverPage() {
@@ -39,7 +54,9 @@ export default function DiscoverPage() {
     <div className="flex flex-col gap-6">
       <AnalyticsPageView event="discover_viewed" properties={{ feature: 'discover' }} />
       <h1 className="font-display text-heading-lg text-text-primary">Discover</h1>
-      <p className="text-body-sm text-text-secondary">Tarot, Thần Số Học, Bản Đồ Sao, and Ngũ Hành Phương Đông are live.</p>
+      <p className="text-body-sm text-text-secondary">
+        Tarot, Thần Số Học, Bản Đồ Sao, and Ngũ Hành Phương Đông are live. Tử Vi Lá Số is coming soon.
+      </p>
       <div className="grid gap-4 desktop:grid-cols-2">
         {SYSTEMS.map((system) => (
           <Card key={system.title}>
