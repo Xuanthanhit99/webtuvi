@@ -41,6 +41,15 @@ standard current Vietnamese practice (60–70 years of practitioner drift is pla
 confirmation, not just source discovery).
 **Owner:** Founder (selection), Engineering (execution once selected).
 
+**Sprint 18A.2 update (2026-08-20):** Founder decision received: `TUVI_SCHOOL_V1 = VDTTL_1956`.
+**Status updated to `RESOLVED_BY_FOUNDER_DECISION`.** See `docs/domain/tu-vi/v1-canonical-ruleset.md`
+for the resulting normalized ruleset and `docs/domain/tu-vi/vdttl-1956-second-review.md` for the
+independent-as-possible re-verification this decision was made against. This does not retroactively
+validate every table extracted from VDTTL-1956 as `EXPERT_CONFIRMED` — two items remain open
+(DECISION-05's Kim Tứ Cục cell, DECISION-09's Triệt conflict) and the golden-vector gate
+(`docs/domain/tu-vi/golden-vectors.md`) remains at 0 — but the *which school* question itself is
+closed.
+
 ---
 
 ## DECISION-02 — Giờ Tý / day-boundary convention
@@ -288,3 +297,41 @@ MVP boundary; see calculation-specification.md's MVP/post-MVP split).
 One newly-split sub-item (calendar algorithm, 03B) does. This is the expected, correct outcome per
 this sprint's own instructions ("If a core rule cannot be sourced: MARK IT UNSOURCED... This is
 expected and acceptable. Do not force READY.").
+
+**Sprint 18A.3 addendum (2026-08-20):** Kim Tứ Cục's ambiguous cell (DECISION-05) and the Triệt
+table/example conflict (DECISION-09) both now have well-evidenced likely resolutions —
+`PRIMARY_SOURCE_PRINTING_ERROR_LIKELY` for both, backed by an independently-validated formula
+(Cục) and an independent modern reference (Triệt). Giờ Tý's day-boundary half (DECISION-02) now has
+real, if not VDTTL-1956-specific, evidentiary backing for the midnight-rollover convention. Golden
+vectors remain at 0 — VDTTL-1956 Parts 2–3 were read exhaustively this sprint and confirmed to
+contain no complete worked chart. None of these statuses are changed below (still correctly
+`SOURCE_EXTRACTED`-tier, not `EXPERT_CONFIRMED`) — see `docs/domain/tu-vi/vdttl-1956-second-review.md`
+and `docs/progress/sprint-18a3-worked-chart-golden-vector-final-report.md` for full detail.
+
+**Sprint 18A addendum (2026-08-20):** VDTTL-1956's full text is now confirmed freely, fully
+accessible (archive.org — see `authoritative-sources.md`'s addendum for the full finding). This
+does not move any status below — no cell of any hard-gated table has been transcribed and verified
+— but it changes DECISION-01/05/06/07/10's "what's blocking this" answer from "we don't have the
+source" to "the source is in hand; it needs careful human transcription," which is a materially
+smaller, better-scoped remaining task. See `docs/progress/sprint-18a-domain-resolution-final-report.md`.
+
+**Sprint 18A.1 addendum (2026-08-20, same day):** the transcription work anticipated above has now
+substantially happened — see `docs/domain/tu-vi/vdttl-1956-extraction.md` for the full, page-cited
+record. This session downloaded the actual scanned PDF and read the rendered page images directly
+(not through any AI-summarizing intermediary), extracting: the complete Cục table (30/30 printed
+cells, 4/5 Cục blocks internally clean, 1/5 flagged ambiguous), the complete Tử Vi anchor table for
+all 5 Cục (~150 cells, same one-block caveat), complete offset tables for both 14-chính-tinh groups
+including their walking **direction** (both groups walk thuận/forward — contradicting the prior
+`SECONDARY-14STARS-STRUCTURE` assumption of opposite directions, flagged at the highest priority for
+second review), the complete 40-cell Tứ Hóa table (self-consistent with its own worked example), the
+complete Tuần and Triệt tables (Triệt has one flagged table/worked-example inconsistency), and
+complete rules for all 13 originally-proposed MVP auxiliary stars plus roughly 40 more.
+
+**None of this moves any decision below out of its formal status** — every item is `SOURCE_EXTRACTED`
+at best, pending second review, and DECISION-01 (school selection) is still a founder decision. But
+the practical distance from here to `RESOLVED_BY_SOURCE` for DECISION-05/06/07/09/10 is now a
+second-reviewer verification pass against specific page citations, not an open sourcing search. Two
+specific cells are flagged `AMBIGUOUS_SOURCE_CELL` and one directional claim (both chính-tinh groups
+walking the same direction) is flagged as the single highest-priority item for expert confirmation,
+given this task's explicit warning about direction-inversion risk. See
+`docs/progress/sprint-18a1-primary-source-extraction-final-report.md`.

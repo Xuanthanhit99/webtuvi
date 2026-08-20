@@ -1,3 +1,15 @@
+**Sprint 18A.1 addendum (2026-08-20):** `docs/domain/tu-vi/vdttl-1956-extraction.md` now provides
+complete, page-cited rule tables for every gate this vector set needs to exercise (Cục, Tử Vi anchor,
+14 chính tinh, Tuần, Triệt, Tứ Hóa, most auxiliary stars). **This does not populate any vector below**
+— per this document's own non-negotiable rule, expected values must come from a source independent
+of the implementation under test, and the extraction document is itself a candidate *input* to a
+future engine, not an independent check on one. **Vector count remains 0.** What has changed: once a
+human transcriber/expert cross-checks the extraction (particularly its two flagged ambiguous cells
+and the star-direction finding), real worked examples from Parts 2–3 of the same book (not yet read
+this session), or an independently-sourced practitioner chart, would become substantially easier to
+verify against a now-known-correct rule set — lowering the cost of Step 2 (verifying a candidate
+vector) even though Step 1 (finding one) is unchanged.
+
 # Vietnamese Tử Vi Đẩu Số — Golden Vector Specification (Sprint 15, spec only)
 
 **Purpose:** design the independent validation dataset that will gate Sprint 19 (Golden

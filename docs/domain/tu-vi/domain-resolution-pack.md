@@ -694,6 +694,37 @@ and none is being treated as if it were.**
     Tuần/Triệt (§8–§11), correctly lowest priority per Sprint 15's own original sequencing rationale,
     unchanged here.
 
+### Sprint 18A.1 addendum (2026-08-20, same day as the Sprint 18A addendum below)
+
+The transcription work the Sprint 18A addendum called for has now substantially happened —
+`docs/domain/tu-vi/vdttl-1956-extraction.md` is a full, page-cited transcription of Cục (§5 here),
+Tử Vi anchor (§6), both 14-chính-tinh group offsets and directions (§7), Tứ Hóa (§12), Tuần/Triệt
+(§10–11), and all 13 proposed MVP auxiliary stars plus ~40 more (§8–9), read directly from the
+downloaded scan, not summarized by an intermediary. Every table's population requirement in §5–§12
+below is now satisfiable by copying from that document — this pack's own templates are unchanged
+(nothing here is rewritten) since the actual transcribed values live in the extraction document, not
+here, to keep one source of truth. Two cells are flagged ambiguous (Kim Tứ Cục day-21/24 in §6;
+Triệt's Canh-year table/example mismatch in §11) and the star-group direction finding in §7
+(**both** groups walk thuận/forward, not opposite directions) is flagged as the highest-priority
+item for second-reviewer confirmation, since it directly contradicts this pack's own §7 framing.
+None of this changes any `Status:` line below — every item remains pending second review / founder
+sign-off. See `docs/progress/sprint-18a1-primary-source-extraction-final-report.md` for the full
+account.
+
+### Sprint 18A addendum (2026-08-20)
+
+VDTTL-1956 (the Candidate A source in §1) is now confirmed freely and fully accessible in complete
+form — full-text OCR and page-image PDF scans, 6 parts — at
+`archive.org/details/TuViDdauSoTanBien-VDThaiThuLang-DV` (previously only "identified," not located).
+A preliminary, AI-mediated (not verbatim, not verified) pass over Part 1 indicates it contains all
+four hard-gate tables this pack requests (Cục, Tử Vi anchor, chính tinh offsets, Tứ Hóa). **No cell
+of any table has been transcribed or verified — this addendum changes nothing in §1–§15 above.** The
+tool available this session (`WebFetch`) cannot perform verbatim bulk transcription (~125-character
+quote cap, an internal guardrail of its own summarizing model) — the remaining blocker is now purely
+a human, Vietnamese-fluent transcription pass against a known, accessible source, not a sourcing
+search. See `authoritative-sources.md`'s matching addendum and
+`docs/progress/sprint-18a-domain-resolution-final-report.md` for full detail.
+
 ### Final verdict
 
 **DOMAIN RESOLUTION INCOMPLETE — DO NOT IMPLEMENT SPRINT 18**

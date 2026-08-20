@@ -48,6 +48,50 @@ honest finding of this sprint (see the audit report's final verdict).
   Vietnamese sources in search results (blogspot bios, Scribd/PDF hosts, bookstore listings,
   tuvi.cohoc.net). Full text not read in this session.
 
+#### ADDENDUM — Sprint 18A (2026-08-20): direct full-text accessibility confirmed
+
+**This changes the access question, not the resolution status.** Sprint 18A located the actual
+scanned/OCR'd primary text, freely and fully accessible, at
+`archive.org/details/TuViDdauSoTanBien-VDThaiThuLang-DV` — a table of contents file (`MUCLUC`),
+6 parts (`dv01`–`dv06`), each available as OCR'd full-text (`_djvu.txt`), PDF page-image scans, and
+EPUB. This was **not** true as of Sprint 15's research, which found only "scanned PDF copies exist
+online" without locating or reading them.
+
+A WebFetch-mediated pass (i.e., an intermediary AI model reading the fetched page and reporting back
+— **not** a direct verbatim read by a human or by this document's author) over `dv01` ("Lập Thành" —
+the chart-construction part) reported that it contains: a Cục determination table/section (headed
+`7. LẬP CỤC`), a Tử Vi star placement table keyed by Cục and lunar birth day, directional placement
+rules for at least some of the remaining 13 chính tinh, and a Tứ Hóa table with a header row
+("Lộc Quyền Khoa Kỵ") and at least one visible data row (Giáp → ...). **None of this has been
+transcribed cell-by-cell, verified, or independently cross-checked** — see the critical tooling
+limitation below.
+
+**Critical limitation, discovered this session, recorded so it is not silently rediscovered later:**
+the `WebFetch` tool available in this environment enforces an internal ~125-character cap on verbatim
+quotes from fetched content (a guardrail in the tool's own summarizing model, not a project choice).
+This makes genuine, careful, cell-by-cell verbatim transcription of a 120-cell Cục table, a
+~150-cell Tử Vi anchor table, or a 40-cell Tứ Hóa table **structurally impossible through this
+tool** — any attempt returns a paraphrase/summary, not a transcription, and summaries are exactly
+the failure mode this project's sourcing discipline exists to prevent. **This tool found the
+source; it cannot extract it.** A single spot-check of this session (Mệnh/Thân direction, DECISION-
+04) produced an internally inconsistent result — the summarizing model's headline claim
+("contradicts the candidate formula") did not match its own quoted evidence (which described the
+same two-step forward-then-backward/forward structure already in the candidate formula) — a concrete
+demonstration of why AI-mediated extraction cannot substitute for direct reading in this domain, not
+just a theoretical caution.
+
+**Updated confidence:** the primary-text **access** blocker for VDTTL-1956 is resolved — the book is
+free, complete, and reachable today by anyone who can read Vietnamese. The primary-text **content
+verification** blocker (every cell of every hard-gate table, transcribed and cross-checked) is
+unchanged and remains the actual bottleneck. **Recommended next action:** a person (founder, hired
+transcriber, or domain expert) fluent in Vietnamese reads `dv01`'s "LẬP CỤC" / Tử Vi placement /
+Tứ Hóa sections directly (PDF page images or the OCR'd text, cross-checking the OCR against the
+scanned images for exactly the kind of table content OCR is least reliable for) and transcribes them
+using the `RULE_ID`/`SOURCE_PAGE`/`WORKED_EXAMPLE` format already specified in
+`domain-resolution-pack.md` §14. This is now a **bounded, well-scoped transcription task against a
+known, accessible source** — materially different from Sprint 15's "we don't know where to even
+look" framing.
+
 ### SOURCE_ID: TD-TOANTHU
 - **Title:** Tử Vi Đẩu Số Toàn Thư (紫微斗数全书)
 - **Author:** Trần Đoàn (Hi Di Trần Đoàn), founder of the Tử Vi school; Vietnamese edition compiled/

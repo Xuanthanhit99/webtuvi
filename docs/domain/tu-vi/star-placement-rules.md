@@ -1,3 +1,12 @@
+**Sprint 18A.1 addendum (2026-08-20):** every table in this document was superseded by a direct
+primary-source read this session — see `docs/domain/tu-vi/vdttl-1956-extraction.md` (TUVI-08 through
+TUVI-24). Most significantly: this document's own "Tử Vi group reverse/Thiên Phủ group forward"
+direction claim (below, sourced only to a secondary web source) is **contradicted** by the primary
+text, which states both groups walk thuận (forward) — flagged at the highest priority for second
+review, not yet resolved either way. This document's content is left unchanged below, per this
+project's "never erase previous unresolved findings" discipline — treat the extraction document as
+current for anything it covers.
+
 # Vietnamese Tử Vi Đẩu Số — Star Placement Rules (Sprint 15, spec only)
 
 Every rule below is stated at the confidence level the research this sprint actually supports —
