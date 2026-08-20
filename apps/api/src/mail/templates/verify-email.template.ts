@@ -4,13 +4,13 @@ export interface VerifyEmailTemplateInput {
 }
 
 export function verifyEmailTemplate({ verifyUrl, expiresInLabel }: VerifyEmailTemplateInput) {
-  const subject = 'Verify your BeaconVie email';
+  const subject = 'Verify your Tử Vi Tarot email';
 
   const text = [
     'Please confirm this is your email address.',
     `Verify your email: ${verifyUrl}`,
     `This link expires in ${expiresInLabel}.`,
-    "If you didn't create a BeaconVie account, you can safely ignore this email.",
+    "If you didn't create a Tử Vi Tarot account, you can safely ignore this email.",
   ].join('\n\n');
 
   const html = `<!doctype html>
@@ -27,7 +27,7 @@ export function verifyEmailTemplate({ verifyUrl, expiresInLabel }: VerifyEmailTe
           <table role="presentation" width="100%" style="max-width:480px;background-color:#1F1C36;border-radius:20px;padding:32px;" cellpadding="0" cellspacing="0">
             <tr>
               <td>
-                <p style="color:#E3B368;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;margin:0 0 24px;">BeaconVie</p>
+                <p style="color:#E3B368;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;margin:0 0 24px;">Tử Vi Tarot</p>
                 <h1 style="color:#F1ECE4;font-size:22px;line-height:1.3;margin:0 0 16px;">Verify your email</h1>
                 <p style="color:#B7AFC9;font-size:16px;line-height:1.5;margin:0 0 24px;">
                   Please confirm this is your email address so we can keep your account secure.
@@ -42,7 +42,7 @@ export function verifyEmailTemplate({ verifyUrl, expiresInLabel }: VerifyEmailTe
                   </tr>
                 </table>
                 <p style="color:#B7AFC9;font-size:14px;line-height:1.5;margin:24px 0 0;">
-                  This link expires in ${expiresInLabel}. If you didn't create a BeaconVie account, you can safely ignore this email.
+                  This link expires in ${expiresInLabel}. If you didn't create a Tử Vi Tarot account, you can safely ignore this email.
                 </p>
               </td>
             </tr>

@@ -156,7 +156,7 @@ const envSchema = z.object({
   // docs/architecture/natal-chart-discovery.md "Geocoding architecture". ---
   GEOCODING_NOMINATIM_BASE_URL: z.string().url().default('https://nominatim.openstreetmap.org'),
   // Nominatim's usage policy requires an identifying User-Agent on every request.
-  GEOCODING_USER_AGENT: z.string().min(1).default('BeaconVie/1.0 (natal-chart-geocoding)'),
+  GEOCODING_USER_AGENT: z.string().min(1).default('TuViTarot/1.0 (natal-chart-geocoding)'),
   GEOCODING_TIMEOUT_MS: z.coerce.number().int().positive().default(8_000),
   // How long a search result candidate stays resolvable by its opaque token before chart
   // creation must re-search — bounds both Redis memory and how stale a "confirmed" location can

@@ -40,3 +40,30 @@ describe('sitemap', () => {
     }
   });
 });
+
+// Domain + Brand Production Lock — sitemap() reads NEXT_PUBLIC_APP_URL fresh on every call (not
+// cached at module load), so the locked production domain is verified directly, not assumed.
+describe('sitemap — Domain + Brand Production Lock (tuvitarot.vn)', () => {
+  const ORIGINAL_URL = process.env.NEXT_PUBLIC_APP_URL;
+
+  afterEach(() => {
+    if (ORIGINAL_URL === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
+    else process.env.NEXT_PUBLIC_APP_URL = ORIGINAL_URL;
+  });
+
+  it('resolves every entry to the locked production domain once NEXT_PUBLIC_APP_URL is set', () => {
+    process.env.NEXT_PUBLIC_APP_URL = 'https://tuvitarot.vn';
+    const routes = sitemap();
+    expect(routes.length).toBeGreaterThan(0);
+    for (const route of routes) {
+      expect(route.url.startsWith('https://tuvitarot.vn')).toBe(true);
+    }
+  });
+
+  it('never resolves to the retired beaconvie.com domain, regardless of env', () => {
+    process.env.NEXT_PUBLIC_APP_URL = 'https://tuvitarot.vn';
+    for (const route of sitemap()) {
+      expect(route.url).not.toContain('beaconvie.com');
+    }
+  });
+});

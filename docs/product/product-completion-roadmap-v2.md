@@ -287,3 +287,33 @@ detail: resequencing audit §7.
 Complete Gate (§7 above). **Engineering finishing its independent work first does not and must not be
 read as grounds to declare Product Complete without Tử Vi** — §7's own checklist already names the
 fulfilled Tử Vi promise as a required line item. Full diagram: resequencing audit §9.
+
+---
+
+## 11. DOMAIN + BRAND PRODUCTION LOCK — SUPERSEDING FOUNDER DECISION
+
+**Added:** after Admin Operator Tooling, SEO/Shareability, and Accessibility/Product Polish were all
+shipped and closed. Full detail, brand/domain impact matrix, and verification evidence:
+`docs/progress/domain-brand-production-lock-final-report.md`. **This section is additive only —
+nothing above it in this document is edited, erased, or renumbered**, matching §10's own precedent.
+
+**FOUNDER DECISION (supersedes §2's "Canonical brand | BeaconVie, exclusively" row for this
+product):**
+
+| Decision | Resolution |
+|---|---|
+| Production brand | **Tử Vi Tarot** |
+| Production domain | **tuvitarot.vn** |
+| Production API domain | **api.tuvitarot.vn** |
+
+This is a branding/domain decision only. It does **not**:
+- Unblock Sprint 18 — Vietnamese Tử Vi remains `BLOCKED_BY_DOMAIN_REFERENCE`, unaffected.
+- Imply any Tử Vi Lá Số calculation logic exists — none was implemented by this decision.
+- Rename or reclassify Eastern Horoscope (Ngũ Hành Phương Đông) as Tử Vi — the two remain
+  explicitly, structurally distinct in the product's own UI copy (verified, regression-tested).
+- Change any deterministic Discovery system's calculation rules, naming, or scope.
+
+The product is now named after a capability (Tử Vi Lá Số) it does not yet ship — an intentional,
+founder-owned branding choice, not an engineering claim that the capability exists. Live product
+surfaces continue to accurately describe only what is actually shipped (Tarot, Numerology, Natal
+Chart, Eastern Horoscope); no page claims a Tử Vi Lá Số feature exists.

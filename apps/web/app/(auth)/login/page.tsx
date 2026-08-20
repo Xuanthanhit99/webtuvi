@@ -7,7 +7,7 @@ import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Log in',
-  description: 'Log in to BeaconVie to continue your reflection practice with your Companion.',
+  description: 'Log in to Tử Vi Tarot to continue your reflection practice with your Companion.',
   path: '/login',
 });
 

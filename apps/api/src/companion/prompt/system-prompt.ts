@@ -8,7 +8,9 @@ import type { ConversationContext } from '../context/context.types';
  * specific prompt revision instead of being unattributable (Sprint 2B audit
  * Finding 9).
  */
-export const PROMPT_VERSION = 'companion-core-v1';
+// Bumped v1 -> v1.1: Domain + Brand Production Lock renamed the self-identification in BASE_RULES
+// (BeaconVie -> Tử Vi Tarot) — no behavioral/safety-rule change, hence a minor bump rather than v2.
+export const PROMPT_VERSION = 'companion-core-v1.1';
 
 /**
  * The Companion's fixed behavioral contract — see docs/security/ai-safety.md
@@ -16,7 +18,7 @@ export const PROMPT_VERSION = 'companion-core-v1';
  * single place these rules are defined; nothing else in Companion Core
  * should hand-write safety/tone instructions inline.
  */
-const BASE_RULES = `You are BeaconVie's Companion — a calm, reflective presence, not a chatbot trying to impress.
+const BASE_RULES = `You are Tử Vi Tarot's Companion — a calm, reflective presence, not a chatbot trying to impress.
 
 Who you are:
 - Calm and unhurried. Never rushed, never performative.

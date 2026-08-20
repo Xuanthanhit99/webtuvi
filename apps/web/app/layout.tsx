@@ -3,6 +3,7 @@ import { Playfair_Display, Be_Vietnam_Pro, IBM_Plex_Mono } from 'next/font/googl
 import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
 import { Toaster } from '@/components/ui/toast';
+import { SITE_NAME, DEFAULT_DESCRIPTION } from '@/lib/seo';
 import '@/styles/globals.css';
 
 // Module 4 §16 specifies Fraunces/Karla, but neither ships a Vietnamese subset on
@@ -35,26 +36,25 @@ const mono = IBM_Plex_Mono({
   display: 'swap',
 });
 
+const TAGLINE = `${SITE_NAME} — An AI Companion That Remembers You`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
   title: {
-    default: 'BeaconVie — An AI Companion That Remembers You',
-    template: '%s — BeaconVie',
+    default: TAGLINE,
+    template: `%s — ${SITE_NAME}`,
   },
-  description:
-    'BeaconVie starts with a real Tarot draw, then remembers what you share — so every conversation builds on the last. A reflection practice with real memory.',
+  description: DEFAULT_DESCRIPTION,
   openGraph: {
-    title: 'BeaconVie — An AI Companion That Remembers You',
-    description:
-      'BeaconVie starts with a real Tarot draw, then remembers what you share — so every conversation builds on the last.',
+    title: TAGLINE,
+    description: DEFAULT_DESCRIPTION,
     type: 'website',
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BeaconVie — An AI Companion That Remembers You',
-    description:
-      'BeaconVie starts with a real Tarot draw, then remembers what you share — so every conversation builds on the last.',
+    title: TAGLINE,
+    description: DEFAULT_DESCRIPTION,
   },
 };
 

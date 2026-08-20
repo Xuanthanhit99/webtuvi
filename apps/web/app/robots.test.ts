@@ -41,3 +41,23 @@ describe('robots', () => {
     expect(result.sitemap).toMatch(/\/sitemap\.xml$/);
   });
 });
+
+// Domain + Brand Production Lock — robots() reads NEXT_PUBLIC_APP_URL fresh on every call.
+describe('robots — Domain + Brand Production Lock (tuvitarot.vn)', () => {
+  const ORIGINAL_URL = process.env.NEXT_PUBLIC_APP_URL;
+
+  afterEach(() => {
+    if (ORIGINAL_URL === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
+    else process.env.NEXT_PUBLIC_APP_URL = ORIGINAL_URL;
+  });
+
+  it('points the sitemap reference at the locked production domain once NEXT_PUBLIC_APP_URL is set', () => {
+    process.env.NEXT_PUBLIC_APP_URL = 'https://tuvitarot.vn';
+    expect(robots().sitemap).toBe('https://tuvitarot.vn/sitemap.xml');
+  });
+
+  it('never resolves to the retired beaconvie.com domain, regardless of env', () => {
+    process.env.NEXT_PUBLIC_APP_URL = 'https://tuvitarot.vn';
+    expect(robots().sitemap).not.toContain('beaconvie.com');
+  });
+});

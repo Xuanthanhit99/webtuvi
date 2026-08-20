@@ -14,7 +14,7 @@ export interface NotificationEmailTemplateInput {
 export function notificationEmailTemplate({ title, body, ctaLabel, ctaUrl }: NotificationEmailTemplateInput) {
   const subject = title;
 
-  const text = [body, `${ctaLabel}: ${ctaUrl}`, "Manage what BeaconVie emails you about in Settings > Notifications."].join('\n\n');
+  const text = [body, `${ctaLabel}: ${ctaUrl}`, "Manage what Tử Vi Tarot emails you about in Settings > Notifications."].join('\n\n');
 
   const html = `<!doctype html>
 <html lang="en">
@@ -30,7 +30,7 @@ export function notificationEmailTemplate({ title, body, ctaLabel, ctaUrl }: Not
           <table role="presentation" width="100%" style="max-width:480px;background-color:#1F1C36;border-radius:20px;padding:32px;" cellpadding="0" cellspacing="0">
             <tr>
               <td>
-                <p style="color:#E3B368;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;margin:0 0 24px;">BeaconVie</p>
+                <p style="color:#E3B368;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;margin:0 0 24px;">Tử Vi Tarot</p>
                 <h1 style="color:#F1ECE4;font-size:22px;line-height:1.3;margin:0 0 16px;">${title}</h1>
                 <p style="color:#B7AFC9;font-size:16px;line-height:1.5;margin:0 0 24px;">${body}</p>
                 <table role="presentation" cellpadding="0" cellspacing="0">
@@ -43,7 +43,7 @@ export function notificationEmailTemplate({ title, body, ctaLabel, ctaUrl }: Not
                   </tr>
                 </table>
                 <p style="color:#B7AFC9;font-size:14px;line-height:1.5;margin:24px 0 0;">
-                  Manage what BeaconVie emails you about in Settings &gt; Notifications.
+                  Manage what Tử Vi Tarot emails you about in Settings &gt; Notifications.
                 </p>
               </td>
             </tr>

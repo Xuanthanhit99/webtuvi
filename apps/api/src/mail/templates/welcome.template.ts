@@ -4,11 +4,11 @@ export interface WelcomeTemplateInput {
 }
 
 export function welcomeTemplate({ displayName, appUrl }: WelcomeTemplateInput) {
-  const subject = 'Welcome to BeaconVie';
+  const subject = 'Welcome to Tử Vi Tarot';
 
   const text = [
     `Hi ${displayName},`,
-    'Your BeaconVie account is ready.',
+    'Your Tử Vi Tarot account is ready.',
     `Continue here: ${appUrl}`,
   ].join('\n\n');
 
@@ -26,7 +26,7 @@ export function welcomeTemplate({ displayName, appUrl }: WelcomeTemplateInput) {
           <table role="presentation" width="100%" style="max-width:480px;background-color:#1F1C36;border-radius:20px;padding:32px;" cellpadding="0" cellspacing="0">
             <tr>
               <td>
-                <p style="color:#E3B368;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;margin:0 0 24px;">BeaconVie</p>
+                <p style="color:#E3B368;font-size:14px;letter-spacing:0.04em;text-transform:uppercase;margin:0 0 24px;">Tử Vi Tarot</p>
                 <h1 style="color:#F1ECE4;font-size:22px;line-height:1.3;margin:0 0 16px;">Hi ${displayName},</h1>
                 <p style="color:#B7AFC9;font-size:16px;line-height:1.5;margin:0 0 24px;">
                   Your account is ready. Come back whenever you'd like to continue the conversation.
@@ -35,7 +35,7 @@ export function welcomeTemplate({ displayName, appUrl }: WelcomeTemplateInput) {
                   <tr>
                     <td style="border-radius:12px;background-color:#E3B368;">
                       <a href="${appUrl}" style="display:inline-block;padding:12px 24px;color:#161428;font-weight:600;text-decoration:none;font-size:16px;border-radius:12px;">
-                        Open BeaconVie
+                        Open Tử Vi Tarot
                       </a>
                     </td>
                   </tr>

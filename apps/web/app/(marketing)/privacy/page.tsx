@@ -3,7 +3,7 @@ import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Privacy Notice',
-  description: 'How BeaconVie handles your data — what is collected, how it is used, and your rights to export or delete it.',
+  description: 'How Tử Vi Tarot handles your data — what is collected, how it is used, and your rights to export or delete it.',
   path: '/privacy',
 });
 

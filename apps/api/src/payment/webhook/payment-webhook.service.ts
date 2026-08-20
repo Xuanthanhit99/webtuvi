@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
+import * as Sentry from '@sentry/nestjs';
 import type { PaymentWebhookEvent } from '@prisma/client';
 import type { AppConfiguration } from '../../config/configuration';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -193,9 +194,29 @@ export class PaymentWebhookService {
   }
 
   /** Best-effort audit row for a rejected delivery — never throws itself, so a duplicate rejected
-   * delivery (or any other insert failure) doesn't mask the caller's own rejection response. */
+   * delivery (or any other insert failure) doesn't mask the caller's own rejection response.
+   *
+   * Also the single choke point every webhook rejection already flows through (signature failure,
+   * unknown order, amount/currency mismatch) — the readiness audit found these previously produced
+   * only a log line + this DB row, never reaching Sentry, making a real payment-processing problem
+   * invisible outside manual log/DB inspection. One `captureMessage` call here covers every rejection
+   * path with no per-caller changes needed. Deliberately sends only `orderId` and `errorCategory`
+   * (both already on `sentry-scrub.util.ts`'s metadata allowlist) — never `detail` (free-text, not
+   * allowlisted), never the raw webhook payload/signature/checksum, never a checkout URL, never user
+   * PII. Wrapped in try/catch (unlike the scheduler's equivalent call) because a webhook rejection is
+   * already the failure-reporting path itself — a secondary failure here must not also swallow the
+   * caller's own `BadRequestException`. */
   private async audit(externalEventId: string, orderId: string | null, payloadHash: string, errorCategory: string, detail: string): Promise<void> {
     this.logger.warn(`payment.webhook.rejected reason=${errorCategory} ${detail}`);
+    try {
+      Sentry.captureMessage('payment.webhook.rejected', {
+        level: 'warning',
+        tags: { payment: 'webhook', reason: errorCategory },
+        extra: { orderId: orderId ?? undefined },
+      });
+    } catch {
+      // Sentry must never break webhook processing — see doc comment above.
+    }
     try {
       await this.prisma.paymentWebhookEvent.create({
         data: { provider: 'PAYOS', externalEventId, orderId, payloadHash, status: 'REJECTED', errorCategory },

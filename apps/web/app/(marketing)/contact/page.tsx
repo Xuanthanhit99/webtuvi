@@ -3,7 +3,7 @@ import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Contact',
-  description: 'Get in touch with the BeaconVie team with questions or feedback.',
+  description: 'Get in touch with the Tử Vi Tarot team with questions or feedback.',
   path: '/contact',
 });
 

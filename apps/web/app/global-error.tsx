@@ -30,7 +30,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           <div className="w-full max-w-sm">
             <ErrorState
               title="Something went wrong"
-              description="BeaconVie hit an unexpected error. You can try again, or reload the page."
+              description="Tử Vi Tarot hit an unexpected error. You can try again, or reload the page."
               onRetry={reset}
               retryLabel="Try again"
             />

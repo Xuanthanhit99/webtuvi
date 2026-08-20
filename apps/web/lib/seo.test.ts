@@ -84,3 +84,31 @@ describe('structured data', () => {
     }
   });
 });
+
+// Domain + Brand Production Lock (founder decision, see
+// docs/progress/domain-brand-production-lock-final-report.md): brand renamed BeaconVie -> Tử Vi
+// Tarot, production domain locked to tuvitarot.vn.
+describe('Domain + Brand Production Lock', () => {
+  it('SITE_NAME is the locked brand, never the retired one', () => {
+    expect(SITE_NAME).toBe('Tử Vi Tarot');
+    expect(SITE_NAME).not.toBe('BeaconVie');
+  });
+
+  it('SITE_URL resolves to the locked production domain once NEXT_PUBLIC_APP_URL is set', () => {
+    // SITE_URL is a module-level constant evaluated once at import time (unlike sitemap()/
+    // robots(), which read the env var fresh per call) — a fresh module instance is required to
+    // observe a different env value.
+    const original = process.env.NEXT_PUBLIC_APP_URL;
+    process.env.NEXT_PUBLIC_APP_URL = 'https://tuvitarot.vn';
+    jest.resetModules();
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fresh = require('./seo') as typeof import('./seo');
+    expect(fresh.SITE_URL).toBe('https://tuvitarot.vn');
+    expect(fresh.buildWebsiteJsonLd().url).toBe('https://tuvitarot.vn');
+    expect(fresh.buildWebsiteJsonLd().url).not.toContain('beaconvie.com');
+
+    if (original === undefined) delete process.env.NEXT_PUBLIC_APP_URL;
+    else process.env.NEXT_PUBLIC_APP_URL = original;
+    jest.resetModules();
+  });
+});

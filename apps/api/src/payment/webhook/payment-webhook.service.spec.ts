@@ -3,6 +3,9 @@ import { PaymentWebhookService } from './payment-webhook.service';
 import { PaymentProviderSignatureError, type VerifiedWebhookPayment } from '../providers/payment-provider.interface';
 import { dedupeKeyForPremiumActivated } from '../../notifications/eligibility/date-key.util';
 
+jest.mock('@sentry/nestjs', () => ({ captureMessage: jest.fn() }));
+import * as Sentry from '@sentry/nestjs';
+
 const ORDER_ID = 'order-1';
 const USER_ID = 'user-1';
 
@@ -288,5 +291,98 @@ describe('PaymentWebhookService.handlePayOSWebhook — late delivery after accou
     await service.handlePayOSWebhook({});
     expect(orders.get(ORDER_ID)!.status).toBe('PAID');
     expect(entitlementService.grantPremium).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Production Activation Plan — the readiness audit found rejected webhook deliveries produced only
+// a log line + DB audit row, never reaching Sentry, making a real payment-processing problem
+// invisible outside manual inspection. This suite proves the fix: every rejection now also reaches
+// Sentry, with only already-allowlisted, non-sensitive fields, and a Sentry-side failure can never
+// break webhook processing itself.
+describe('PaymentWebhookService.handlePayOSWebhook — Sentry visibility on rejection', () => {
+  beforeEach(() => {
+    (Sentry.captureMessage as jest.Mock).mockClear();
+  });
+
+  it('reports an invalid-signature rejection to Sentry with only the safe reason tag, no orderId (none resolved yet)', async () => {
+    const { service } = makeHarness({
+      verifyImpl: () => {
+        throw new PaymentProviderSignatureError();
+      },
+    });
+    await expect(service.handlePayOSWebhook({})).rejects.toBeInstanceOf(BadRequestException);
+    expect(Sentry.captureMessage).toHaveBeenCalledTimes(1);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'payment.webhook.rejected',
+      expect.objectContaining({ tags: { payment: 'webhook', reason: 'INVALID_SIGNATURE' } }),
+    );
+  });
+
+  it('reports an unknown-order rejection to Sentry with orderId undefined', async () => {
+    const { service } = makeHarness({ verifyImpl: () => paidPayload({ orderCode: 999999 }) });
+    await expect(service.handlePayOSWebhook({})).rejects.toBeInstanceOf(BadRequestException);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'payment.webhook.rejected',
+      expect.objectContaining({ tags: { payment: 'webhook', reason: 'UNKNOWN_ORDER' }, extra: { orderId: undefined } }),
+    );
+  });
+
+  it('reports an amount-mismatch rejection to Sentry with the real orderId (an opaque identifier, not PII)', async () => {
+    const { service } = makeHarness({ verifyImpl: () => paidPayload({ amount: 1 }) });
+    await expect(service.handlePayOSWebhook({})).rejects.toBeInstanceOf(BadRequestException);
+    expect(Sentry.captureMessage).toHaveBeenCalledWith(
+      'payment.webhook.rejected',
+      expect.objectContaining({ tags: { payment: 'webhook', reason: 'AMOUNT_MISMATCH' }, extra: { orderId: ORDER_ID } }),
+    );
+  });
+
+  it('never sends the raw webhook payload, a checkout URL, or free-text detail — only the fixed reason/orderId shape', async () => {
+    const { service } = makeHarness({ verifyImpl: () => paidPayload({ currency: 'USD' }) });
+    await expect(service.handlePayOSWebhook({ secret: 'checksum-value', checkoutUrl: 'https://payos.vn/checkout/abc', email: 'user@example.com' })).rejects.toBeInstanceOf(
+      BadRequestException,
+    );
+    const [, payload] = (Sentry.captureMessage as jest.Mock).mock.calls[0] as [string, { tags: Record<string, string>; extra: Record<string, unknown> }];
+    const serialized = JSON.stringify(payload);
+    expect(serialized).not.toContain('checksum-value');
+    expect(serialized).not.toContain('payos.vn/checkout');
+    expect(serialized).not.toContain('user@example.com');
+    expect(Object.keys(payload)).toEqual(['level', 'tags', 'extra']);
+    expect(Object.keys(payload.extra)).toEqual(['orderId']);
+  });
+
+  it('does not report anything to Sentry on a successful (non-rejected) webhook', async () => {
+    const { service } = makeHarness();
+    await service.handlePayOSWebhook({});
+    expect(Sentry.captureMessage).not.toHaveBeenCalled();
+  });
+
+  it('a Sentry-side failure never breaks webhook processing — the audit row is still written and the caller still gets its rejection', async () => {
+    (Sentry.captureMessage as jest.Mock).mockImplementationOnce(() => {
+      throw new Error('sentry transport unavailable');
+    });
+    const { service, webhookEvents } = makeHarness({
+      verifyImpl: () => {
+        throw new PaymentProviderSignatureError();
+      },
+    });
+    await expect(service.handlePayOSWebhook({})).rejects.toBeInstanceOf(BadRequestException);
+    expect(webhookEvents[0]!.status).toBe('REJECTED');
+    expect(webhookEvents[0]!.errorCategory).toBe('INVALID_SIGNATURE');
+  });
+
+  it('a Sentry-side failure on one delivery does not affect a subsequent, unrelated delivery', async () => {
+    (Sentry.captureMessage as jest.Mock).mockImplementationOnce(() => {
+      throw new Error('sentry transport unavailable');
+    });
+    const { service: rejectedDelivery } = makeHarness({
+      verifyImpl: () => {
+        throw new PaymentProviderSignatureError();
+      },
+    });
+    await expect(rejectedDelivery.handlePayOSWebhook({})).rejects.toBeInstanceOf(BadRequestException);
+
+    const { service: paidDelivery, orders } = makeHarness();
+    await paidDelivery.handlePayOSWebhook({});
+    expect(orders.get(ORDER_ID)!.status).toBe('PAID');
   });
 });
