@@ -48,7 +48,7 @@ export class EasternHoroscopeController {
 
   @Post('profiles/:id/interpret')
   @UseGuards(DiscoveryThrottlerGuard)
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true })
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true, admin: true })
   @ApiOperation({ summary: 'Retry/regenerate AI interpretation for the current calendar year (also used when the existing interpretation has gone stale)' })
   retryInterpretation(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string): Promise<EasternHoroscopeProfileDto> {
     return this.records.retryInterpretation(user.id, id);

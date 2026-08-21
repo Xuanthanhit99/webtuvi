@@ -22,7 +22,7 @@ const SYSTEMS = [
   },
   {
     title: 'Ngũ Hành Phương Đông',
-    description: 'Chinese Zodiac and Five Elements — an old lens on a familiar question: who am I, really? (Not Vietnamese Tử Vi Lá Số, a separate future module.)',
+    description: 'Chinese Zodiac and Five Elements — an old lens on a familiar question: who am I, really? (Not Vietnamese Tử Vi Lá Số, a separate module.)',
     href: '/discover/eastern-horoscope',
     available: true,
   },

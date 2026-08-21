@@ -52,12 +52,22 @@ const AUTH_THROTTLE = { default: { limit: AUTH_RATE_LIMIT_MAX, ttl: AUTH_RATE_LI
 // via unrelated login/register attempts (both fall back to IP-tracking pre-auth), then see false
 // 429s on an actual checkout attempt shortly after. Symmetric with every other route pair in this
 // module set, none of which is meant to share a bucket with another.
+//
+// `admin` (Sprint 18B.12 fix): the Admin Operator Tooling bucket (60s window, 120-request ceiling
+// — tight by design, since it's meant to bound a handful of named operator accounts, not general
+// traffic) was added to ThrottlerModule after this isolation list was last updated, and was missed.
+// Unauthenticated register/login/forgot-password calls fall back to IP-tracking pre-auth exactly
+// like the `payment` case above, so they were incidentally counted against `admin`'s 120/60s
+// ceiling too — easily exhausted by a full e2e/Playwright run's ordinary registration volume, long
+// before the real ~1000-per-15-minutes `default`/route-level ceiling is anywhere close (same root
+// cause as the `payment` fix, same fix shape).
 const SKIP_UNRELATED_THROTTLERS = {
   companion: true,
   'companion-ip': true,
   discovery: true,
   'discovery-ip': true,
   payment: true,
+  admin: true,
 };
 
 @ApiTags('auth')

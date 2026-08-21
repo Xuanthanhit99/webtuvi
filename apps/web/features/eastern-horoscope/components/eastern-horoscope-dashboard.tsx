@@ -28,7 +28,7 @@ export function EasternHoroscopeDashboard() {
         <h1 className="font-display text-heading-lg text-text-primary">Ngũ Hành Phương Đông</h1>
         <p className="mt-2 text-body-sm text-text-secondary">
           A real, deterministic Chinese Zodiac and Five Elements calculation from your birth date — no sign, element, or year
-          relationship is ever chosen or invented by AI. Not Vietnamese Tử Vi Lá Số, a separate future module.
+          relationship is ever chosen or invented by AI. Not Vietnamese Tử Vi Lá Số, a separate module.
         </p>
       </div>
 

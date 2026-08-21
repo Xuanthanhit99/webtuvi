@@ -121,7 +121,7 @@ describe('Account Data Rights (e2e)', () => {
       const res = await request(app.getHttpServer()).post('/users/me/export').set(headers).expect(201);
       const result = res.body.data.result;
 
-      expect(result.exportVersion).toBe(4); // bumped Sprint 17 — see AccountExportResult doc comment
+      expect(result.exportVersion).toBe(5); // bumped Sprint 18B.9 (tuVi discovery export key) — see AccountExportResult doc comment
       expect(result.account.id).toBe(userId);
       expect(result.journal).toHaveLength(1);
       expect(result.discoveries.tarot).toHaveLength(1);

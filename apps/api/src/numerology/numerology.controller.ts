@@ -59,7 +59,7 @@ export class NumerologyController {
 
   @Post('readings/:id/interpret')
   @UseGuards(DiscoveryThrottlerGuard)
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true })
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true, admin: true })
   @ApiOperation({ summary: 'Retry AI interpretation for a reading whose interpretation is still null' })
   retryInterpretation(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string): Promise<NumerologyReadingDto> {
     return this.records.retryInterpretation(user.id, id);

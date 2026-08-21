@@ -7,7 +7,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh bg-canvas">
       <Sidebar />
-      <div className="flex min-h-dvh flex-1 flex-col">
+      {/* Sprint 18B.12 final pre-live QA: `min-w-0` is required here — this div is a flex item of
+          the row above, and flex items default to `min-width: auto`, meaning a sufficiently wide
+          descendant (e.g. PremiumMatrix's `min-w-[420px]` comparison table, which correctly manages
+          its own horizontal scroll via `overflow-x-auto`) would otherwise refuse to let this column
+          shrink to the viewport, forcing the entire page wider than the viewport instead of letting
+          the descendant scroll within its own box. Reproduced live at 375px on `/premium` (79px of
+          page-level horizontal overflow) before this fix; confirmed gone after. */}
+      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         <AppHeader />
         <VerifyEmailBanner />
         {/* Accessibility + Product Polish (2026-08-19): pb-24 clears MobileNavigation's fixed

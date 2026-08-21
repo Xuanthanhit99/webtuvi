@@ -4,6 +4,7 @@ import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { AccountExportService, type AccountExportJobDto } from './account-export.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CurrentUser, AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { EXPORT_RATE_LIMIT_MAX, EXPORT_RATE_LIMIT_WINDOW_MS } from '../../common/rate-limit.constants';
 
 /**
  * Sprint 10 — account-wide data export, mirroring `MemoryExportController`'s route shape and
@@ -20,11 +21,11 @@ export class AccountExportController {
   @Post()
   @UseGuards(ThrottlerGuard)
   // Sprint 13: `payment` was missing here — every named throttler applies to every guarded route
-  // by default unless skipped.
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true, payment: true })
+  // by default unless skipped. Sprint 18B.12: `admin` was missing the same way.
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, discovery: true, 'discovery-ip': true, payment: true, admin: true })
   // Mirrors MemoryExportController's own precedent value exactly (5/60s, IP-tracked — the
   // `default` throttler has no per-user getTracker, same as MemoryExportController's).
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  @Throttle({ default: { limit: EXPORT_RATE_LIMIT_MAX, ttl: EXPORT_RATE_LIMIT_WINDOW_MS } })
   @ApiOperation({ summary: 'Export everything the caller owns across the account' })
   create(@CurrentUser() user: AuthenticatedUser): Promise<AccountExportJobDto> {
     return this.exportService.createExport(user.id);

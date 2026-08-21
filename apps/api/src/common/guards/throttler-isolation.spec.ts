@@ -15,7 +15,7 @@ const THROTTLER_SKIP = 'THROTTLER:SKIP';
 
 // Every named throttler registered in ThrottlerModule (app.module.ts), excluding `default`, which
 // intentionally applies everywhere and is never meant to be skipped by a feature route.
-const ALL_NAMED_THROTTLERS = ['auth', 'companion', 'companion-ip', 'payment', 'discovery', 'discovery-ip'] as const;
+const ALL_NAMED_THROTTLERS = ['auth', 'companion', 'companion-ip', 'payment', 'discovery', 'discovery-ip', 'admin'] as const;
 
 interface ThrottledRoute {
   description: string;
@@ -135,6 +135,6 @@ describe('named throttler bucket isolation (Sprint 13 — auth/payment/companion
   it('lists every currently-registered named throttler, so a newly-added bucket forces this file to be updated', () => {
     // If app.module.ts ever registers a new named throttler, this count should be bumped alongside
     // it — a silent mismatch here means new routes could ship without ever being audited against it.
-    expect(ALL_NAMED_THROTTLERS).toHaveLength(6);
+    expect(ALL_NAMED_THROTTLERS).toHaveLength(7);
   });
 });

@@ -28,7 +28,7 @@ export class AnalyticsController {
   @Post('events')
   @SkipCsrf()
   @UseGuards(OptionalJwtAuthGuard, ThrottlerGuard)
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true, discovery: true, 'discovery-ip': true })
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true, discovery: true, 'discovery-ip': true, admin: true })
   @Throttle({ default: { limit: 60, ttl: 60_000 } })
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Record a batch of client-observed analytics events (best-effort, never fails the caller)' })

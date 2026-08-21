@@ -100,7 +100,7 @@ export function RememberThisButton({ conversationId, messageId, content, created
         <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
       </IconButton>
 
-      <Dialog open={open} onClose={() => setOpen(false)} title="Remember this?" description="BeaconVie will save this as a memory you can view, edit the title of, or delete anytime.">
+      <Dialog open={open} onClose={() => setOpen(false)} title="Remember this?" description="Tử Vi Tarot will save this as a memory you can view, edit the title of, or delete anytime.">
         <div className="flex flex-col gap-3">
           <Dropdown id="remember-type" label="What kind of memory is this?" value={type} options={TYPE_OPTIONS} onChange={(v) => setType(v as MemoryTypeValue)} />
           <div>
@@ -118,7 +118,7 @@ export function RememberThisButton({ conversationId, messageId, content, created
           </div>
           <div>
             <label htmlFor="remember-summary" className="mb-2 block text-body-sm font-medium text-text-primary">
-              What should BeaconVie remember?
+              What should Tử Vi Tarot remember?
             </label>
             <textarea
               id="remember-summary"

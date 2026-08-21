@@ -16,7 +16,7 @@ import { EntitlementService } from './entitlement/entitlement.service';
 // by default — see PaymentThrottlerGuard's docstring, mirroring the exact isolation f8fcba1 added
 // for auth vs companion. The `payment` bucket's own limit/ttl come from its registration in
 // app.module.ts (config.payment.rateLimit.*) — no per-route override needed here.
-const SKIP_UNRELATED_THROTTLERS = { companion: true, 'companion-ip': true, auth: true, discovery: true, 'discovery-ip': true };
+const SKIP_UNRELATED_THROTTLERS = { companion: true, 'companion-ip': true, auth: true, discovery: true, 'discovery-ip': true, admin: true };
 
 /**
  * Checkout/status routes sit behind `JwtAuthGuard` + the project-wide `CsrfGuard` (neither is

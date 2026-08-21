@@ -35,7 +35,7 @@ export class ReportsController {
 
   @Post()
   @UseGuards(DiscoveryThrottlerGuard)
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true })
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true, admin: true })
   @ApiOperation({ summary: 'Generate a new Personal Destiny Report (Premium; requires both Natal Chart and Numerology)' })
   generate(@CurrentUser() user: AuthenticatedUser): Promise<ReportDto> {
     return this.records.generate(user.id);
@@ -55,7 +55,7 @@ export class ReportsController {
 
   @Post(':id/regenerate')
   @UseGuards(DiscoveryThrottlerGuard)
-  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true })
+  @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true, admin: true })
   @ApiOperation({ summary: 'Regenerate a Personal Destiny Report from a fresh source snapshot (Premium) — creates a new report, never overwrites the one at :id' })
   regenerate(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string): Promise<ReportDto> {
     // `id` identifies which prior report the user regenerated from, for owner-scoped audit/UX

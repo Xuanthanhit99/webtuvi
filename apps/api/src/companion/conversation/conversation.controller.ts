@@ -39,7 +39,7 @@ export class ConversationController {
   // route by default unless skipped (see CompanionThrottlerGuard's docstring), so message-sending
   // was also incidentally governed by the unrelated `payment` bucket, the same asymmetry fixed in
   // AuthController around the same time.
-  @SkipThrottle({ auth: true, discovery: true, 'discovery-ip': true, payment: true })
+  @SkipThrottle({ auth: true, discovery: true, 'discovery-ip': true, payment: true, admin: true })
   @ApiOperation({
     summary: 'Send a user message. If it passes the safety check, open GET .../messages/stream next to generate the reply.',
   })

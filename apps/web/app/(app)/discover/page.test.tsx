@@ -21,7 +21,7 @@ describe('DiscoverPage — Eastern Horoscope vs. Tử Vi Lá Số naming boundar
 
   it('explicitly disclaims Eastern Horoscope is not Vietnamese Tử Vi Lá Số', () => {
     render(<DiscoverPage />);
-    expect(screen.getByText(/Not Vietnamese Tử Vi Lá Số, a separate future module/)).toBeInTheDocument();
+    expect(screen.getByText(/Not Vietnamese Tử Vi Lá Số, a separate module/)).toBeInTheDocument();
   });
 
   it('renders all five live Discovery systems by their correct, distinct names', () => {

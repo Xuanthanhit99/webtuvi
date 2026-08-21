@@ -131,9 +131,15 @@ export class DashboardService {
       // is on its way", which was accurate pre-Sprint 9 but became false once Natal Chart (Bản Đồ
       // Sao) shipped in Sprint 9, and Eastern Horoscope in Sprint 17. Fixed to describe the real,
       // current set of live systems.
+      //
+      // Sprint 18B.12 final pre-live QA: this description still only named 3 of the (by then) 5 live
+      // Discovery systems — Eastern Horoscope (Sprint 17) and Tử Vi Lá Số (Sprint 18B) had both
+      // shipped without this string being revisited again. Not misleading (never claims something
+      // unavailable is live), but incomplete — the same class of harm the comment above already
+      // flags, so fixed the same way: describe the real, current set.
       discoverySuggestion: {
         title: 'Discovery',
-        description: 'A real Tarot draw, Numerology reading, and birth chart — all live now.',
+        description: 'A real Tarot draw, Numerology reading, birth chart, Eastern Horoscope, and Tử Vi Lá Số — all live now.',
         href: '/discover',
         comingSoon: false,
       },
