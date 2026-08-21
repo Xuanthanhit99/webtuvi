@@ -12,7 +12,8 @@ const EXPORT_LOCK_TTL_MS = 60_000;
 // Sprint 16 — bumped from 2: another additive structural change (new top-level `destinyReports`
 // key, see AccountExportResult below) — same documented contract as the Sprint 11 bump above.
 // Sprint 17 — bumped from 3: additive structural change (new `discoveries.easternHoroscope` key).
-const EXPORT_VERSION = 4;
+// Sprint 18B.9 — bumped from 4: additive structural change (new `discoveries.tuVi` key).
+const EXPORT_VERSION = 5;
 
 export interface AccountExportResult {
   exportVersion: number;
@@ -27,7 +28,7 @@ export interface AccountExportResult {
   insights: unknown[];
   reviews: unknown[];
   goals: unknown[];
-  discoveries: { tarot: unknown[]; numerology: unknown[]; natalChart: unknown[]; easternHoroscope: unknown[] };
+  discoveries: { tarot: unknown[]; numerology: unknown[]; natalChart: unknown[]; easternHoroscope: unknown[]; tuVi: unknown[] };
   /** Sprint 16 — Personal Destiny Reports. `sourceSnapshot`/`structuredResult` are included as-is
    * (the same real, persisted content the user sees in-app); never `aiProvider`/internal metadata
    * beyond what's already user-facing (mirrors the "content fields only" rule already applied to
@@ -116,6 +117,7 @@ export class AccountExportService {
       numerology,
       natalChart,
       easternHoroscope,
+      tuVi,
       destinyReports,
       entitlements,
       paymentOrders,
@@ -186,6 +188,7 @@ export class AccountExportService {
         orderBy: { createdAt: 'asc' },
       }),
       this.prisma.easternHoroscopeProfile.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
+      this.prisma.tuViChart.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
       this.prisma.destinyReport.findMany({ where: { userId }, orderBy: { createdAt: 'asc' } }),
       this.prisma.premiumEntitlement.findMany({
         where: { userId },
@@ -234,7 +237,7 @@ export class AccountExportService {
       insights,
       reviews,
       goals,
-      discoveries: { tarot, numerology, natalChart, easternHoroscope },
+      discoveries: { tarot, numerology, natalChart, easternHoroscope, tuVi },
       destinyReports,
       premium: { entitlements, paymentOrders },
       notifications: { items: notifications, preferences: notificationPreferences },

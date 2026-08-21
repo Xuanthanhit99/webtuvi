@@ -50,6 +50,7 @@ function makePrismaMock(user: unknown) {
     natalChart: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     destinyReport: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     easternHoroscopeProfile: { deleteMany: jest.fn(async () => ({ count: 0 })) },
+    tuViChart: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     activityEvent: { deleteMany: jest.fn(async () => ({ count: 0 })) },
     // Deliberately absent: paymentOrder, paymentWebhookEvent, premiumEntitlement — if the
     // service ever tried to touch these, the mock would throw "not a function" and fail the
@@ -100,6 +101,7 @@ describe('AccountDeletionService', () => {
     expect(prisma.natalChart.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     expect(prisma.destinyReport.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     expect(prisma.easternHoroscopeProfile.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
+    expect(prisma.tuViChart.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     expect(prisma.conversation.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     expect(prisma.userSession.deleteMany).toHaveBeenCalledWith({ where: { userId: 'user-1' } });
     // Sprint 11

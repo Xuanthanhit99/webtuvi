@@ -8,18 +8,10 @@ import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
 export const metadata: Metadata = { title: 'Discover' };
 
 /** Tarot (Sprint 6), Numerology (Sprint 8), Natal Chart (Sprint 9, displayed as "Bản Đồ Sao"
- * per docs/product/vietnamese-tu-vi-product-definition.md §1), and Eastern Horoscope (Sprint 17,
- * Ngũ Hành Phương Đông — Chinese Zodiac/Five Elements) are real. Eastern Horoscope is a distinct,
- * separate module from the future, not-yet-built Tử Vi Lá Số — never conflate the two (see
- * docs/product/vietnamese-tu-vi-product-definition.md §1).
- *
- * The Tử Vi Lá Số entry below is Pre-Live Product Experience Completion Audit finding #3 (see
- * docs/audit/pre-live-product-experience-completion-audit.md and
- * docs/progress/pre-live-product-experience-remediation-final-report.md): an honest roadmap
- * acknowledgment, not a feature. `available: false` and the deliberate absence of `href` means no
- * CTA renders for it (see the render logic below) — no calculation, no sample result, no AI
- * substitute, no link anywhere, including not to the archived/unreachable `/menh-vi` prototype.
- * Sprint 18 (the real Tử Vi engine) remains BLOCKED_BY_DOMAIN_REFERENCE, unaffected by this card. */
+ * per docs/product/vietnamese-tu-vi-product-definition.md §1), Eastern Horoscope (Sprint 17,
+ * Ngũ Hành Phương Đông — Chinese Zodiac/Five Elements), and Tử Vi Lá Số (Sprint 18B, Vietnamese Tử
+ * Vi Đẩu Số — VDTTL-1956) are real. Eastern Horoscope and Tử Vi Lá Số are distinct, separate
+ * modules — never conflate the two (see docs/product/vietnamese-tu-vi-product-definition.md §1). */
 const SYSTEMS = [
   { title: 'Tarot', description: 'A real, deterministic 78-card draw — no card ever chosen or invented by AI.', href: '/discover/tarot', available: true },
   {
@@ -42,10 +34,9 @@ const SYSTEMS = [
   },
   {
     title: 'Tử Vi Lá Số',
-    description:
-      'Đang được phát triển dựa trên nguồn quy tắc được kiểm chứng — in development, built from verified traditional sources, never invented. Not the same as Ngũ Hành Phương Đông above, and not available yet.',
-    href: undefined,
-    available: false,
+    description: 'A real, deterministic Vietnamese Tử Vi Đẩu Số chart, built from a verified traditional ruleset (VDTTL-1956) — never invented. Not the same as Ngũ Hành Phương Đông above, a separate module.',
+    href: '/discover/tu-vi',
+    available: true,
   },
 ];
 
@@ -54,9 +45,7 @@ export default function DiscoverPage() {
     <div className="flex flex-col gap-6">
       <AnalyticsPageView event="discover_viewed" properties={{ feature: 'discover' }} />
       <h1 className="font-display text-heading-lg text-text-primary">Discover</h1>
-      <p className="text-body-sm text-text-secondary">
-        Tarot, Thần Số Học, Bản Đồ Sao, and Ngũ Hành Phương Đông are live. Tử Vi Lá Số is coming soon.
-      </p>
+      <p className="text-body-sm text-text-secondary">Tarot, Thần Số Học, Bản Đồ Sao, Ngũ Hành Phương Đông, and Tử Vi Lá Số are live.</p>
       <div className="grid gap-4 desktop:grid-cols-2">
         {SYSTEMS.map((system) => (
           <Card key={system.title}>

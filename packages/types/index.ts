@@ -1642,7 +1642,11 @@ export type ClientAnalyticsEventName =
    * `interpret_requested` event — the audit
    * (docs/audit/sprint-17-pre-implementation-audit.md §31) found no funnel question this would
    * answer beyond what `eastern_horoscope_completed` already covers. */
-  | 'eastern_horoscope_started';
+  | 'eastern_horoscope_started'
+  /** Sprint 18B.9 — Vietnamese Tử Vi Đẩu Số (VDTTL-1956 V1), independent of and never conflated
+   * with Eastern Horoscope above. Fires on the Calculate button click, mirroring
+   * `eastern_horoscope_started`'s own pattern exactly. */
+  | 'tu_vi_started';
 
 /** Events only the backend may emit, in-process, at the exact point the underlying fact becomes
  * true (a row was persisted, a webhook flipped an order to PAID). A client can never cause one of
@@ -1667,7 +1671,10 @@ export type ServerAnalyticsEventName =
   | 'report_generation_failed'
   /** Sprint 17 — fired in-process once a new `EasternHoroscopeProfile` row is persisted, matching
    * `numerology_completed`'s pattern. */
-  | 'eastern_horoscope_completed';
+  | 'eastern_horoscope_completed'
+  /** Sprint 18B.9 — fired in-process once a new `TuViChart` row is persisted, matching
+   * `eastern_horoscope_completed`'s own pattern. */
+  | 'tu_vi_completed';
 
 export type AnalyticsEventName = ClientAnalyticsEventName | ServerAnalyticsEventName;
 
@@ -1682,7 +1689,8 @@ export type AnalyticsFeature =
   | 'notifications'
   | 'premium'
   | 'reports'
-  | 'eastern_horoscope';
+  | 'eastern_horoscope'
+  | 'tu_vi';
 
 /** Deliberately flat and small. No free-text field exists anywhere in this shape — every property
  * is either a bounded enum or a route pathname (query string stripped server-side). This is the
@@ -1716,4 +1724,93 @@ export interface AnalyticsEventInput {
 
 export interface TrackAnalyticsEventsRequestDto {
   events: AnalyticsEventInput[];
+}
+
+// --- Vietnamese Tử Vi Đẩu Số (Sprint 18B). A separate, distinct Discovery system from Eastern
+// Horoscope (Ngũ Hành Phương Đông) above — never conflate the two. Deterministic engine
+// (`TUVI_RULESET_V1 = VDTTL_1956_V1`, frozen), persisted once per calculation, narrated (never
+// calculated) by AI. See docs/domain/tu-vi/canonical-ruleset-v1.md. ---
+
+export type TuViChartStatusValue = 'ACTIVE' | 'ARCHIVED' | 'DELETED';
+export type TuViChartHistoryActionValue = 'CREATED' | 'VIEWED' | 'INTERPRETED' | 'ARCHIVED' | 'RESTORED' | 'DELETED';
+export type TuViSexValue = 'Nam' | 'Nữ';
+export type TuViPalaceRoleValue =
+  | 'Mệnh'
+  | 'Phụ Mẫu'
+  | 'Phúc Đức'
+  | 'Điền Trạch'
+  | 'Quan Lộc'
+  | 'Nô Bộc'
+  | 'Thiên Di'
+  | 'Tật Ách'
+  | 'Tài Bạch'
+  | 'Tử Tức'
+  | 'Phu Thê'
+  | 'Huynh Đệ';
+export type TuViTransformationValue = 'Hóa Lộc' | 'Hóa Quyền' | 'Hóa Khoa' | 'Hóa Kỵ';
+
+export interface TuViStarPlacementDto {
+  star: string;
+  position: EarthlyBranchValue;
+}
+
+export interface TuViPalacePairDto {
+  first: EarthlyBranchValue;
+  second: EarthlyBranchValue;
+}
+
+export interface TuViTransformationDto {
+  transformation: TuViTransformationValue;
+  targetStar: string;
+  position: EarthlyBranchValue;
+}
+
+export interface TuViChartDto {
+  id: string;
+  status: TuViChartStatusValue;
+  /** `YYYY-MM-DD`. */
+  birthDate: string;
+  /** `HH:mm`. */
+  birthTime: string;
+  sex: TuViSexValue;
+  versions: {
+    engineVersion: string;
+    calendarVersion: string;
+    rulesetVersion: string;
+    mainStarVersion: string;
+    auxiliaryVersion: string;
+    tuanTrietVersion: string;
+    tuHoaVersion: string;
+  };
+  lunarDate: { lunarYear: number; lunarMonth: number; lunarDay: number; isLeapMonth: boolean };
+  hourBranch: EarthlyBranchValue;
+  canChi: { year: { stem: HeavenlyStemValue; branch: EarthlyBranchValue } };
+  palaces: { menh: EarthlyBranchValue; than: EarthlyBranchValue; layout: Record<EarthlyBranchValue, TuViPalaceRoleValue> };
+  cuc: string;
+  mainStars: TuViStarPlacementDto[];
+  auxiliaryStars: TuViStarPlacementDto[];
+  tuan: TuViPalacePairDto;
+  triet: TuViPalacePairDto;
+  transformations: TuViTransformationDto[];
+  /** Null until AI interpretation has been generated — a chart is fully real and viewable before
+   * this exists; interpretation is additive, never a precondition. */
+  interpretation: string | null;
+  interpretedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt: string | null;
+}
+
+export interface TuViChartHistoryDto {
+  id: string;
+  action: TuViChartHistoryActionValue;
+  detail: string;
+  createdAt: string;
+}
+
+export interface ListTuViChartsResultDto {
+  items: TuViChartDto[];
+  total: number;
+  page: number;
+  pageSize: number;
 }

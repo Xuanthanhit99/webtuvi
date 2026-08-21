@@ -82,6 +82,7 @@ model User {
   notificationPreference  NotificationPreference?
   destinyReports          DestinyReport[]
   easternHoroscopeProfiles EasternHoroscopeProfile[]
+  tuViCharts               TuViChart[]
 
   @@map("users")
 }
@@ -321,6 +322,9 @@ enum AIFeature {
   /// Sprint 17 — Eastern Horoscope. Additive; existing rows/queries for the other five values are
   /// unaffected.
   EASTERN_HOROSCOPE
+  /// Sprint 18B.10 — Tử Vi. Additive; existing rows/queries for the other six values are
+  /// unaffected.
+  TU_VI
 }
 
 model Conversation {
@@ -2609,4 +2613,118 @@ model EasternHoroscopeProfileHistory {
 
   @@index([profileId, createdAt])
   @@map("eastern_horoscope_profile_history")
+}
+
+/// Sprint 18B.9 — mirrors EasternHoroscopeProfileStatus's own ACTIVE/ARCHIVED/DELETED precedent
+/// exactly (soft-delete lifecycle, not a hard delete).
+enum TuViChartStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+/// Append-only lifecycle event log — mirrors EasternHoroscopeProfileHistoryAction's own precedent.
+enum TuViChartHistoryAction {
+  CREATED
+  VIEWED
+  INTERPRETED
+  ARCHIVED
+  RESTORED
+  DELETED
+}
+
+/// Sprint 18B.9 — persists exactly the fields of `TuViChart` (`apps/api/src/tu-vi/engine/tu-vi-chart.ts`),
+/// the frozen `VDTTL_1956_V1` ruleset's deterministic output. Every scalar/JSON fact below is
+/// copied verbatim from that engine's output at calculation time — nothing is recomputed,
+/// approximated, or AI-generated in this model. Kept FLAT on one row (not split into child tables
+/// like NatalPlacement/NatalHouse) because every array here has a fixed cardinality per chart
+/// (always exactly 14 main stars, 13 CORE_13 stars, 12 palace roles, 4 Tứ Hóa transformations) —
+/// genuinely fixed-shape data, not open-ended one-to-many facts needing individual per-row
+/// metadata the way NumerologyValue's multiple distinct number types do.
+model TuViChart {
+  id     String           @id @default(cuid())
+  userId String
+  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status TuViChartStatus  @default(ACTIVE)
+
+  /// Date-only, `YYYY-MM-DD` semantics enforced at the application layer
+  /// (`tu-vi-canonical-input.ts`) — stored as a real `DateTime` at UTC midnight, mirrors
+  /// EasternHoroscopeProfile's own `birthDate` column exactly.
+  birthDate DateTime
+  /// `HH:mm`, 24-hour — Tử Vi's calculation genuinely depends on exact birth TIME (Giờ Tý and
+  /// every hour-branch-keyed star), unlike Eastern Horoscope which needs only a birth DATE.
+  birthTime String
+  /// `'Nam'` or `'Nữ'` — plain string (not a Prisma enum), same "avoid migration on relabel"
+  /// rationale as `stem`/`branch` below. Required: CORE_13's Hỏa Tinh/Linh Tinh cannot be placed
+  /// without it (`tu-vi-core13.ts`'s own `TUVI_CORE13_SEX_REQUIRED` guard).
+  sex       String
+
+  /// Six persisted version identifiers (mirrors EasternHoroscopeProfile's 3-identifier precedent,
+  /// extended because Tử Vi's pipeline has more independently-versioned layers) — a historical
+  /// chart remains explainable and reproducible even after any one layer's rules evolve.
+  engineVersion    String
+  calendarVersion  String
+  rulesetVersion   String
+  mainStarVersion  String
+  auxiliaryVersion String
+  tuanTrietVersion String
+  tuHoaVersion     String
+
+  /// Canonical, deterministic chart facts — never AI-generated, never recomputed by anything
+  /// downstream. Small closed-set values stored as plain strings (mirrors EasternHoroscopeProfile's
+  /// own `stem`/`branch` precedent), not Prisma enums.
+  lunarYear    Int
+  lunarMonth   Int
+  lunarDay     Int
+  isLeapMonth  Boolean
+  hourBranch   String
+  yearStem     String
+  yearBranch   String
+  menhPosition String
+  thanPosition String
+  cuc          String
+
+  /// Fixed-shape structured facts (see model doc comment for why these stay JSON columns on one
+  /// row rather than child tables). Shapes match `tu-vi-chart.ts`'s own exported types exactly:
+  /// `palaceLayout`: `Record<EarthlyBranch, PalaceRole>` (12 entries). `mainStars`:
+  /// `ChinhTinhPlacement[]` (14). `auxiliaryStars`: `Core13Placement[]` (13). `tuan`/`triet`:
+  /// `PalacePair` (`{first, second}`). `transformations`: `TuHoaPositionAnnotation[]` (4).
+  palaceLayout    Json
+  mainStars       Json
+  auxiliaryStars  Json
+  tuan            Json
+  triet           Json
+  transformations Json
+
+  /// AI-narrated interpretation of the deterministic chart above — null until generated, never a
+  /// placeholder in the meantime. A chart is fully real and viewable before this exists;
+  /// interpretation is additive, never a precondition (mirrors EasternHoroscopeProfile's own
+  /// "interpretation is additive" precedent exactly).
+  interpretation String?
+  aiProvider     String?
+  aiModel        String?
+  promptVersion  String?
+  interpretedAt  DateTime?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  archivedAt DateTime?
+  deletedAt  DateTime?
+
+  history TuViChartHistory[]
+
+  @@index([userId, status, createdAt])
+  @@map("tu_vi_charts")
+}
+
+model TuViChartHistory {
+  id        String                 @id @default(cuid())
+  chartId   String
+  chart     TuViChart              @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  action    TuViChartHistoryAction
+  detail    String
+  createdAt DateTime               @default(now())
+
+  @@index([chartId, createdAt])
+  @@map("tu_vi_chart_history")
 }

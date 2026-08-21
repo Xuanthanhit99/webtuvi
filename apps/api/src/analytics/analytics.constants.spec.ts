@@ -35,6 +35,7 @@ function assertExhaustiveClientEventName(name: ClientAnalyticsEventName): true {
     case 'report_generation_started':
     case 'report_upgrade_clicked':
     case 'eastern_horoscope_started':
+    case 'tu_vi_started':
       return true;
     default: {
       const exhaustive: never = name;
@@ -58,6 +59,7 @@ function assertExhaustiveServerEventName(name: ServerAnalyticsEventName): true {
     case 'report_generation_completed':
     case 'report_generation_failed':
     case 'eastern_horoscope_completed':
+    case 'tu_vi_completed':
       return true;
     default: {
       const exhaustive: never = name;
@@ -86,7 +88,7 @@ describe('analytics event name lists stay in sync with packages/types', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('matches the Sprint 13 brief §5 total of 24 distinct analytics events, plus Sprint 16’s 5 Reports events and Sprint 17’s 2 Eastern Horoscope events', () => {
+  it('matches the Sprint 13 brief §5 total of 24 distinct analytics events, plus Sprint 16’s 5 Reports events, Sprint 17’s 2 Eastern Horoscope events, and Sprint 18B.9’s 2 Tử Vi events', () => {
     // landing_view, signup_started/completed, onboarding_started/completed, dashboard_viewed,
     // discover_viewed, {tarot,numerology,natal}_{started,completed,interpretation_requested,
     // interpretation_completed} (4×3=12), notification_opened, premium_viewed, checkout_started/
@@ -96,7 +98,9 @@ describe('analytics event name lists stay in sync with packages/types', () => {
     // report_upgrade_clicked — see docs/product/personal-destiny-report-decisions.md. Sprint 17
     // (Eastern Horoscope) adds 2: eastern_horoscope_started/completed only — the audit
     // (docs/audit/sprint-17-pre-implementation-audit.md §31) deliberately recommended against a
-    // separate interpret_requested/interpret_completed pair as duplicate funnel coverage.
-    expect(CLIENT_ANALYTICS_EVENT_NAMES.length + SERVER_ANALYTICS_EVENT_NAMES.length).toBe(31);
+    // separate interpret_requested/interpret_completed pair as duplicate funnel coverage. Sprint
+    // 18B.9 (Tử Vi) adds 2 more, mirroring Eastern Horoscope's own minimal pair exactly:
+    // tu_vi_started/tu_vi_completed.
+    expect(CLIENT_ANALYTICS_EVENT_NAMES.length + SERVER_ANALYTICS_EVENT_NAMES.length).toBe(33);
   });
 });

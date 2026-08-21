@@ -205,6 +205,21 @@ this list").
 **Owner:** Domain expert / primary-text transcription, once DECISION-01 and DECISION-05/06/07 are
 resolved (auxiliary placement typically depends on Can/Chi/palace values already established).
 
+**Sprint 18A.6 addendum (2026-08-21):** Placement rules for all 13 originally-proposed MVP stars
+were fully sourced from VDTTL-1956 by Sprint 18A.1, and re-verified independently three times since
+(Sprint 18A.2's general review; Sprint 18A.5's re-read of Lộc Tồn; Sprint 18A.6's re-read of the
+remaining 6 stars, which also resolved the one lingering ambiguity flag on the Hỏa Tinh/Linh Tinh
+table — confirmed as printed, not a transcription artifact, and self-consistent with its own worked
+example). **Founder decision received this sprint: `TUVI_AUXILIARY_STAR_SCOPE_V1 = CORE_13`** — V1
+implements exactly these 13 stars (Tả Phù, Hữu Bật, Văn Xương, Văn Khúc, Thiên Khôi, Thiên Việt,
+Lộc Tồn, Kình Dương, Đà La, Địa Không, Địa Kiếp, Hỏa Tinh, Linh Tinh), matching the product
+definition's original 13-star MVP list exactly. Every other auxiliary star found in VDTTL-1956
+(~40 more — Thái Tuế's companion series, the Tràng Sinh series, Lộc Tồn's own companion walk, and
+~15 named singles/pairs, all catalogued in `vdttl-1956-extraction.md`) is `DEFERRED_TO_V1_1`, not
+in scope. **Status updated to `RESOLVED_BY_FOUNDER_DECISION`** for the list-confirmation question;
+the individual placement rules were already source-resolved. See `canonical-ruleset-v1.md` §7 and
+`docs/progress/sprint-18a6-entry-gate-closure.md` for the full closure record.
+
 ---
 
 ## DECISION-09 — Tuần/Triệt calculation rule

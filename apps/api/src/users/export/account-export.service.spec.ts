@@ -37,6 +37,7 @@ function makePrismaMock() {
     natalChart: { findMany: findMany() },
     destinyReport: { findMany: findMany() },
     easternHoroscopeProfile: { findMany: findMany() },
+    tuViChart: { findMany: findMany() },
     premiumEntitlement: { findMany: findMany() },
     paymentOrder: { findMany: findMany() },
     notification: { findMany: findMany() },
@@ -79,7 +80,7 @@ describe('AccountExportService', () => {
     const job = await service.createExport('user-1');
 
     expect(job.status).toBe('completed');
-    expect(job.result.exportVersion).toBe(4); // bumped Sprint 17 — see AccountExportResult doc comment
+    expect(job.result.exportVersion).toBe(5); // bumped Sprint 18B.9 — see AccountExportResult doc comment
     expect(job.result.account.id).toBe('user-1');
     expect(job.result).toHaveProperty('preferences');
     expect(job.result).toHaveProperty('companion');
@@ -88,6 +89,7 @@ describe('AccountExportService', () => {
     expect(job.result).toHaveProperty('journal');
     expect(job.result).toHaveProperty('discoveries');
     expect(job.result.discoveries).toHaveProperty('easternHoroscope');
+    expect(job.result.discoveries).toHaveProperty('tuVi');
     expect(job.result).toHaveProperty('destinyReports');
     expect(job.result).toHaveProperty('premium');
     expect(job.result).toHaveProperty('notifications');

@@ -94,6 +94,9 @@ export class AccountDeletionService {
       // --- Eastern Horoscope (Sprint 17) — no financial-style retention exception; deleted like
       // every other Discovery system above (cascades EasternHoroscopeProfileHistory). ---
       this.prisma.easternHoroscopeProfile.deleteMany({ where: { userId } }),
+      // --- Tử Vi (Sprint 18B.9) — no financial-style retention exception; deleted like every
+      // other Discovery system above (cascades TuViChartHistory). ---
+      this.prisma.tuViChart.deleteMany({ where: { userId } }),
       // --- Non-sensitive activity log (personal, not an accounting record) ---
       this.prisma.activityEvent.deleteMany({ where: { userId } }),
       // --- Deliberately NOT deleted: PaymentOrder, PaymentWebhookEvent, PremiumEntitlement ---

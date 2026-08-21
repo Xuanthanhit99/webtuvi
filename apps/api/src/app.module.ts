@@ -33,6 +33,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ReportsModule } from './reports/reports.module';
 import { EasternHoroscopeModule } from './eastern-horoscope/eastern-horoscope.module';
+import { TuViModule } from './tu-vi/tu-vi.module';
 import { AdminModule } from './admin/admin.module';
 
 @Module({
@@ -146,6 +147,7 @@ import { AdminModule } from './admin/admin.module';
     AnalyticsModule,
     ReportsModule,
     EasternHoroscopeModule,
+    TuViModule,
     AdminModule,
   ],
 })
