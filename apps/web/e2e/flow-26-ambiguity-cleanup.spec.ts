@@ -34,7 +34,7 @@ async function registerAndOnboard(page: import('@playwright/test').Page, label: 
 
   await expect(page.getByRole('button', { name: 'Go to Dashboard' })).toBeVisible({ timeout: 10000 });
   await page.getByRole('button', { name: 'Go to Dashboard' }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page).toHaveURL('http://localhost:3000/');
 }
 
 test('production landing shows Tử Vi Tarot, not a competing brand', async ({ page }) => {

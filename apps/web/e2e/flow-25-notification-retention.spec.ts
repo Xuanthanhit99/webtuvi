@@ -66,7 +66,7 @@ async function registerAndOnboard(page: Page, label: string): Promise<void> {
 
   await expect(page.getByRole('button', { name: 'Go to Dashboard' })).toBeVisible({ timeout: 10000 });
   await page.getByRole('button', { name: 'Go to Dashboard' }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page).toHaveURL('http://localhost:3000/');
 }
 
 /** Real checkout -> real signed webhook -> real `premium.activated` Notification, exactly

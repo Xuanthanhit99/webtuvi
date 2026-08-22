@@ -35,7 +35,7 @@ async function registerAndOnboard(page: Page, email: string): Promise<void> {
 
   await expect(page.getByRole('button', { name: 'Go to Dashboard' })).toBeVisible({ timeout: 10000 });
   await page.getByRole('button', { name: 'Go to Dashboard' }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page).toHaveURL('http://localhost:3000/');
 }
 
 test('Settings -> export my data -> delete my account -> session truly ends -> protected pages inaccessible', async ({ page }) => {

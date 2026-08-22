@@ -41,7 +41,7 @@ async function registerAndOnboard(page: Page): Promise<void> {
 
   await expect(page.getByRole('button', { name: 'Go to Dashboard' })).toBeVisible({ timeout: 10000 });
   await page.getByRole('button', { name: 'Go to Dashboard' }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page).toHaveURL('http://localhost:3000/');
 }
 
 test('Calculate, verify exact core numbers, expand steps, history/detail, lifecycle, and the Companion bridge', async ({ page }) => {

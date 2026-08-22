@@ -46,7 +46,7 @@ async function registerAndOnboard(page: Page): Promise<void> {
 
   await expect(page.getByRole('button', { name: 'Go to Dashboard' })).toBeVisible({ timeout: 10000 });
   await page.getByRole('button', { name: 'Go to Dashboard' }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page).toHaveURL('http://localhost:3000/');
 }
 
 test('Calculate a known golden vector, verify exact deterministic facts, generate interpretation without altering them, prove the Lunar New Year boundary, and confirm a real failure state', async ({ page }) => {

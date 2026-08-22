@@ -34,7 +34,7 @@ test('a brand-new user sees an honest empty state on the Memory page', async ({ 
   await page.getByRole('button', { name: 'Maybe later' }).click();
   await expect(page.getByRole('button', { name: 'Go to Dashboard' })).toBeVisible({ timeout: 10000 });
   await page.getByRole('button', { name: 'Go to Dashboard' }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page).toHaveURL('http://localhost:3000/');
 
   await page.goto('/memory');
   await expect(page.getByText('No memories yet.')).toBeVisible({ timeout: 10000 });

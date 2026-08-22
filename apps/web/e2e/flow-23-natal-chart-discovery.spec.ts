@@ -44,7 +44,7 @@ async function registerAndOnboard(page: Page): Promise<void> {
 
   await expect(page.getByRole('button', { name: 'Go to Dashboard' })).toBeVisible({ timeout: 10000 });
   await page.getByRole('button', { name: 'Go to Dashboard' }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page).toHaveURL('http://localhost:3000/');
 }
 
 test('Discover -> calculate a real chart, verify Big Three/wheel/planet/aspect, history/detail, lifecycle, and the Companion bridge', async ({ page }) => {
@@ -57,7 +57,7 @@ test('Discover -> calculate a real chart, verify Big Three/wheel/planet/aspect, 
   // docs/product/vietnamese-tu-vi-product-definition.md §1 — destination page/route unchanged.
   const natalCard = page.getByText('Bản Đồ Sao', { exact: true });
   await expect(natalCard).toBeVisible();
-  await page.getByRole('link', { name: /try bản đồ sao/i }).click();
+  await page.getByRole('link', { name: /mở bản đồ sao/i }).click();
   await expect(page).toHaveURL(/\/discover\/natal-chart/);
 
   // Birth data — a real search against the live public Nominatim service (free, no cost),

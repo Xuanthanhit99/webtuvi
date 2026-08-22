@@ -59,7 +59,7 @@ async function registerAndOnboard(page: Page, label: string): Promise<void> {
 
   await expect(page.getByRole('button', { name: 'Go to Dashboard' })).toBeVisible({ timeout: 10000 });
   await page.getByRole('button', { name: 'Go to Dashboard' }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page).toHaveURL('http://localhost:3000/');
 }
 
 /** `page.request` shares the browser context's cookie jar, but not the app's own CSRF-header
