@@ -4,6 +4,7 @@ import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { PremiumUpgradePanel } from '@/features/premium/components/premium-upgrade-panel';
 import { useTrackEvent } from '@/hooks/use-track-event';
+import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 function PremiumBoundaryBanner() {
   const searchParams = useSearchParams();
@@ -31,20 +32,18 @@ export default function PremiumPage() {
   useTrackEvent('premium_viewed', { feature: 'premium' });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-heading-lg text-text-primary">Premium</h1>
-        <p className="mt-2 text-body-sm text-text-secondary">
-          One straightforward plan — no tiers, no coupons, no surprises. Your Premium status is always decided by our
-          server after a verified payment, never by anything stored in your browser.
-        </p>
-      </div>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Mệnh Vi+"
+        title="Mở khóa chiều sâu, không làm ồn trải nghiệm"
+        description="Một gói 30 ngày rõ ràng. Trạng thái Premium luôn được đọc từ backend sau thanh toán đã xác minh, không quyết định bằng dữ liệu trong trình duyệt."
+      />
 
       <Suspense fallback={null}>
         <PremiumBoundaryBanner />
       </Suspense>
 
       <PremiumUpgradePanel />
-    </div>
+    </MvPage>
   );
 }

@@ -47,6 +47,7 @@ const calculatedReading: NumerologyReadingDto = {
 describe('NumerologyForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    window.sessionStorage.clear();
     (numerologyApi.listMeanings as jest.Mock).mockResolvedValue([]);
   });
 
@@ -56,6 +57,23 @@ describe('NumerologyForm', () => {
     await user.click(screen.getByRole('button', { name: /calculate my numbers/i }));
     expect(await screen.findByText(/full birth name is required/i)).toBeInTheDocument();
     expect(numerologyApi.calculate).not.toHaveBeenCalled();
+  });
+
+  it('prefills a short-lived guest Numerology DOB draft from sessionStorage without using the URL', () => {
+    window.sessionStorage.setItem(
+      'mv_guest_numerology_preview',
+      JSON.stringify({
+        type: 'numerology',
+        birthDate: '1995-08-17',
+        lifePath: 22,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + 30 * 60 * 1000,
+      }),
+    );
+
+    renderWithQuery(<NumerologyForm />);
+
+    expect(screen.getByLabelText(/date of birth/i)).toHaveValue('1995-08-17');
   });
 
   it('requires a birth date before submitting', async () => {

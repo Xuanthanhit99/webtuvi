@@ -12,6 +12,7 @@ import { GoalCard } from './goal-card';
 import { GoalDetail } from './goal-detail';
 import { GoalFilterBar, type GoalListFilters } from './goal-filter-bar';
 import { GoalCreateDialog } from './goal-create-dialog';
+import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 /**
  * `/goals` — list + `?item=<id>` "open detail in place" pattern every other module in this
@@ -40,15 +41,14 @@ export function GoalDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <MvPage>
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-display text-heading-lg text-text-primary">Goals</h1>
-          <p className="mt-2 text-body-sm text-text-secondary">
-            Deterministic learning and life goals. Progress is computed from your own real journal entries, memories,
-            reflections, insights, and reviews — never AI-generated.
-          </p>
-        </div>
+        <MvPageHeader
+          eyebrow="Goals"
+          title="Mục tiêu có bằng chứng, không chỉ cảm hứng"
+          description="Deterministic learning and life goals. Progress is computed from your own real journal entries, memories, reflections, insights, and reviews — never AI-generated."
+          className="flex-1"
+        />
         <Button variant="primary" onClick={() => setCreateOpen(true)}>
           Create goal
         </Button>
@@ -70,6 +70,6 @@ export function GoalDashboard() {
       )}
 
       <GoalCreateDialog open={createOpen} onClose={() => setCreateOpen(false)} onCreated={(id) => { setCreateOpen(false); selectItem(id); }} />
-    </div>
+    </MvPage>
   );
 }

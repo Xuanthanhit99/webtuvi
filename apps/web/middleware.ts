@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { isArchivedRoute, isAdminRoute, resolveRedirect } from '@/lib/route-guard';
+import { isArchivedRoute, isAdminRoute, resolveLegacyMenhViRedirect, resolveRedirect } from '@/lib/route-guard';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 const ACCESS_TOKEN_COOKIE = 'beaconvie_access_token';
@@ -29,13 +29,14 @@ async function fetchMe(cookieHeader: string): Promise<{ onboardingCompletedAt: s
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Sprint 14 (Ambiguity Cleanup): `/menh-vi/*` is archived from public routing (see
-  // app/menh-vi/layout.tsx). A layout-level notFound() renders the correct "not found" UI but,
-  // confirmed against both `next dev` and a real `next start` production build, Next.js still
-  // serves it with an HTTP 200 status for these statically-generated routes — not a true 404.
-  // Rewriting here, before Next's own route resolution, to a path that genuinely doesn't exist
-  // makes Next's real not-found handling apply (verified to return a correct 404 for any
-  // unmatched path), so `/menh-vi/*` is actually unreachable, not just visually blank.
+  const legacyRedirect = resolveLegacyMenhViRedirect(pathname);
+  if (legacyRedirect) {
+    return NextResponse.redirect(new URL(legacyRedirect, req.url));
+  }
+
+  // `/menh-vi/*` routes with no canonical equivalent remain archived from public routing. Rewriting
+  // before Next's route resolution forces true not-found handling instead of rendering an isolated
+  // prototype surface.
   if (isArchivedRoute(pathname)) {
     return NextResponse.rewrite(new URL('/__archived-menh-vi-not-found__', req.url));
   }
@@ -69,6 +70,7 @@ export const config = {
     '/login',
     '/register',
     '/onboarding',
+    '/dashboard',
     '/dashboard/:path*',
     '/companion/:path*',
     '/journal/:path*',

@@ -16,10 +16,10 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: 'bg-insight text-canvas hover:bg-[#E2C27C] disabled:bg-insight/40',
+  primary: 'bg-insight text-canvas hover:bg-[#E6C980] active:bg-[#C59B4F] disabled:bg-insight/40',
   secondary:
-    'bg-transparent border border-border-subtle text-text-primary hover:border-insight disabled:opacity-40',
-  ghost: 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface disabled:opacity-40',
+    'bg-transparent border border-insight/35 text-text-primary hover:border-insight hover:bg-insight/5 disabled:opacity-40',
+  ghost: 'bg-transparent text-text-secondary hover:text-text-primary hover:bg-surface-raised disabled:opacity-40',
   danger: 'bg-caution text-canvas hover:opacity-90 disabled:opacity-40',
 };
 
@@ -37,9 +37,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         aria-busy={loading || undefined}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-md font-semibold transition-colors duration-fast',
+          'inline-flex items-center justify-center gap-2 rounded-md font-semibold transition duration-fast',
           'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight',
-          'disabled:cursor-not-allowed',
+          'disabled:cursor-not-allowed hover:-translate-y-0.5 active:translate-y-0 motion-reduce:transform-none',
           VARIANT_CLASSES[variant],
           SIZE_CLASSES[size],
           fullWidth && 'w-full',

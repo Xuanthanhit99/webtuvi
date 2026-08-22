@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { TarotCardDto } from '@beaconvie/types';
 import { TarotCardFace } from './tarot-card-face';
@@ -45,5 +45,12 @@ describe('TarotCardFace', () => {
     render(<TarotCardFace card={card} isReversed={false} onClick={onClick} />);
     await user.click(screen.getByRole('button', { name: 'The Fool' }));
     expect(onClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('falls back to the canonical face if future artwork fails to load', () => {
+    render(<TarotCardFace card={card} isReversed={false} imageSrc="/missing-tarot.webp" />);
+    fireEvent.error(screen.getByTestId('tarot-card-artwork'));
+    expect(screen.getByText('The Fool')).toBeInTheDocument();
+    expect(screen.getByText('00')).toBeInTheDocument();
   });
 });

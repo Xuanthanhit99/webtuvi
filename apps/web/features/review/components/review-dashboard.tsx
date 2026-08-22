@@ -6,6 +6,7 @@ import { ReviewTimeline } from './review-timeline';
 import { ReviewDetail } from './review-detail';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 /**
  * `/reviews`'s shell — quick entry points to the current Weekly/Monthly review plus the Review
@@ -22,14 +23,12 @@ export function ReviewDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-heading-lg text-text-primary">Reviews</h1>
-        <p className="mt-2 text-body-sm text-text-secondary">
-          Deterministic weekly and monthly summaries built from your existing insights, reflections, journal entries, and
-          memories. Never AI-generated: every number and evidence link here traces back to something real.
-        </p>
-      </div>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Reviews"
+        title="Tuần và tháng được tổng kết bằng dữ kiện thật"
+        description="Deterministic weekly and monthly summaries built from your existing insights, reflections, journal entries, and memories. Never AI-generated: every number and evidence link here traces back to something real."
+      />
 
       {!activeId && (
         <div className="grid grid-cols-1 gap-3 tablet:grid-cols-2">
@@ -59,6 +58,6 @@ export function ReviewDashboard() {
       )}
 
       {activeId ? <ReviewDetail id={activeId} onClose={() => selectItem(null)} /> : <ReviewTimeline onSelect={selectItem} />}
-    </div>
+    </MvPage>
   );
 }

@@ -97,7 +97,7 @@ describe('TuViDashboard', () => {
   it('renders the birth-data form and real lá số history by default', async () => {
     (tuViApi.listCharts as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<TuViDashboard />);
-    expect(screen.getByRole('heading', { name: 'Tử Vi Lá Số' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /calculate my lá số/i })).toBeInTheDocument();
     expect(await screen.findByText(/Hỏa Lục Cục — Mệnh tại Dần/)).toBeInTheDocument();
   });
@@ -121,7 +121,7 @@ describe('TuViDashboard', () => {
     (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
     renderWithQuery(<TuViDashboard />);
 
-    expect(await screen.findByText('Mệnh (Life palace)')).toBeInTheDocument();
+    expect(await screen.findByText('Tổng quan lá số')).toBeInTheDocument();
     expect(tuViApi.getChart).toHaveBeenCalledWith('c1');
     expect(screen.queryByRole('button', { name: /calculate my lá số/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '← Back to Tử Vi Lá Số' })).toBeInTheDocument();
@@ -133,7 +133,7 @@ describe('TuViDashboard', () => {
     const user = userEvent.setup();
     renderWithQuery(<TuViDashboard />);
 
-    await screen.findByText('Mệnh (Life palace)');
+    await screen.findByText('Tổng quan lá số');
     await user.click(screen.getByRole('button', { name: '← Back to Tử Vi Lá Số' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/discover/tu-vi', { scroll: false }));
   });
@@ -143,7 +143,7 @@ describe('TuViDashboard', () => {
     (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
     renderWithQuery(<TuViDashboard />);
 
-    await screen.findByText('Mệnh (Life palace)');
+    await screen.findByText('Tổng quan lá số');
     expect(screen.getByText(/calculated from your birth data/i)).toBeInTheDocument();
     expect(screen.getByText('Deterministic — never AI-generated')).toBeInTheDocument();
     expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
@@ -155,7 +155,7 @@ describe('TuViDashboard', () => {
     (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
     renderWithQuery(<TuViDashboard />);
 
-    await screen.findByText('Mệnh (Life palace)');
+    await screen.findByText('Tổng quan lá số');
     for (const role of ['Mệnh', 'Phụ Mẫu', 'Phúc Đức', 'Điền Trạch', 'Quan Lộc', 'Nô Bộc', 'Thiên Di', 'Tật Ách', 'Tài Bạch', 'Tử Tức', 'Phu Thê', 'Huynh Đệ']) {
       expect(screen.getAllByLabelText(new RegExp(`^${role} palace`)).length).toBeGreaterThan(0);
     }

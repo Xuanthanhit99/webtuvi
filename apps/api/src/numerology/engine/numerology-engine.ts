@@ -1,3 +1,4 @@
+import { calculateLifePathFromDateParts } from '@beaconvie/types/numerology';
 import { normalizeBirthDate, type NormalizedBirthDate } from './numerology-date.util';
 import { normalizeName, sumNameLetters, type NameNumberBreakdown, type NormalizedName } from './numerology-name.util';
 import { reduceToCoreNumber, type ReductionResult } from './numerology-reduction.util';
@@ -83,17 +84,12 @@ function reduceDateTotal(components: DateComponentReduction[]): { total: number;
 /** Life Path Number — from the birth date. Reduce month, day, and (multi-digit) year separately,
  * then reduce their sum. */
 function calculateLifePath(date: NormalizedBirthDate): NumerologyValueResult<DateBasedBreakdown> {
-  const components: DateComponentReduction[] = [
-    { component: 'MONTH', input: date.month, reduction: reduceToCoreNumber(date.month) },
-    { component: 'DAY', input: date.day, reduction: reduceToCoreNumber(date.day) },
-    { component: 'YEAR', input: date.year, reduction: reduceToCoreNumber(date.year) },
-  ];
-  const { total, finalReduction } = reduceDateTotal(components);
+  const shared = calculateLifePathFromDateParts(date);
   return {
     type: 'LIFE_PATH',
-    value: finalReduction.value,
-    isMasterNumber: finalReduction.isMasterNumber,
-    breakdown: { normalizedDate: date.iso, components, total, finalReduction },
+    value: shared.value,
+    isMasterNumber: shared.isMasterNumber,
+    breakdown: shared.breakdown,
   };
 }
 

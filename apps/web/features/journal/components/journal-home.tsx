@@ -7,6 +7,7 @@ import { JournalTimeline } from './journal-timeline';
 import { JournalDetail } from './journal-detail';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
+import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 /** `/journal`'s top-level shell — mirrors `/memory`'s own "?item=<id> opens the detail view in
  * place" pattern (`MemoryView`) for the timeline/detail split, while `/journal/new` and
@@ -36,10 +37,13 @@ export function JournalHome() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-heading-lg text-text-primary">Journal</h1>
-        <div className="flex gap-2">
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Journal"
+        title="Nhật ký để nhìn lại chính mình"
+        description="Ghi lại điều đã xảy ra, điều bạn cảm thấy, và những dữ kiện Mệnh Vi có thể dùng làm bằng chứng thật cho Memory, Reflections, Goals và Reviews."
+      >
+        <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => router.push('/journal/archive')}>
             Archive
           </Button>
@@ -50,9 +54,9 @@ export function JournalHome() {
             New entry
           </Button>
         </div>
-      </div>
+      </MvPageHeader>
 
       {activeId ? <JournalDetail id={activeId} onClose={() => selectEntry(null)} /> : <JournalTimeline onSelect={selectEntry} />}
-    </div>
+    </MvPage>
   );
 }

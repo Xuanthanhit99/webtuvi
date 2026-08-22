@@ -57,7 +57,7 @@ export function OnboardingChat() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col gap-4">
+      <div className="mx-auto flex min-h-dvh max-w-reading flex-col gap-4 px-4 py-8">
         <Skeleton className="h-16 w-3/4" />
         <Skeleton className="ml-auto h-12 w-1/2" />
         <Skeleton className="h-16 w-2/3" />
@@ -97,7 +97,8 @@ export function OnboardingChat() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-reading flex-col px-4 py-8 desktop:px-0">
+    <div className="relative mx-auto flex min-h-dvh max-w-reading flex-col px-4 py-8 desktop:px-0">
+      <div className="pointer-events-none absolute inset-x-[-6rem] top-0 -z-10 h-56 rounded-[50%] border border-insight/15" />
       <div className="mb-4 flex items-center justify-between">
         <Logo />
         {!isDone && (
@@ -110,6 +111,14 @@ export function OnboardingChat() {
             Skip for now
           </button>
         )}
+      </div>
+
+      <div className="mb-5 rounded-lg border border-[rgba(213,173,98,0.16)] bg-surface/70 p-5">
+        <p className="text-caption font-semibold uppercase tracking-[0.18em] text-insight">Bắt đầu</p>
+        <h1 className="mt-2 text-heading-md font-semibold text-text-primary">Thiết lập không gian Mệnh Vi của bạn</h1>
+        <p className="mt-2 text-body-sm leading-relaxed text-text-secondary">
+          Trả lời vài câu ngắn để cá nhân hóa trải nghiệm. Bạn có thể bỏ qua và quay lại sau.
+        </p>
       </div>
 
       <div ref={listRef} aria-live="polite" className="flex-1 space-y-4 overflow-y-auto py-4">

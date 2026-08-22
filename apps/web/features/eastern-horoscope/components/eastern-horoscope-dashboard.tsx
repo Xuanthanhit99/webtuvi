@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { EasternHoroscopeForm } from './eastern-horoscope-form';
 import { EasternHoroscopeHistoryList } from './eastern-horoscope-history-list';
 import { EasternHoroscopeDetail } from './eastern-horoscope-detail';
+import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 /**
  * `/discover/eastern-horoscope` — intro, birth-date form, reveal, and history, using the same
@@ -23,28 +24,20 @@ export function EasternHoroscopeDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-heading-lg text-text-primary">Ngũ Hành Phương Đông</h1>
-        <p className="mt-2 text-body-sm text-text-secondary">
-          A real, deterministic Chinese Zodiac and Five Elements calculation from your birth date — no sign, element, or year
-          relationship is ever chosen or invented by AI. Not Vietnamese Tử Vi Lá Số, a separate module.
-        </p>
-      </div>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Ngũ Hành Phương Đông"
+        title="Một lát cắt phương Đông khác với Tử Vi"
+        description="A real, deterministic Chinese Zodiac and Five Elements calculation from your birth date — no sign, element, or year relationship is ever chosen or invented by AI. Not Vietnamese Tử Vi Lá Số, a separate module."
+      />
 
-      <section aria-labelledby="eastern-horoscope-form-heading">
-        <h2 id="eastern-horoscope-form-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          Reveal
-        </h2>
+      <MvSection eyebrow="Input" title="Reveal">
         <EasternHoroscopeForm />
-      </section>
+      </MvSection>
 
-      <section aria-labelledby="eastern-horoscope-history-heading">
-        <h2 id="eastern-horoscope-history-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          History
-        </h2>
+      <MvSection eyebrow="Saved" title="History">
         <EasternHoroscopeHistoryList filters={{}} onSelect={selectItem} />
-      </section>
-    </div>
+      </MvSection>
+    </MvPage>
   );
 }

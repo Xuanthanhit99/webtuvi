@@ -74,7 +74,7 @@ describe('NatalChartDashboard', () => {
   it('renders the birth-data form and real chart history by default', async () => {
     (natalChartApi.listCharts as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<NatalChartDashboard />);
-    expect(screen.getByRole('heading', { name: 'Natal Chart' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Bầu trời tại khoảnh khắc bạn sinh ra' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /calculate my chart/i })).toBeInTheDocument();
     expect(await screen.findByText('Hà Nội, Vietnam')).toBeInTheDocument();
   });

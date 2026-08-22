@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
+import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 export const metadata: Metadata = { title: 'Discover' };
 
@@ -42,28 +43,33 @@ const SYSTEMS = [
 
 export default function DiscoverPage() {
   return (
-    <div className="flex flex-col gap-6">
+    <MvPage>
       <AnalyticsPageView event="discover_viewed" properties={{ feature: 'discover' }} />
-      <h1 className="font-display text-heading-lg text-text-primary">Discover</h1>
-      <p className="text-body-sm text-text-secondary">Tarot, Thần Số Học, Bản Đồ Sao, Ngũ Hành Phương Đông, and Tử Vi Lá Số are live.</p>
-      <div className="grid gap-4 desktop:grid-cols-2">
-        {SYSTEMS.map((system) => (
-          <Card key={system.title}>
-            <div className="mb-2 flex items-center justify-between">
-              <h2 className="font-display text-body-lg text-text-primary">{system.title}</h2>
-              {!system.available && <Badge>Coming soon</Badge>}
-            </div>
-            <p className="mb-3 text-body-sm text-text-secondary">{system.description}</p>
-            {system.available && system.href && (
-              <Link href={system.href}>
-                <Button variant="secondary" size="sm">
-                  Try {system.title}
-                </Button>
-              </Link>
-            )}
-          </Card>
-        ))}
-      </div>
+      <MvPageHeader
+        eyebrow="Khám phá"
+        title="Năm hệ quy chiếu để hiểu mình rõ hơn"
+        description="Tử Vi, Tarot, Bản đồ sao, Thần số học và Ngũ Hành Phương Đông đều đi qua các flow thật, dùng API hiện có và không hiển thị chỉ số giả."
+      />
+      <MvSection eyebrow="Hệ thống" title="Chọn một cánh cửa">
+        <div className="grid gap-4 desktop:grid-cols-2">
+          {SYSTEMS.map((system) => (
+            <Card key={system.title} className="transition-colors hover:border-insight/45">
+              <div className="mb-2 flex items-center justify-between">
+                <h2 className="text-body-lg font-semibold text-text-primary">{system.title}</h2>
+                {!system.available && <Badge>Coming soon</Badge>}
+              </div>
+              <p className="mb-4 text-body-sm leading-relaxed text-text-secondary">{system.description}</p>
+              {system.available && system.href && (
+                <Link href={system.href}>
+                  <Button variant="secondary" size="sm">
+                    Mở {system.title}
+                  </Button>
+                </Link>
+              )}
+            </Card>
+          ))}
+        </div>
+      </MvSection>
 
       {/* Sprint 16 — a synthesis across Discovery systems, not a Discovery system itself (Product
        * Bible Module 16 §2's "convergence point" framing) — kept as its own section rather than a
@@ -71,7 +77,7 @@ export default function DiscoverPage() {
        * docs/product/personal-destiny-report-decisions.md); Premium to generate. */}
       <Card>
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-display text-body-lg text-text-primary">Personal Destiny Report</h2>
+          <h2 className="text-body-lg font-semibold text-text-primary">Personal Destiny Report</h2>
           <Badge variant="insight">Premium</Badge>
         </div>
         <p className="mb-3 text-body-sm text-text-secondary">
@@ -83,6 +89,6 @@ export default function DiscoverPage() {
           </Button>
         </Link>
       </Card>
-    </div>
+    </MvPage>
   );
 }

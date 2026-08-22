@@ -6,21 +6,21 @@ import { RegisterForm } from '@/features/auth/components/register-form';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Create your account',
-  description: 'Create a free Tử Vi Tarot account — start with a real Tarot draw and a Companion that remembers you.',
+  title: 'Tạo tài khoản',
+  description: 'Tạo tài khoản Mệnh Vi miễn phí để lưu Tarot, lá số Tử Vi, bản đồ sao và thần số học.',
   path: '/register',
 });
 
 export default function RegisterPage() {
   return (
     <AuthCard
-      title="Meet your Companion"
-      description="Create an account to get started — it takes less than a minute."
+      title="Bắt đầu với Mệnh Vi"
+      description="Tạo tài khoản miễn phí để lưu kết quả và tiếp tục sau."
       footer={
         <>
-          Already have an account?{' '}
+          Đã có tài khoản?{' '}
           <Link href="/login" className="text-insight underline">
-            Log in
+            Đăng nhập
           </Link>
         </>
       }

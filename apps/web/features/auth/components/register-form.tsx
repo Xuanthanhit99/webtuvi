@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
@@ -21,6 +21,7 @@ const PASSWORD_RULES = 'At least 8 characters, with a number or symbol.';
 
 export function RegisterForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const invalidateAuth = useInvalidateAuth();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -37,7 +38,8 @@ export function RegisterForm() {
     try {
       await authApi.register(values);
       invalidateAuth();
-      router.push('/onboarding');
+      const next = safeNextPath(searchParams.get('next'));
+      router.push(`/onboarding${next !== '/' ? `?next=${encodeURIComponent(next)}` : ''}`);
     } catch (error) {
       if (error instanceof ApiError && error.code === 'EMAIL_ALREADY_EXISTS') {
         setError('email', { message: error.message });
@@ -123,4 +125,10 @@ export function RegisterForm() {
       </Button>
     </form>
   );
+}
+
+function safeNextPath(value: string | null): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
+  if (value.includes('://')) return '/';
+  return value;
 }

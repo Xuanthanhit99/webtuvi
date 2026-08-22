@@ -1,16 +1,18 @@
 import type { Metadata } from 'next';
 import { buildMetadata } from '@/lib/seo';
+import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Privacy Notice',
-  description: 'How Tử Vi Tarot handles your data — what is collected, how it is used, and your rights to export or delete it.',
+  description: 'How Mệnh Vi handles your data — what is collected, how it is used, and your rights to export or delete it.',
   path: '/privacy',
 });
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-reading px-4 py-16 desktop:px-8">
-      <h1 className="mb-6 font-display text-heading-lg text-text-primary">Privacy Notice</h1>
+    <main className="mx-auto max-w-content px-4 py-16 desktop:px-8">
+      <MvPage>
+        <MvPageHeader eyebrow="Quyền riêng tư" title="Privacy Notice" description="How Mệnh Vi handles your data and the controls available to you." />
       <div className="flex flex-col gap-4 text-body-md text-text-secondary">
         <p>
           Your conversations and journal entries are private by default. We don&rsquo;t sell your data, and we
@@ -38,6 +40,7 @@ export default function PrivacyPage() {
           before general availability.
         </p>
       </div>
-    </div>
+      </MvPage>
+    </main>
   );
 }

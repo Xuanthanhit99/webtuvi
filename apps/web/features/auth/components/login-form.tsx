@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ import { ApiError } from '@/lib/api-error';
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const invalidateAuth = useInvalidateAuth();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -31,7 +32,8 @@ export function LoginForm() {
     try {
       const user = await authApi.login(values);
       invalidateAuth();
-      router.push(user.onboardingCompletedAt ? '/dashboard' : '/onboarding');
+      const next = safeNextPath(searchParams.get('next'));
+      router.push(user.onboardingCompletedAt ? next : `/onboarding${next !== '/' ? `?next=${encodeURIComponent(next)}` : ''}`);
     } catch (error) {
       setFormError(error instanceof ApiError ? error.message : 'Something went wrong. Please try again.');
     }
@@ -77,4 +79,10 @@ export function LoginForm() {
       </Button>
     </form>
   );
+}
+
+function safeNextPath(value: string | null): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
+  if (value.includes('://')) return '/';
+  return value;
 }

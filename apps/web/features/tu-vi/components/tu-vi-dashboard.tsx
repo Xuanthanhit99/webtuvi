@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { TuViForm } from './tu-vi-form';
 import { TuViHistoryList } from './tu-vi-history-list';
 import { TuViDetail } from './tu-vi-detail';
+import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 /**
  * `/discover/tu-vi` — intro, birth-data form, reveal, and history, using the same `?item=<id>`
@@ -25,29 +26,20 @@ export function TuViDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-heading-lg text-text-primary">Tử Vi Lá Số</h1>
-        <p className="mt-2 text-body-sm text-text-secondary">
-          A real, deterministic Vietnamese Tử Vi Đẩu Số chart calculated from your birth date, time, and sex, built from a verified
-          traditional ruleset (VDTTL-1956) — no palace, star, or transformation is ever chosen or invented by AI. Not the same as Ngũ
-          Hành Phương Đông (Chinese Zodiac / Five Elements), a separate module.
-        </p>
-      </div>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Lá số Tử Vi"
+        title="Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số"
+        description="Lập lá số thật từ ngày sinh, giờ sinh và giới tính. Cung, sao và Tứ Hóa đều đến từ engine deterministic, không phải nội dung bịa bởi AI."
+      />
 
-      <section aria-labelledby="tu-vi-form-heading">
-        <h2 id="tu-vi-form-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          Reveal
-        </h2>
+      <MvSection eyebrow="Nhập dữ liệu sinh" title="Lập lá số">
         <TuViForm />
-      </section>
+      </MvSection>
 
-      <section aria-labelledby="tu-vi-history-heading">
-        <h2 id="tu-vi-history-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          History
-        </h2>
+      <MvSection eyebrow="Dòng thời gian" title="Lá số đã lưu">
         <TuViHistoryList filters={{}} onSelect={selectItem} />
-      </section>
-    </div>
+      </MvSection>
+    </MvPage>
   );
 }

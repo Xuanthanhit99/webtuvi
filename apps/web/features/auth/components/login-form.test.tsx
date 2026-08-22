@@ -7,6 +7,7 @@ import { ApiError } from '@/lib/api-error';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 jest.mock('../api/auth-api', () => ({

@@ -10,13 +10,14 @@ import { NAV_ITEMS } from './nav-items';
 // rail. Now strictly phone-only (<768px) — see sidebar.tsx for the tablet/desktop split.
 export function MobileNavigation() {
   const pathname = usePathname();
+  const mobileItems = NAV_ITEMS.filter((item) => ['/', '/discover/tu-vi', '/discover/tarot', '/settings'].includes(item.href));
 
   return (
     <nav
       aria-label="Main navigation"
       className="fixed inset-x-0 bottom-0 z-drawer flex border-t border-border-subtle bg-surface pb-[env(safe-area-inset-bottom)] tablet:hidden"
     >
-      {NAV_ITEMS.map((item) => {
+      {mobileItems.map((item) => {
         const active = pathname.startsWith(item.href);
         return (
           <Link
@@ -29,7 +30,7 @@ export function MobileNavigation() {
             )}
           >
             <item.icon className="h-5 w-5" aria-hidden="true" />
-            <span>{item.label}</span>
+            <span>{item.href === '/settings' ? 'Tôi' : item.label}</span>
           </Link>
         );
       })}

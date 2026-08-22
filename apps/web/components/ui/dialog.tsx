@@ -44,7 +44,7 @@ export function Dialog({ open, onClose, title, description, children, variant = 
       }}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
-      className="max-w-md rounded-xl border border-border-subtle bg-surface-raised p-6 text-text-primary shadow-sm backdrop:bg-canvas/70"
+      className="max-w-md rounded-lg border border-[rgba(213,173,98,0.16)] bg-surface-raised p-6 text-text-primary shadow-[0_24px_80px_rgba(0,0,0,0.42)] backdrop:bg-canvas/75"
     >
       <div className="mb-4 flex items-start justify-between gap-4">
         <h2 id={titleId} className="text-heading-md font-display">

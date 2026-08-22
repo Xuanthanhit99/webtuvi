@@ -6,6 +6,7 @@ import { authApi } from '../api/auth-api';
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 jest.mock('../api/auth-api', () => ({

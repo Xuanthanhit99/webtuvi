@@ -18,6 +18,7 @@ import { memoryApi } from '@/features/memory/api/memory-api';
 import { PremiumStatusCard } from '@/features/premium/components/premium-status-card';
 import { LegalLinksSection } from '@/features/settings/components/legal-links-section';
 import type { MemoryPreferenceValue } from '@beaconvie/types';
+import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 const MEMORY_OPTIONS: { value: MemoryPreferenceValue; label: string }[] = [
   { value: 'ASK_BEFORE_SAVING', label: 'Ask before saving' },
@@ -55,8 +56,12 @@ export default function SettingsPage() {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="font-display text-heading-lg text-text-primary">Settings</h1>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Cài đặt"
+        title="Không gian quản lý tài khoản"
+        description="Các thiết lập ở đây ưu tiên sự rõ ràng: tài khoản, bảo mật, Premium, ký ức, thông báo và dữ liệu cá nhân."
+      />
 
       <Card>
         <p className="mb-3 text-body-sm font-semibold text-text-secondary">Account</p>
@@ -76,9 +81,11 @@ export default function SettingsPage() {
         </dl>
       </Card>
 
-      <Card>
-        <PremiumStatusCard />
-      </Card>
+      <MvSection eyebrow="Gói hiện tại" title="Mệnh Vi+">
+        <Card>
+          <PremiumStatusCard />
+        </Card>
+      </MvSection>
 
       <ChangePasswordForm />
 
@@ -87,7 +94,7 @@ export default function SettingsPage() {
       <Card>
         <p className="mb-3 text-body-sm font-semibold text-text-secondary">Onboarding memory (legacy)</p>
         <p className="mb-4 text-body-sm text-text-secondary">
-          Controls only the very first reflections Tử Vi Tarot saved during onboarding.
+          Chỉ điều khiển những ghi nhớ đầu tiên Mệnh Vi lưu trong onboarding.
         </p>
         {isLoading || !data ? (
           <div role="status">
@@ -110,7 +117,7 @@ export default function SettingsPage() {
           <div>
             <p className="text-body-sm font-semibold text-text-secondary">Memory</p>
             <p className="text-body-sm text-text-secondary">
-              Control what Tử Vi Tarot is allowed to remember, review what&rsquo;s waiting for your approval, and see, export, or
+              Kiểm soát những gì Mệnh Vi được phép ghi nhớ, duyệt nội dung đang chờ, và xem, xuất hoặc
               delete everything it has saved.
             </p>
           </div>
@@ -140,6 +147,6 @@ export default function SettingsPage() {
       <NotificationPreferencesSection />
 
       <LegalLinksSection />
-    </div>
+    </MvPage>
   );
 }

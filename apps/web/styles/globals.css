@@ -5,6 +5,19 @@
 @layer base {
   :root {
     color-scheme: dark;
+    --mv-bg: #070b12;
+    --mv-surface: #0b1220;
+    --mv-surface-elevated: #101827;
+    --mv-gold: #d5ad62;
+    --mv-gold-light: #e6c980;
+    --mv-gold-muted: #8e7243;
+    --mv-text: #f2eee5;
+    --mv-text-secondary: #a6a7ac;
+    --mv-text-muted: #6f747d;
+    --mv-red: #9d453e;
+    --mv-jade: #708c79;
+    --mv-border: rgba(213, 173, 98, 0.16);
+    --mv-border-soft: rgba(255, 255, 255, 0.07);
   }
 
   * {
@@ -32,12 +45,14 @@
 
   body {
     @apply bg-canvas text-text-primary font-body antialiased;
+    background:
+      radial-gradient(circle at 16% 0%, rgba(213, 173, 98, 0.08), transparent 26rem),
+      radial-gradient(circle at 86% 10%, rgba(112, 140, 121, 0.08), transparent 26rem),
+      #070b12;
   }
 
   h1,
-  h2,
-  h3,
-  h4 {
+  h2 {
     @apply font-display;
   }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NumerologyReadingDto } from '@beaconvie/types';
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { ApiError } from '@/lib/api-error';
 import { trackEvent } from '@/lib/analytics';
+import { clearGuestNumerologyTrial, readGuestNumerologyTrial } from '@/features/guest-trials/guest-trial-storage';
 import { numerologyApi } from '../api/numerology-api';
 import { NumerologyReadingView } from './numerology-reading-view';
 
@@ -43,12 +44,18 @@ export function NumerologyForm({ onCalculated }: { onCalculated?: (reading: Nume
   const [fieldError, setFieldError] = useState<{ field: 'fullBirthName' | 'birthDate' | null; message: string } | null>(null);
   const [limitBanner, setLimitBanner] = useState<{ message: string; showUpgrade: boolean } | null>(null);
 
+  useEffect(() => {
+    const saved = readGuestNumerologyTrial();
+    if (saved) setBirthDate(saved.birthDate);
+  }, []);
+
   const calculate = useMutation({
     mutationFn: () => numerologyApi.calculate(fullBirthName.trim(), birthDate),
     onSuccess: async (reading) => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       setResult(reading);
       setPhase('revealed');
+      clearGuestNumerologyTrial();
       queryClient.invalidateQueries({ queryKey: ['numerology'] });
       onCalculated?.(reading);
     },
@@ -111,6 +118,7 @@ export function NumerologyForm({ onCalculated }: { onCalculated?: (reading: Nume
             setResult(null);
             setFullBirthName('');
             setBirthDate('');
+            clearGuestNumerologyTrial();
           }}
         >
           Calculate another reading

@@ -6,7 +6,7 @@ export function ProblemSolution() {
   return (
     <section aria-labelledby="problem-heading" className="border-b border-border-subtle py-16 desktop:py-24">
       <h2 id="problem-heading" className="sr-only">
-        The problem Tử Vi Tarot solves
+        The problem Mệnh Vi solves
       </h2>
       <div className="mx-auto grid max-w-content gap-6 px-4 desktop:grid-cols-2 desktop:px-8">
         {problem.lines.map((line) => (

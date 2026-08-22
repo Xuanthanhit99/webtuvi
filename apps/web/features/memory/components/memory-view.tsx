@@ -14,6 +14,7 @@ import { MergeSuggestionsPanel } from './merge-suggestions-panel';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
 import { memoryApi } from '../api/memory-api';
+import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 type Section = 'timeline' | 'candidates' | 'insights' | 'consent';
 
@@ -50,17 +51,18 @@ export function MemoryView() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <MvPage>
       <div className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-heading-lg text-text-primary">Memory</h1>
+        <MvPageHeader
+          eyebrow="Memory"
+          title="Những điều Mệnh Vi đang giữ lại cho bạn"
+          description="Everything Mệnh Vi remembers about you, with the source, the reason, and your consent choice always visible. Nothing here is guessed — every memory traces back to something you actually said or explicitly asked Mệnh Vi to remember."
+          className="mb-0"
+        />
         <Button variant="secondary" size="sm" onClick={() => createExport.mutate()} loading={createExport.isPending}>
           Export my memories
         </Button>
       </div>
-      <p className="text-body-sm text-text-secondary">
-        Everything BeaconVie remembers about you, with the source, the reason, and your consent choice always visible. Nothing
-        here is guessed — every memory traces back to something you actually said or explicitly asked BeaconVie to remember.
-      </p>
 
       <nav aria-label="Memory sections" className="flex gap-2 border-b border-border-subtle pb-2">
         {SECTIONS.map((s) => (
@@ -115,6 +117,6 @@ export function MemoryView() {
           {section === 'consent' && <ConsentSettings />}
         </>
       )}
-    </div>
+    </MvPage>
   );
 }

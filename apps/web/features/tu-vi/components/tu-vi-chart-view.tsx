@@ -115,24 +115,29 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
         <Badge variant="new">Deterministic — never AI-generated</Badge>
       </div>
 
-      <TuViPalaceGrid chart={chart} />
+      <div className="grid gap-4 desktop:grid-cols-[minmax(0,1.35fr)_320px]">
+        <div className="rounded-lg border border-[rgba(213,173,98,0.16)] bg-surface p-3 tablet:p-4">
+          <TuViPalaceGrid chart={chart} />
+        </div>
 
-      <Section title="Mệnh, Thân, Cục" defaultOpen>
-        <dl className="grid grid-cols-2 gap-2 text-body-sm">
-          <dt className="text-text-secondary">Mệnh (Life palace)</dt>
-          <dd className="text-text-primary">{chart.palaces.menh}</dd>
-          <dt className="text-text-secondary">Thân (Body palace)</dt>
-          <dd className="text-text-primary">{chart.palaces.than}</dd>
-          <dt className="text-text-secondary">Cục</dt>
-          <dd className="text-text-primary">{chart.cuc}</dd>
-          <dt className="text-text-secondary">Year Can/Chi</dt>
-          <dd className="text-text-primary">
-            {chart.canChi.year.stem} {chart.canChi.year.branch}
-          </dd>
-          <dt className="text-text-secondary">Hour branch</dt>
-          <dd className="text-text-primary">{chart.hourBranch}</dd>
-        </dl>
-      </Section>
+        <div className="space-y-3 rounded-lg border border-border-subtle bg-surface p-4">
+          <p className="text-caption font-semibold uppercase tracking-[0.16em] text-insight">Tổng quan lá số</p>
+          <dl className="grid grid-cols-2 gap-2 text-body-sm">
+            <dt className="text-text-secondary">Mệnh</dt>
+            <dd className="text-text-primary">{chart.palaces.menh}</dd>
+            <dt className="text-text-secondary">Thân</dt>
+            <dd className="text-text-primary">{chart.palaces.than}</dd>
+            <dt className="text-text-secondary">Cục</dt>
+            <dd className="text-text-primary">{chart.cuc}</dd>
+            <dt className="text-text-secondary">Can Chi năm</dt>
+            <dd className="text-text-primary">
+              {chart.canChi.year.stem} {chart.canChi.year.branch}
+            </dd>
+            <dt className="text-text-secondary">Giờ sinh</dt>
+            <dd className="text-text-primary">{chart.hourBranch}</dd>
+          </dl>
+        </div>
+      </div>
 
       <Section title="Tứ Hóa (Four Transformations)">
         <ul className="flex flex-col gap-1.5 text-body-sm">

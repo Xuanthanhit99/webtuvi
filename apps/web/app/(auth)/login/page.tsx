@@ -6,21 +6,21 @@ import { LoginForm } from '@/features/auth/components/login-form';
 import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Log in',
-  description: 'Log in to Tử Vi Tarot to continue your reflection practice with your Companion.',
+  title: 'Đăng nhập',
+  description: 'Đăng nhập Mệnh Vi để tiếp tục hành trình Tử Vi, Tarot, bản đồ sao và thần số học của bạn.',
   path: '/login',
 });
 
 export default function LoginPage() {
   return (
     <AuthCard
-      title="Welcome back"
-      description="Log in to continue with your Companion."
+      title="Chào mừng trở lại"
+      description="Đăng nhập để tiếp tục hành trình của bạn."
       footer={
         <>
-          New here?{' '}
+          Chưa có tài khoản?{' '}
           <Link href="/register" className="text-insight underline">
-            Create an account
+            Tạo tài khoản
           </Link>
         </>
       }

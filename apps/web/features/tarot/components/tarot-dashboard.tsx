@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { TarotDrawPanel } from './tarot-draw-panel';
 import { TarotHistoryList } from './tarot-history-list';
 import { TarotReadingDetail } from './tarot-reading-detail';
+import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 /**
  * `/discover/tarot` — deck intro, draw, reading result, and history, using the same `?item=<id>`
@@ -24,29 +25,20 @@ export function TarotDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-heading-lg text-text-primary">Tarot</h1>
-        <p className="mt-2 text-body-sm text-text-secondary">
-          A real, traditional 78-card deck, drawn deterministically — no card is ever chosen or invented by AI. The
-          interpretation that follows only ever reflects on the cards that were actually drawn, and can bridge into a
-          conversation with your Companion if you want to go deeper.
-        </p>
-      </div>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Tarot"
+        title="Một nghi thức nhỏ để nhìn rõ điều đang băn khoăn"
+        description="Rút bài từ bộ 78 lá thật. Lá bài được backend chọn và lưu lại; phần luận giải chỉ phản chiếu những lá đã rút, không tự tạo lịch sử hay kết quả giả."
+      />
 
-      <section aria-labelledby="tarot-draw-heading">
-        <h2 id="tarot-draw-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          Draw
-        </h2>
+      <MvSection eyebrow="Bắt đầu" title="Rút bài">
         <TarotDrawPanel onDrawn={() => undefined} />
-      </section>
+      </MvSection>
 
-      <section aria-labelledby="tarot-history-heading">
-        <h2 id="tarot-history-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          History
-        </h2>
+      <MvSection eyebrow="Dòng thời gian" title="Trải bài đã lưu">
         <TarotHistoryList filters={{}} onSelect={selectItem} />
-      </section>
-    </div>
+      </MvSection>
+    </MvPage>
   );
 }

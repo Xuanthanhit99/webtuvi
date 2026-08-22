@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { NumerologyForm } from './numerology-form';
 import { NumerologyHistoryList } from './numerology-history-list';
 import { NumerologyReadingDetail } from './numerology-reading-detail';
+import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 /**
  * `/discover/numerology` — intro, calculation form, reveal, and history, using the same
@@ -24,28 +25,20 @@ export function NumerologyDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-heading-lg text-text-primary">Numerology</h1>
-        <p className="mt-2 text-body-sm text-text-secondary">
-          A real, deterministic calculation from your full birth name and date of birth — no number is ever chosen or invented by
-          AI. Every core number below comes with its own calculation steps, so you can see exactly how it was derived.
-        </p>
-      </div>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Thần số học"
+        title="Những con số cốt lõi trong hồ sơ của bạn"
+        description="Tính toán deterministic từ họ tên khai sinh và ngày sinh. Mỗi con số giữ lại bước tính để bạn biết kết quả đến từ đâu."
+      />
 
-      <section aria-labelledby="numerology-form-heading">
-        <h2 id="numerology-form-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          Calculate
-        </h2>
+      <MvSection eyebrow="Dữ liệu cá nhân" title="Tính thần số học">
         <NumerologyForm />
-      </section>
+      </MvSection>
 
-      <section aria-labelledby="numerology-history-heading">
-        <h2 id="numerology-history-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          History
-        </h2>
+      <MvSection eyebrow="Dòng thời gian" title="Hồ sơ đã lưu">
         <NumerologyHistoryList filters={{}} onSelect={selectItem} />
-      </section>
-    </div>
+      </MvSection>
+    </MvPage>
   );
 }

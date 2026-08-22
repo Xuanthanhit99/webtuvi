@@ -72,7 +72,7 @@ describe('NumerologyDashboard', () => {
   it('renders the calculation form and real reading history by default', async () => {
     (numerologyApi.listReadings as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<NumerologyDashboard />);
-    expect(screen.getByRole('heading', { name: 'Numerology' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Những con số cốt lõi trong hồ sơ của bạn' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /calculate my numbers/i })).toBeInTheDocument();
     expect(await screen.findByText('JANE DOE')).toBeInTheDocument();
   });

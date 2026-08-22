@@ -36,7 +36,7 @@ const mono = IBM_Plex_Mono({
   display: 'swap',
 });
 
-const TAGLINE = `${SITE_NAME} — An AI Companion That Remembers You`;
+const TAGLINE = `${SITE_NAME} — Tử Vi, Tarot, Bản đồ sao và Thần số học`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     title: TAGLINE,
     description: DEFAULT_DESCRIPTION,
     type: 'website',
-    locale: 'en_US',
+    locale: 'vi_VN',
   },
   twitter: {
     card: 'summary_large_image',
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${displayFont.variable} ${bodyFont.variable} ${mono.variable}`}>
+    <html lang="vi" className={`${displayFont.variable} ${bodyFont.variable} ${mono.variable}`}>
       <body>
         <a href="#main-content" className="skip-link">
           Skip to main content

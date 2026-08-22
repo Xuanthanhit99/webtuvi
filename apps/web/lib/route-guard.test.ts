@@ -1,9 +1,15 @@
-import { isArchivedRoute, isAdminRoute, resolveRedirect } from './route-guard';
+import { isArchivedRoute, isAdminRoute, resolveLegacyMenhViRedirect, resolveRedirect } from './route-guard';
 
 describe('resolveRedirect (protected route behavior)', () => {
+  it('redirects legacy /dashboard to canonical / for every visitor', () => {
+    expect(resolveRedirect({ pathname: '/dashboard', hasAccessToken: false, session: null })).toBe('/');
+    expect(resolveRedirect({ pathname: '/dashboard/settings', hasAccessToken: false, session: null })).toBe('/');
+    expect(resolveRedirect({ pathname: '/dashboard', hasAccessToken: true, session: { onboardingCompletedAt: '2026-01-01T00:00:00.000Z' } })).toBe('/');
+  });
+
   it('redirects an unauthenticated visitor away from app routes to /login', () => {
-    expect(resolveRedirect({ pathname: '/dashboard', hasAccessToken: false, session: null })).toBe('/login');
     expect(resolveRedirect({ pathname: '/onboarding', hasAccessToken: false, session: null })).toBe('/login');
+    expect(resolveRedirect({ pathname: '/companion', hasAccessToken: false, session: null })).toBe('/login');
   });
 
   it('lets an unauthenticated visitor reach marketing and auth routes', () => {
@@ -12,12 +18,12 @@ describe('resolveRedirect (protected route behavior)', () => {
     expect(resolveRedirect({ pathname: '/register', hasAccessToken: false, session: null })).toBeNull();
   });
 
-  it('sends an authenticated-but-not-onboarded user from app/auth routes to /onboarding', () => {
+  it('sends an authenticated-but-not-onboarded user from app/auth routes to /onboarding, but allows public /', () => {
     const session = { onboardingCompletedAt: null };
-    expect(resolveRedirect({ pathname: '/dashboard', hasAccessToken: true, session })).toBe('/onboarding');
+    expect(resolveRedirect({ pathname: '/companion', hasAccessToken: true, session })).toBe('/onboarding');
     expect(resolveRedirect({ pathname: '/login', hasAccessToken: true, session })).toBe('/onboarding');
     expect(resolveRedirect({ pathname: '/register', hasAccessToken: true, session })).toBe('/onboarding');
-    expect(resolveRedirect({ pathname: '/', hasAccessToken: true, session })).toBe('/onboarding');
+    expect(resolveRedirect({ pathname: '/', hasAccessToken: true, session })).toBeNull();
   });
 
   it('lets a not-yet-onboarded user stay on /onboarding', () => {
@@ -25,23 +31,22 @@ describe('resolveRedirect (protected route behavior)', () => {
     expect(resolveRedirect({ pathname: '/onboarding', hasAccessToken: true, session })).toBeNull();
   });
 
-  it('sends a fully onboarded user away from /login, /register, /, and /onboarding to /dashboard', () => {
+  it('sends a fully onboarded user away from /login, /register, and /onboarding to /', () => {
     const session = { onboardingCompletedAt: '2026-01-01T00:00:00.000Z' };
-    expect(resolveRedirect({ pathname: '/login', hasAccessToken: true, session })).toBe('/dashboard');
-    expect(resolveRedirect({ pathname: '/register', hasAccessToken: true, session })).toBe('/dashboard');
-    expect(resolveRedirect({ pathname: '/', hasAccessToken: true, session })).toBe('/dashboard');
-    expect(resolveRedirect({ pathname: '/onboarding', hasAccessToken: true, session })).toBe('/dashboard');
+    expect(resolveRedirect({ pathname: '/login', hasAccessToken: true, session })).toBe('/');
+    expect(resolveRedirect({ pathname: '/register', hasAccessToken: true, session })).toBe('/');
+    expect(resolveRedirect({ pathname: '/', hasAccessToken: true, session })).toBeNull();
+    expect(resolveRedirect({ pathname: '/onboarding', hasAccessToken: true, session })).toBe('/');
   });
 
   it('lets a fully onboarded user reach app routes normally', () => {
     const session = { onboardingCompletedAt: '2026-01-01T00:00:00.000Z' };
-    expect(resolveRedirect({ pathname: '/dashboard', hasAccessToken: true, session })).toBeNull();
     expect(resolveRedirect({ pathname: '/companion', hasAccessToken: true, session })).toBeNull();
     expect(resolveRedirect({ pathname: '/settings', hasAccessToken: true, session })).toBeNull();
   });
 
   it('treats a present-but-invalid access-token cookie (session resolution failed) like unauthenticated for app routes, without a redirect loop on public routes', () => {
-    expect(resolveRedirect({ pathname: '/dashboard', hasAccessToken: true, session: null })).toBe('/login');
+    expect(resolveRedirect({ pathname: '/companion', hasAccessToken: true, session: null })).toBe('/login');
     expect(resolveRedirect({ pathname: '/login', hasAccessToken: true, session: null })).toBeNull();
   });
 
@@ -111,5 +116,26 @@ describe('isArchivedRoute (Sprint 14 — /menh-vi archival)', () => {
     expect(isArchivedRoute('/discover')).toBe(false);
     expect(isArchivedRoute('/dashboard')).toBe(false);
     expect(isArchivedRoute('/menh-vi-something-else')).toBe(false);
+  });
+});
+
+describe('resolveLegacyMenhViRedirect', () => {
+  it('redirects legacy prototype routes that have canonical product equivalents', () => {
+    expect(resolveLegacyMenhViRedirect('/menh-vi')).toBe('/');
+    expect(resolveLegacyMenhViRedirect('/menh-vi/la-so')).toBe('/discover/tu-vi');
+    expect(resolveLegacyMenhViRedirect('/menh-vi/tarot')).toBe('/discover/tarot');
+    expect(resolveLegacyMenhViRedirect('/menh-vi/ban-do-sao')).toBe('/discover/natal-chart');
+    expect(resolveLegacyMenhViRedirect('/menh-vi/than-so-hoc')).toBe('/discover/numerology');
+    expect(resolveLegacyMenhViRedirect('/menh-vi/kham-pha')).toBe('/discover');
+    expect(resolveLegacyMenhViRedirect('/menh-vi/cong-dong')).toBe('/community');
+    expect(resolveLegacyMenhViRedirect('/menh-vi/toi')).toBe('/settings');
+    expect(resolveLegacyMenhViRedirect('/menh-vi/nhat-ky-van-menh')).toBe('/journal');
+  });
+
+  it('leaves unsupported prototype-only topics archived instead of inventing canonical pages', () => {
+    expect(resolveLegacyMenhViRedirect('/menh-vi/tinh-duyen')).toBeNull();
+    expect(resolveLegacyMenhViRedirect('/menh-vi/su-nghiep')).toBeNull();
+    expect(resolveLegacyMenhViRedirect('/menh-vi/tai-chinh')).toBeNull();
+    expect(resolveLegacyMenhViRedirect('/menh-vi/suc-khoe')).toBeNull();
   });
 });

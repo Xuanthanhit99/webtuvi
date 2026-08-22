@@ -11,9 +11,9 @@ const ASPECT_R = 84;
 const ANGLE_LABEL_R = 68;
 
 const ASPECT_LINE_COLOR: Record<'harmonious' | 'tense' | 'neutral', string> = {
-  harmonious: '#7E9787',
-  tense: '#C17B6B',
-  neutral: '#9A7FA6',
+  harmonious: '#708C79',
+  tense: '#9D453E',
+  neutral: '#8E7243',
 };
 
 function toRad(deg: number): number {
@@ -89,9 +89,9 @@ export function NatalChartWheel({ chart }: { chart: NatalChartDto }) {
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={summaryLabel} className="mx-auto w-full max-w-[24rem]">
       <g aria-hidden="true">
         {/* outer + sign ring boundary */}
-        <circle cx={CENTER} cy={CENTER} r={OUTER_R} fill="none" stroke="#332F52" strokeWidth={1} />
-        <circle cx={CENTER} cy={CENTER} r={SIGN_RING_INNER_R} fill="none" stroke="#332F52" strokeWidth={1} />
-        <circle cx={CENTER} cy={CENTER} r={ASPECT_R} fill="none" stroke="#332F52" strokeWidth={0.5} />
+        <circle cx={CENTER} cy={CENTER} r={OUTER_R} fill="none" stroke="rgba(213,173,98,0.24)" strokeWidth={1} />
+        <circle cx={CENTER} cy={CENTER} r={SIGN_RING_INNER_R} fill="none" stroke="rgba(213,173,98,0.18)" strokeWidth={1} />
+        <circle cx={CENTER} cy={CENTER} r={ASPECT_R} fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth={0.5} />
 
         {/* 12 sign segments: boundary ticks + glyphs */}
         {SIGN_ORDER.map((sign, index) => {
@@ -103,8 +103,8 @@ export function NatalChartWheel({ chart }: { chart: NatalChartDto }) {
           const glyphPoint = pointOnCircle((OUTER_R + SIGN_RING_INNER_R) / 2, glyphAngle);
           return (
             <g key={sign}>
-              <line x1={boundaryInner.x} y1={boundaryInner.y} x2={boundaryOuter.x} y2={boundaryOuter.y} stroke="#332F52" strokeWidth={1} />
-              <text x={glyphPoint.x} y={glyphPoint.y} textAnchor="middle" dominantBaseline="central" fontSize={13} fill="#B7AFC9">
+              <line x1={boundaryInner.x} y1={boundaryInner.y} x2={boundaryOuter.x} y2={boundaryOuter.y} stroke="rgba(213,173,98,0.18)" strokeWidth={1} />
+              <text x={glyphPoint.x} y={glyphPoint.y} textAnchor="middle" dominantBaseline="central" fontSize={13} fill="#A6A7AC">
                 {SIGN_GLYPHS[sign]}
               </text>
             </g>
@@ -119,8 +119,8 @@ export function NatalChartWheel({ chart }: { chart: NatalChartDto }) {
             const labelPoint = pointOnCircle(ANGLE_LABEL_R, angle);
             return (
               <g key={house.number}>
-                <line x1={CENTER} y1={CENTER} x2={outer.x} y2={outer.y} stroke="#332F52" strokeWidth={0.5} strokeDasharray="2 3" />
-                <text x={labelPoint.x} y={labelPoint.y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill="#6E6785">
+                <line x1={CENTER} y1={CENTER} x2={outer.x} y2={outer.y} stroke="rgba(255,255,255,0.08)" strokeWidth={0.5} strokeDasharray="2 3" />
+                <text x={labelPoint.x} y={labelPoint.y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill="#6F747D">
                   {house.number}
                 </text>
               </g>
@@ -161,8 +161,8 @@ export function NatalChartWheel({ chart }: { chart: NatalChartDto }) {
             const inner = pointOnCircle(SIGN_RING_INNER_R - 10, angle);
             return (
               <g>
-                <line x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} stroke="#E3B368" strokeWidth={1.5} />
-                <text x={outer.x} y={outer.y} textAnchor="middle" dominantBaseline="central" fontSize={9} fontWeight={600} fill="#E3B368">
+                <line x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} stroke="#D5AD62" strokeWidth={1.5} />
+                <text x={outer.x} y={outer.y} textAnchor="middle" dominantBaseline="central" fontSize={9} fontWeight={600} fill="#D5AD62">
                   ASC
                 </text>
               </g>
@@ -175,8 +175,8 @@ export function NatalChartWheel({ chart }: { chart: NatalChartDto }) {
             const inner = pointOnCircle(SIGN_RING_INNER_R - 10, angle);
             return (
               <g>
-                <line x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} stroke="#E3B368" strokeWidth={1} strokeDasharray="1 2" />
-                <text x={outer.x} y={outer.y} textAnchor="middle" dominantBaseline="central" fontSize={9} fontWeight={600} fill="#E3B368">
+                <line x1={inner.x} y1={inner.y} x2={outer.x} y2={outer.y} stroke="#D5AD62" strokeWidth={1} strokeDasharray="1 2" />
+                <text x={outer.x} y={outer.y} textAnchor="middle" dominantBaseline="central" fontSize={9} fontWeight={600} fill="#D5AD62">
                   MC
                 </text>
               </g>
@@ -189,8 +189,8 @@ export function NatalChartWheel({ chart }: { chart: NatalChartDto }) {
           const point = pointOnCircle(radii[index]!, angle);
           return (
             <g key={placement.body}>
-              <circle cx={point.x} cy={point.y} r={9} fill="#1F1C36" stroke="#E3B368" strokeWidth={1} />
-              <text x={point.x} y={point.y} textAnchor="middle" dominantBaseline="central" fontSize={11} fill="#F1ECE4">
+              <circle cx={point.x} cy={point.y} r={9} fill="#101827" stroke="#D5AD62" strokeWidth={1} />
+              <text x={point.x} y={point.y} textAnchor="middle" dominantBaseline="central" fontSize={11} fill="#F2EEE5">
                 {PLANET_GLYPHS[placement.body]}
               </text>
             </g>

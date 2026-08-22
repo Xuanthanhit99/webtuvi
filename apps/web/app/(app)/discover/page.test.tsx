@@ -37,7 +37,7 @@ describe('DiscoverPage — Tử Vi Lá Số (live, Sprint 18B)', () => {
     render(<DiscoverPage />);
     expect(screen.getByRole('heading', { name: 'Tử Vi Lá Số' })).toBeInTheDocument();
     expect(screen.queryByText('Coming soon')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Try Tử Vi Lá Số/i })).toHaveAttribute('href', '/discover/tu-vi');
+    expect(screen.getByRole('link', { name: /Mở Tử Vi Lá Số/i })).toHaveAttribute('href', '/discover/tu-vi');
   });
 
   it('does not link the Tử Vi Lá Số card to the archived /menh-vi prototype', () => {
@@ -53,6 +53,6 @@ describe('DiscoverPage — Tử Vi Lá Số (live, Sprint 18B)', () => {
 
   it('tells the user in the page subheading that Tử Vi Lá Số is live', () => {
     render(<DiscoverPage />);
-    expect(screen.getByText(/Ngũ Hành Phương Đông, and Tử Vi Lá Số are live/)).toBeInTheDocument();
+    expect(screen.getByText(/Tử Vi, Tarot, Bản đồ sao, Thần số học và Ngũ Hành Phương Đông/)).toBeInTheDocument();
   });
 });

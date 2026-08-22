@@ -1,12 +1,9 @@
-// '/' is treated like an auth route for redirect purposes: docs/reference
-// Module 5 §15 — a logged-in visitor should never see the marketing page again.
-export const AUTH_ROUTES = ['/login', '/register', '/'];
+export const AUTH_ROUTES = ['/login', '/register'];
 // Sprint 8.5 remediation: this allowlist previously covered only the 5 primary-nav routes,
 // leaving /memory, /goals, /reflections, /insights (+/internal), /reviews, and /premium
 // (+/return) reachable by a fully logged-out visitor with no redirect — see middleware.ts's
 // matcher, which must list the same routes for this allowlist to actually run against them.
 export const APP_ROUTES = [
-  '/dashboard',
   '/companion',
   '/journal',
   '/discover',
@@ -34,6 +31,22 @@ export function isArchivedRoute(pathname: string): boolean {
   return pathname === '/menh-vi' || pathname.startsWith('/menh-vi/');
 }
 
+const LEGACY_MENH_VI_REDIRECTS: Record<string, string> = {
+  '/menh-vi': '/',
+  '/menh-vi/la-so': '/discover/tu-vi',
+  '/menh-vi/tarot': '/discover/tarot',
+  '/menh-vi/ban-do-sao': '/discover/natal-chart',
+  '/menh-vi/than-so-hoc': '/discover/numerology',
+  '/menh-vi/kham-pha': '/discover',
+  '/menh-vi/cong-dong': '/community',
+  '/menh-vi/toi': '/settings',
+  '/menh-vi/nhat-ky-van-menh': '/journal',
+};
+
+export function resolveLegacyMenhViRedirect(pathname: string): string | null {
+  return LEGACY_MENH_VI_REDIRECTS[pathname.replace(/\/$/, '')] ?? null;
+}
+
 /** Interim Sprint — Admin Operator Tooling. Deliberately a separate predicate from
  * `resolveRedirect`'s onboarding/auth logic, factored out for the same unit-testability reason —
  * this is a second, independent gate layered on top, not a variant of the first one. The API is the
@@ -56,6 +69,8 @@ export interface RouteGuardInput {
  * Returns the path to redirect to, or null to let the request through.
  */
 export function resolveRedirect({ pathname, hasAccessToken, session }: RouteGuardInput): string | null {
+  if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) return '/';
+
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
   const isAppRoute = APP_ROUTES.some((route) => pathname.startsWith(route));
   const isOnboardingRoute = pathname === ONBOARDING_ROUTE;
@@ -76,6 +91,6 @@ export function resolveRedirect({ pathname, hasAccessToken, session }: RouteGuar
     return null;
   }
 
-  if (isOnboardingRoute || isAuthRoute) return '/dashboard';
+  if (isOnboardingRoute || isAuthRoute) return '/';
   return null;
 }

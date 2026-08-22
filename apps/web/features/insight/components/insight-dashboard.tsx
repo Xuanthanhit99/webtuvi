@@ -9,6 +9,7 @@ import { InsightCardList } from './insight-card-list';
 import { InsightTimeline } from './insight-timeline';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 type Section = 'top' | 'recent' | 'timeline' | 'pinned' | 'archived';
 
@@ -46,14 +47,12 @@ export function InsightDashboard() {
   const hasNoInsightsAtAll = stats?.total === 0;
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-display text-heading-lg text-text-primary">Insights</h1>
-        <p className="mt-2 text-body-sm text-text-secondary">
-          Patterns BeaconVie has connected across your reflections — what happened, why it matters, and the real evidence
-          behind it. Never AI-generated: every insight here traces back to reflections you can inspect yourself.
-        </p>
-      </div>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Insights"
+        title="Những kết nối đáng chú ý trong hành trình của bạn"
+        description="Patterns Mệnh Vi has connected across your reflections — what happened, why it matters, and the real evidence behind it. Never AI-generated: every insight here traces back to reflections you can inspect yourself."
+      />
 
       {statsLoading && <Skeleton className="h-10 w-full" />}
 
@@ -127,6 +126,6 @@ export function InsightDashboard() {
           </>
         )
       )}
-    </div>
+    </MvPage>
   );
 }

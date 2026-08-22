@@ -17,14 +17,14 @@ import type { Metadata } from 'next';
 // appended superseding-decision note): brand renamed from BeaconVie to Tử Vi Tarot, production
 // domain tuvitarot.vn. This is the single point every other metadata/copy/JSON-LD/share call in
 // this app derives from — no other file should hardcode either name.
-export const SITE_NAME = 'Tử Vi Tarot';
+export const SITE_NAME = 'Mệnh Vi';
 
 /** Matches the env var every other metadata/canonical call in this app already reads
  * (`app/layout.tsx`, `robots.ts`, `sitemap.ts`) — reusing it here, not introducing a second name. */
 export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 export const DEFAULT_DESCRIPTION =
-  'Tử Vi Tarot starts with a real Tarot draw, then remembers what you share — so every conversation builds on the last. A reflection practice with real memory.';
+  'Mệnh Vi giúp bạn khám phá Tử Vi, Tarot, bản đồ sao và thần số học trong một trải nghiệm hiện đại, riêng tư và dễ bắt đầu.';
 
 export interface BuildMetadataOptions {
   /** Page-specific title. Combined with the root layout's `%s — Tử Vi Tarot` template

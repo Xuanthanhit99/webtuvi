@@ -13,6 +13,7 @@ import { reportsApi } from '../api/reports-api';
 import { ReportReadinessPanel } from './report-readiness-panel';
 import { ReportHistoryList } from './report-history-list';
 import { ReportDetail } from './report-detail';
+import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 function generateErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
@@ -69,15 +70,12 @@ export function ReportsDashboard() {
   const isReady = readiness?.ready ?? false;
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-heading-lg text-text-primary">Personal Destiny Report</h1>
-        <p className="mt-2 text-body-sm text-text-secondary">
-          A long-form report bringing your Natal Chart and Numerology together into one narrative — grounded only in your real,
-          already-calculated facts, never invented. Recent Tarot context and your Memory (with consent) can add texture, but the
-          core report always starts from your two birth-derived systems.
-        </p>
-      </div>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Premium report"
+        title="Personal Destiny Report"
+        description="A long-form report bringing your Natal Chart and Numerology together into one narrative — grounded only in your real, already-calculated facts, never invented. Recent Tarot context and your Memory (with consent) can add texture, but the core report always starts from your two birth-derived systems."
+      />
 
       <ReportReadinessPanel />
 
@@ -107,12 +105,9 @@ export function ReportsDashboard() {
         </div>
       </Card>
 
-      <section aria-labelledby="reports-history-heading">
-        <h2 id="reports-history-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          History
-        </h2>
+      <MvSection eyebrow="Reports" title="History">
         <ReportHistoryList filters={{}} onSelect={selectItem} />
-      </section>
-    </div>
+      </MvSection>
+    </MvPage>
   );
 }

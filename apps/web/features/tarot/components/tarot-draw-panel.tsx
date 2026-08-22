@@ -13,6 +13,7 @@ import { ApiError } from '@/lib/api-error';
 import { trackEvent } from '@/lib/analytics';
 import { tarotApi } from '../api/tarot-api';
 import { TarotReadingView } from './tarot-reading-view';
+import { TarotCardVisual } from './tarot-card-face';
 import { READING_TYPE_DESCRIPTIONS, READING_TYPE_LABELS } from '../labels';
 
 const READING_TYPES: TarotReadingTypeValue[] = ['DAILY_DRAW', 'SINGLE_CARD', 'THREE_CARD'];
@@ -107,12 +108,25 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
             key={t}
             type="button"
             onClick={() => setType(t)}
-            className={`flex flex-col gap-1 rounded-md border p-3 text-left transition-colors duration-fast ${
-              type === t ? 'border-insight bg-surface-raised' : 'border-border-subtle hover:border-insight'
+            className={`group flex min-h-40 flex-col justify-between gap-3 rounded-md border p-3 text-left transition duration-fast hover:-translate-y-0.5 motion-reduce:transform-none ${
+              type === t ? 'border-insight bg-surface-raised shadow-[0_18px_48px_rgba(213,173,98,0.08)]' : 'border-border-subtle bg-surface hover:border-insight'
             }`}
           >
-            <span className="text-body-sm font-semibold text-text-primary">{READING_TYPE_LABELS[t]}</span>
-            <span className="text-caption text-text-secondary">{READING_TYPE_DESCRIPTIONS[t]}</span>
+            <span className="flex justify-center gap-1.5" aria-hidden="true">
+              {(t === 'THREE_CARD' ? [0, 1, 2] : [0]).map((index) => (
+                <span
+                  key={index}
+                  className="scale-[0.5]"
+                  style={{ transform: t === 'THREE_CARD' ? `translateY(${index === 1 ? -4 : 4}px)` : undefined }}
+                >
+                  <TarotCardVisual id={`${t}-${index}`} name={READING_TYPE_LABELS[t]} size="sm" revealed={false} />
+                </span>
+              ))}
+            </span>
+            <span>
+              <span className="block text-body-sm font-semibold text-text-primary">{READING_TYPE_LABELS[t]}</span>
+              <span className="mt-1 block text-caption leading-relaxed text-text-secondary">{READING_TYPE_DESCRIPTIONS[t]}</span>
+            </span>
           </button>
         ))}
       </div>
@@ -137,7 +151,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
       )}
 
       {phase === 'shuffling' ? (
-        <div role="status" className="flex items-center justify-center gap-2 py-8 text-body-sm text-text-secondary">
+        <div role="status" className="flex items-center justify-center gap-2 rounded-md border border-insight/20 bg-insight/5 py-8 text-body-sm text-text-secondary">
           <Sparkles className="h-5 w-5 animate-pulse text-insight" aria-hidden="true" />
           <span>Shuffling…</span>
         </div>

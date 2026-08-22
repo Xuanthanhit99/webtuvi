@@ -1,3 +1,4 @@
+import { calculateLifePathNumber } from '@beaconvie/types/numerology';
 import { BirthDateValidationError } from './numerology-date.util';
 import { calculateNumerology, NUMEROLOGY_ENGINE_VERSION } from './numerology-engine';
 import { NameValidationError } from './numerology-name.util';
@@ -59,6 +60,13 @@ describe('calculateNumerology — golden vector: "Nguyen Van A", 1995-08-17, cal
 });
 
 describe('calculateNumerology — reproducibility', () => {
+  it('uses the shared canonical Life Path calculation for representative dates', () => {
+    for (const birthDate of ['1995-08-17', '1990-01-05', '2000-11-29']) {
+      const fullReading = calculateNumerology({ fullBirthName: 'Jane Doe', birthDate }, { now: FIXED_NOW });
+      expect(fullReading.values.LIFE_PATH).toMatchObject(calculateLifePathNumber(birthDate, { now: FIXED_NOW }));
+    }
+  });
+
   it('the same normalized input always produces an identical result', () => {
     const a = calculateNumerology({ fullBirthName: 'Nguyễn Văn Ánh', birthDate: '1990-01-05' }, { now: FIXED_NOW });
     const b = calculateNumerology({ fullBirthName: 'Nguyễn Văn Ánh', birthDate: '1990-01-05' }, { now: FIXED_NOW });

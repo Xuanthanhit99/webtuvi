@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { BirthInputForm } from './birth-input-form';
 import { NatalChartHistoryList } from './natal-chart-history-list';
 import { NatalChartDetail } from './natal-chart-detail';
+import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 /**
  * `/discover/natal-chart` — intro, birth-data form, reveal, and history, using the same
@@ -24,28 +25,20 @@ export function NatalChartDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="font-display text-heading-lg text-text-primary">Natal Chart</h1>
-        <p className="mt-2 text-body-sm text-text-secondary">
-          A real, deterministic birth chart calculated from your exact birth date, time, and place — no placement is ever chosen or
-          invented by AI. Your chart is calculated once and stays exactly the same each time you revisit it.
-        </p>
-      </div>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Bản đồ sao"
+        title="Bầu trời tại khoảnh khắc bạn sinh ra"
+        description="Bản đồ sao được tính từ ngày, giờ và nơi sinh thật. Mặt Trời, Mặt Trăng, ASC, nhà và góc chiếu đều là dữ liệu từ engine, không phải minh họa trang trí."
+      />
 
-      <section aria-labelledby="natal-chart-form-heading">
-        <h2 id="natal-chart-form-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          Calculate your chart
-        </h2>
+      <MvSection eyebrow="Dữ liệu sinh" title="Tạo bản đồ sao">
         <BirthInputForm />
-      </section>
+      </MvSection>
 
-      <section aria-labelledby="natal-chart-history-heading">
-        <h2 id="natal-chart-history-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-          History
-        </h2>
+      <MvSection eyebrow="Dòng thời gian" title="Bản đồ đã lưu">
         <NatalChartHistoryList filters={{}} onSelect={selectItem} />
-      </section>
-    </div>
+      </MvSection>
+    </MvPage>
   );
 }

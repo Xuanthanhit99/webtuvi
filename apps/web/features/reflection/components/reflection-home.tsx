@@ -6,6 +6,7 @@ import { ReflectionFeed } from './reflection-feed';
 import { ReflectionTimeline } from './reflection-timeline';
 import { ReflectionGroups } from './reflection-groups';
 import { ReflectionDetail } from './reflection-detail';
+import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 type Section = 'feed' | 'timeline' | 'groups';
 
@@ -30,15 +31,12 @@ export function ReflectionHome() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-heading-lg text-text-primary">Reflections</h1>
-      </div>
-      <p className="text-body-sm text-text-secondary">
-        Patterns BeaconVie has noticed in your journal, memories, and goals — never AI-generated, never a guess at how you
-        feel. Every reflection here traces back to something real you already wrote or saved, with the reason and the score
-        always shown.
-      </p>
+    <MvPage>
+      <MvPageHeader
+        eyebrow="Reflections"
+        title="Những mô thức đã hiện ra từ dữ liệu thật"
+        description="Patterns Mệnh Vi has noticed in your journal, memories, and goals — never AI-generated, never a guess at how you feel. Every reflection here traces back to something real you already wrote or saved, with the reason and the score always shown."
+      />
 
       {!activeId && (
         <nav aria-label="Reflection sections" className="flex gap-2 border-b border-border-subtle pb-2">
@@ -67,6 +65,6 @@ export function ReflectionHome() {
           {section === 'groups' && <ReflectionGroups onSelect={selectItem} />}
         </>
       )}
-    </div>
+    </MvPage>
   );
 }

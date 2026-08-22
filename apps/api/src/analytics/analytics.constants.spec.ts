@@ -18,6 +18,24 @@ import { CLIENT_ANALYTICS_EVENT_NAMES, SERVER_ANALYTICS_EVENT_NAMES } from './an
 function assertExhaustiveClientEventName(name: ClientAnalyticsEventName): true {
   switch (name) {
     case 'landing_view':
+    case 'home_viewed':
+    case 'home_feature_clicked':
+    case 'home_tuvi_clicked':
+    case 'home_tarot_clicked':
+    case 'home_astrology_clicked':
+    case 'home_numerology_clicked':
+    case 'guest_tarot_started':
+    case 'guest_tarot_preview_completed':
+    case 'guest_numerology_started':
+    case 'guest_numerology_preview_completed':
+    case 'guest_tuvi_started':
+    case 'auth_gate_viewed':
+    case 'auth_gate_signup_clicked':
+    case 'auth_gate_login_clicked':
+    case 'home_article_clicked':
+    case 'home_community_clicked':
+    case 'home_premium_clicked':
+    case 'home_app_clicked':
     case 'signup_started':
     case 'onboarding_started':
     case 'dashboard_viewed':
@@ -88,7 +106,7 @@ describe('analytics event name lists stay in sync with packages/types', () => {
     expect(overlap).toEqual([]);
   });
 
-  it('matches the Sprint 13 brief §5 total of 24 distinct analytics events, plus Sprint 16’s 5 Reports events, Sprint 17’s 2 Eastern Horoscope events, and Sprint 18B.9’s 2 Tử Vi events', () => {
+  it('matches the Sprint 13 brief §5 total of 24 distinct analytics events, plus Reports, Eastern Horoscope, Tử Vi, and Unified Home events', () => {
     // landing_view, signup_started/completed, onboarding_started/completed, dashboard_viewed,
     // discover_viewed, {tarot,numerology,natal}_{started,completed,interpretation_requested,
     // interpretation_completed} (4×3=12), notification_opened, premium_viewed, checkout_started/
@@ -101,6 +119,6 @@ describe('analytics event name lists stay in sync with packages/types', () => {
     // separate interpret_requested/interpret_completed pair as duplicate funnel coverage. Sprint
     // 18B.9 (Tử Vi) adds 2 more, mirroring Eastern Horoscope's own minimal pair exactly:
     // tu_vi_started/tu_vi_completed.
-    expect(CLIENT_ANALYTICS_EVENT_NAMES.length + SERVER_ANALYTICS_EVENT_NAMES.length).toBe(33);
+    expect(CLIENT_ANALYTICS_EVENT_NAMES.length + SERVER_ANALYTICS_EVENT_NAMES.length).toBe(51);
   });
 });
