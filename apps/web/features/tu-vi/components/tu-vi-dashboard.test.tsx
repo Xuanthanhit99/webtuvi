@@ -46,6 +46,8 @@ const chart: TuViChartDto = {
     auxiliaryVersion: 'core-13-v1',
     tuanTrietVersion: 'tuvi-tuan-triet-v1',
     tuHoaVersion: 'tuvi-tu-hoa-v1',
+    dignityVersion: 'tuvi-dignity-v1',
+    cycleVersion: 'tuvi-cycle-v1',
   },
   lunarDate: { lunarYear: 1984, lunarMonth: 1, lunarDay: 1, isLeapMonth: false },
   hourBranch: 'Tý',
@@ -69,7 +71,7 @@ const chart: TuViChartDto = {
     },
   },
   cuc: 'Hỏa Lục Cục',
-  mainStars: [{ star: 'Tử Vi', position: 'Dần' }],
+  mainStars: [{ star: 'Tử Vi', position: 'Dần', dignity: 'Miếu địa' }],
   auxiliaryStars: [{ star: 'Lộc Tồn', position: 'Dần' }],
   tuan: { first: 'Tuất', second: 'Hợi' },
   triet: { first: 'Thân', second: 'Dậu' },
@@ -78,6 +80,24 @@ const chart: TuViChartDto = {
     { transformation: 'Hóa Quyền', targetStar: 'Tử Vi', position: 'Dần' },
     { transformation: 'Hóa Khoa', targetStar: 'Tử Vi', position: 'Dần' },
     { transformation: 'Hóa Kỵ', targetStar: 'Tử Vi', position: 'Dần' },
+  ],
+  // Dương nam (Giáp năm sinh) => thuận. Real, self-consistent values (not arbitrary placeholders) —
+  // matches apps/api/src/tu-vi/engine/tu-vi-dai-van.ts / tu-vi-tieu-han.ts's own formulas exactly.
+  daiVan: [
+    { index: 0, ageStart: 6, ageEnd: 15, role: 'Mệnh', position: 'Dần' },
+    { index: 1, ageStart: 16, ageEnd: 25, role: 'Phụ Mẫu', position: 'Mão' },
+    { index: 2, ageStart: 26, ageEnd: 35, role: 'Phúc Đức', position: 'Thìn' },
+    { index: 3, ageStart: 36, ageEnd: 45, role: 'Điền Trạch', position: 'Tỵ' },
+  ],
+  tieuHanStart: { startPalace: 'Tuất', thuan: true },
+  currentDaiVan: { index: 3, ageStart: 36, ageEnd: 45, role: 'Điền Trạch', position: 'Tỵ' },
+  currentTieuHan: { tuoi: 43, lunarYear: 2026, palace: 'Thìn' },
+  nearbyTieuHan: [
+    { tuoi: 41, lunarYear: 2024, palace: 'Dần' },
+    { tuoi: 42, lunarYear: 2025, palace: 'Mão' },
+    { tuoi: 43, lunarYear: 2026, palace: 'Thìn' },
+    { tuoi: 44, lunarYear: 2027, palace: 'Tỵ' },
+    { tuoi: 45, lunarYear: 2028, palace: 'Ngọ' },
   ],
   interpretation: null,
   interpretedAt: null,
@@ -100,6 +120,12 @@ describe('TuViDashboard', () => {
     expect(screen.getByRole('heading', { name: 'Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /calculate my lá số/i })).toBeInTheDocument();
     expect(await screen.findByText(/Hỏa Lục Cục — Mệnh tại Dần/)).toBeInTheDocument();
+  });
+
+  it('shows the deterministic/AI trust section before the user has calculated anything', async () => {
+    (tuViApi.listCharts as jest.Mock).mockResolvedValue(listResult);
+    renderWithQuery(<TuViDashboard />);
+    expect(screen.getByRole('button', { name: /AI không an sao cho bạn/i })).toBeInTheDocument();
   });
 
   it('never mentions Ngũ Hành Phương Đông / Eastern Horoscope routes on this page', async () => {
@@ -127,6 +153,17 @@ describe('TuViDashboard', () => {
     expect(screen.getByRole('button', { name: '← Back to Tử Vi Lá Số' })).toBeInTheDocument();
   });
 
+  it('shows the Đại Vận timeline and Tiểu Hạn year nav in the real chart detail view, with the current period pre-selected', async () => {
+    mockSearchParamsValue = 'item=c1';
+    (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
+    renderWithQuery(<TuViDashboard />);
+
+    await screen.findByText('Tổng quan lá số');
+    expect(screen.getByRole('tab', { name: /36–45/ })).toHaveAttribute('aria-current', 'true');
+    expect(screen.getByText('2026')).toBeInTheDocument();
+    expect(screen.getByText(/43 tuổi · hiện tại/)).toBeInTheDocument();
+  });
+
   it('closing the detail view navigates back to the plain /discover/tu-vi route', async () => {
     mockSearchParamsValue = 'item=c1';
     (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
@@ -148,6 +185,7 @@ describe('TuViDashboard', () => {
     expect(screen.getByText('Deterministic — never AI-generated')).toBeInTheDocument();
     expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
     expect(screen.getByText(/written by ai/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /AI không an sao cho bạn/i })).toHaveAttribute('aria-expanded', 'true');
   });
 
   it('renders all 12 palaces with real, visible role names (accessible textual grid, not decorative-only)', async () => {

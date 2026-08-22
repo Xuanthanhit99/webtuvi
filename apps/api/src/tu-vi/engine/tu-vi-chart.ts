@@ -1,9 +1,12 @@
 import { buildTuViTuHoaContext, type BuildTuViTuHoaContextOptions } from './tu-vi-tu-hoa-context';
 import { EARTHLY_BRANCHES, PALACE_ROLES_FROM_MENH, type EarthlyBranch, type PalaceLayout, type PalaceRole } from './tu-vi-palace';
-import { TU_VI_CHINH_TINH_IDS, type ChinhTinhId, type ChinhTinhPlacement } from './tu-vi-chinh-tinh';
+import { TU_VI_CHINH_TINH_IDS, type ChinhTinhId } from './tu-vi-chinh-tinh';
 import { TU_VI_CORE13_STAR_IDS, type Core13StarId, type Core13Placement } from './tu-vi-core13';
 import { TU_VI_CUC_IDS, type TuViCucId } from './tu-vi-cuc';
 import { TU_HOA_TRANSFORMATIONS, type TuHoaPositionAnnotation, type TuHoaTransformation } from './tu-vi-tu-hoa';
+import { TU_VI_DIGNITY_STATES, annotateDignity, type ChinhTinhDignityPlacement } from './tu-vi-dignity';
+import { calculateDaiVan, type DaiVanCycle } from './tu-vi-dai-van';
+import { calculateTieuHanStart, type TieuHanStart } from './tu-vi-tieu-han';
 import type { PalacePair } from './tu-vi-tuan-triet';
 import type { HeavenlyStem } from './tu-vi-can-chi';
 import type { TuViBirthInput, TuViSex } from './tu-vi-canonical-input';
@@ -22,6 +25,15 @@ export const TUVI_MAIN_STAR_VERSION = 'tuvi-main-stars-v1';
 export const TUVI_AUXILIARY_VERSION = 'core-13-v1'; // matches canonical-ruleset-v1.md §8's TUVI_AUXILIARY_SCOPE_VERSION
 export const TUVI_TUAN_TRIET_VERSION = 'tuvi-tuan-triet-v1';
 export const TUVI_TU_HOA_VERSION = 'tuvi-tu-hoa-v1';
+/** Miếu/Vượng/Đắc/Hãm (`tu-vi-dignity.ts`) — versioned separately from `mainStarVersion` since it's
+ * an independently-evolvable rule layer (VDTTL-1956 dv02, not dv01 — a different part of the book
+ * from star placement itself). */
+export const TUVI_DIGNITY_VERSION = 'tuvi-dignity-v1';
+/** Đại Vận (core 10-year assignment) + Tiểu Hạn (adult annual assignment) — `tu-vi-dai-van.ts` /
+ * `tu-vi-tieu-han.ts`, both sourced from dv01 "10. KHỞI HẠN" and extracted/versioned together since
+ * they were sourced in the same pass from the same section. Explicitly does NOT cover: Lưu Đại Hạn,
+ * the child Tiểu Hạn table, or Lưu Niên auxiliary stars — none of those are implemented. */
+export const TUVI_CYCLE_VERSION = 'tuvi-cycle-v1';
 
 export interface TuViVersionBundle {
   readonly rulesetVersion: string;
@@ -31,6 +43,8 @@ export interface TuViVersionBundle {
   readonly auxiliaryVersion: string;
   readonly tuanTrietVersion: string;
   readonly tuHoaVersion: string;
+  readonly dignityVersion: string;
+  readonly cycleVersion: string;
 }
 
 export interface TuViChart {
@@ -45,11 +59,22 @@ export interface TuViChart {
   readonly canChi: { readonly year: { readonly stem: HeavenlyStem; readonly branch: EarthlyBranch } };
   readonly palaces: { readonly menh: EarthlyBranch; readonly than: EarthlyBranch; readonly layout: PalaceLayout };
   readonly cuc: TuViCucId;
-  readonly mainStars: ReadonlyArray<ChinhTinhPlacement>;
+  readonly mainStars: ReadonlyArray<ChinhTinhDignityPlacement>;
   readonly auxiliaryStars: ReadonlyArray<Core13Placement>;
   readonly tuan: PalacePair;
   readonly triet: PalacePair;
   readonly transformations: ReadonlyArray<TuHoaPositionAnnotation>;
+  /**
+   * Đại Vận (10-year life cycles) — engine-layer only as of this phase: computed and validated here,
+   * NOT YET threaded through persistence, the API DTO, or the frontend (deliberately deferred to a
+   * future phase; see `tu-vi-dai-van.ts` for full source citation and scope boundary).
+   */
+  readonly daiVan: ReadonlyArray<DaiVanCycle>;
+  /**
+   * Tiểu Hạn (annual cycle) starting point — same engine-layer-only status as `daiVan`. Adult system
+   * only (age >= 13); see `tu-vi-tieu-han.ts`.
+   */
+  readonly tieuHanStart: TieuHanStart;
   readonly versions: TuViVersionBundle;
 }
 
@@ -68,6 +93,17 @@ export function buildTuViChart(input: TuViBirthInput, options: BuildTuViChartOpt
     throw new Error('buildTuViChart requires TuViBirthInput.sex (needed by CORE_13\'s Hỏa Tinh/Linh Tinh) — this should already have thrown earlier in the chain if missing; defensive guard only.');
   }
 
+  const daiVan = calculateDaiVan({
+    menhPosition: foundationContext.menhPosition,
+    cuc: cucContext.cuc,
+    sex: calendarContext.sex,
+    yearStem: foundationContext.yearCanChi.stem,
+  });
+  const tieuHanStart = calculateTieuHanStart({
+    yearBranch: foundationContext.yearCanChi.branch,
+    sex: calendarContext.sex,
+  });
+
   return Object.freeze({
     input: Object.freeze({ birthDate: input.birthDate, birthTime: input.birthTime, sex: calendarContext.sex }),
     calendar: Object.freeze({
@@ -80,11 +116,13 @@ export function buildTuViChart(input: TuViBirthInput, options: BuildTuViChartOpt
     canChi: Object.freeze({ year: Object.freeze({ stem: foundationContext.yearCanChi.stem, branch: foundationContext.yearCanChi.branch }) }),
     palaces: Object.freeze({ menh: foundationContext.menhPosition, than: foundationContext.thanPosition, layout: foundationContext.palaceLayout }),
     cuc: cucContext.cuc,
-    mainStars: mainStarsContext.chinhTinh,
+    mainStars: annotateDignity(mainStarsContext.chinhTinh),
     auxiliaryStars: core13Context.core13,
     tuan: tuanTrietContext.tuan,
     triet: tuanTrietContext.triet,
     transformations: tuHoaContext.tuHoa,
+    daiVan,
+    tieuHanStart,
     versions: Object.freeze({
       rulesetVersion: tuHoaContext.rulesetVersion,
       calendarVersion: calendarContext.calendarVersion,
@@ -93,6 +131,8 @@ export function buildTuViChart(input: TuViBirthInput, options: BuildTuViChartOpt
       auxiliaryVersion: TUVI_AUXILIARY_VERSION,
       tuanTrietVersion: TUVI_TUAN_TRIET_VERSION,
       tuHoaVersion: TUVI_TU_HOA_VERSION,
+      dignityVersion: TUVI_DIGNITY_VERSION,
+      cycleVersion: TUVI_CYCLE_VERSION,
     }),
   });
 }
@@ -173,12 +213,26 @@ export function validateTuViChart(chart: TuViChart): void {
   if (!chart.transformations.every((t) => (TU_HOA_TRANSFORMATIONS as readonly string[]).includes(t.transformation))) {
     throw new Error('validateTuViChart: a Tứ Hóa transformation is not one of the 4 canonical values');
   }
-  const allPositions = [chart.palaces.menh, chart.palaces.than, chart.tuan.first, chart.tuan.second, chart.triet.first, chart.triet.second, ...chart.mainStars.map((s) => s.position), ...chart.auxiliaryStars.map((s) => s.position), ...chart.transformations.map((t) => t.position)];
+  if (!chart.mainStars.every((s) => (TU_VI_DIGNITY_STATES as readonly string[]).includes(s.dignity))) {
+    throw new Error('validateTuViChart: a main star\'s dignity is not one of the 5 canonical Miếu/Vượng/Đắc/Bình hòa/Hãm states');
+  }
+  if (chart.daiVan.length !== 12 || new Set(chart.daiVan.map((c) => c.index)).size !== 12) {
+    throw new Error(`validateTuViChart: Đại Vận must have exactly 12 cycles with distinct indices, got ${chart.daiVan.length}`);
+  }
+  for (let i = 1; i < chart.daiVan.length; i++) {
+    if (chart.daiVan[i]!.ageStart !== chart.daiVan[i - 1]!.ageEnd + 1) {
+      throw new Error(`validateTuViChart: Đại Vận cycles must be contiguous (gap/overlap between index ${i - 1} and ${i})`);
+    }
+  }
+  if (!(EARTHLY_BRANCHES as readonly string[]).includes(chart.tieuHanStart.startPalace)) {
+    throw new Error('validateTuViChart: Tiểu Hạn start palace is not a valid EarthlyBranch');
+  }
+  const allPositions = [chart.palaces.menh, chart.palaces.than, chart.tuan.first, chart.tuan.second, chart.triet.first, chart.triet.second, ...chart.mainStars.map((s) => s.position), ...chart.auxiliaryStars.map((s) => s.position), ...chart.transformations.map((t) => t.position), ...chart.daiVan.map((c) => c.position)];
   if (!allPositions.every((p) => (EARTHLY_BRANCHES as readonly string[]).includes(p))) {
     throw new Error('validateTuViChart: at least one position is not a valid EarthlyBranch');
   }
   const { versions } = chart;
-  if (!versions.rulesetVersion || !versions.calendarVersion || !versions.engineVersion || !versions.mainStarVersion || !versions.auxiliaryVersion || !versions.tuanTrietVersion || !versions.tuHoaVersion) {
+  if (!versions.rulesetVersion || !versions.calendarVersion || !versions.engineVersion || !versions.mainStarVersion || !versions.auxiliaryVersion || !versions.tuanTrietVersion || !versions.tuHoaVersion || !versions.dignityVersion || !versions.cycleVersion) {
     throw new Error('validateTuViChart: version bundle is incomplete');
   }
 }

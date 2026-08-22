@@ -1773,6 +1773,14 @@ export interface TuViStarPlacementDto {
   position: EarthlyBranchValue;
 }
 
+export type TuViDignityValue = 'Miếu địa' | 'Vượng địa' | 'Đắc địa' | 'Bình hòa' | 'Hãm địa';
+
+/** The 14 Chính Tinh only — auxiliary/CORE_13 stars (`TuViStarPlacementDto`) are never classified
+ * this way (VDTTL-1956's own explicit scoping — see `apps/api/.../tu-vi-dignity.ts`). */
+export interface TuViMainStarPlacementDto extends TuViStarPlacementDto {
+  dignity: TuViDignityValue;
+}
+
 export interface TuViPalacePairDto {
   first: EarthlyBranchValue;
   second: EarthlyBranchValue;
@@ -1782,6 +1790,26 @@ export interface TuViTransformationDto {
   transformation: TuViTransformationValue;
   targetStar: string;
   position: EarthlyBranchValue;
+}
+
+export interface TuViDaiVanCycleDto {
+  index: number;
+  ageStart: number;
+  ageEnd: number;
+  role: TuViPalaceRoleValue;
+  position: EarthlyBranchValue;
+}
+
+export interface TuViTieuHanStartDto {
+  startPalace: EarthlyBranchValue;
+  thuan: boolean;
+}
+
+/** Computed fresh on every read from today's real date — never persisted, never stale. */
+export interface TuViCurrentTieuHanDto {
+  tuoi: number;
+  lunarYear: number;
+  palace: EarthlyBranchValue;
 }
 
 export interface TuViChartDto {
@@ -1800,17 +1828,34 @@ export interface TuViChartDto {
     auxiliaryVersion: string;
     tuanTrietVersion: string;
     tuHoaVersion: string;
+    dignityVersion: string;
+    cycleVersion: string;
   };
   lunarDate: { lunarYear: number; lunarMonth: number; lunarDay: number; isLeapMonth: boolean };
   hourBranch: EarthlyBranchValue;
   canChi: { year: { stem: HeavenlyStemValue; branch: EarthlyBranchValue } };
   palaces: { menh: EarthlyBranchValue; than: EarthlyBranchValue; layout: Record<EarthlyBranchValue, TuViPalaceRoleValue> };
   cuc: string;
-  mainStars: TuViStarPlacementDto[];
+  mainStars: TuViMainStarPlacementDto[];
   auxiliaryStars: TuViStarPlacementDto[];
   tuan: TuViPalacePairDto;
   triet: TuViPalacePairDto;
   transformations: TuViTransformationDto[];
+  /** All 12 Đại Vận cycles. Empty for a chart calculated before this feature shipped — never
+   * fabricated. */
+  daiVan: TuViDaiVanCycleDto[];
+  /** `null` for a chart calculated before this feature shipped. */
+  tieuHanStart: TuViTieuHanStartDto | null;
+  /** `null` if `daiVan` is empty, or the person's current tuổi falls before their first Đại Hạn
+   * cycle starts. */
+  currentDaiVan: TuViDaiVanCycleDto | null;
+  /** `null` if `tieuHanStart` is missing, or the person's current tuổi is under 13 (the separate,
+   * unimplemented child Tiểu Hạn system). */
+  currentTieuHan: TuViCurrentTieuHanDto | null;
+  /** ±2-year navigation window around `currentTieuHan`, computed server-side — the frontend never
+   * re-derives a palace assignment itself. Empty for a pre-feature chart or a person entirely under
+   * the age-13 boundary. */
+  nearbyTieuHan: TuViCurrentTieuHanDto[];
   /** Null until AI interpretation has been generated — a chart is fully real and viewable before
    * this exists; interpretation is additive, never a precondition. */
   interpretation: string | null;

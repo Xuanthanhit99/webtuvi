@@ -4,7 +4,7 @@ import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Terms of Service',
-  description: 'The terms governing your use of Mệnh Vi.',
+  description: 'The terms governing your use of Tử Vi Tarot.',
   path: '/terms',
 });
 
@@ -12,15 +12,15 @@ export default function TermsPage() {
   return (
     <main className="mx-auto max-w-content px-4 py-16 desktop:px-8">
       <MvPage>
-        <MvPageHeader eyebrow="Điều khoản" title="Terms of Service" description="The terms governing your use of Mệnh Vi." />
+        <MvPageHeader eyebrow="Điều khoản" title="Terms of Service" description="The terms governing your use of Tử Vi Tarot." />
       <div className="flex flex-col gap-4 text-body-md text-text-secondary">
         <p>
-          Mệnh Vi is a reflection and self-discovery product. It is not a medical, psychological, or financial advice service,
+          Tử Vi Tarot is a reflection and self-discovery product. It is not a medical, psychological, or financial advice service,
           and it does not diagnose or treat any condition. If you&rsquo;re in crisis, please contact a local emergency
           service or a crisis line in your region.
         </p>
         <p>
-          By creating an account, you agree to use Mệnh Vi in good faith and not to misuse the service to
+          By creating an account, you agree to use Tử Vi Tarot in good faith and not to misuse the service to
           harm others.
         </p>
         <p className="text-body-sm text-text-tertiary">

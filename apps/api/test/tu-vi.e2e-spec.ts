@@ -2,6 +2,9 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { createTestApp, csrfHeaders, extractCookie } from './utils/test-app';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { calculateTuoi, getCurrentLunarYear, findCurrentDaiVan, findCurrentTieuHan } from '../src/tu-vi/engine/tu-vi-current-cycle';
+import { calculateDaiVan } from '../src/tu-vi/engine/tu-vi-dai-van';
+import { calculateTieuHanStart } from '../src/tu-vi/engine/tu-vi-tieu-han';
 
 // Sprint 18B.9/18B.10 — Tử Vi e2e coverage against the real HTTP surface, real Postgres, and real
 // Redis. Mirrors eastern-horoscope.e2e-spec.ts's own helpers/discipline (unique email per test,
@@ -35,11 +38,17 @@ interface ChartApi {
   canChi: { year: { stem: string; branch: string } };
   palaces: { menh: string; than: string };
   cuc: string;
-  mainStars: Array<{ star: string; position: string }>;
+  mainStars: Array<{ star: string; position: string; dignity: string }>;
   auxiliaryStars: Array<{ star: string; position: string }>;
   tuan: { first: string; second: string };
   triet: { first: string; second: string };
   transformations: Array<{ transformation: string; targetStar: string; position: string }>;
+  daiVan: Array<{ index: number; ageStart: number; ageEnd: number; role: string; position: string }>;
+  tieuHanStart: { startPalace: string; thuan: boolean } | null;
+  currentDaiVan: { index: number; ageStart: number; ageEnd: number; role: string; position: string } | null;
+  currentTieuHan: { tuoi: number; lunarYear: number; palace: string } | null;
+  nearbyTieuHan: Array<{ tuoi: number; lunarYear: number; palace: string }>;
+  versions: Record<string, string>;
   interpretation: string | null;
 }
 
@@ -113,6 +122,37 @@ describe('Tử Vi (e2e)', () => {
     });
   });
 
+  describe('Current-cycle freshness (Tử Vi Time Cycles pass) — computed from the REAL wall-clock date, never a hardcoded expectation', () => {
+    it('currentDaiVan/currentTieuHan/nearbyTieuHan match values independently re-derived from the pure engine functions, using real "now"', async () => {
+      const { headers } = await register(app, uniqueEmail('current-cycle'));
+      const res = await request(app.getHttpServer()).post('/tu-vi/calculate').set(headers).send(VECTOR_B1_INPUT).expect(201);
+      const chart = res.body.data as ChartApi;
+
+      // Independently re-derived — NOT read from the API response under test — using the same real
+      // "now" this test process is actually running under, exactly like the production mapper does.
+      const now = new Date();
+      const currentLunarYear = getCurrentLunarYear(now);
+      const tuoi = calculateTuoi(chart.lunarDate.lunarYear, currentLunarYear);
+      const expectedDaiVan = findCurrentDaiVan(
+        calculateDaiVan({ menhPosition: chart.palaces.menh as never, cuc: chart.cuc as never, sex: 'Nam', yearStem: chart.canChi.year.stem as never }),
+        tuoi,
+      );
+      const tieuHanStart = calculateTieuHanStart({ yearBranch: chart.canChi.year.branch as never, sex: 'Nam' });
+      const expectedTieuHan = findCurrentTieuHan(tieuHanStart, tuoi, chart.lunarDate.lunarYear);
+
+      expect(chart.currentDaiVan).toEqual(expectedDaiVan);
+      expect(chart.currentTieuHan).toEqual(expectedTieuHan);
+      if (expectedTieuHan) {
+        expect(chart.nearbyTieuHan.some((e) => e.tuoi === expectedTieuHan.tuoi && e.palace === expectedTieuHan.palace)).toBe(true);
+      }
+      // Sanity: the UI must never claim "hiện tại" for a period that doesn't actually contain today's tuổi.
+      if (chart.currentDaiVan) {
+        expect(tuoi).toBeGreaterThanOrEqual(chart.currentDaiVan.ageStart);
+        expect(tuoi).toBeLessThanOrEqual(chart.currentDaiVan.ageEnd);
+      }
+    });
+  });
+
   describe('Interpretation — mock provider produces real narrative text, canonical facts never altered by it', () => {
     it('a calculation completes with a populated interpretation, and the VECTOR-B1 deterministic facts are unchanged', async () => {
       const { headers } = await register(app, uniqueEmail('interpret'));
@@ -127,6 +167,34 @@ describe('Tử Vi (e2e)', () => {
       expect(chart.palaces.than).toBe('Dần');
       expect(chart.mainStars).toHaveLength(14);
       expect(chart.auxiliaryStars).toHaveLength(13);
+    });
+
+    it('deterministic/AI boundary (Tử Vi Depth + Time Cycles pass) — a full snapshot of every deterministic fact, taken BEFORE interpretation exists, is byte-for-byte identical to the same chart fetched AFTER interpretation completes', async () => {
+      const { headers } = await register(app, uniqueEmail('ai-boundary'));
+      const created = await request(app.getHttpServer()).post('/tu-vi/calculate').set(headers).send(VECTOR_B1_INPUT).expect(201);
+      const chart = created.body.data as ChartApi;
+
+      // The calculate response above already includes a populated `interpretation` (generated
+      // synchronously by the mock provider in this test env) — so "before" here is captured from
+      // the calculate response's own deterministic fields, and "after" is an independent re-fetch,
+      // proving the read path doesn't silently mutate anything either.
+      const {
+        cuc, palaces, mainStars, auxiliaryStars, tuan, triet, transformations,
+        daiVan, tieuHanStart, canChi, hourBranch, lunarDate,
+        versions,
+      } = chart;
+      const before = { cuc, palaces, mainStars, auxiliaryStars, tuan, triet, transformations, daiVan, tieuHanStart, canChi, hourBranch, lunarDate, versions };
+
+      const refetched = await request(app.getHttpServer()).get(`/tu-vi/charts/${chart.id}`).set(headers).expect(200);
+      const after = refetched.body.data as ChartApi;
+      expect(typeof after.interpretation).toBe('string');
+      expect(after.interpretation!.length).toBeGreaterThan(0);
+      expect({
+        cuc: after.cuc, palaces: after.palaces, mainStars: after.mainStars, auxiliaryStars: after.auxiliaryStars,
+        tuan: after.tuan, triet: after.triet, transformations: after.transformations,
+        daiVan: after.daiVan, tieuHanStart: after.tieuHanStart, canChi: after.canChi, hourBranch: after.hourBranch,
+        lunarDate: after.lunarDate, versions: after.versions,
+      }).toEqual(before);
     });
 
     it('a premium user also receives a populated interpretation (tier only changes prompt depth, not whether generation happens)', async () => {
@@ -178,6 +246,24 @@ describe('Tử Vi (e2e)', () => {
         .post('/tu-vi/calculate')
         .set(headers)
         .send({ ...VECTOR_B1_INPUT, userId: 'attacker-controlled', status: 'ARCHIVED', interpretation: 'fabricated text', engineVersion: 'fake-version' })
+        .expect(400);
+    });
+
+    it('rejects client-supplied dignity/cycle deterministic facts and version identifiers (Tử Vi Depth + Time Cycles pass) — none of these are on CalculateTuViChartDto, so the whitelist ValidationPipe rejects the whole request rather than silently dropping just the extra fields', async () => {
+      const { headers } = await register(app, uniqueEmail('massassign-cycles'));
+      await request(app.getHttpServer())
+        .post('/tu-vi/calculate')
+        .set(headers)
+        .send({
+          ...VECTOR_B1_INPUT,
+          dignityVersion: 'attacker-fake-v99',
+          cycleVersion: 'attacker-fake-v99',
+          mainStars: [{ star: 'Tử Vi', position: 'Tý', dignity: 'Miếu địa' }],
+          daiVan: [{ index: 0, ageStart: 1, ageEnd: 10, role: 'Mệnh', position: 'Tý' }],
+          tieuHanStart: { startPalace: 'Tý', thuan: true },
+          currentDaiVan: { index: 0, ageStart: 1, ageEnd: 10, role: 'Mệnh', position: 'Tý' },
+          currentTieuHan: { tuoi: 20, lunarYear: 2020, palace: 'Tý' },
+        })
         .expect(400);
     });
   });

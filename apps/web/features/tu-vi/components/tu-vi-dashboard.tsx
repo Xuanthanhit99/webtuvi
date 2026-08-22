@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { TuViForm } from './tu-vi-form';
 import { TuViHistoryList } from './tu-vi-history-list';
 import { TuViDetail } from './tu-vi-detail';
+import { TuViTrustSection } from './tu-vi-trust-section';
 import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 /**
@@ -32,6 +33,8 @@ export function TuViDashboard() {
         title="Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số"
         description="Lập lá số thật từ ngày sinh, giờ sinh và giới tính. Cung, sao và Tứ Hóa đều đến từ engine deterministic, không phải nội dung bịa bởi AI."
       />
+
+      <TuViTrustSection context="tổng quan" />
 
       <MvSection eyebrow="Nhập dữ liệu sinh" title="Lập lá số">
         <TuViForm />

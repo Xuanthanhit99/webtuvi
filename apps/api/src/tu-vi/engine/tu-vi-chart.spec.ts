@@ -1,4 +1,4 @@
-import { buildTuViChart, buildPalaceProjection, validateTuViChart, TUVI_ENGINE_VERSION, TUVI_MAIN_STAR_VERSION, TUVI_AUXILIARY_VERSION, TUVI_TUAN_TRIET_VERSION, TUVI_TU_HOA_VERSION, type TuViChart } from './tu-vi-chart';
+import { buildTuViChart, buildPalaceProjection, validateTuViChart, TUVI_ENGINE_VERSION, TUVI_MAIN_STAR_VERSION, TUVI_AUXILIARY_VERSION, TUVI_TUAN_TRIET_VERSION, TUVI_TU_HOA_VERSION, TUVI_DIGNITY_VERSION, TUVI_CYCLE_VERSION, type TuViChart } from './tu-vi-chart';
 import { TU_VI_CHINH_TINH_IDS } from './tu-vi-chinh-tinh';
 import { TU_VI_CORE13_STAR_IDS } from './tu-vi-core13';
 import { EARTHLY_BRANCHES } from './tu-vi-palace';
@@ -59,13 +59,28 @@ describe('buildTuViChart — VECTOR-B1 full end-to-end regression', () => {
     expect(byTransform).toEqual({ 'Hóa Lộc': 'Liêm Trinh', 'Hóa Quyền': 'Phá Quân', 'Hóa Khoa': 'Vũ Khúc', 'Hóa Kỵ': 'Thái Dương' });
   });
 
+  it('Miếu/Vượng/Đắc/Hãm dignity is attached to every main star (spot-check against VDTTL-1956 p.33/34)', () => {
+    const byStar = Object.fromEntries(chart.mainStars.map((p) => [p.star, p.dignity]));
+    expect(byStar['Tử Vi']).toBe('Bình hòa'); // Dậu
+    expect(byStar['Liêm Trinh']).toBe('Đắc địa'); // Sửu
+  });
+
+  it('Đại Vận starts at Mệnh with the Cục number, dương nam here so thuận', () => {
+    expect(chart.daiVan[0]).toMatchObject({ ageStart: 6, ageEnd: 15, role: 'Mệnh', position: 'Dần' });
+    expect(chart.daiVan[1]).toMatchObject({ ageStart: 16, ageEnd: 25, role: 'Phụ Mẫu' });
+  });
+
+  it('Tiểu Hạn start palace is deterministic for this chart\'s birth-year branch and sex', () => {
+    expect(chart.tieuHanStart).toEqual({ startPalace: 'Tuất', thuan: true });
+  });
+
   it('passes the full invariant suite', () => {
     expect(() => validateTuViChart(chart)).not.toThrow();
   });
 });
 
 describe('buildTuViChart — version bundle', () => {
-  it('contains all 7 required version identifiers with exact expected values', () => {
+  it('contains all 9 required version identifiers with exact expected values', () => {
     const chart = buildTuViChart({ birthDate: '2024-02-10', birthTime: '10:30', sex: 'Nam' });
     expect(chart.versions).toEqual({
       rulesetVersion: 'vdttl-1956-v1',
@@ -75,6 +90,8 @@ describe('buildTuViChart — version bundle', () => {
       auxiliaryVersion: TUVI_AUXILIARY_VERSION,
       tuanTrietVersion: TUVI_TUAN_TRIET_VERSION,
       tuHoaVersion: TUVI_TU_HOA_VERSION,
+      dignityVersion: TUVI_DIGNITY_VERSION,
+      cycleVersion: TUVI_CYCLE_VERSION,
     });
   });
 });

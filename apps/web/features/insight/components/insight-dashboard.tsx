@@ -51,7 +51,7 @@ export function InsightDashboard() {
       <MvPageHeader
         eyebrow="Insights"
         title="Những kết nối đáng chú ý trong hành trình của bạn"
-        description="Patterns Mệnh Vi has connected across your reflections — what happened, why it matters, and the real evidence behind it. Never AI-generated: every insight here traces back to reflections you can inspect yourself."
+        description="Patterns Tử Vi Tarot has connected across your reflections — what happened, why it matters, and the real evidence behind it. Never AI-generated: every insight here traces back to reflections you can inspect yourself."
       />
 
       {statsLoading && <Skeleton className="h-10 w-full" />}

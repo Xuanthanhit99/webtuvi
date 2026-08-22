@@ -19,6 +19,8 @@ const chart: TuViChartDto = {
     auxiliaryVersion: 'core-13-v1',
     tuanTrietVersion: 'tuvi-tuan-triet-v1',
     tuHoaVersion: 'tuvi-tu-hoa-v1',
+    dignityVersion: 'tuvi-dignity-v1',
+    cycleVersion: 'tuvi-cycle-v1',
   },
   lunarDate: { lunarYear: 1984, lunarMonth: 1, lunarDay: 1, isLeapMonth: false },
   hourBranch: 'Tý',
@@ -43,9 +45,9 @@ const chart: TuViChartDto = {
   },
   cuc: 'Hỏa Lục Cục',
   mainStars: [
-    { star: 'Tử Vi', position: 'Dần' },
-    { star: 'Thiên Phủ', position: 'Dần' },
-    { star: 'Thái Dương', position: 'Ngọ' },
+    { star: 'Tử Vi', position: 'Dần', dignity: 'Miếu địa' },
+    { star: 'Thiên Phủ', position: 'Dần', dignity: 'Miếu địa' },
+    { star: 'Thái Dương', position: 'Ngọ', dignity: 'Miếu địa' },
   ],
   auxiliaryStars: [
     { star: 'Lộc Tồn', position: 'Dần' },
@@ -59,6 +61,11 @@ const chart: TuViChartDto = {
     { transformation: 'Hóa Khoa', targetStar: 'Văn Xương', position: 'Tuất' },
     { transformation: 'Hóa Kỵ', targetStar: 'Lộc Tồn', position: 'Dần' },
   ],
+  daiVan: [],
+  tieuHanStart: null,
+  currentDaiVan: null,
+  currentTieuHan: null,
+  nearbyTieuHan: [],
   interpretation: null,
   interpretedAt: null,
   createdAt: '2026-08-21T00:00:00.000Z',
@@ -79,7 +86,10 @@ describe('buildPalaceCells', () => {
   it('groups stars, Tuần/Triệt, and Tứ Hóa onto the correct palace by position, never by star identity alone', () => {
     const cells = buildPalaceCells(chart);
     const dan = cells.find((c) => c.branch === 'Dần')!;
-    expect(dan.mainStars).toEqual(['Tử Vi', 'Thiên Phủ']);
+    expect(dan.mainStars).toEqual([
+      { star: 'Tử Vi', dignity: 'Miếu địa' },
+      { star: 'Thiên Phủ', dignity: 'Miếu địa' },
+    ]);
     expect(dan.auxiliaryStars).toEqual(['Lộc Tồn']);
     expect(dan.transformations.map((t) => t.transformation)).toEqual(['Hóa Lộc', 'Hóa Kỵ']);
     // Each transformation still carries its own real target star — never flattened to a bare

@@ -35,7 +35,7 @@ export function AppHeader() {
       {/* Accessibility + Product Polish (2026-08-19): Sidebar now renders its own logo at
           tablet:+ (see sidebar.tsx), so this text-only fallback brand mark is phone-only too. */}
       <div className="tablet:hidden">
-        <span className="text-body-lg font-semibold text-text-primary">Mệnh Vi</span>
+        <span className="text-body-lg font-semibold text-text-primary">Tử Vi Tarot</span>
       </div>
       <div className="ml-auto flex items-center gap-3">
         {/* Interim Sprint — Admin Operator Tooling: UI-only convenience — the API's AdminGuard is

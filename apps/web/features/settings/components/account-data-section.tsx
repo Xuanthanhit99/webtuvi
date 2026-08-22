@@ -65,7 +65,7 @@ export function AccountDataSection() {
       <div>
         <p className="mb-1 text-body-sm font-semibold text-text-secondary">My data</p>
         <p className="text-body-sm text-text-secondary">
-          Download everything Mệnh Vi has saved for you, or permanently delete your account.
+          Download everything Tử Vi Tarot has saved for you, or permanently delete your account.
         </p>
       </div>
 

@@ -30,7 +30,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           <div className="w-full max-w-sm">
             <ErrorState
               title="Something went wrong"
-              description="Mệnh Vi gặp lỗi ngoài ý muốn. Bạn có thể thử lại hoặc tải lại trang."
+              description="Tử Vi Tarot gặp lỗi ngoài ý muốn. Bạn có thể thử lại hoặc tải lại trang."
               onRetry={reset}
               retryLabel="Try again"
             />

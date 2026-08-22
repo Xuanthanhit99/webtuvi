@@ -7,7 +7,7 @@ import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Đăng nhập',
-  description: 'Đăng nhập Mệnh Vi để tiếp tục hành trình Tử Vi, Tarot, bản đồ sao và thần số học của bạn.',
+  description: 'Đăng nhập Tử Vi Tarot để tiếp tục hành trình Tử Vi, Tarot, bản đồ sao và thần số học của bạn.',
   path: '/login',
 });
 

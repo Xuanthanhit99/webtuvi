@@ -1,4 +1,4 @@
-import type { EarthlyBranchValue, TuViChartDto, TuViPalaceRoleValue, TuViTransformationDto } from '@beaconvie/types';
+import type { EarthlyBranchValue, TuViChartDto, TuViDignityValue, TuViPalaceRoleValue, TuViTransformationDto } from '@beaconvie/types';
 
 /** The 12 Earthly Branches in their fixed ring order (Tý=0 … Hợi=11) — mirrors the engine's own
  * `EARTHLY_BRANCHES` constant. Re-declared here (not imported from the backend) since the frontend
@@ -6,12 +6,17 @@ import type { EarthlyBranchValue, TuViChartDto, TuViPalaceRoleValue, TuViTransfo
  * fixed, published table, exactly like every other label/order constant in this feature. */
 const EARTHLY_BRANCHES: EarthlyBranchValue[] = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi'];
 
+export interface PalaceCellMainStar {
+  star: string;
+  dignity: TuViDignityValue;
+}
+
 export interface PalaceCell {
   branch: EarthlyBranchValue;
   role: TuViPalaceRoleValue;
   isMenh: boolean;
   isThan: boolean;
-  mainStars: string[];
+  mainStars: PalaceCellMainStar[];
   auxiliaryStars: string[];
   hasTuan: boolean;
   hasTriet: boolean;
@@ -32,7 +37,7 @@ export function buildPalaceCells(chart: TuViChartDto): PalaceCell[] {
     role: chart.palaces.layout[branch],
     isMenh: branch === chart.palaces.menh,
     isThan: branch === chart.palaces.than,
-    mainStars: chart.mainStars.filter((s) => s.position === branch).map((s) => s.star),
+    mainStars: chart.mainStars.filter((s) => s.position === branch).map((s) => ({ star: s.star, dignity: s.dignity })),
     auxiliaryStars: chart.auxiliaryStars.filter((s) => s.position === branch).map((s) => s.star),
     hasTuan: branch === chart.tuan.first || branch === chart.tuan.second,
     hasTriet: branch === chart.triet.first || branch === chart.triet.second,

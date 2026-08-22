@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-// Flow 26: Sprint 14 (Ambiguity Cleanup) — verifies BeaconVie is the sole coherent product shell:
+// Flow 26: Sprint 14 (Ambiguity Cleanup) — verifies the locked production brand (Tử Vi Tarot, per
+// docs/progress/domain-brand-production-lock-final-report.md) is the sole coherent product shell:
 // no public Mệnh Vi shell, frozen modules absent from primary UX, and Discover naming matches
 // docs/product/vietnamese-tu-vi-product-definition.md §1 without implying Eastern Horoscope is
 // Tử Vi. See docs/product/product-completion-roadmap-v2.md Sprint 14.
@@ -36,10 +37,11 @@ async function registerAndOnboard(page: import('@playwright/test').Page, label: 
   await expect(page).toHaveURL(/\/dashboard/);
 }
 
-test('production landing shows BeaconVie, not a competing brand', async ({ page }) => {
+test('production landing shows Tử Vi Tarot, not a competing brand', async ({ page }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle(/BeaconVie/);
+  await expect(page).toHaveTitle(/Tử Vi Tarot/);
   await expect(page.getByText('Mệnh Vi')).toHaveCount(0);
+  await expect(page.getByText('BeaconVie')).toHaveCount(0);
 });
 
 test('/menh-vi and its sub-routes are archived (404), not a public shell', async ({ page }) => {

@@ -55,8 +55,8 @@ export function MemoryView() {
       <div className="flex items-center justify-between gap-3">
         <MvPageHeader
           eyebrow="Memory"
-          title="Những điều Mệnh Vi đang giữ lại cho bạn"
-          description="Everything Mệnh Vi remembers about you, with the source, the reason, and your consent choice always visible. Nothing here is guessed — every memory traces back to something you actually said or explicitly asked Mệnh Vi to remember."
+          title="Những điều Tử Vi Tarot đang giữ lại cho bạn"
+          description="Everything Tử Vi Tarot remembers about you, with the source, the reason, and your consent choice always visible. Nothing here is guessed — every memory traces back to something you actually said or explicitly asked Tử Vi Tarot to remember."
           className="mb-0"
         />
         <Button variant="secondary" size="sm" onClick={() => createExport.mutate()} loading={createExport.isPending}>

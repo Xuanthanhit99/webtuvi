@@ -30,7 +30,7 @@ export function ConflictsSection() {
 
   const conflicts = data ?? [];
   if (conflicts.length === 0) {
-    return <EmptyState title="No conflicts found." description="Mệnh Vi flags memories that seem to contradict each other, like an old address next to a new one." />;
+    return <EmptyState title="No conflicts found." description="Tử Vi Tarot flags memories that seem to contradict each other, like an old address next to a new one." />;
   }
 
   return (

@@ -317,3 +317,45 @@ The product is now named after a capability (Tử Vi Lá Số) it does not yet s
 founder-owned branding choice, not an engineering claim that the capability exists. Live product
 surfaces continue to accurately describe only what is actually shipped (Tarot, Numerology, Natal
 Chart, Eastern Horoscope); no page claims a Tử Vi Lá Số feature exists.
+
+---
+
+## 12. TỬ VI DETERMINISTIC ENGINE SHIPPED — SUPERSEDES §10's SPRINT 18–21 STATUS
+
+**Added:** 2026-08-22, after independent verification against current repository state (`HEAD =
+origin/master = c3760dc`, working tree clean). Full evidence trail:
+`docs/progress/sprint-18b-final-report.md`, `docs/progress/sprint-18b12-runtime-qa-final-report.md`,
+and the individual `sprint-18b1`–`sprint-18b11` final reports. **This section is additive only —
+nothing in §10 above is edited, erased, or renumbered**, matching that section's own precedent for
+superseding earlier status without deleting history.
+
+§10's domain-block table is now stale. The domain-resolution track it referenced did not stay
+blocked: DECISION-01 (school) and DECISION-08 (auxiliary-star scope) were resolved by founder
+decision in Sprint 18A (`VDTTL_1956` / `CORE_13`, per `docs/domain/tu-vi/domain-decision-register.md`),
+and the full Sprint 18B track (18B.1–18B.12) subsequently shipped and closed:
+
+| Sprint | §10 status | **Current status (2026-08-22)** |
+|---|---|---|
+| 18 — Tử Vi Deterministic Core Engine | `BLOCKED_BY_DOMAIN_REFERENCE` | **SHIPPED** — calendar, Can Chi, 12 palaces, Mệnh/Thân, Cục, 14 chính tinh, CORE_13 auxiliary stars, Tuần/Triệt, Tứ Hóa; 338/338 engine unit tests pass |
+| 19 — Golden Verification & Domain Audit Gate | `BLOCKED_BY_SPRINT_18` | **SHIPPED** — golden-vector suite (VECTOR-B1 et al.) checked in and passing as a permanent regression gate |
+| 20 — Tử Vi Product Experience | `BLOCKED_BY_SPRINT_18/19` | **SHIPPED** — full web UI at `/discover/tu-vi`, responsive (10 breakpoints), axe-clean |
+| 21 — Tử Vi AI Interpretation | `BLOCKED_BY_SPRINT_18/19/20` | **SHIPPED** — palace interpretation with a tested, prompt-level prohibition on inventing facts absent from the canonical chart |
+| 22 — Tử Vi Vận Depth | `BLOCKED_BY_SPRINT_18+` | **STILL OPEN** — unchanged. DECISION-12 (Đại Hạn/Tiểu Hạn/Lưu Niên rules) remains `UNSOURCED`, deliberately deferred. Do not implement from memory or a competitor's convention. |
+
+**Also still open, unchanged from the decision register:**
+- DECISION-11 (Miếu/Vượng/Đắc/Hãm star brightness) — `DOMAIN_EXPERT_REQUIRED` / founder scope call,
+  never exercised. Not in the shipped V1 engine.
+- Guest/anonymous Tử Vi trial flow — not part of any Sprint 18B phase; every Tử Vi route requires
+  auth. Tarot and Numerology already have a guest-preview pattern (`guest-trial-storage.ts`); Tử Vi
+  does not.
+- PNG share card / PDF export for Tử Vi results — unbuilt, tracked at §3 P2 item 3 above
+  ("Shareability for Discovery results").
+
+**Full regression evidence (freshly run, not carried forward from an earlier claim):** full backend
+unit 1546/1546, full backend e2e 342/342, frontend unit 479/479, lint clean, typecheck clean, both
+production builds clean. See `sprint-18b-final-report.md` for the complete breakdown.
+
+**What this does NOT change:** §7's Product Complete Release Gate is unaffected — Tử Vi's engine and
+UX being shipped does not by itself satisfy every other unrelated gate item (payment, email, Sentry,
+legal docs, etc.), all of which remain exactly as tracked in
+`docs/operations/production-activation-checklist.md`.

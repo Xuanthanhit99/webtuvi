@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 
 export const metadata: Metadata = {
-  title: 'Cộng đồng Mệnh Vi',
-  description: 'Một không gian cộng đồng Mệnh Vi đang được hoàn thiện.',
+  title: 'Cộng đồng Tử Vi Tarot',
+  description: 'Một không gian cộng đồng Tử Vi Tarot đang được hoàn thiện.',
   robots: { index: false, follow: false },
 };
 
@@ -15,13 +15,13 @@ export default function CommunityPage() {
     <MvPage className="mx-auto min-h-[70dvh] max-w-content justify-center px-4 py-10 tablet:px-8">
       <MvPageHeader
         eyebrow="Cộng đồng"
-        title="Cộng đồng Mệnh Vi"
+        title="Cộng đồng Tử Vi Tarot"
         description="Một không gian để chia sẻ trải nghiệm, góc nhìn và những câu chuyện của riêng bạn. Tính năng đang được hoàn thiện."
       >
         <Link href="/discover">
           <Button variant="secondary">
             <Compass className="h-4 w-4" aria-hidden="true" />
-            Khám phá Mệnh Vi
+            Khám phá Tử Vi Tarot
           </Button>
         </Link>
       </MvPageHeader>

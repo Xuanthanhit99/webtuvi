@@ -189,7 +189,7 @@ export function DashboardView() {
       />
 
       <section aria-labelledby="features-heading" className="space-y-4">
-        <SectionHeading id="features-heading" eyebrow="Khám phá Mệnh Vi" title="Bốn cánh cửa chính" />
+        <SectionHeading id="features-heading" eyebrow="Khám phá Tử Vi Tarot" title="Bốn cánh cửa chính" />
         <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
           <FeatureCard
             title="Lá số Tử Vi"
@@ -313,7 +313,7 @@ function HomeHero({
             <Skeleton className="mb-5 h-20 w-56 bg-white/10" />
           ) : isGuest ? (
             <>
-              <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#e6c980]">Mệnh Vi</p>
+              <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#e6c980]">Tử Vi Tarot</p>
               <h1 id="home-hero-heading" className="mt-3 text-[clamp(2.7rem,8vw,4.4rem)] font-semibold leading-[0.95] tracking-normal text-[#f2eee5]">
                 Hiểu mình.
                 <br />
@@ -338,7 +338,7 @@ function HomeHero({
               {isGuest ? 'Khám phá ngay' : 'Xem vận trình hôm nay'}
             </HomeButton>
             <HomeButton href={isGuest ? '#try-numerology' : '/companion'} variant="secondary" icon={<Play className="h-4 w-4" aria-hidden="true" />}>
-              {isGuest ? 'Không cần đăng ký' : 'Giới thiệu Mệnh Vi'}
+              {isGuest ? 'Không cần đăng ký' : 'Giới thiệu Tử Vi Tarot'}
             </HomeButton>
           </div>
         </div>
@@ -708,9 +708,9 @@ function GuestTuViBoundary() {
   return (
     <section id="try-tu-vi" className="rounded-[18px] border border-white/10 bg-[#101827] p-5">
       <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Lá số Tử Vi</p>
-      <h3 className="mt-2 text-body-lg font-semibold text-[#f2eee5]">Xem trước cách Mệnh Vi lập lá số</h3>
+      <h3 className="mt-2 text-body-lg font-semibold text-[#f2eee5]">Xem trước cách Tử Vi Tarot lập lá số</h3>
       <p className="mt-2 text-body-sm leading-relaxed text-[#a6a7ac]">
-        Tử Vi cần giờ sinh và giới tính, nên Mệnh Vi chỉ mở phần lập lá số đầy đủ sau khi bạn có tài khoản để bảo vệ dữ liệu cá nhân và lưu kết quả đúng nơi.
+        Tử Vi cần giờ sinh và giới tính, nên Tử Vi Tarot chỉ mở phần lập lá số đầy đủ sau khi bạn có tài khoản để bảo vệ dữ liệu cá nhân và lưu kết quả đúng nơi.
       </p>
       <button
         type="button"
@@ -850,7 +850,7 @@ function PremiumRail({
   paymentsEnabled: boolean;
 }) {
   return (
-    <RailCard title="Mệnh Vi+" icon={<Sparkles className="h-4 w-4" aria-hidden="true" />}>
+    <RailCard title="Tử Vi Tarot+" icon={<Sparkles className="h-4 w-4" aria-hidden="true" />}>
       {isLoading ? (
         <Skeleton className="h-20 w-full bg-white/10" />
       ) : isError ? (
@@ -881,7 +881,7 @@ function PremiumRail({
 
 function AppPromo() {
   return (
-    <RailCard title="Ứng dụng Mệnh Vi" icon={<Compass className="h-4 w-4" aria-hidden="true" />}>
+    <RailCard title="Ứng dụng Tử Vi Tarot" icon={<Compass className="h-4 w-4" aria-hidden="true" />}>
       <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-[14px] bg-[#070b12]">
         <Image src={`${HOME_ASSET_BASE}/app-preview.png`} alt="" fill sizes="320px" className="object-cover" />
       </div>

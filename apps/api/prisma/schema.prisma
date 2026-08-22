@@ -2669,6 +2669,12 @@ model TuViChart {
   auxiliaryVersion String
   tuanTrietVersion String
   tuHoaVersion     String
+  /// Miếu/Vượng/Đắc/Hãm ruleset version — versioned separately from `mainStarVersion` since it's an
+  /// independently-evolvable rule layer (VDTTL-1956 dv02, not dv01). Added post-Sprint-18B.
+  dignityVersion   String
+  /// Đại Vận (core 10-year) + Tiểu Hạn (adult annual) ruleset version — see `daiVan`/`tieuHanStart`
+  /// below. Added post-Sprint-18B, same pass as `dignityVersion`'s follow-up.
+  cycleVersion     String
 
   /// Canonical, deterministic chart facts — never AI-generated, never recomputed by anything
   /// downstream. Small closed-set values stored as plain strings (mirrors EasternHoroscopeProfile's
@@ -2695,6 +2701,14 @@ model TuViChart {
   tuan            Json
   triet           Json
   transformations Json
+  /// Đại Vận — all 12 decade cycles (`DaiVanCycle[]`, `tu-vi-dai-van.ts`), fixed/immutable per
+  /// chart. "Which cycle is current" is NEVER persisted here — it's computed fresh on every read
+  /// (mirrors EasternHoroscopeProfile's own `yearEnergy` precedent), since it depends on today's
+  /// date, not on anything about the chart itself.
+  daiVan          Json
+  /// Tiểu Hạn — fixed starting palace + walk direction (`TieuHanStart`, `tu-vi-tieu-han.ts`).
+  /// "Current" year/palace is likewise never persisted, computed fresh on every read.
+  tieuHanStart    Json
 
   /// AI-narrated interpretation of the deterministic chart above — null until generated, never a
   /// placeholder in the meantime. A chart is fully real and viewable before this exists;

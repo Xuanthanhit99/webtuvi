@@ -15,7 +15,7 @@ export const landingCopy = {
     headline: 'An AI that actually remembers you.',
     headlineHighlight: 'remembers you',
     subheadline:
-      "Mệnh Vi starts with a real Tarot draw as a way to get to know you — then carries what it learns forward, conversation after conversation, so you're never starting over.",
+      "Tử Vi Tarot starts with a real Tarot draw as a way to get to know you — then carries what it learns forward, conversation after conversation, so you're never starting over.",
     primaryCta: 'Meet your Companion',
     secondaryCta: 'See how it works',
   },
@@ -36,7 +36,7 @@ export const landingCopy = {
     ],
   },
   solution: {
-    text: 'Mệnh Vi starts with a real Tarot draw and carries what you share forward. Every conversation adds to what your Companion knows. Nothing is lost between visits.',
+    text: 'Tử Vi Tarot starts with a real Tarot draw and carries what you share forward. Every conversation adds to what your Companion knows. Nothing is lost between visits.',
   },
   howItWorks: {
     steps: [
@@ -121,7 +121,7 @@ export const landingCopy = {
     {
       question: 'Is this a horoscope app?',
       answer:
-        "No. A real Tarot draw is how Mệnh Vi starts getting to know you — not what it sells you. The Companion and its memory of you are the actual product.",
+        "No. A real Tarot draw is how Tử Vi Tarot starts getting to know you — not what it sells you. The Companion and its memory of you are the actual product.",
     },
     {
       question: 'Is my data private?',
@@ -131,7 +131,7 @@ export const landingCopy = {
     {
       question: 'Is this therapy?',
       answer:
-        "No. Mệnh Vi is a reflection companion, not a clinical or medical service, and it doesn't diagnose or treat anything.",
+        "No. Tử Vi Tarot is a reflection companion, not a clinical or medical service, and it doesn't diagnose or treat anything.",
     },
     {
       question: 'What does Premium actually add?',
@@ -155,6 +155,6 @@ export const landingCopy = {
       { label: 'Terms', href: '/terms' },
       { label: 'Contact', href: '/contact' },
     ],
-    copyright: `© ${new Date().getFullYear()} Mệnh Vi. All rights reserved.`,
+    copyright: `© ${new Date().getFullYear()} Tử Vi Tarot. All rights reserved.`,
   },
 } as const;

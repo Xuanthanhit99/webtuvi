@@ -1,5 +1,5 @@
 import type { TuViChartDto } from '@beaconvie/types';
-import { PALACE_ROLE_LABELS_EN } from '../labels';
+import { PALACE_ROLE_LABELS_EN, DIGNITY_SHORT_LABEL } from '../labels';
 import { buildPalaceCells, orderFromMenh, PALACE_GRID_POSITION, type PalaceCell } from '../tu-vi-projection';
 
 /** Vietnamese abbreviations for the 4 Tứ Hóa transformations, shown as a small superscript-style
@@ -49,11 +49,14 @@ function PalaceCard({ cell, size = 'normal' }: { cell: PalaceCell; size?: 'norma
 
       {cell.mainStars.length > 0 && (
         <ul className="flex flex-col gap-0.5">
-          {cell.mainStars.map((star) => {
+          {cell.mainStars.map(({ star, dignity }) => {
             const tags = starTags(star, cell);
             return (
               <li key={star} className="font-medium text-text-primary">
                 {star}
+                <span className="ml-1 text-[0.65rem] font-normal text-text-tertiary" aria-label={`dignity: ${dignity}`}>
+                  ({DIGNITY_SHORT_LABEL[dignity]})
+                </span>
                 {tags.length > 0 && <sup className="ml-0.5 text-insight">{tags.join('')}</sup>}
               </li>
             );

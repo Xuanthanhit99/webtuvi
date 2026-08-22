@@ -24,7 +24,7 @@ describe('landing-copy — brand consistency regression', () => {
   });
 
   it('uses the current brand name in the hero subheadline', () => {
-    expect(landingCopy.hero.subheadline).toMatch(/Mệnh Vi/);
+    expect(landingCopy.hero.subheadline).toMatch(/Tử Vi Tarot/);
   });
 });
 

@@ -35,7 +35,7 @@ export function ReflectionHome() {
       <MvPageHeader
         eyebrow="Reflections"
         title="Những mô thức đã hiện ra từ dữ liệu thật"
-        description="Patterns Mệnh Vi has noticed in your journal, memories, and goals — never AI-generated, never a guess at how you feel. Every reflection here traces back to something real you already wrote or saved, with the reason and the score always shown."
+        description="Patterns Tử Vi Tarot has noticed in your journal, memories, and goals — never AI-generated, never a guess at how you feel. Every reflection here traces back to something real you already wrote or saved, with the reason and the score always shown."
       />
 
       {!activeId && (

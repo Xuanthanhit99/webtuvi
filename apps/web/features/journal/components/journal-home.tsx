@@ -41,7 +41,7 @@ export function JournalHome() {
       <MvPageHeader
         eyebrow="Journal"
         title="Nhật ký để nhìn lại chính mình"
-        description="Ghi lại điều đã xảy ra, điều bạn cảm thấy, và những dữ kiện Mệnh Vi có thể dùng làm bằng chứng thật cho Memory, Reflections, Goals và Reviews."
+        description="Ghi lại điều đã xảy ra, điều bạn cảm thấy, và những dữ kiện Tử Vi Tarot có thể dùng làm bằng chứng thật cho Memory, Reflections, Goals và Reviews."
       >
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => router.push('/journal/archive')}>

@@ -32,6 +32,6 @@ describe('Sidebar', () => {
 
   it('gives the logo link a real accessible name independent of the icon/wordmark responsive swap', () => {
     render(<Sidebar />);
-    expect(screen.getByRole('link', { name: 'Mệnh Vi' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Tử Vi Tarot' })).toBeInTheDocument();
   });
 });

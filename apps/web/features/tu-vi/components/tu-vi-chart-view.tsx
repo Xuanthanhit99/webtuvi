@@ -11,6 +11,9 @@ import { toast } from '@/components/ui/toast';
 import { tuViApi } from '../api/tu-vi-api';
 import { CHART_STATUS_BADGE_VARIANT, CHART_STATUS_LABELS, PALACE_ROLE_LABELS_EN, TRANSFORMATION_LABELS_EN } from '../labels';
 import { TuViPalaceGrid } from './tu-vi-palace-grid';
+import { TuViTrustSection } from './tu-vi-trust-section';
+import { TuViDaiVanTimeline } from './tu-vi-dai-van-timeline';
+import { TuViTieuHanYearNav } from './tu-vi-tieu-han-year-nav';
 
 function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -115,6 +118,8 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
         <Badge variant="new">Deterministic — never AI-generated</Badge>
       </div>
 
+      <TuViTrustSection defaultOpen context="kết quả" />
+
       <div className="grid gap-4 desktop:grid-cols-[minmax(0,1.35fr)_320px]">
         <div className="rounded-lg border border-[rgba(213,173,98,0.16)] bg-surface p-3 tablet:p-4">
           <TuViPalaceGrid chart={chart} />
@@ -138,6 +143,9 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
           </dl>
         </div>
       </div>
+
+      <TuViDaiVanTimeline chart={chart} />
+      <TuViTieuHanYearNav chart={chart} />
 
       <Section title="Tứ Hóa (Four Transformations)">
         <ul className="flex flex-col gap-1.5 text-body-sm">

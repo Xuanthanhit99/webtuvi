@@ -53,12 +53,12 @@ function GuestHeader() {
   return (
     <header className="sticky top-0 z-drawer border-b border-white/10 bg-[#070b12]/92 backdrop-blur">
       <div className="mx-auto flex min-h-16 max-w-[1360px] items-center justify-between gap-4 px-4 tablet:px-8">
-        <Link href="/" aria-label="Mệnh Vi" className="flex shrink-0 items-center gap-3">
+        <Link href="/" aria-label="Tử Vi Tarot" className="flex shrink-0 items-center gap-3">
           <Logo withWordmark={false} />
-          <span className="font-display text-body-lg font-semibold text-[#f2eee5]">Mệnh Vi</span>
+          <span className="font-display text-body-lg font-semibold text-[#f2eee5]">Tử Vi Tarot</span>
         </Link>
 
-        <nav aria-label="Mệnh Vi" className="hidden items-center gap-6 desktop:flex">
+        <nav aria-label="Tử Vi Tarot" className="hidden items-center gap-6 desktop:flex">
           {guestLinks.map((link) => (
             <a key={link.href} href={link.href} className="text-body-sm text-[#a6a7ac] transition-colors hover:text-[#f2eee5]">
               {link.label}

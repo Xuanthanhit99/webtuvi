@@ -7,14 +7,14 @@ import { buildMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Tạo tài khoản',
-  description: 'Tạo tài khoản Mệnh Vi miễn phí để lưu Tarot, lá số Tử Vi, bản đồ sao và thần số học.',
+  description: 'Tạo tài khoản Tử Vi Tarot miễn phí để lưu Tarot, lá số Tử Vi, bản đồ sao và thần số học.',
   path: '/register',
 });
 
 export default function RegisterPage() {
   return (
     <AuthCard
-      title="Bắt đầu với Mệnh Vi"
+      title="Bắt đầu với Tử Vi Tarot"
       description="Tạo tài khoản miễn phí để lưu kết quả và tiếp tục sau."
       footer={
         <>

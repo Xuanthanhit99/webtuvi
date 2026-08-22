@@ -20,6 +20,7 @@ interface ChartRow {
   auxiliaryVersion: string;
   tuanTrietVersion: string;
   tuHoaVersion: string;
+  dignityVersion: string;
   lunarYear: number;
   lunarMonth: number;
   lunarDay: number;

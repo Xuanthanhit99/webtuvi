@@ -31,7 +31,7 @@ export function DuplicatesSection() {
 
   const duplicates = data ?? [];
   if (duplicates.length === 0) {
-    return <EmptyState title="No duplicates found." description="Mệnh Vi checks for repeated or near-identical memories automatically." />;
+    return <EmptyState title="No duplicates found." description="Tử Vi Tarot checks for repeated or near-identical memories automatically." />;
   }
 
   return (

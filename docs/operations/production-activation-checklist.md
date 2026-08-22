@@ -10,6 +10,10 @@ subset, phrased as concrete asks, no vague items).
 — payment-webhook-rejection Sentry visibility — is recorded in §10 with its own evidence, not
 folded into the general checklist noise.
 
+**Note (2026-08-22):** the "Tử Vi domain track" half of the verdict above is now stale — see §14's
+superseding update. The engine shipped; this document's actual checklist content (payment/DNS/email/
+Sentry/legal) is unaffected and still governs.
+
 ---
 
 ## 1. Production Activation Board
@@ -426,3 +430,24 @@ Tuần/Triệt, Tứ Hóa, golden vectors) was read or modified — confirmed vi
 only `apps/api/src/payment/webhook/payment-webhook.service.ts`, its spec file, and this pass's two
 new docs. Current-product activation, once complete, does **not** constitute or imply Product
 Complete — that remains gated on the Tử Vi track independently, per the roadmap's own §7.
+
+**STATUS SUPERSEDED — 2026-08-22:** the `BLOCKED_BY_DOMAIN_REFERENCE` line above (and the §-line-4
+verdict at the top of this document, `PRODUCT COMPLETE BLOCKED BY TỬ VI DOMAIN TRACK`) predate the
+Tử Vi engine actually shipping. The school decision (DECISION-01 → `VDTTL_1956`) and auxiliary-star
+scope decision (DECISION-08 → `CORE_13`) were founder-resolved in Sprint 18A, and the full
+deterministic engine, persistence, AI interpretation, and frontend (Sprint 18B.1–18B.12) shipped and
+closed — verified this pass against current `HEAD = origin/master = c3760dc` (working tree clean),
+freshly-run: 338/338 engine unit tests, 1546/1546 backend unit, 342/342 backend e2e, 479/479 frontend
+unit, lint/typecheck/both builds clean, and the full Playwright golden-vector/accessibility/
+responsive suite passing. Full evidence: `docs/progress/sprint-18b-final-report.md`,
+`docs/progress/sprint-18b12-runtime-qa-final-report.md`, and
+`docs/product/product-completion-roadmap-v2.md` §12.
+
+**This does not flip the Go/No-Go gate (§13) or close Product Complete** — every other item on the
+Activation Board (§1: payment, DNS/TLS, production DB/Redis, email, Sentry, legal docs) remains
+exactly as tracked, all business/ops-owned externals, none touched by the Tử Vi engine landing.
+What changes is narrower: Tử Vi is no longer the reason Product Complete is blocked on the
+*engineering* side. Two Tử Vi-specific gaps remain genuinely open and are not part of this
+activation checklist's scope (tracked in the roadmap doc instead): Đại Hạn/Tiểu Hạn/Lưu Niên (vận
+cycles, DECISION-12, `UNSOURCED`) and Miếu/Vượng/Đắc/Hãm (star brightness, DECISION-11, open founder
+scope call) — both deliberately deferred, not implemented from memory.

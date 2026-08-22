@@ -22,7 +22,7 @@ export function Sidebar() {
       aria-label="Main navigation"
       className="hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-[rgba(213,173,98,0.16)] bg-canvas/95 px-2 py-6 tablet:flex desktop:w-64 desktop:items-stretch desktop:px-4"
     >
-      <Link href="/" aria-label="Mệnh Vi" className="flex items-center justify-center px-2 desktop:justify-start">
+      <Link href="/" aria-label="Tử Vi Tarot" className="flex items-center justify-center px-2 desktop:justify-start">
         <Logo withWordmark={false} className="desktop:hidden" />
         <Logo className="hidden desktop:flex" />
       </Link>

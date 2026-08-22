@@ -81,7 +81,7 @@ export default function SettingsPage() {
         </dl>
       </Card>
 
-      <MvSection eyebrow="Gói hiện tại" title="Mệnh Vi+">
+      <MvSection eyebrow="Gói hiện tại" title="Tử Vi Tarot+">
         <Card>
           <PremiumStatusCard />
         </Card>
@@ -94,7 +94,7 @@ export default function SettingsPage() {
       <Card>
         <p className="mb-3 text-body-sm font-semibold text-text-secondary">Onboarding memory (legacy)</p>
         <p className="mb-4 text-body-sm text-text-secondary">
-          Chỉ điều khiển những ghi nhớ đầu tiên Mệnh Vi lưu trong onboarding.
+          Chỉ điều khiển những ghi nhớ đầu tiên Tử Vi Tarot lưu trong onboarding.
         </p>
         {isLoading || !data ? (
           <div role="status">
@@ -117,7 +117,7 @@ export default function SettingsPage() {
           <div>
             <p className="text-body-sm font-semibold text-text-secondary">Memory</p>
             <p className="text-body-sm text-text-secondary">
-              Kiểm soát những gì Mệnh Vi được phép ghi nhớ, duyệt nội dung đang chờ, và xem, xuất hoặc
+              Kiểm soát những gì Tử Vi Tarot được phép ghi nhớ, duyệt nội dung đang chờ, và xem, xuất hoặc
               delete everything it has saved.
             </p>
           </div>

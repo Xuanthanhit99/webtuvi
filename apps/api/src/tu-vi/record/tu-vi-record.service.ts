@@ -190,7 +190,7 @@ export class TuViRecordService {
     ]);
     const total = isPremium ? totalRaw : Math.min(totalRaw, FREE_HISTORY_LIMIT);
 
-    return { items: rows.map(toTuViChartDto), total, page, pageSize };
+    return { items: rows.map((row) => toTuViChartDto(row)), total, page, pageSize };
   }
 
   async getOne(userId: string, id: string): Promise<TuViChartDto> {

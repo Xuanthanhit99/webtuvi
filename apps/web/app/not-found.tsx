@@ -6,7 +6,7 @@ export default function NotFound() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_28%_20%,rgba(213,173,98,0.16),transparent_30%),radial-gradient(circle_at_78%_72%,rgba(112,140,121,0.12),transparent_34%)]" />
       <section className="relative max-w-[520px] rounded-lg border border-[rgba(213,173,98,0.18)] bg-surface px-6 py-8 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
         <p className="text-caption font-semibold uppercase tracking-[0.18em] text-insight">Không tìm thấy</p>
-        <h1 className="mt-2 text-heading-lg font-semibold text-text-primary">Trang này không còn mở trong Mệnh Vi</h1>
+        <h1 className="mt-2 text-heading-lg font-semibold text-text-primary">Trang này không còn mở trong Tử Vi Tarot</h1>
         <p className="mt-3 text-body-sm leading-relaxed text-text-secondary">
           Đường dẫn có thể đã được chuyển về trải nghiệm chính, hoặc là một khu vực chưa có dữ liệu thật để hiển thị.
         </p>

@@ -31,6 +31,17 @@ export const PALACE_ROLE_LABELS_EN: Record<TuViPalaceRoleValue, string> = {
   'Huynh Đệ': 'Siblings',
 };
 
+/** Short-form badge labels for the 5 Miếu/Vượng/Đắc/Bình hòa/Hãm dignity states — the "địa" suffix
+ * is dropped for compact display next to a star name (matches how printed lá số charts abbreviate
+ * them), full term still used in aria-labels/trust copy. */
+export const DIGNITY_SHORT_LABEL: Record<string, string> = {
+  'Miếu địa': 'Miếu',
+  'Vượng địa': 'Vượng',
+  'Đắc địa': 'Đắc',
+  'Bình hòa': 'Bình hòa',
+  'Hãm địa': 'Hãm',
+};
+
 export const TRANSFORMATION_LABELS_EN: Record<string, string> = {
   'Hóa Lộc': 'Transformation of Fortune',
   'Hóa Quyền': 'Transformation of Power',

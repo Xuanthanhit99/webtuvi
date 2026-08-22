@@ -34,7 +34,7 @@ export default function PremiumPage() {
   return (
     <MvPage>
       <MvPageHeader
-        eyebrow="Mệnh Vi+"
+        eyebrow="Tử Vi Tarot+"
         title="Mở khóa chiều sâu, không làm ồn trải nghiệm"
         description="Một gói 30 ngày rõ ràng. Trạng thái Premium luôn được đọc từ backend sau thanh toán đã xác minh, không quyết định bằng dữ liệu trong trình duyệt."
       />

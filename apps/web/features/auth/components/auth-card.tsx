@@ -20,7 +20,7 @@ export function AuthCard({
           <Logo />
         </Link>
         <p className="mt-8 max-w-sm text-heading-lg font-semibold text-text-primary">
-          Bước vào Mệnh Vi, giữ quyền kiểm soát dữ liệu của bạn.
+          Bước vào Tử Vi Tarot, giữ quyền kiểm soát dữ liệu của bạn.
         </p>
         <p className="mt-4 max-w-sm text-body-sm leading-relaxed text-text-secondary">
           Tử Vi, Tarot, Bản đồ sao và Thần số học dùng dữ liệu thật, lưu an toàn trong tài khoản của bạn.

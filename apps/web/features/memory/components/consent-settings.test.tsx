@@ -20,7 +20,7 @@ describe('ConsentSettings', () => {
 
     renderWithQuery(<ConsentSettings />);
 
-    expect(await screen.findByLabelText(/when mệnh vi could remember something/i)).toHaveValue('ASK_EVERY_TIME');
+    expect(await screen.findByLabelText(/when tử vi tarot could remember something/i)).toHaveValue('ASK_EVERY_TIME');
     expect(screen.getByText(/no specific rules yet/i)).toBeInTheDocument();
   });
 
@@ -41,7 +41,7 @@ describe('ConsentSettings', () => {
     const user = userEvent.setup();
 
     renderWithQuery(<ConsentSettings />);
-    const select = await screen.findByLabelText(/when mệnh vi could remember something/i);
+    const select = await screen.findByLabelText(/when tử vi tarot could remember something/i);
     await user.selectOptions(select, 'DISABLED');
 
     await waitFor(() => expect(memoryApi.consents.updateGlobal).toHaveBeenCalledWith('DISABLED'));

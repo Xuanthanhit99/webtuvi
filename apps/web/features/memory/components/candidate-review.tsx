@@ -58,7 +58,7 @@ export function CandidateReview() {
     return (
       <EmptyState
         title="Nothing waiting for review."
-        description="When you ask Mệnh Vi to remember something, it shows up here first so you can confirm it before it's saved."
+        description="When you ask Tử Vi Tarot to remember something, it shows up here first so you can confirm it before it's saved."
       />
     );
   }

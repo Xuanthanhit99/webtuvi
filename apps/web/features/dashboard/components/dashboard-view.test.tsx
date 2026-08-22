@@ -70,7 +70,7 @@ function mockHomeData() {
   (premiumApi.status as jest.Mock).mockResolvedValue(freeStatus);
 }
 
-describe('Mệnh Vi Home page', () => {
+describe('Tử Vi Tarot Home page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     window.sessionStorage.clear();
@@ -224,7 +224,7 @@ describe('Mệnh Vi Home page', () => {
   });
 });
 
-describe('Mệnh Vi Home visuals', () => {
+describe('Tử Vi Tarot Home visuals', () => {
   it('renders all 12 Destiny Compass branch labels', () => {
     render(<DestinyCompass />);
 

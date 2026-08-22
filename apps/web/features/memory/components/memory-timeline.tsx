@@ -91,7 +91,7 @@ export function MemoryTimeline({ onSelect }: MemoryTimelineProps) {
           description={
             showArchived
               ? undefined
-              : 'When you ask Mệnh Vi to remember something from a conversation, it will show up here — with the source, the reason, and your consent choice always visible.'
+              : 'When you ask Tử Vi Tarot to remember something from a conversation, it will show up here — with the source, the reason, and your consent choice always visible.'
           }
         />
       )}

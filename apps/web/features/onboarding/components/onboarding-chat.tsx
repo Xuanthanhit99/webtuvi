@@ -115,7 +115,7 @@ export function OnboardingChat() {
 
       <div className="mb-5 rounded-lg border border-[rgba(213,173,98,0.16)] bg-surface/70 p-5">
         <p className="text-caption font-semibold uppercase tracking-[0.18em] text-insight">Bắt đầu</p>
-        <h1 className="mt-2 text-heading-md font-semibold text-text-primary">Thiết lập không gian Mệnh Vi của bạn</h1>
+        <h1 className="mt-2 text-heading-md font-semibold text-text-primary">Thiết lập không gian Tử Vi Tarot của bạn</h1>
         <p className="mt-2 text-body-sm leading-relaxed text-text-secondary">
           Trả lời vài câu ngắn để cá nhân hóa trải nghiệm. Bạn có thể bỏ qua và quay lại sau.
         </p>

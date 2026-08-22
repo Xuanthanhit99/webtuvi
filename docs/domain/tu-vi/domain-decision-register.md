@@ -276,6 +276,38 @@ the product definition's own framing of it as optional scope, so it does not gat
 V1 engine.
 **Owner:** Founder (scope call).
 
+**Tử Vi Depth Completion pass addendum (2026-08-22):** the domain-correctness half of this item is
+now resolved. `dv02` (Part 2 — Luận Đoán 12 Cung), never opened by any prior session, was located,
+downloaded (byte-verified against archive.org metadata), and read directly against the PDF
+page-image scans (not OCR text alone) for its full "2. ĐỊNH DANH" (definitions, p.31–32) and
+"3. ĐẶC TÍNH CÁC SAO" §3.1–3.14 (one table per star, p.33–38) sections — every one of the 14 Chính
+Tinh, not a sample. A 5-state system (Miếu địa / Vượng địa / Đắc địa / Bình hòa / Hãm địa, not the
+4 states the product definition assumed). Every star's branch-state table was verified to partition
+all 12 Earthly Branches exactly once (no gap, no overlap) — Tử Vi and Thiên Phủ notably have no Hãm
+địa state at all, confirmed correct on the scan (not an extraction artifact). Full table, citations,
+and this session's independent-re-read methodology: `apps/api/src/tu-vi/engine/tu-vi-dignity.ts`.
+Scope confirmed explicitly by the source itself (§1.6): this classification applies to the 14 Chính
+Tinh only, never to auxiliary/CORE_13 stars.
+
+**Status updated to `RESOLVED_BY_SOURCE`** for domain correctness (`PRIMARY_SOURCE_CONFIRMED` +
+independent re-read of all 14 stars against the page-image scans, not OCR alone, + mathematical
+completeness invariant — one step short of a second human domain expert's sign-off, which remains
+the one gap between this and `EXPERT_CONFIRMED`). **The founder scope-call question is treated as
+resolved by inclusion** in this pass — implemented as an additive, backward-compatible engine layer
+(new `dignityVersion`, does not alter any existing calculated fact) — since the original scope
+concern ("changes MVP scope size non-trivially") predates the MVP shipping; this is now a post-ship
+enhancement, not a pre-ship scope expansion. Founder review of this specific judgment call is
+invited, not bypassed — the change sits fully uncommitted pending review, per standing policy.
+Shipped: `apps/api/src/tu-vi/engine/tu-vi-dignity.ts` (+ `.spec.ts`, 13 tests), wired through
+persistence/API/frontend (Prisma migration `20260822032932_tu_vi_dignity_version`, `TuViChartDto`,
+`TuViPalaceGrid`). See `docs/progress/tu-vi-depth-completion-final-report.md` for full evidence.
+
+**Founder decision received (2026-08-22, Time Cycles pass):** `TUVI_STAR_DIGNITY_V1 = ENABLED`.
+The inclusion judgment call above is confirmed, not merely proposed — Miếu/Vượng/Đắc/Hãm is
+founder-approved for V1. **Status upgraded to `RESOLVED_BY_FOUNDER_DECISION`** (both the domain-
+correctness and scope-inclusion halves of this item are now closed). Not reverted; the previously-
+uncommitted implementation stands.
+
 ---
 
 ## DECISION-12 — Vận calculation rules (Đại Hạn/Tiểu Hạn/Lưu Niên)
@@ -287,6 +319,71 @@ instructs not to expand Sprint 18's engine scope to cover it.
 **Status:** `UNSOURCED` (deliberately not researched this session — correctly out of Sprint 18's
 MVP boundary; see calculation-specification.md's MVP/post-MVP split).
 **Owner:** Deferred to the Sprint 22 mini-spec pass, per Roadmap V2 §5's own sequencing rationale.
+
+**Tử Vi Depth Completion pass addendum (2026-08-22):** dedicated research was conducted this
+session — `dv01`'s own "10. KHỞI HẠN" section (p.20–22), never covered by the prior extraction
+(which stopped at p.17), was located and read directly against the PDF page-image scans. Splitting
+this decision into its 3 named sub-parts:
+
+- **Đại Vận / Đại Hạn (10-year cycles) — `RESOLVED_BY_SOURCE` for the core palace/age assignment.**
+  Direction rule ("dương nam, âm nữ theo chiều thuận; âm nam, dương nữ theo chiều nghịch") and the
+  age formula (`ageStart = cụcNumber + 10×index`) independently cross-checked against **3 separate
+  worked examples across 2 pages** (p.20's own example, plus 2 unrelated "cung gốc của đại hạn"
+  ranges cited inside the p.21–22 Lưu Đại Hạn worked examples) — not merely the one example used to
+  derive the rule. A suspected direction contradiction against the already-shipped
+  `PALACE_ROLES_FROM_MENH` order (`tu-vi-palace.ts`) was investigated by viewing the actual page-6
+  and page-20 scans side by side and found to be **no contradiction at all** — a naive misreading on
+  this session's own first pass, corrected by re-deriving from `tu-vi-palace.ts`'s own already-proven
+  mathematical invariant (which predates and independently confirms the Đại Hạn rule). The book also
+  describes a second, alternate starting-palace method and **explicitly states the first (Mệnh-
+  starting) method is preferred** ("người ta hay dùng cách thứ nhất vì nó chính xác hơn") — only that
+  method is implemented, not an engineering guess between the two. Shipped:
+  `apps/api/src/tu-vi/engine/tu-vi-dai-van.ts` (7 tests). **Explicitly NOT implemented**: "Lưu Đại
+  Hạn" (p.20–21, §10.2) — a real, separately-documented annual sub-cycle within each 10-year window
+  (a "xung chiếu"/opposite-palace pivot mechanism) — deferred, not because evidence is lacking, but
+  to keep this pass's scope bounded; the core 10-year assignment is the higher-value, lower-risk
+  increment.
+
+- **Tiểu Hạn (annual cycle, adults) — `RESOLVED_BY_SOURCE`.** Direction rule confirmed **sex-only**
+  ("Nam khởi lưu theo chiều thuận. Nữ khởi lưu theo chiều nghịch") — explicitly does NOT also depend
+  on year-Can yin-yang polarity the way Đại Vận does; this was checked directly rather than assumed
+  to mirror Đại Vận. Starting-palace table (4 birth-year-branch groups × 3 branches = 12/12,
+  complete) cross-checked against the book's own worked example (a boy born year Tý starts at Tuất,
+  matching the table; the example's first 3 annual steps independently confirm the offset formula).
+  Shipped: `apps/api/src/tu-vi/engine/tu-vi-tieu-han.ts` (6 tests). **Explicitly NOT implemented**:
+  the separate child (age < 13) Tiểu Hạn table (`dv06` §21.3, newly discovered this session, not
+  previously known to exist in any prior doc) — its OCR-derived table for ages 5–12 was flagged as
+  an uncertain linearized-table reconstruction, not independently visually re-verified; deferred
+  rather than shipped on partial confidence, per this project's own "do not implement partial lookup
+  tables" discipline.
+
+- **Lưu Niên — clarified, not a 4th standalone system.** The term never denotes an independent
+  calculation; it is a "current year" qualifier used two ways: (a) as part of the compound term "lưu
+  niên tiểu hạn" (i.e., Tiểu Hạn itself — already covered above), and (b) as a prefix on certain
+  auxiliary stars recalculated fresh each year (Thái Tuế, Tang Môn, Bạch Hổ, Thiên Khốc, Thiên Hư,
+  Lộc Tồn, Kình Dương, Đà La, Thiên Mã — `dv06` §4, "NHẬN ĐỊNH ẢNH HƯỞNG CỦA NHỮNG SAO LƯU ĐỘNG").
+  Two of these star-groups (Lưu Thái Tuế/Tang Môn/Bạch Hổ; Lưu Thiên Khốc/Thiên Hư) were fully
+  transcribed with worked examples; a third (Lưu Lộc Tồn/Kình Dương/Đà La) was found but not fully
+  transcribed, and Lưu Thiên Mã's specific rule was not located. **Status: `UNSOURCED` for this
+  auxiliary "Lưu" star sub-mechanism** — genuinely incomplete, not implemented.
+
+**Owner:** Engine-layer implementation for Đại Hạn (core) and Tiểu Hạn (adult) complete this pass,
+uncommitted pending review. Lưu Đại Hạn, the child Tiểu Hạn table, and the "Lưu" auxiliary stars
+remain owned by a future pass — see `docs/progress/tu-vi-depth-completion-final-report.md`.
+
+**Time Cycles pass addendum (2026-08-22):** Đại Hạn (core) and Tiểu Hạn (adult) are now shipped
+**end-to-end** — persistence (`daiVan`/`tieuHanStart`/`cycleVersion` columns, migration
+`20260822042508_tu_vi_cycle_persistence`), API (`TuViChartDto.daiVan`/`tieuHanStart`/
+`currentDaiVan`/`currentTieuHan`/`nearbyTieuHan`, computed fresh on every read from the real current
+date, never persisted/stale), and frontend (`TuViDaiVanTimeline`, `TuViTieuHanYearNav`, both wired
+into the real chart detail view with honest empty/unavailable states for pre-feature charts and
+under-13 tuổi). AI interpretation was deliberately NOT extended to reference time cycles — see
+`docs/progress/tu-vi-time-cycles-release-closure.md` §"AI boundary" for the staleness reasoning.
+One disclosed convention applied (not a primary-source-confirmed rule): "tuổi" for the purpose of
+resolving which cycle is *current* uses the standard Vietnamese nominal/lunar age
+(`tuổi = currentLunarYear − birthLunarYear + 1`), since no explicit "cách tính tuổi" statement was
+found anywhere across all 6 parts of the primary source — flagged, not silently assumed, in
+`apps/api/src/tu-vi/engine/tu-vi-current-cycle.ts`'s own module doc comment.
 
 ---
 
