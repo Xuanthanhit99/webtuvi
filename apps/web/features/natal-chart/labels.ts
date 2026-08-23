@@ -128,7 +128,7 @@ export const CHART_STATUS_LABELS: Record<NatalChartStatusValue, string> = {
 };
 
 export const CHART_STATUS_BADGE_VARIANT: Record<NatalChartStatusValue, BadgeVariant> = {
-  ACTIVE: 'new',
+  ACTIVE: 'insight',
   ARCHIVED: 'neutral',
   DELETED: 'neutral',
 };

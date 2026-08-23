@@ -171,129 +171,142 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-md border border-border-subtle bg-surface p-4" noValidate>
-      <FormField label="Date of birth" htmlFor="natal-chart-birthdate" required error={fieldError?.field === 'birthDate' ? fieldError.message : undefined}>
-        <Input
-          id="natal-chart-birthdate"
-          type="date"
-          value={birthDate}
-          onChange={(e) => setBirthDate(e.target.value)}
-          max={new Date().toISOString().slice(0, 10)}
-          invalid={fieldError?.field === 'birthDate'}
-        />
-      </FormField>
-
-      <FormField
-        label="Time of birth"
-        htmlFor="natal-chart-birthtime"
-        hint="Your time affects your houses and rising sign — without it, we can still map your planets and signs, just not those."
-        error={fieldError?.field === 'birthTime' ? fieldError.message : undefined}
-      >
-        <div className="flex flex-col gap-2">
+    <form onSubmit={handleSubmit} className="grid gap-5 rounded-md border border-[#d5ad62]/25 bg-[#06111d] p-4 tablet:grid-cols-[minmax(0,1fr)_18rem]" noValidate>
+      <div className="flex flex-col gap-4">
+        <FormField label="Date of birth" htmlFor="natal-chart-birthdate" required error={fieldError?.field === 'birthDate' ? fieldError.message : undefined}>
           <Input
-            id="natal-chart-birthtime"
-            type="time"
-            value={birthTime}
-            onChange={(e) => setBirthTime(e.target.value)}
-            disabled={!birthTimeKnown}
-            invalid={fieldError?.field === 'birthTime'}
+            id="natal-chart-birthdate"
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            max={new Date().toISOString().slice(0, 10)}
+            invalid={fieldError?.field === 'birthDate'}
           />
-          <Checkbox
-            id="natal-chart-birthtime-unknown"
-            checked={!birthTimeKnown}
-            onChange={(e) => {
-              const unknown = e.target.checked;
-              setBirthTimeKnown(!unknown);
-              if (unknown) setBirthTime('');
-            }}
-            label="I don’t know my birth time"
-          />
-        </div>
-      </FormField>
+        </FormField>
 
-      <FormField label="Place of birth" htmlFor="natal-chart-place" required error={fieldError?.field === 'place' ? fieldError.message : undefined}>
-        <div className="flex flex-col gap-3">
-          <div className="flex gap-2">
+        <FormField
+          label="Time of birth"
+          htmlFor="natal-chart-birthtime"
+          hint="Your time affects your houses and rising sign — without it, we can still map your planets and signs, just not those."
+          error={fieldError?.field === 'birthTime' ? fieldError.message : undefined}
+        >
+          <div className="flex flex-col gap-2">
             <Input
-              id="natal-chart-place"
-              value={placeQuery}
-              onChange={(e) => {
-                setPlaceQuery(e.target.value);
-                setSelectedCandidate(null);
-                setCandidates(null);
-              }}
-              placeholder="e.g. Hà Nội, Vietnam"
-              maxLength={PLACE_QUERY_MAX_LENGTH}
-              invalid={fieldError?.field === 'place'}
+              id="natal-chart-birthtime"
+              type="time"
+              value={birthTime}
+              onChange={(e) => setBirthTime(e.target.value)}
+              disabled={!birthTimeKnown}
+              invalid={fieldError?.field === 'birthTime'}
             />
-            <Button type="button" variant="secondary" onClick={handleSearch} loading={search.isPending}>
-              <Search className="h-4 w-4" aria-hidden="true" />
-              Search
-            </Button>
+            <Checkbox
+              id="natal-chart-birthtime-unknown"
+              checked={!birthTimeKnown}
+              onChange={(e) => {
+                const unknown = e.target.checked;
+                setBirthTimeKnown(!unknown);
+                if (unknown) setBirthTime('');
+              }}
+              label="I don’t know my birth time"
+            />
           </div>
+        </FormField>
 
-          {searchError && (
-            <p role="alert" className="text-body-sm text-caution">
-              {searchError}
-            </p>
-          )}
-
-          {selectedCandidate ? (
-            <div className="flex items-center justify-between gap-3 rounded-md border border-trust/30 bg-trust/5 px-3 py-2">
-              <span className="flex items-center gap-2 text-body-sm text-text-primary">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-trust" aria-hidden="true" />
-                {selectedCandidate.label}
-              </span>
-              <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedCandidate(null)}>
-                Change
+        <FormField label="Place of birth" htmlFor="natal-chart-place" required error={fieldError?.field === 'place' ? fieldError.message : undefined}>
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2 tablet:flex-row">
+              <Input
+                id="natal-chart-place"
+                value={placeQuery}
+                onChange={(e) => {
+                  setPlaceQuery(e.target.value);
+                  setSelectedCandidate(null);
+                  setCandidates(null);
+                }}
+                placeholder="e.g. Hà Nội, Vietnam"
+                maxLength={PLACE_QUERY_MAX_LENGTH}
+                invalid={fieldError?.field === 'place'}
+              />
+              <Button type="button" variant="secondary" onClick={handleSearch} loading={search.isPending}>
+                <Search className="h-4 w-4" aria-hidden="true" />
+                Search
               </Button>
             </div>
-          ) : (
-            candidates &&
-            (candidates.length > 0 ? (
-              <ul className="flex flex-col gap-1.5" aria-label="Matching places">
-                {candidates.map((candidate) => (
-                  <li key={candidate.token}>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCandidate(candidate)}
-                      className="flex w-full items-center gap-2 rounded-md border border-border-subtle bg-surface px-3 py-2 text-left text-body-sm text-text-primary transition-colors duration-fast hover:border-insight"
-                    >
-                      <MapPin className="h-4 w-4 shrink-0 text-text-secondary" aria-hidden="true" />
-                      {candidate.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+
+            {searchError && (
+              <p role="alert" className="text-body-sm text-caution">
+                {searchError}
+              </p>
+            )}
+
+            {selectedCandidate ? (
+              <div className="flex items-center justify-between gap-3 rounded-md border border-[#59c7b5]/35 bg-[#59c7b5]/10 px-3 py-2">
+                <span className="flex items-center gap-2 text-body-sm text-text-primary">
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-[#8ddbd0]" aria-hidden="true" />
+                  {selectedCandidate.label}
+                </span>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedCandidate(null)}>
+                  Change
+                </Button>
+              </div>
             ) : (
-              <p className="text-body-sm text-text-secondary">No matching places found. Try a different search.</p>
-            ))
-          )}
+              candidates &&
+              (candidates.length > 0 ? (
+                <ul className="flex flex-col gap-1.5" aria-label="Matching places">
+                  {candidates.map((candidate) => (
+                    <li key={candidate.token}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedCandidate(candidate)}
+                        className="flex w-full items-center gap-2 rounded-md border border-[#d5ad62]/20 bg-[#071827] px-3 py-2 text-left text-body-sm text-text-primary transition-colors duration-fast hover:border-[#d5ad62]/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
+                      >
+                        <MapPin className="h-4 w-4 shrink-0 text-[#efb96c]" aria-hidden="true" />
+                        {candidate.label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-body-sm text-text-secondary">No matching places found. Try a different search.</p>
+              ))
+            )}
+          </div>
+        </FormField>
+
+        {fieldError && fieldError.field === null && (
+          <p role="alert" className="text-body-sm text-caution">
+            {fieldError.message}
+          </p>
+        )}
+
+        {limitBanner && (
+          <div role="alert" className="flex flex-col gap-2 rounded-md border border-insight/30 bg-insight/5 px-4 py-3 text-body-sm text-text-primary">
+            <span>{limitBanner.message}</span>
+            {limitBanner.showUpgrade && (
+              <Link href="/premium?reason=required" className="self-start">
+                <Button variant="secondary" size="sm">
+                  Upgrade to Premium
+                </Button>
+              </Link>
+            )}
+          </div>
+        )}
+
+        <Button type="submit" variant="primary" loading={phase === 'calculating'}>
+          {phase === 'calculating' ? 'Calculating your chart…' : 'Calculate my chart'}
+        </Button>
+      </div>
+
+      <aside className="rounded-md border border-[#d5ad62]/20 bg-[#071827]/85 p-4 text-body-sm text-text-secondary">
+        <p className="font-serif text-heading-sm text-[#efb96c]">Dữ liệu được chuẩn hóa</p>
+        <p className="mt-2">Nơi sinh được xác nhận bằng kết quả tìm kiếm, sau đó server tự tính tọa độ, múi giờ, hành tinh, nhà và góc hợp.</p>
+        <div className="mt-5 grid grid-cols-2 gap-2 text-caption">
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Tropical</span>
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Placidus</span>
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Major aspects</span>
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Saved history</span>
         </div>
-      </FormField>
-
-      {fieldError && fieldError.field === null && (
-        <p role="alert" className="text-body-sm text-caution">
-          {fieldError.message}
-        </p>
-      )}
-
-      {limitBanner && (
-        <div role="alert" className="flex flex-col gap-2 rounded-md border border-insight/30 bg-insight/5 px-4 py-3 text-body-sm text-text-primary">
-          <span>{limitBanner.message}</span>
-          {limitBanner.showUpgrade && (
-            <Link href="/premium?reason=required" className="self-start">
-              <Button variant="secondary" size="sm">
-                Upgrade to Premium
-              </Button>
-            </Link>
-          )}
-        </div>
-      )}
-
-      <Button type="submit" variant="primary" loading={phase === 'calculating'}>
-        {phase === 'calculating' ? 'Calculating your chart…' : 'Calculate my chart'}
-      </Button>
+      </aside>
     </form>
   );
 }

@@ -34,8 +34,8 @@ export function InterpretationSections({
   }
 
   return (
-    <div className="rounded-md border border-insight/20 bg-insight/5 p-3">
-      <div className="mb-2 flex items-center gap-1.5 text-caption font-medium uppercase tracking-wide text-insight">
+    <div className="rounded-md border border-[#d5ad62]/25 bg-[#071827] p-3">
+      <div className="mb-2 flex items-center gap-1.5 text-caption font-medium uppercase text-[#efb96c]">
         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
         AI Interpretation
       </div>
@@ -46,13 +46,13 @@ export function InterpretationSections({
             const isOpen = expanded.has(key);
             const sectionId = `natal-chart-interpretation-${key}`;
             return (
-              <div key={key} className="rounded-md bg-surface">
+              <div key={key} className="rounded-md border border-[#d5ad62]/20 bg-[#06111d]">
                 <button
                   type="button"
                   onClick={() => toggle(key)}
                   aria-expanded={isOpen}
                   aria-controls={sectionId}
-                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-body-sm font-semibold text-text-primary"
+                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-body-sm font-semibold text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
                 >
                   {INTERPRETATION_SECTION_LABELS[key]}
                   <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-fast ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
@@ -75,7 +75,7 @@ export function InterpretationSections({
         </div>
       )}
 
-      <p className="mt-2 text-caption text-text-tertiary">Written by AI to narrate the chart above — it never changes a calculated placement.</p>
+      <p className="mt-2 text-caption text-text-secondary">Written by AI to narrate the chart above — it never changes a calculated placement.</p>
     </div>
   );
 }

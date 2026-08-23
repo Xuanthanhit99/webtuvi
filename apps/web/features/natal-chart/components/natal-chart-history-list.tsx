@@ -34,7 +34,7 @@ export function NatalChartHistoryList({ filters, onSelect }: { filters: ListChar
             <button
               type="button"
               onClick={() => onSelect(chart.id)}
-              className="flex w-full flex-wrap items-center justify-between gap-2 rounded-md border border-border-subtle bg-surface px-3 py-2 text-left transition-colors duration-fast hover:bg-surface-raised"
+              className="flex w-full flex-wrap items-center justify-between gap-2 rounded-md border border-[#d5ad62]/20 bg-[#071827] px-4 py-3 text-left transition-colors duration-fast hover:border-[#d5ad62]/45 hover:bg-[#0a2133] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
             >
               <div className="flex flex-col gap-1">
                 <span className="text-body-sm font-semibold text-text-primary">{chart.birthPlaceLabel}</span>
@@ -45,7 +45,7 @@ export function NatalChartHistoryList({ filters, onSelect }: { filters: ListChar
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={CHART_STATUS_BADGE_VARIANT[chart.status]}>{CHART_STATUS_LABELS[chart.status]}</Badge>
-                <span className="text-caption text-text-tertiary">{new Date(chart.createdAt).toLocaleDateString()}</span>
+                <span className="text-caption text-text-secondary">{new Date(chart.createdAt).toLocaleDateString()}</span>
               </div>
             </button>
           </li>

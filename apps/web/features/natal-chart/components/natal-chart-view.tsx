@@ -28,13 +28,13 @@ function Section({ title, defaultOpen = false, children }: { title: string; defa
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls={sectionId}
-        className="flex w-full items-center justify-between gap-2 py-2 text-left text-body-sm font-semibold text-text-secondary"
+        className="flex w-full items-center justify-between gap-2 rounded-md border border-[#d5ad62]/20 bg-[#071827] px-4 py-3 text-left text-body-sm font-semibold text-text-secondary transition-colors duration-fast hover:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
       >
         {title}
-        <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-fast ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
+        <ChevronDown className={`h-4 w-4 shrink-0 text-[#efb96c] transition-transform duration-fast ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
       {open && (
-        <div id={sectionId} className="pb-2">
+        <div id={sectionId} className="pt-2">
           {children}
         </div>
       )}
@@ -49,6 +49,7 @@ function Section({ title, defaultOpen = false, children }: { title: string; defa
  * client-side (mirrors NumerologyReadingView's own precedent). */
 export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onChanged?: () => void }) {
   const queryClient = useQueryClient();
+  const calculatedAngles = chart.housesAvailable ? 2 : 0;
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['natal-chart'] });
@@ -86,8 +87,8 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border-subtle bg-surface p-4">
+    <div className="flex flex-col gap-4 rounded-md border border-[#d5ad62]/25 bg-[#06111d] p-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d5ad62]/20 bg-[#071827] p-4">
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={CHART_STATUS_BADGE_VARIANT[chart.status]}>{CHART_STATUS_LABELS[chart.status]}</Badge>
           <span className="text-caption text-text-secondary">
@@ -114,9 +115,38 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
         </div>
       </div>
 
-      <p className="text-caption text-text-tertiary">Được tính toán từ dữ liệu sinh — calculated from your birth data, never chosen by AI.</p>
+      <p className="text-caption text-text-secondary">Được tính toán từ dữ liệu sinh — calculated from your birth data, never chosen by AI.</p>
 
-      <NatalChartWheel chart={chart} />
+      <section className="grid items-center gap-5 rounded-md border border-[#d5ad62]/20 bg-[#071827]/75 p-4 desktop:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className="flex justify-center">
+          <NatalChartWheel chart={chart} />
+        </div>
+        <div className="flex flex-col gap-4">
+          <div>
+            <p className="text-caption font-semibold uppercase text-[#8ddbd0]">Tổng quan</p>
+            <h2 className="mt-2 font-serif text-heading-lg text-text-primary">Big Three và cấu trúc chính</h2>
+            <p className="mt-2 text-body-sm text-text-secondary">Các lớp dưới đây là dữ liệu đã lưu từ engine: hành tinh, nhà, góc hợp và luận giải AI được tách riêng.</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="rounded-md border border-[#d5ad62]/20 p-3">
+              <p className="font-mono text-heading-md text-[#efb96c]">{chart.placements.length}</p>
+              <p className="text-caption text-text-secondary">Planets</p>
+            </div>
+            <div className="rounded-md border border-[#d5ad62]/20 p-3">
+              <p className="font-mono text-heading-md text-[#efb96c]">{chart.houses.length}</p>
+              <p className="text-caption text-text-secondary">Houses</p>
+            </div>
+            <div className="rounded-md border border-[#d5ad62]/20 p-3">
+              <p className="font-mono text-heading-md text-[#efb96c]">{chart.aspects.length}</p>
+              <p className="text-caption text-text-secondary">Aspects</p>
+            </div>
+            <div className="rounded-md border border-[#d5ad62]/20 p-3">
+              <p className="font-mono text-heading-md text-[#efb96c]">{calculatedAngles}</p>
+              <p className="text-caption text-text-secondary">Angles</p>
+            </div>
+          </div>
+        </div>
+      </section>
       <BigThreeSummary chart={chart} />
 
       <Section title="Planets" defaultOpen>

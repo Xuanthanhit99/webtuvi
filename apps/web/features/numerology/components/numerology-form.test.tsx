@@ -95,7 +95,7 @@ describe('NumerologyForm', () => {
     await user.type(screen.getByLabelText(/date of birth/i), '1995-08-17');
     await user.click(screen.getByRole('button', { name: /calculate my numbers/i }));
 
-    await waitFor(() => expect(screen.getByText('22')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getAllByText('22').length).toBeGreaterThan(0));
     expect(screen.getByText('Master Number')).toBeInTheDocument();
     expect(numerologyApi.calculate).toHaveBeenCalledWith('Nguyen Van A', '1995-08-17');
     expect(onCalculated).toHaveBeenCalledWith(calculatedReading);
@@ -141,7 +141,7 @@ describe('NumerologyForm', () => {
     await user.type(screen.getByLabelText(/date of birth/i), '1995-08-17');
     await user.click(screen.getByRole('button', { name: /calculate my numbers/i }));
 
-    await screen.findByText('22');
+    await waitFor(() => expect(screen.getAllByText('22').length).toBeGreaterThan(0));
     await user.click(screen.getByRole('button', { name: /calculate another reading/i }));
     expect(screen.getByRole('button', { name: /calculate my numbers/i })).toBeInTheDocument();
     expect(screen.queryByText('22')).not.toBeInTheDocument();

@@ -16,15 +16,15 @@ export function BigThreeSummary({ chart }: { chart: NatalChartDto }) {
   return (
     <div className="grid grid-cols-3 gap-3" role="group" aria-label="Big Three">
       {items.map((item) => (
-        <div key={item.label} className="flex flex-col items-center gap-1 rounded-md border border-border-subtle bg-surface p-4 text-center">
-          <span aria-hidden="true" className="text-heading-md text-insight">
+        <div key={item.label} className="flex flex-col items-center gap-1 rounded-md border border-[#d5ad62]/20 bg-[#071827] p-4 text-center">
+          <span aria-hidden="true" className="text-heading-md text-[#efb96c]">
             {item.glyph}
           </span>
-          <span className="text-caption uppercase tracking-wide text-text-secondary">{item.label}</span>
+          <span className="text-caption uppercase text-text-secondary">{item.label}</span>
           {item.sign ? (
             <span className="text-body-md font-semibold text-text-primary">{item.sign}</span>
           ) : (
-            <span className="text-body-sm text-text-tertiary">Unavailable</span>
+            <span className="text-body-sm text-text-secondary">Unavailable</span>
           )}
         </div>
       ))}

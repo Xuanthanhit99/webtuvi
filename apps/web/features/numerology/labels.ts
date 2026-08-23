@@ -31,7 +31,7 @@ export const READING_STATUS_LABELS: Record<NumerologyReadingStatusValue, string>
 };
 
 export const READING_STATUS_BADGE_VARIANT: Record<NumerologyReadingStatusValue, BadgeVariant> = {
-  ACTIVE: 'new',
+  ACTIVE: 'insight',
   ARCHIVED: 'neutral',
   DELETED: 'neutral',
 };

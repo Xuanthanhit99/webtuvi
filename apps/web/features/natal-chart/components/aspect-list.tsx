@@ -26,20 +26,20 @@ export function AspectList({ aspects }: { aspects: NatalAspectDto[] }) {
   return (
     <ul className="flex flex-col gap-2" aria-label="Aspects">
       {sorted.map((aspect, index) => (
-        <li key={index} className="flex flex-col gap-1 rounded-md border border-border-subtle bg-surface p-3">
+        <li key={index} className="flex flex-col gap-1 rounded-md border border-[#d5ad62]/20 bg-[#071827] p-3">
           <div className="flex flex-wrap items-center gap-2 text-body-sm">
             <span className="font-semibold text-text-primary">
               {pointGlyph(aspect.pointA) && (
-                <span aria-hidden="true" className="mr-1 text-insight">
+                <span aria-hidden="true" className="mr-1 text-[#efb96c]">
                   {pointGlyph(aspect.pointA)}
                 </span>
               )}
               {pointLabel(aspect.pointA)}
             </span>
-            <span className="text-text-secondary">{ASPECT_TYPE_LABELS[aspect.type]}</span>
+            <span className="rounded-full border border-[#59c7b5]/25 px-2 py-0.5 text-caption text-[#8ddbd0]">{ASPECT_TYPE_LABELS[aspect.type]}</span>
             <span className="font-semibold text-text-primary">
               {pointGlyph(aspect.pointB) && (
-                <span aria-hidden="true" className="mr-1 text-insight">
+                <span aria-hidden="true" className="mr-1 text-[#efb96c]">
                   {pointGlyph(aspect.pointB)}
                 </span>
               )}

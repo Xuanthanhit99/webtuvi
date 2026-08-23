@@ -34,7 +34,7 @@ export function AiInterpretation({
           </Button>
         </div>
       )}
-      <p className="mt-2 text-caption text-text-tertiary">
+      <p className="mt-2 text-caption text-text-secondary">
         Written by AI to narrate the result above — it never chooses or changes it.
       </p>
     </div>

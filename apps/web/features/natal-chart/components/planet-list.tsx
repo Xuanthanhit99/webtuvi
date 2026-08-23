@@ -9,9 +9,9 @@ export function PlanetList({ placements }: { placements: NatalPlacementDto[] }) 
   return (
     <ul className="flex flex-col gap-2" aria-label="Planets">
       {placements.map((placement) => (
-        <li key={placement.body} className="flex flex-col gap-1 rounded-md border border-border-subtle bg-surface p-3">
+        <li key={placement.body} className="flex flex-col gap-1 rounded-md border border-[#d5ad62]/20 bg-[#071827] p-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span aria-hidden="true" className="text-body-lg text-insight">
+            <span aria-hidden="true" className="text-body-lg text-[#efb96c]">
               {PLANET_GLYPHS[placement.body]}
             </span>
             <span className="text-body-sm font-semibold text-text-primary">{PLANET_LABELS[placement.body]}</span>

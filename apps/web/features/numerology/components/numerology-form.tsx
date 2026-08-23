@@ -128,52 +128,65 @@ export function NumerologyForm({ onCalculated }: { onCalculated?: (reading: Nume
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-md border border-border-subtle bg-surface p-4" noValidate>
-      <FormField label="Full birth name" htmlFor="numerology-name" required error={fieldError?.field === 'fullBirthName' ? fieldError.message : undefined}>
-        <Input
-          id="numerology-name"
-          value={fullBirthName}
-          onChange={(e) => setFullBirthName(e.target.value)}
-          placeholder="e.g. Nguyễn Văn An"
-          maxLength={NAME_MAX_LENGTH}
-          invalid={fieldError?.field === 'fullBirthName'}
-          autoComplete="name"
-        />
-      </FormField>
+    <form onSubmit={handleSubmit} className="grid gap-5 rounded-md border border-[#d5ad62]/25 bg-[#06111d] p-4 tablet:grid-cols-[minmax(0,1fr)_18rem]" noValidate>
+      <div className="flex flex-col gap-4">
+        <FormField label="Full birth name" htmlFor="numerology-name" required error={fieldError?.field === 'fullBirthName' ? fieldError.message : undefined}>
+          <Input
+            id="numerology-name"
+            value={fullBirthName}
+            onChange={(e) => setFullBirthName(e.target.value)}
+            placeholder="e.g. Nguyễn Văn An"
+            maxLength={NAME_MAX_LENGTH}
+            invalid={fieldError?.field === 'fullBirthName'}
+            autoComplete="name"
+          />
+        </FormField>
 
-      <FormField label="Date of birth" htmlFor="numerology-birthdate" required error={fieldError?.field === 'birthDate' ? fieldError.message : undefined}>
-        <Input
-          id="numerology-birthdate"
-          type="date"
-          value={birthDate}
-          onChange={(e) => setBirthDate(e.target.value)}
-          max={new Date().toISOString().slice(0, 10)}
-          invalid={fieldError?.field === 'birthDate'}
-        />
-      </FormField>
+        <FormField label="Date of birth" htmlFor="numerology-birthdate" required error={fieldError?.field === 'birthDate' ? fieldError.message : undefined}>
+          <Input
+            id="numerology-birthdate"
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
+            max={new Date().toISOString().slice(0, 10)}
+            invalid={fieldError?.field === 'birthDate'}
+          />
+        </FormField>
 
-      {fieldError && fieldError.field === null && (
-        <p role="alert" className="text-body-sm text-caution">
-          {fieldError.message}
-        </p>
-      )}
+        {fieldError && fieldError.field === null && (
+          <p role="alert" className="text-body-sm text-caution">
+            {fieldError.message}
+          </p>
+        )}
 
-      {limitBanner && (
-        <div role="alert" className="flex flex-col gap-2 rounded-md border border-insight/30 bg-insight/5 px-4 py-3 text-body-sm text-text-primary">
-          <span>{limitBanner.message}</span>
-          {limitBanner.showUpgrade && (
-            <Link href="/premium?reason=required" className="self-start">
-              <Button variant="secondary" size="sm">
-                Upgrade to Premium
-              </Button>
-            </Link>
-          )}
+        {limitBanner && (
+          <div role="alert" className="flex flex-col gap-2 rounded-md border border-insight/30 bg-insight/5 px-4 py-3 text-body-sm text-text-primary">
+            <span>{limitBanner.message}</span>
+            {limitBanner.showUpgrade && (
+              <Link href="/premium?reason=required" className="self-start">
+                <Button variant="secondary" size="sm">
+                  Upgrade to Premium
+                </Button>
+              </Link>
+            )}
+          </div>
+        )}
+
+        <Button type="submit" variant="primary" loading={phase === 'calculating'}>
+          {phase === 'calculating' ? 'Calculating…' : 'Calculate my numbers'}
+        </Button>
+      </div>
+
+      <aside className="rounded-md border border-[#d5ad62]/20 bg-[#071827]/85 p-4 text-body-sm text-text-secondary">
+        <p className="font-serif text-heading-sm text-[#efb96c]">Sáu chỉ số thật</p>
+        <p className="mt-2">Kết quả chỉ dùng những chỉ số backend hiện hỗ trợ: Life Path, Expression, Soul Urge, Personality, Birthday và Personal Year.</p>
+        <div className="mt-5 grid grid-cols-2 gap-2 text-caption">
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Name</span>
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Birth date</span>
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Steps</span>
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">History</span>
         </div>
-      )}
-
-      <Button type="submit" variant="primary" loading={phase === 'calculating'}>
-        {phase === 'calculating' ? 'Calculating…' : 'Calculate my numbers'}
-      </Button>
+      </aside>
     </form>
   );
 }

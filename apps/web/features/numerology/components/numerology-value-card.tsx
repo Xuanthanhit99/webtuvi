@@ -15,7 +15,7 @@ export function NumerologyValueCard({ entry, meaning }: { entry: NumerologyValue
   const detailId = `numerology-value-${entry.type}-steps`;
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-border-subtle bg-surface p-4">
+    <div className="flex flex-col gap-3 rounded-md border border-[#d5ad62]/20 bg-[#071827] p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-body-sm font-semibold text-text-secondary">{VALUE_TYPE_LABELS[entry.type]}</p>
@@ -25,7 +25,7 @@ export function NumerologyValueCard({ entry, meaning }: { entry: NumerologyValue
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="font-mono text-heading-lg text-text-primary">{entry.value}</span>
+        <span className="font-mono text-heading-lg text-[#efb96c]">{entry.value}</span>
         {entry.isMasterNumber && <Badge variant="insight">Master Number</Badge>}
       </div>
 
@@ -40,14 +40,14 @@ export function NumerologyValueCard({ entry, meaning }: { entry: NumerologyValue
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
         aria-controls={detailId}
-        className="flex w-fit items-center gap-1 text-body-sm text-insight hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
+        className="flex w-fit items-center gap-1 text-body-sm text-[#8ddbd0] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
       >
         <ChevronDown className={`h-4 w-4 transition-transform duration-fast ${expanded ? 'rotate-180' : ''}`} aria-hidden="true" />
         {expanded ? 'Hide calculation' : `Why is my number ${entry.value}?`}
       </button>
 
       {expanded && (
-        <ol id={detailId} className="flex flex-col gap-1 rounded-md bg-surface-raised p-3 text-body-sm text-text-secondary">
+        <ol id={detailId} className="flex flex-col gap-1 rounded-md border border-[#d5ad62]/20 bg-[#06111d] p-3 text-body-sm text-text-secondary">
           {steps.map((step, index) => (
             <li key={index}>{step}</li>
           ))}

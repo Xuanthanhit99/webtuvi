@@ -15,7 +15,7 @@ describe('HouseList', () => {
   it('renders real house cusps and signs when available', () => {
     render(<HouseList chart={baseChart} />);
     expect(screen.getByText('1st house')).toBeInTheDocument();
-    expect(screen.getByText('Libra')).toBeInTheDocument();
+    expect(screen.getByText(/Libra · 29\.9°/)).toBeInTheDocument();
   });
 
   it('shows an honest "unavailable" state (never fabricated houses) when birth time is unknown', () => {

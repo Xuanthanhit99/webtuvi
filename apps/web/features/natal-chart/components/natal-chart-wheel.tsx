@@ -86,7 +86,7 @@ export function NatalChartWheel({ chart }: { chart: NatalChartDto }) {
   }. ${ascLabel}. Full details are listed in the sections below.`;
 
   return (
-    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={summaryLabel} className="mx-auto w-full max-w-[24rem]">
+    <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={summaryLabel} className="mx-auto w-full max-w-[30rem] drop-shadow-[0_0_32px_rgba(213,173,98,0.18)]">
       <g aria-hidden="true">
         {/* outer + sign ring boundary */}
         <circle cx={CENTER} cy={CENTER} r={OUTER_R} fill="none" stroke="rgba(213,173,98,0.24)" strokeWidth={1} />

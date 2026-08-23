@@ -22,9 +22,11 @@ export function HouseList({ chart }: { chart: NatalChartDto }) {
   return (
     <ul className="grid gap-2 tablet:grid-cols-2" aria-label="Houses">
       {chart.houses.map((house) => (
-        <li key={house.number} className="flex items-center justify-between gap-2 rounded-md border border-border-subtle bg-surface px-3 py-2">
+        <li key={house.number} className="flex items-center justify-between gap-2 rounded-md border border-[#d5ad62]/20 bg-[#071827] px-3 py-2">
           <span className="text-body-sm font-semibold text-text-primary">{houseLabel(house.number)}</span>
-          <span className="text-body-sm text-text-secondary">{SIGN_LABELS[house.sign]}</span>
+          <span className="text-body-sm text-text-secondary">
+            {SIGN_LABELS[house.sign]} · {(house.cuspLongitude % 30).toFixed(1)}°
+          </span>
         </li>
       ))}
     </ul>
