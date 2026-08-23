@@ -45,6 +45,26 @@ One growing table across boards — never overwritten, only appended to.
 | 02 | History | Saved lá số list + free-plan cap notice | REAL_API | `GET /tu-vi/charts`, `usePremiumStatus()` | READY (pre-existing, polish only) | [tu-vi-history-list.tsx](../../apps/web/features/tu-vi/components/tu-vi-history-list.tsx) |
 | 02 | Lifecycle actions | Archive / Restore / Delete | REAL_API | `POST /tu-vi/charts/:id/archive|restore`, `DELETE /tu-vi/charts/:id` | READY (pre-existing) | `tu-vi-chart-view.tsx` |
 | 02 | Calculation details | Engine/ruleset/star/auxiliary version strings | REAL_PERSISTED | `TuViChartDto.versions.*` | READY (pre-existing) — tucked in a collapsed "Calculation details" section, never surfaced prominently to normal users | `tu-vi-chart-view.tsx` |
+| 03 | Tarot Landing | Hero deck composition | EXISTING_PRODUCTION_ASSET | real card back + selected canonical front artwork (`17-the-star.webp`, `cups-ace.webp`) | READY | [tarot-draw-panel.tsx](../../apps/web/features/tarot/components/tarot-draw-panel.tsx) |
+| 03 | Tarot Landing | Reflection-not-prediction disclosure | STATIC_EDITORIAL | fixed safety/product copy, no prediction claim | READY | `TarotDrawPanel` |
+| 03 | Topic / Intention | Six intention choices | CODE_GENERATED_VISUAL | local UI state only; no fake backend topic enum persisted | READY | `TarotDrawPanel` |
+| 03 | Question | Optional question textarea | REAL_API | sent only to `POST /tarot/draw` when non-empty and not Daily Draw; not analytics | READY | `TarotDrawPanel`, [tarot-api.ts](../../apps/web/features/tarot/api/tarot-api.ts) |
+| 03 | Spread Selection | Daily Draw / Single Card / Three Card | REAL_API | `DrawReadingDto.type` supports `DAILY_DRAW`, `SINGLE_CARD`, `THREE_CARD`; no fake 5-card spread | READY | `TarotDrawPanel`, [draw-reading.dto.ts](../../apps/api/src/tarot/dto/draw-reading.dto.ts) |
+| 03 | Focus / Shuffle | Face-down animated deck fan | EXISTING_PRODUCTION_ASSET + CODE_GENERATED_VISUAL | real shared card back, CSS transforms only | READY | `TarotDrawPanel` |
+| 03 | Card Selection | Face-down selectable slots | EXISTING_PRODUCTION_ASSET + REAL_API | selected slot never submits card ID; server draw is already authoritative | READY | `TarotDrawPanel` |
+| 03 | Card Back | Shared back artwork | EXISTING_PRODUCTION_ASSET | `/assets/tarot/card-back.webp` | READY | [artwork.ts](../../apps/web/features/tarot/artwork.ts), [tarot-card-face.tsx](../../apps/web/features/tarot/components/tarot-card-face.tsx) |
+| 03 | Reveal / Result Cards | Front artwork | FOUNDER_SUPPLIED_ARTWORK | 78 canonical `.webp` files under `/assets/tarot-card/` resolved from card identity | READY | `resolveTarotArtworkSrc`, `TarotCardFace` |
+| 03 | Upright / Reversed | Orientation badge + physical reversed artwork | REAL_PERSISTED | `TarotReadingCardDto.isReversed`; card image rotates 180deg while text remains readable | READY | `TarotReadingView`, `TarotCardFace` |
+| 03 | Canonical Meanings | Position, name, VI name, keywords, meanings | REAL_API | `TarotCardDto` + persisted spread position labels | READY | [tarot-reading-view.tsx](../../apps/web/features/tarot/components/tarot-reading-view.tsx) |
+| 03 | Topic Meanings | Love / Career / Finance / Self blocks | REAL_API | `TarotCardDto.loveMeaning/careerMeaning/financeMeaning/selfMeaning` | READY | `TarotReadingView`, [tarot-card-detail-dialog.tsx](../../apps/web/features/tarot/components/tarot-card-detail-dialog.tsx) |
+| 03 | AI Synthesis | AI interpretation panel + retry | AI_INTERPRETATION | `TarotReadingDto.interpretation`, retry via `POST /tarot/readings/:id/interpret` | READY | `TarotReadingView`, [tarot-record.service.ts](../../apps/api/src/tarot/record/tarot-record.service.ts) |
+| 03 | Reflection | Prompt list | REAL_API | `TarotCardDto.reflectionPrompts` from canonical 78-card seed | READY | `TarotReadingView`, `TarotCardDetailDialog` |
+| 03 | History | Saved readings list | REAL_API | `GET /tarot/readings`, owner-scoped; shows date/time, spread, cards, orientation | READY | [tarot-history-list.tsx](../../apps/web/features/tarot/components/tarot-history-list.tsx) |
+| 03 | Reopen Exact Reading | In-place detail route | REAL_API | `GET /tarot/readings/:id`, same `?item=` pattern as existing modules | READY | [tarot-dashboard.tsx](../../apps/web/features/tarot/components/tarot-dashboard.tsx), [tarot-reading-detail.tsx](../../apps/web/features/tarot/components/tarot-reading-detail.tsx) |
+| 03 | Daily Tarot | Daily Draw spread | REAL_API | `DAILY_DRAW`; server enforces one UTC-day draw per user | READY | `TarotRecordService.assertNoDailyDrawToday` |
+| 03 | Tarot Library 78 | Filterable deck grid | REAL_API + FOUNDER_SUPPLIED_ARTWORK | `GET /tarot/deck`; filters All/Major/Wands/Cups/Swords/Pentacles | READY | [tarot-library.tsx](../../apps/web/features/tarot/components/tarot-library.tsx) |
+| 03 | Card Detail | Artwork + structured facts modal | REAL_API + FOUNDER_SUPPLIED_ARTWORK | selected `TarotCardDto` and resolved artwork path | READY | `TarotCardDetailDialog` |
+| 03 | Purple Tint Treatment | Global artwork tint/filter | MISSING | deliberately absent; no global filter/blend/overlay applied to Tarot artwork | READY (absence verified) | `TarotCardFace` uses `object-contain` with no tint/filter |
 
 ## Notes — Board 01
 

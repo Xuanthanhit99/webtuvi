@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Sparkles } from 'lucide-react';
+import { ChevronLeft, Eye, Library, MoonStar, Sparkles } from 'lucide-react';
 import type { TarotReadingDto, TarotReadingTypeValue } from '@beaconvie/types';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { toast } from '@/components/ui/toast';
 import { ApiError } from '@/lib/api-error';
@@ -25,9 +24,28 @@ const ANALYTICS_SPREAD_TYPE: Record<TarotReadingTypeValue, 'daily_draw' | 'singl
   THREE_CARD: 'three_card',
 };
 
-/** Sprint 7 Phase 11 — Tarot UI must clearly explain Premium boundaries, not just show a generic
- * error toast. `PREMIUM_REQUIRED` means upgrading would actually raise this specific ceiling;
- * `TAROT_DAILY_LIMIT_REACHED` means even Premium's (higher) ceiling was hit today — no upsell. */
+const CARD_COUNT: Record<TarotReadingTypeValue, number> = {
+  DAILY_DRAW: 1,
+  SINGLE_CARD: 1,
+  THREE_CARD: 3,
+};
+
+const INTENTIONS = [
+  { id: 'GENERAL', label: 'Tổng quan', helper: 'Nhìn rộng vào điều đang hiện diện.' },
+  { id: 'LOVE', label: 'Tình cảm', helper: 'Quan sát kết nối, mong muốn và ranh giới.' },
+  { id: 'CAREER', label: 'Sự nghiệp', helper: 'Làm rõ hướng đi, nhịp làm việc và lựa chọn.' },
+  { id: 'FINANCE', label: 'Tài chính', helper: 'Soi lại sự ổn định, cơ hội và mức rủi ro.' },
+  { id: 'SELF', label: 'Bản thân', helper: 'Quay về cảm xúc, trực giác và sức bền bên trong.' },
+  { id: 'DECISION', label: 'Quyết định', helper: 'Giữ câu hỏi đủ gọn để nhìn thấy bước kế tiếp.' },
+] as const;
+
+type Phase = 'landing' | 'intention' | 'spread' | 'focus' | 'select' | 'revealed';
+
+const TAROT_PANEL =
+  'relative overflow-hidden rounded-md border border-[rgba(213,173,98,0.34)] bg-[#07111D] shadow-[0_24px_80px_rgba(0,0,0,0.34)]';
+const TAROT_STARS =
+  "before:pointer-events-none before:absolute before:inset-0 before:opacity-35 before:[background-image:radial-gradient(circle,rgba(234,194,126,0.78)_1px,transparent_1.4px),radial-gradient(circle,rgba(236,232,220,0.32)_1px,transparent_1.6px)] before:[background-position:0_0,18px_22px] before:[background-size:48px_48px,76px_76px]";
+
 function drawLimitBanner(error: unknown): { message: string; showUpgrade: boolean } | null {
   if (!(error instanceof ApiError)) return null;
   if (error.code === 'PREMIUM_REQUIRED') return { message: error.message, showUpgrade: true };
@@ -37,28 +55,31 @@ function drawLimitBanner(error: unknown): { message: string; showUpgrade: boolea
   return null;
 }
 
-/** Phase 6 — Draw animation. A brief, calm "shuffling" pause before the real, already-computed
- * result reveals — never a fake random spin; the deterministic draw already happened server-side
- * by the time this resolves, this is purely a moment of pacing before showing it. */
 export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDto) => void }) {
   const queryClient = useQueryClient();
+  const [phase, setPhase] = useState<Phase>('landing');
   const [type, setType] = useState<TarotReadingTypeValue>('DAILY_DRAW');
+  const [intention, setIntention] = useState<(typeof INTENTIONS)[number]['id']>('GENERAL');
   const [question, setQuestion] = useState('');
-  const [phase, setPhase] = useState<'idle' | 'shuffling' | 'revealed'>('idle');
+  const [pendingReading, setPendingReading] = useState<TarotReadingDto | null>(null);
+  const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [result, setResult] = useState<TarotReadingDto | null>(null);
   const [limitBanner, setLimitBanner] = useState<{ message: string; showUpgrade: boolean } | null>(null);
 
+  const count = CARD_COUNT[type];
+  const activeIntention = useMemo(() => INTENTIONS.find((item) => item.id === intention) ?? INTENTIONS[0], [intention]);
+
   const draw = useMutation({
-    mutationFn: () => tarotApi.draw(type, type === 'DAILY_DRAW' ? undefined : question || undefined),
+    mutationFn: () => tarotApi.draw(type, type === 'DAILY_DRAW' ? undefined : question.trim() || undefined),
     onSuccess: async (reading) => {
-      await new Promise((resolve) => setTimeout(resolve, 700));
-      setResult(reading);
-      setPhase('revealed');
+      await new Promise((resolve) => setTimeout(resolve, 520));
+      setPendingReading(reading);
+      setSelectedSlots([]);
+      setPhase('select');
       queryClient.invalidateQueries({ queryKey: ['tarot'] });
-      onDrawn?.(reading);
     },
     onError: (error: unknown) => {
-      setPhase('idle');
+      setPhase('spread');
       const banner = drawLimitBanner(error);
       if (banner) {
         setLimitBanner(banner);
@@ -69,12 +90,25 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     },
   });
 
-  function startDraw() {
-    setPhase('shuffling');
-    setResult(null);
+  function beginFocus() {
     setLimitBanner(null);
+    setPendingReading(null);
+    setResult(null);
+    setSelectedSlots([]);
+    setPhase('focus');
     trackEvent('tarot_started', { feature: 'tarot', spreadType: ANALYTICS_SPREAD_TYPE[type] });
     draw.mutate();
+  }
+
+  function selectSlot(index: number) {
+    if (!pendingReading || selectedSlots.includes(index) || selectedSlots.length >= count) return;
+    const next = [...selectedSlots, index];
+    setSelectedSlots(next);
+    if (next.length === count) {
+      setResult(pendingReading);
+      setPhase('revealed');
+      onDrawn?.(pendingReading);
+    }
   }
 
   async function refreshResult() {
@@ -83,84 +117,224 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     setResult(fresh);
   }
 
+  function reset() {
+    setPhase('landing');
+    setPendingReading(null);
+    setSelectedSlots([]);
+    setResult(null);
+    setLimitBanner(null);
+  }
+
   if (phase === 'revealed' && result) {
     return (
       <div className="flex flex-col gap-4">
         <TarotReadingView reading={result} onChanged={refreshResult} />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => {
-            setPhase('idle');
-            setResult(null);
-          }}
-        >
-          Draw again
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" size="sm" onClick={reset}>
+            Rút trải bài khác
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setPhase('select')}>
+            Xem lại bước chọn bài
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-md border border-border-subtle bg-surface p-4">
-      <div className="grid grid-cols-1 gap-3 tablet:grid-cols-3">
-        {READING_TYPES.map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setType(t)}
-            className={`group flex min-h-40 flex-col justify-between gap-3 rounded-md border p-3 text-left transition duration-fast hover:-translate-y-0.5 motion-reduce:transform-none ${
-              type === t ? 'border-insight bg-surface-raised shadow-[0_18px_48px_rgba(213,173,98,0.08)]' : 'border-border-subtle bg-surface hover:border-insight'
-            }`}
-          >
-            <span className="flex justify-center gap-1.5" aria-hidden="true">
-              {(t === 'THREE_CARD' ? [0, 1, 2] : [0]).map((index) => (
-                <span
-                  key={index}
-                  className="scale-[0.5]"
-                  style={{ transform: t === 'THREE_CARD' ? `translateY(${index === 1 ? -4 : 4}px)` : undefined }}
-                >
-                  <TarotCardVisual id={`${t}-${index}`} name={READING_TYPE_LABELS[t]} size="sm" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
-                </span>
-              ))}
-            </span>
-            <span>
-              <span className="block text-body-sm font-semibold text-text-primary">{READING_TYPE_LABELS[t]}</span>
-              <span className="mt-1 block text-caption leading-relaxed text-text-secondary">{READING_TYPE_DESCRIPTIONS[t]}</span>
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {type !== 'DAILY_DRAW' && (
-        <FormField label="Your question (optional)" htmlFor="tarot-question">
-          <Input id="tarot-question" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="What's on your mind?" />
-        </FormField>
+    <div className={`${TAROT_PANEL} ${TAROT_STARS}`}>
+      {phase !== 'landing' && (
+        <div className="relative flex items-center justify-between gap-3 border-b border-[rgba(213,173,98,0.18)] bg-[#101827]/70 px-4 py-3">
+          <Button variant="ghost" size="sm" onClick={() => setPhase(phase === 'spread' ? 'landing' : phase === 'intention' ? 'spread' : 'intention')}>
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+            Quay lại
+          </Button>
+          <span className="text-caption text-text-tertiary">{activeIntention.label} · {READING_TYPE_LABELS[type]}</span>
+        </div>
       )}
 
-      {limitBanner && (
-        <div role="alert" className="flex flex-col gap-2 rounded-md border border-insight/30 bg-insight/5 px-4 py-3 text-body-sm text-text-primary">
-          <span>{limitBanner.message}</span>
-          {limitBanner.showUpgrade && (
-            <Link href="/premium?reason=required" className="self-start">
-              <Button variant="secondary" size="sm">
-                Upgrade to Premium
+      {phase === 'landing' && (
+        <section className="relative grid gap-6 p-4 tablet:grid-cols-[0.9fr_1.1fr] tablet:p-6">
+          <div className="flex flex-col justify-center gap-4 py-4">
+            <div className="flex items-center gap-2 text-caption font-semibold uppercase text-insight">
+              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              Tarot
+            </div>
+            <div>
+              <h2 className="font-display text-heading-lg text-text-primary tablet:text-display-md">Điều gì đang gọi bạn?</h2>
+              <p className="mt-3 max-w-md text-body-md text-text-secondary">
+                Hãy để Tarot soi sáng những khúc mắc trong lòng bằng bộ 78 lá thật, được rút và lưu từ hệ thống.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button onClick={() => setPhase('spread')}>
+                <Sparkles className="h-4 w-4" aria-hidden="true" />
+                Bắt đầu trải bài
               </Button>
-            </Link>
-          )}
-        </div>
+              <a href="#tarot-library" className="inline-flex h-11 items-center gap-2 rounded-md border border-insight/35 px-4 text-body-md font-semibold text-text-primary transition hover:border-insight hover:bg-insight/5">
+                <Library className="h-4 w-4" aria-hidden="true" />
+                Thư viện 78 lá
+              </a>
+            </div>
+          </div>
+          <div className="relative min-h-80">
+            <div className="absolute inset-x-8 bottom-4 h-20 rounded-[50%] border border-insight/20 opacity-70" aria-hidden="true" />
+            <div className="relative flex h-full scale-[0.82] items-center justify-center tablet:scale-100">
+              <div className="-mr-12 rotate-[-18deg] opacity-80"><TarotCardVisual id="hero-star" name="The Star" size="md" imageSrc="/assets/tarot-card/17-the-star.webp" /></div>
+              <div className="z-[1] rotate-[6deg]"><TarotCardVisual id="hero-back" name="Tarot card back" size="lg" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} /></div>
+              <div className="-ml-14 mt-10 rotate-[17deg] opacity-85"><TarotCardVisual id="hero-cups" name="Ace of Cups" size="md" imageSrc="/assets/tarot-card/cups-ace.webp" /></div>
+            </div>
+          </div>
+        </section>
       )}
 
-      {phase === 'shuffling' ? (
-        <div role="status" className="flex items-center justify-center gap-2 rounded-md border border-insight/20 bg-insight/5 py-8 text-body-sm text-text-secondary">
-          <Sparkles className="h-5 w-5 animate-pulse text-insight" aria-hidden="true" />
-          <span>Shuffling…</span>
-        </div>
-      ) : (
-        <Button variant="primary" onClick={startDraw} loading={draw.isPending}>
-          Draw
-        </Button>
+      {phase === 'intention' && (
+        <section className="relative grid gap-6 p-4 tablet:grid-cols-[0.85fr_1.15fr] tablet:p-6">
+          <div>
+            <h2 className="font-display text-heading-lg text-insight">Đặt câu hỏi của bạn</h2>
+            <p className="mt-2 text-body-sm text-text-secondary">Chọn chủ đề để tự đặt khung nhìn, rồi nhập câu hỏi nếu bạn muốn. Chủ đề chưa được backend lưu riêng.</p>
+          </div>
+          <div className="flex flex-col gap-4">
+          <div className="grid gap-3 tablet:grid-cols-2">
+            {INTENTIONS.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setIntention(item.id)}
+                aria-pressed={intention === item.id}
+                className={`min-h-24 rounded-md border p-3 text-left transition hover:-translate-y-0.5 motion-reduce:transform-none ${
+                  intention === item.id ? 'border-insight bg-[#17172D] text-text-primary shadow-[0_0_0_1px_rgba(213,173,98,0.18)]' : 'border-[rgba(213,173,98,0.18)] bg-[#081522]/85 hover:border-insight/50'
+                }`}
+              >
+                <span className="block text-body-sm font-semibold text-text-primary">{item.label}</span>
+                <span className="mt-2 block text-caption leading-relaxed text-text-secondary">{item.helper}</span>
+              </button>
+            ))}
+          </div>
+          <FormField label="Câu hỏi của bạn (không bắt buộc)" htmlFor="tarot-question">
+            <textarea
+              id="tarot-question"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              maxLength={500}
+              rows={3}
+              placeholder="Điều gì đang khiến bạn muốn dừng lại và nhìn kỹ hơn?"
+              className="w-full resize-none rounded-md border border-[rgba(213,173,98,0.28)] bg-[#0A1622] px-3 py-2 text-body-md text-text-primary placeholder:text-text-tertiary focus:border-insight/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
+            />
+          </FormField>
+          <Button onClick={beginFocus} loading={draw.isPending} className="self-start">
+            <MoonStar className="h-4 w-4" aria-hidden="true" />
+            Tập trung và xáo bài
+          </Button>
+          </div>
+        </section>
       )}
+
+      {phase === 'spread' && (
+        <section className="relative flex flex-col gap-5 p-4 tablet:p-6">
+          <div className="text-center">
+            <h2 className="font-display text-heading-lg text-insight">Chọn kiểu trải bài</h2>
+            <p className="mt-2 text-body-sm text-text-secondary">Chỉ hiển thị các spread thật mà backend hiện hỗ trợ.</p>
+          </div>
+          <div className="grid grid-cols-1 gap-3 tablet:grid-cols-3">
+            {READING_TYPES.map((readingType) => (
+              <button
+                key={readingType}
+                type="button"
+                onClick={() => setType(readingType)}
+                aria-pressed={type === readingType}
+                className={`group flex min-h-52 flex-col justify-between gap-3 rounded-md border p-3 text-center transition duration-fast hover:-translate-y-0.5 motion-reduce:transform-none ${
+                  type === readingType ? 'border-insight bg-[#17172D] shadow-[0_18px_48px_rgba(213,173,98,0.10)]' : 'border-[rgba(213,173,98,0.18)] bg-[#081522]/85 hover:border-insight'
+                }`}
+              >
+                <span className="flex min-h-28 justify-center gap-1.5" aria-hidden="true">
+                  {Array.from({ length: CARD_COUNT[readingType] }).map((_, index) => (
+                    <span key={index} className="scale-[0.58]" style={{ transform: CARD_COUNT[readingType] > 1 ? `translateY(${index === 1 ? -8 : 5}px) rotate(${(index - 1) * 7}deg)` : undefined }}>
+                      <TarotCardVisual id={`${readingType}-${index}`} name={READING_TYPE_LABELS[readingType]} size="sm" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
+                    </span>
+                  ))}
+                </span>
+                <span>
+                  <span className="block text-body-sm font-semibold text-text-primary">{READING_TYPE_LABELS[readingType]}</span>
+                  <span className="mt-1 block text-caption leading-relaxed text-insight">{CARD_COUNT[readingType]} lá bài</span>
+                  <span className="mt-1 block text-caption leading-relaxed text-text-secondary">{READING_TYPE_DESCRIPTIONS[readingType]}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {limitBanner && (
+            <div role="alert" className="flex flex-col gap-2 rounded-md border border-insight/30 bg-insight/5 px-4 py-3 text-body-sm text-text-primary">
+              <span>{limitBanner.message}</span>
+              {limitBanner.showUpgrade && (
+                <Link href="/premium?reason=required" className="self-start">
+                  <Button variant="secondary" size="sm">Upgrade to Premium</Button>
+                </Link>
+              )}
+            </div>
+          )}
+
+          <Button onClick={() => setPhase('intention')} className="self-center">Tiếp tục</Button>
+        </section>
+      )}
+
+      {phase === 'focus' && (
+        <section className="relative flex min-h-96 flex-col items-center justify-center gap-6 p-8 text-center" role="status">
+          <div className="relative h-52 w-80 max-w-full" aria-hidden="true">
+            {[0, 1, 2, 3, 4, 5, 6].map((index) => (
+              <span key={index} className="absolute left-1/2 top-0 -translate-x-1/2" style={{ transform: `translateX(-50%) rotate(${(index - 2) * 9}deg) translateY(${Math.abs(index - 2) * 6}px)` }}>
+                <TarotCardVisual id={`shuffle-${index}`} name="Tarot card back" size="sm" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
+              </span>
+            ))}
+          </div>
+          <div>
+            <p className="font-display text-heading-md text-insight">Hãy tập trung và chọn {count} lá bài</p>
+            <p className="mt-2 max-w-md text-body-sm text-text-secondary">Lá bài đã được hệ thống rút một cách nhất quán; khoảnh khắc này chỉ để bạn chậm lại trước khi lật bài.</p>
+          </div>
+        </section>
+      )}
+
+      {phase === 'select' && pendingReading && (
+        <section className="relative flex flex-col items-center gap-5 p-4 tablet:p-6">
+          <div className="text-center">
+            <h2 className="font-display text-heading-lg text-insight">Chọn lá bài úp</h2>
+            <p className="mt-2 text-body-sm text-text-secondary" aria-live="polite">
+              Đã chọn {selectedSlots.length} / {count}
+            </p>
+          </div>
+          <div className="flex w-full flex-wrap justify-center gap-2 tablet:gap-3">
+            {Array.from({ length: Math.max(7, count + 4) }).map((_, index) => {
+              const available = index < count;
+              const selected = selectedSlots.includes(index);
+              const center = (Math.max(7, count + 4) - 1) / 2;
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  disabled={!available || selected}
+                  aria-label={available ? `Chọn lá ${index + 1}` : `Lá trang trí ${index + 1}`}
+                  aria-pressed={selected}
+                  onClick={() => selectSlot(index)}
+                  className={`transition duration-standard focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight motion-reduce:transform-none ${
+                    selected ? 'opacity-70' : available ? 'hover:brightness-110' : 'opacity-35'
+                  }`}
+                  style={{ transform: `translateY(${selected ? -12 : Math.abs(index - center) * 3}px) rotate(${(index - center) * 6}deg)` }}
+                >
+                  <TarotCardVisual id={`select-${index}`} name="Tarot card back" size="md" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
+                </button>
+              );
+            })}
+          </div>
+          <p className="max-w-lg text-center text-caption text-text-tertiary">
+            Vị trí bạn bấm chỉ chọn slot úp; card ID và chiều xuôi/ngược không bao giờ được gửi từ trình duyệt.
+          </p>
+        </section>
+      )}
+
+      <div className="border-t border-insight/10 px-4 py-3 text-caption text-text-tertiary">
+        <Eye className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
+        Tarot là gợi ý phản chiếu, không phải cam kết dự đoán chắc chắn.
+      </div>
     </div>
   );
 }

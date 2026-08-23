@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { TarotDrawPanel } from './tarot-draw-panel';
 import { TarotHistoryList } from './tarot-history-list';
 import { TarotReadingDetail } from './tarot-reading-detail';
+import { TarotLibrary } from './tarot-library';
 import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 /**
@@ -25,19 +26,24 @@ export function TarotDashboard() {
   }
 
   return (
-    <MvPage>
+    <MvPage className="rounded-md border border-[rgba(213,173,98,0.14)] bg-[#050B13] p-3 tablet:p-4">
       <MvPageHeader
         eyebrow="Tarot"
-        title="Một nghi thức nhỏ để nhìn rõ điều đang băn khoăn"
-        description="Rút bài từ bộ 78 lá thật. Lá bài được backend chọn và lưu lại; phần luận giải chỉ phản chiếu những lá đã rút, không tự tạo lịch sử hay kết quả giả."
+        title="Tarot 78 Complete Flow"
+        description="Hành trình Tarot trọn vẹn: chọn trải bài, đặt câu hỏi, rút bài server-authoritative, đọc nghĩa chuẩn, rồi lưu lại lịch sử."
+        className="border-[rgba(213,173,98,0.28)] bg-[#07111D]"
       />
 
-      <MvSection eyebrow="Bắt đầu" title="Rút bài">
+      <MvSection eyebrow="Bắt đầu" title="Trải bài Tarot">
         <TarotDrawPanel onDrawn={() => undefined} />
       </MvSection>
 
       <MvSection eyebrow="Dòng thời gian" title="Trải bài đã lưu">
         <TarotHistoryList filters={{}} onSelect={selectItem} />
+      </MvSection>
+
+      <MvSection eyebrow="Bộ bài" title="Thư viện">
+        <TarotLibrary />
       </MvSection>
     </MvPage>
   );

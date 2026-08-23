@@ -7,7 +7,7 @@ import { TarotDrawPanel } from './tarot-draw-panel';
 import { tarotApi } from '../api/tarot-api';
 
 jest.mock('../api/tarot-api', () => ({
-  tarotApi: { draw: jest.fn() },
+  tarotApi: { draw: jest.fn(), getReading: jest.fn() },
 }));
 
 const drawnReading: TarotReadingDto = {
@@ -57,35 +57,43 @@ const drawnReading: TarotReadingDto = {
 describe('TarotDrawPanel', () => {
   beforeEach(() => jest.clearAllMocks());
 
+  async function goToSpreadStep(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
+    await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
+  }
+
   it('defaults to Daily Draw and hides the question field', () => {
     renderWithQuery(<TarotDrawPanel />);
-    expect(screen.queryByLabelText(/your question/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Bắt đầu trải bài/ })).toBeInTheDocument();
+    expect(screen.queryByLabelText(/Câu hỏi của bạn/i)).not.toBeInTheDocument();
   });
 
-  it('shows the question field once a non-Daily-Draw type is selected', async () => {
+  it('shows the optional question field during the intention step', async () => {
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
-    await user.click(screen.getByRole('button', { name: /Single Card/ }));
-    expect(screen.getByLabelText(/your question/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
+    await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
+    expect(screen.getByLabelText(/Câu hỏi của bạn/i)).toBeInTheDocument();
   });
 
-  it('drawing reveals the real, already-computed result — no fabricated card while shuffling', async () => {
+  it('draws server-side, then reveals only after the user selects the face-down slot', async () => {
     let resolveDraw!: (reading: TarotReadingDto) => void;
     (tarotApi.draw as jest.Mock).mockReturnValue(new Promise((resolve) => { resolveDraw = resolve; }));
     const onDrawn = jest.fn();
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel onDrawn={onDrawn} />);
 
-    await user.click(screen.getByRole('button', { name: 'Draw' }));
-    expect(screen.getByRole('status')).toHaveTextContent('Shuffling…');
+    await goToSpreadStep(user);
+    await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
+    expect(screen.getByRole('status')).toHaveTextContent('Hãy tập trung');
     expect(screen.queryByText('The Fool')).not.toBeInTheDocument();
 
     resolveDraw(drawnReading);
-    // No artwork file exists for this card yet (real current state, see artwork.ts) — jsdom never
-    // fires a real image load/error, so simulate the same 404-then-fallback a real browser hits.
+    expect(await screen.findByRole('button', { name: 'Chọn lá 1' }, { timeout: 3000 })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Chọn lá 1' }));
     const artwork = await screen.findByTestId('tarot-card-artwork', {}, { timeout: 3000 });
     fireEvent.error(artwork);
-    await waitFor(() => expect(screen.getByText('The Fool')).toBeInTheDocument(), { timeout: 3000 });
+    await waitFor(() => expect(screen.getAllByText('The Fool').length).toBeGreaterThan(0), { timeout: 3000 });
     expect(tarotApi.draw).toHaveBeenCalledWith('DAILY_DRAW', undefined);
     expect(onDrawn).toHaveBeenCalledWith(drawnReading);
   });
@@ -96,8 +104,10 @@ describe('TarotDrawPanel', () => {
     );
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
+    await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
     await user.click(screen.getByRole('button', { name: /Single Card/ }));
-    await user.click(screen.getByRole('button', { name: 'Draw' }));
+    await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
+    await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/free single card limit/i);
     const upgradeLink = screen.getByRole('link', { name: 'Upgrade to Premium' });
@@ -110,24 +120,28 @@ describe('TarotDrawPanel', () => {
     );
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
+    await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
     await user.click(screen.getByRole('button', { name: /Single Card/ }));
-    await user.click(screen.getByRole('button', { name: 'Draw' }));
+    await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
+    await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/single card limit \(15\)/i);
     expect(screen.queryByRole('link', { name: 'Upgrade to Premium' })).not.toBeInTheDocument();
   });
 
-  it('"Draw again" resets back to the selector', async () => {
+  it('"Rút trải bài khác" resets back to the landing', async () => {
     (tarotApi.draw as jest.Mock).mockResolvedValue(drawnReading);
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
-    await user.click(screen.getByRole('button', { name: 'Draw' }));
+    await goToSpreadStep(user);
+    await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
+    await user.click(await screen.findByRole('button', { name: 'Chọn lá 1' }, { timeout: 3000 }));
     const artwork = await screen.findByTestId('tarot-card-artwork', {}, { timeout: 3000 });
     fireEvent.error(artwork);
-    await waitFor(() => expect(screen.getByText('The Fool')).toBeInTheDocument(), { timeout: 3000 });
+    await waitFor(() => expect(screen.getAllByText('The Fool').length).toBeGreaterThan(0), { timeout: 3000 });
 
-    await user.click(screen.getByRole('button', { name: 'Draw again' }));
-    expect(screen.getByRole('button', { name: 'Draw' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Rút trải bài khác' }));
+    expect(screen.getByRole('button', { name: /Bắt đầu trải bài/ })).toBeInTheDocument();
     expect(screen.queryByText('The Fool')).not.toBeInTheDocument();
   });
 });

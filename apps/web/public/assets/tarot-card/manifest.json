@@ -1,0 +1,666 @@
+[
+  {
+    "id": "00-the-fool",
+    "name": "The Fool",
+    "arcana": "major",
+    "number": 0,
+    "romanNumeral": "0",
+    "image": "/assets/tarot-card/00-the-fool.webp"
+  },
+  {
+    "id": "01-the-magician",
+    "name": "The Magician",
+    "arcana": "major",
+    "number": 1,
+    "romanNumeral": "I",
+    "image": "/assets/tarot-card/01-the-magician.webp"
+  },
+  {
+    "id": "02-the-high-priestess",
+    "name": "The High Priestess",
+    "arcana": "major",
+    "number": 2,
+    "romanNumeral": "II",
+    "image": "/assets/tarot-card/02-the-high-priestess.webp"
+  },
+  {
+    "id": "03-the-empress",
+    "name": "The Empress",
+    "arcana": "major",
+    "number": 3,
+    "romanNumeral": "III",
+    "image": "/assets/tarot-card/03-the-empress.webp"
+  },
+  {
+    "id": "04-the-emperor",
+    "name": "The Emperor",
+    "arcana": "major",
+    "number": 4,
+    "romanNumeral": "IV",
+    "image": "/assets/tarot-card/04-the-emperor.webp"
+  },
+  {
+    "id": "05-the-hierophant",
+    "name": "The Hierophant",
+    "arcana": "major",
+    "number": 5,
+    "romanNumeral": "V",
+    "image": "/assets/tarot-card/05-the-hierophant.webp"
+  },
+  {
+    "id": "06-the-lovers",
+    "name": "The Lovers",
+    "arcana": "major",
+    "number": 6,
+    "romanNumeral": "VI",
+    "image": "/assets/tarot-card/06-the-lovers.webp"
+  },
+  {
+    "id": "07-the-chariot",
+    "name": "The Chariot",
+    "arcana": "major",
+    "number": 7,
+    "romanNumeral": "VII",
+    "image": "/assets/tarot-card/07-the-chariot.webp"
+  },
+  {
+    "id": "08-strength",
+    "name": "Strength",
+    "arcana": "major",
+    "number": 8,
+    "romanNumeral": "VIII",
+    "image": "/assets/tarot-card/08-strength.webp"
+  },
+  {
+    "id": "09-the-hermit",
+    "name": "The Hermit",
+    "arcana": "major",
+    "number": 9,
+    "romanNumeral": "IX",
+    "image": "/assets/tarot-card/09-the-hermit.webp"
+  },
+  {
+    "id": "10-wheel-of-fortune",
+    "name": "Wheel of Fortune",
+    "arcana": "major",
+    "number": 10,
+    "romanNumeral": "X",
+    "image": "/assets/tarot-card/10-wheel-of-fortune.webp"
+  },
+  {
+    "id": "11-justice",
+    "name": "Justice",
+    "arcana": "major",
+    "number": 11,
+    "romanNumeral": "XI",
+    "image": "/assets/tarot-card/11-justice.webp"
+  },
+  {
+    "id": "12-the-hanged-man",
+    "name": "The Hanged Man",
+    "arcana": "major",
+    "number": 12,
+    "romanNumeral": "XII",
+    "image": "/assets/tarot-card/12-the-hanged-man.webp"
+  },
+  {
+    "id": "13-death",
+    "name": "Death",
+    "arcana": "major",
+    "number": 13,
+    "romanNumeral": "XIII",
+    "image": "/assets/tarot-card/13-death.webp"
+  },
+  {
+    "id": "14-temperance",
+    "name": "Temperance",
+    "arcana": "major",
+    "number": 14,
+    "romanNumeral": "XIV",
+    "image": "/assets/tarot-card/14-temperance.webp"
+  },
+  {
+    "id": "15-the-devil",
+    "name": "The Devil",
+    "arcana": "major",
+    "number": 15,
+    "romanNumeral": "XV",
+    "image": "/assets/tarot-card/15-the-devil.webp"
+  },
+  {
+    "id": "16-the-tower",
+    "name": "The Tower",
+    "arcana": "major",
+    "number": 16,
+    "romanNumeral": "XVI",
+    "image": "/assets/tarot-card/16-the-tower.webp"
+  },
+  {
+    "id": "17-the-star",
+    "name": "The Star",
+    "arcana": "major",
+    "number": 17,
+    "romanNumeral": "XVII",
+    "image": "/assets/tarot-card/17-the-star.webp"
+  },
+  {
+    "id": "18-the-moon",
+    "name": "The Moon",
+    "arcana": "major",
+    "number": 18,
+    "romanNumeral": "XVIII",
+    "image": "/assets/tarot-card/18-the-moon.webp"
+  },
+  {
+    "id": "19-the-sun",
+    "name": "The Sun",
+    "arcana": "major",
+    "number": 19,
+    "romanNumeral": "XIX",
+    "image": "/assets/tarot-card/19-the-sun.webp"
+  },
+  {
+    "id": "20-judgement",
+    "name": "Judgement",
+    "arcana": "major",
+    "number": 20,
+    "romanNumeral": "XX",
+    "image": "/assets/tarot-card/20-judgement.webp"
+  },
+  {
+    "id": "21-the-world",
+    "name": "The World",
+    "arcana": "major",
+    "number": 21,
+    "romanNumeral": "XXI",
+    "image": "/assets/tarot-card/21-the-world.webp"
+  },
+  {
+    "id": "wands-ace",
+    "name": "Ace of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "ace",
+    "number": 1,
+    "image": "/assets/tarot-card/wands-ace.webp"
+  },
+  {
+    "id": "wands-02",
+    "name": "Two of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "two",
+    "number": 2,
+    "image": "/assets/tarot-card/wands-02.webp"
+  },
+  {
+    "id": "wands-03",
+    "name": "Three of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "three",
+    "number": 3,
+    "image": "/assets/tarot-card/wands-03.webp"
+  },
+  {
+    "id": "wands-04",
+    "name": "Four of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "four",
+    "number": 4,
+    "image": "/assets/tarot-card/wands-04.webp"
+  },
+  {
+    "id": "wands-05",
+    "name": "Five of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "five",
+    "number": 5,
+    "image": "/assets/tarot-card/wands-05.webp"
+  },
+  {
+    "id": "wands-06",
+    "name": "Six of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "six",
+    "number": 6,
+    "image": "/assets/tarot-card/wands-06.webp"
+  },
+  {
+    "id": "wands-07",
+    "name": "Seven of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "seven",
+    "number": 7,
+    "image": "/assets/tarot-card/wands-07.webp"
+  },
+  {
+    "id": "wands-08",
+    "name": "Eight of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "eight",
+    "number": 8,
+    "image": "/assets/tarot-card/wands-08.webp"
+  },
+  {
+    "id": "wands-09",
+    "name": "Nine of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "nine",
+    "number": 9,
+    "image": "/assets/tarot-card/wands-09.webp"
+  },
+  {
+    "id": "wands-10",
+    "name": "Ten of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "ten",
+    "number": 10,
+    "image": "/assets/tarot-card/wands-10.webp"
+  },
+  {
+    "id": "wands-page",
+    "name": "Page of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "page",
+    "image": "/assets/tarot-card/wands-page.webp"
+  },
+  {
+    "id": "wands-knight",
+    "name": "Knight of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "knight",
+    "image": "/assets/tarot-card/wands-knight.webp"
+  },
+  {
+    "id": "wands-queen",
+    "name": "Queen of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "queen",
+    "image": "/assets/tarot-card/wands-queen.webp"
+  },
+  {
+    "id": "wands-king",
+    "name": "King of Wands",
+    "arcana": "minor",
+    "suit": "wands",
+    "rank": "king",
+    "image": "/assets/tarot-card/wands-king.webp"
+  },
+  {
+    "id": "cups-ace",
+    "name": "Ace of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "ace",
+    "number": 1,
+    "image": "/assets/tarot-card/cups-ace.webp"
+  },
+  {
+    "id": "cups-02",
+    "name": "Two of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "two",
+    "number": 2,
+    "image": "/assets/tarot-card/cups-02.webp"
+  },
+  {
+    "id": "cups-03",
+    "name": "Three of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "three",
+    "number": 3,
+    "image": "/assets/tarot-card/cups-03.webp"
+  },
+  {
+    "id": "cups-04",
+    "name": "Four of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "four",
+    "number": 4,
+    "image": "/assets/tarot-card/cups-04.webp"
+  },
+  {
+    "id": "cups-05",
+    "name": "Five of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "five",
+    "number": 5,
+    "image": "/assets/tarot-card/cups-05.webp"
+  },
+  {
+    "id": "cups-06",
+    "name": "Six of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "six",
+    "number": 6,
+    "image": "/assets/tarot-card/cups-06.webp"
+  },
+  {
+    "id": "cups-07",
+    "name": "Seven of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "seven",
+    "number": 7,
+    "image": "/assets/tarot-card/cups-07.webp"
+  },
+  {
+    "id": "cups-08",
+    "name": "Eight of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "eight",
+    "number": 8,
+    "image": "/assets/tarot-card/cups-08.webp"
+  },
+  {
+    "id": "cups-09",
+    "name": "Nine of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "nine",
+    "number": 9,
+    "image": "/assets/tarot-card/cups-09.webp"
+  },
+  {
+    "id": "cups-10",
+    "name": "Ten of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "ten",
+    "number": 10,
+    "image": "/assets/tarot-card/cups-10.webp"
+  },
+  {
+    "id": "cups-page",
+    "name": "Page of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "page",
+    "image": "/assets/tarot-card/cups-page.webp"
+  },
+  {
+    "id": "cups-knight",
+    "name": "Knight of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "knight",
+    "image": "/assets/tarot-card/cups-knight.webp"
+  },
+  {
+    "id": "cups-queen",
+    "name": "Queen of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "queen",
+    "image": "/assets/tarot-card/cups-queen.webp"
+  },
+  {
+    "id": "cups-king",
+    "name": "King of Cups",
+    "arcana": "minor",
+    "suit": "cups",
+    "rank": "king",
+    "image": "/assets/tarot-card/cups-king.webp"
+  },
+  {
+    "id": "swords-ace",
+    "name": "Ace of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "ace",
+    "number": 1,
+    "image": "/assets/tarot-card/swords-ace.webp"
+  },
+  {
+    "id": "swords-02",
+    "name": "Two of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "two",
+    "number": 2,
+    "image": "/assets/tarot-card/swords-02.webp"
+  },
+  {
+    "id": "swords-03",
+    "name": "Three of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "three",
+    "number": 3,
+    "image": "/assets/tarot-card/swords-03.webp"
+  },
+  {
+    "id": "swords-04",
+    "name": "Four of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "four",
+    "number": 4,
+    "image": "/assets/tarot-card/swords-04.webp"
+  },
+  {
+    "id": "swords-05",
+    "name": "Five of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "five",
+    "number": 5,
+    "image": "/assets/tarot-card/swords-05.webp"
+  },
+  {
+    "id": "swords-06",
+    "name": "Six of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "six",
+    "number": 6,
+    "image": "/assets/tarot-card/swords-06.webp"
+  },
+  {
+    "id": "swords-07",
+    "name": "Seven of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "seven",
+    "number": 7,
+    "image": "/assets/tarot-card/swords-07.webp"
+  },
+  {
+    "id": "swords-08",
+    "name": "Eight of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "eight",
+    "number": 8,
+    "image": "/assets/tarot-card/swords-08.webp"
+  },
+  {
+    "id": "swords-09",
+    "name": "Nine of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "nine",
+    "number": 9,
+    "image": "/assets/tarot-card/swords-09.webp"
+  },
+  {
+    "id": "swords-10",
+    "name": "Ten of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "ten",
+    "number": 10,
+    "image": "/assets/tarot-card/swords-10.webp"
+  },
+  {
+    "id": "swords-page",
+    "name": "Page of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "page",
+    "image": "/assets/tarot-card/swords-page.webp"
+  },
+  {
+    "id": "swords-knight",
+    "name": "Knight of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "knight",
+    "image": "/assets/tarot-card/swords-knight.webp"
+  },
+  {
+    "id": "swords-queen",
+    "name": "Queen of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "queen",
+    "image": "/assets/tarot-card/swords-queen.webp"
+  },
+  {
+    "id": "swords-king",
+    "name": "King of Swords",
+    "arcana": "minor",
+    "suit": "swords",
+    "rank": "king",
+    "image": "/assets/tarot-card/swords-king.webp"
+  },
+  {
+    "id": "pentacles-ace",
+    "name": "Ace of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "ace",
+    "number": 1,
+    "image": "/assets/tarot-card/pentacles-ace.webp"
+  },
+  {
+    "id": "pentacles-02",
+    "name": "Two of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "two",
+    "number": 2,
+    "image": "/assets/tarot-card/pentacles-02.webp"
+  },
+  {
+    "id": "pentacles-03",
+    "name": "Three of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "three",
+    "number": 3,
+    "image": "/assets/tarot-card/pentacles-03.webp"
+  },
+  {
+    "id": "pentacles-04",
+    "name": "Four of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "four",
+    "number": 4,
+    "image": "/assets/tarot-card/pentacles-04.webp"
+  },
+  {
+    "id": "pentacles-05",
+    "name": "Five of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "five",
+    "number": 5,
+    "image": "/assets/tarot-card/pentacles-05.webp"
+  },
+  {
+    "id": "pentacles-06",
+    "name": "Six of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "six",
+    "number": 6,
+    "image": "/assets/tarot-card/pentacles-06.webp"
+  },
+  {
+    "id": "pentacles-07",
+    "name": "Seven of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "seven",
+    "number": 7,
+    "image": "/assets/tarot-card/pentacles-07.webp"
+  },
+  {
+    "id": "pentacles-08",
+    "name": "Eight of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "eight",
+    "number": 8,
+    "image": "/assets/tarot-card/pentacles-08.webp"
+  },
+  {
+    "id": "pentacles-09",
+    "name": "Nine of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "nine",
+    "number": 9,
+    "image": "/assets/tarot-card/pentacles-09.webp"
+  },
+  {
+    "id": "pentacles-10",
+    "name": "Ten of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "ten",
+    "number": 10,
+    "image": "/assets/tarot-card/pentacles-10.webp"
+  },
+  {
+    "id": "pentacles-page",
+    "name": "Page of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "page",
+    "image": "/assets/tarot-card/pentacles-page.webp"
+  },
+  {
+    "id": "pentacles-knight",
+    "name": "Knight of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "knight",
+    "image": "/assets/tarot-card/pentacles-knight.webp"
+  },
+  {
+    "id": "pentacles-queen",
+    "name": "Queen of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "queen",
+    "image": "/assets/tarot-card/pentacles-queen.webp"
+  },
+  {
+    "id": "pentacles-king",
+    "name": "King of Pentacles",
+    "arcana": "minor",
+    "suit": "pentacles",
+    "rank": "king",
+    "image": "/assets/tarot-card/pentacles-king.webp"
+  }
+]

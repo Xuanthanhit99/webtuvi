@@ -34,10 +34,11 @@ describe('TarotCardFace', () => {
     expect(screen.getByText('00')).toBeInTheDocument();
   });
 
-  it('the whole card flips upside-down when reversed, including its name', () => {
-    render(<TarotCardFace card={card} isReversed />);
+  it('rotates the artwork when reversed without rotating the readable button label', () => {
+    render(<TarotCardFace card={card} isReversed imageSrc="/assets/tarot-card/00-the-fool.webp" />);
     const button = screen.getByRole('button', { name: 'The Fool, reversed' });
-    expect(button.className).toContain('rotate-180');
+    expect(button.className).not.toContain('rotate-180');
+    expect(screen.getByTestId('tarot-card-artwork').className).toContain('rotate-180');
   });
 
   it('is not rotated when upright', () => {
@@ -59,6 +60,18 @@ describe('TarotCardFace', () => {
     fireEvent.error(screen.getByTestId('tarot-card-artwork'));
     expect(screen.getByText('The Fool')).toBeInTheDocument();
     expect(screen.getByText('00')).toBeInTheDocument();
+  });
+
+  it('recovers once a new imageSrc replaces a previously-failed one on a reused instance (e.g. switching between two saved readings whose spreads key by position)', () => {
+    const { rerender } = render(<TarotCardFace card={card} isReversed={false} imageSrc="/missing-tarot.webp" />);
+    fireEvent.error(screen.getByTestId('tarot-card-artwork'));
+    expect(screen.queryByTestId('tarot-card-artwork')).not.toBeInTheDocument();
+
+    const otherCard: TarotCardDto = { ...card, id: 'c2', name: 'The Star', slug: 'major-17-the-star', number: 17 };
+    rerender(<TarotCardFace card={otherCard} isReversed={false} imageSrc="/assets/tarot-card/17-the-star.webp" />);
+
+    const img = screen.getByTestId('tarot-card-artwork');
+    expect(img).toHaveAttribute('src', '/assets/tarot-card/17-the-star.webp');
   });
 });
 

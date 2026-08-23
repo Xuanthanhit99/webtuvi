@@ -66,10 +66,12 @@ describe('TarotReadingView', () => {
     // No artwork file exists for this card yet (real current state, see artwork.ts) — jsdom never
     // fires a real image load/error, so simulate the same 404-then-fallback a real browser hits.
     fireEvent.error(screen.getByTestId('tarot-card-artwork'));
-    expect(screen.getByText('The Fool')).toBeInTheDocument();
+    expect(screen.getAllByText('The Fool').length).toBeGreaterThan(0);
     expect(screen.getByText('“What should I focus on?”')).toBeInTheDocument();
     expect(screen.getByText(baseReading.interpretation!)).toBeInTheDocument();
-    expect(screen.getByText('Focus')).toBeInTheDocument();
+    expect(screen.getAllByText('Focus').length).toBeGreaterThan(0);
+    expect(screen.getByText('A leap of faith.')).toBeInTheDocument();
+    expect(screen.getByText('Có thể bạn muốn tự hỏi...')).toBeInTheDocument();
   });
 
   it('labels the interpretation as AI, distinct from the deterministic card above it', () => {

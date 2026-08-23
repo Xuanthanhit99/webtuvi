@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Flame, Droplet, Wind, Mountain, Sparkles } from 'lucide-react';
 import type { TarotCardDto } from '@beaconvie/types';
 import { cn } from '@/lib/cn';
@@ -69,6 +69,18 @@ export function TarotCardVisual({
   const [imageState, setImageState] = useState<'loading' | 'loaded' | 'failed'>(imageSrc ? 'loading' : 'failed');
   const [backImageState, setBackImageState] = useState<'loading' | 'loaded' | 'failed'>(backImageSrc ? 'loading' : 'failed');
 
+  // A card face's DOM/state instance can be reused across different cards when a parent keys by
+  // position rather than card id (e.g. switching between two different saved readings). Without
+  // this, a card that once failed to load would stay stuck on the typographic fallback forever,
+  // even once a later render supplies a perfectly valid `imageSrc` for a different card.
+  useEffect(() => {
+    setImageState(imageSrc ? 'loading' : 'failed');
+  }, [imageSrc]);
+
+  useEffect(() => {
+    setBackImageState(backImageSrc ? 'loading' : 'failed');
+  }, [backImageSrc]);
+
   const showBack = revealed === false && Boolean(backImageSrc) && backImageState !== 'failed';
   const showFront = revealed !== false && Boolean(imageSrc) && imageState !== 'failed';
 
@@ -76,20 +88,21 @@ export function TarotCardVisual({
     <span
       data-card-id={id}
       className={cn(
-        'relative flex shrink-0 flex-col items-center justify-between gap-2 overflow-hidden rounded-md border border-[rgba(213,173,98,0.28)] bg-surface-raised p-3 text-center shadow-[0_16px_44px_rgba(0,0,0,0.28)]',
+        'relative flex shrink-0 flex-col items-center justify-between gap-2 overflow-hidden rounded-md border border-[rgba(213,173,98,0.28)] bg-[#070B12] p-3 text-center shadow-[0_16px_44px_rgba(0,0,0,0.28)]',
         SIZE_CLASSES[size],
-        reversed && 'rotate-180',
       )}
     >
       {showBack && (
         <>
-          {backImageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5" aria-hidden="true" />}
+          {backImageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5 motion-reduce:animate-none" aria-hidden="true" />}
           {/* eslint-disable-next-line @next/next/no-img-element -- shared static art asset, no Next image optimizer needed. */}
           <img
             data-testid="tarot-card-back-artwork"
             src={backImageSrc ?? undefined}
             alt=""
-            className={cn('absolute inset-0 h-full w-full object-cover', backImageState === 'loading' && 'opacity-0')}
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-contain"
             onLoad={() => setBackImageState('loaded')}
             onError={() => setBackImageState('failed')}
           />
@@ -97,13 +110,15 @@ export function TarotCardVisual({
       )}
       {showFront && (
         <>
-          {imageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5" aria-hidden="true" />}
+          {imageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5 motion-reduce:animate-none" aria-hidden="true" />}
           {/* eslint-disable-next-line @next/next/no-img-element -- Future approved Tarot art must fail over without Next image optimizer assumptions. */}
           <img
             data-testid="tarot-card-artwork"
             src={imageSrc ?? undefined}
             alt=""
-            className={cn('absolute inset-0 h-full w-full object-cover', imageState === 'loading' && 'opacity-0')}
+            loading="lazy"
+            decoding="async"
+            className={cn('absolute inset-0 h-full w-full object-contain', reversed && 'rotate-180')}
             onLoad={() => setImageState('loaded')}
             onError={() => setImageState('failed')}
           />
@@ -141,7 +156,6 @@ export function TarotCardFace({
       aria-label={`${card.name}${isReversed ? ', reversed' : ''}`}
       className={cn(
         'relative transition-transform duration-standard',
-        isReversed && 'rotate-180',
         onClick && 'cursor-pointer hover:border-insight',
       )}
     >
@@ -149,6 +163,7 @@ export function TarotCardFace({
         id={card.id}
         name={card.name}
         imageSrc={imageSrc}
+        reversed={isReversed}
         size={size}
         symbol={<Icon className="h-5 w-5" aria-hidden="true" />}
         numberLabel={String(card.number).padStart(2, '0')}

@@ -26,25 +26,30 @@ export function TarotHistoryList({ filters, onSelect }: { filters: ListReadingsF
   const atFreeCap = !premiumStatus?.isPremium && data.total >= FREE_HISTORY_LIMIT;
 
   return (
-    <div className="flex flex-col gap-3">
+    <div className="relative flex flex-col gap-3 overflow-hidden rounded-md border border-[rgba(213,173,98,0.28)] bg-[#07111D] p-3 shadow-[0_18px_60px_rgba(0,0,0,0.22)]">
       <ul className="flex flex-col gap-2" aria-label="Reading history">
         {data.items.map((reading) => (
           <li key={reading.id}>
             <button
               type="button"
               onClick={() => onSelect(reading.id)}
-              className="flex w-full flex-wrap items-center justify-between gap-2 rounded-md border border-border-subtle bg-surface px-3 py-2 text-left transition-colors duration-fast hover:bg-surface-raised"
+              className="flex w-full flex-wrap items-center justify-between gap-3 rounded-md border border-[rgba(213,173,98,0.18)] bg-[#0A1622]/90 px-3 py-3 text-left transition-colors duration-fast hover:border-insight/50 hover:bg-[#101827]"
             >
               <div className="flex flex-col gap-1">
                 <span className="text-body-sm font-semibold text-text-primary">
-                  {reading.cards.map((c) => c.card.name).join(', ')}
+                  {reading.cards.map((c) => `${c.card.name} ${c.isReversed ? '(Ngược)' : '(Xuôi)'}`).join(', ')}
                 </span>
                 {reading.question && <span className="text-caption text-text-secondary">“{reading.question}”</span>}
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant="neutral">{READING_TYPE_LABELS[reading.type]}</Badge>
-                <Badge variant={READING_STATUS_BADGE_VARIANT[reading.status]}>{READING_STATUS_LABELS[reading.status]}</Badge>
-                <span className="text-caption text-text-tertiary">{new Date(reading.createdAt).toLocaleDateString()}</span>
+                <Badge
+                  variant={READING_STATUS_BADGE_VARIANT[reading.status]}
+                  className={reading.status === 'ACTIVE' ? 'bg-[#123D34] text-[#B9F6D8]' : undefined}
+                >
+                  {READING_STATUS_LABELS[reading.status]}
+                </Badge>
+                <span className="text-caption text-text-secondary">{new Date(reading.createdAt).toLocaleString()}</span>
               </div>
             </button>
           </li>
