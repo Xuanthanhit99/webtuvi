@@ -1,6 +1,7 @@
 'use client';
 
 import type { TuViChartDto } from '@beaconvie/types';
+import { DIGNITY_SHORT_LABEL } from '../labels';
 
 /**
  * Time Cycles pass — Tiểu Hạn (annual cycle) year navigation. `nearbyTieuHan` is a server-computed
@@ -27,9 +28,16 @@ export function TuViTieuHanYearNav({ chart }: { chart: TuViChartDto }) {
     );
   }
 
+  // Real cross-reference for the current (or, absent one, the earliest listed) year's palace —
+  // the same stars already placed on this chart, filtered by that year's own palace branch,
+  // mirroring TuViDaiVanTimeline's own real-data-only pattern.
+  const detailEntry = chart.currentTieuHan ?? chart.nearbyTieuHan[0]!;
+  const mainStars = chart.mainStars.filter((s) => s.position === detailEntry.palace);
+  const auxiliaryStars = chart.auxiliaryStars.filter((s) => s.position === detailEntry.palace);
+
   return (
-    <section aria-labelledby="tu-vi-tieu-han-heading" className="rounded-lg border border-border-subtle bg-surface p-4">
-      <h3 id="tu-vi-tieu-han-heading" className="mb-3 text-body-sm font-semibold text-text-primary">
+    <section aria-labelledby="tu-vi-tieu-han-heading" className="rounded-lg border border-[rgba(213,173,98,0.18)] bg-surface p-4">
+      <h3 id="tu-vi-tieu-han-heading" className="mb-3 font-display text-body-md font-semibold text-text-primary">
         Tiểu Hạn — chu kỳ theo năm
       </h3>
 
@@ -41,7 +49,7 @@ export function TuViTieuHanYearNav({ chart }: { chart: TuViChartDto }) {
               <div
                 aria-current={isCurrent ? 'true' : undefined}
                 className={`flex min-h-11 flex-col items-center justify-center rounded-md border px-3 py-1 text-center ${
-                  isCurrent ? 'border-insight bg-insight/10' : 'border-border-subtle'
+                  isCurrent ? 'border-insight bg-insight/10' : 'border-[rgba(213,173,98,0.14)]'
                 }`}
               >
                 <span className="text-body-sm font-medium text-text-primary">{entry.lunarYear}</span>
@@ -54,6 +62,46 @@ export function TuViTieuHanYearNav({ chart }: { chart: TuViChartDto }) {
           );
         })}
       </ul>
+
+      <div className="mt-3 rounded-md border border-[rgba(213,173,98,0.18)] bg-surface-raised p-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <p className="font-display text-body-lg font-semibold text-text-primary">Tiểu Hạn năm {detailEntry.lunarYear}</p>
+          {chart.currentTieuHan && <span className="rounded-sm bg-insight/15 px-2 py-0.5 text-caption font-semibold text-insight">Hiện tại</span>}
+        </div>
+        <p className="mt-1 text-body-sm text-text-secondary">
+          {detailEntry.tuoi} tuổi · Cung tại {detailEntry.palace}
+        </p>
+
+        <div className="mt-4 grid gap-3 tablet:grid-cols-2">
+          <div>
+            <p className="text-caption font-semibold uppercase tracking-[0.12em] text-text-tertiary">Chính tinh</p>
+            {mainStars.length > 0 ? (
+              <ul className="mt-1.5 flex flex-col gap-1">
+                {mainStars.map(({ star, dignity }) => (
+                  <li key={star} className="flex items-center gap-1.5 text-body-sm text-text-primary">
+                    {star}
+                    <span className="rounded-sm bg-insight/15 px-1 py-0.5 text-[0.6rem] font-semibold text-insight">{DIGNITY_SHORT_LABEL[dignity]}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1.5 text-body-sm text-text-tertiary">Không có chính tinh tại cung này.</p>
+            )}
+          </div>
+          <div>
+            <p className="text-caption font-semibold uppercase tracking-[0.12em] text-text-tertiary">Phụ tinh</p>
+            {auxiliaryStars.length > 0 ? (
+              <ul className="mt-1.5 flex flex-wrap gap-x-2 gap-y-1 text-body-sm text-text-secondary">
+                {auxiliaryStars.map(({ star }) => (
+                  <li key={star}>{star}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1.5 text-body-sm text-text-tertiary">Không có phụ tinh tại cung này.</p>
+            )}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

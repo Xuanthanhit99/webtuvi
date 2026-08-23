@@ -67,11 +67,10 @@ test('Calculate VECTOR-B1, verify exact deterministic facts, generate interpreta
   // this pass's scope; see the QA closure report).
   await page.getByRole('link', { name: /mở tử vi lá số/i }).click();
   await expect(page).toHaveURL(/\/discover\/tu-vi/, { timeout: 30000 });
-  // The real page h1 (features/tu-vi/components/tu-vi-dashboard.tsx, via MvPageHeader) is
-  // "Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số", with "Lá số Tử Vi" rendered as an eyebrow
-  // <paragraph>, not a heading — confirmed against the real rendered DOM. The old assertion
-  // never matched any element on this page; fixed here for all 5 occurrences in this file.
-  await expect(page.getByRole('heading', { name: 'Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số', level: 1 })).toBeVisible({ timeout: 15000 });
+  // Board 02 pass: the real page h1 is now "Lá số Tử Vi", rendered by the TuViHero landing
+  // component (features/tu-vi/components/tu-vi-hero.tsx) — replaced the old MvPageHeader-based
+  // title. Fixed here for all 5 occurrences in this file.
+  await expect(page.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeVisible({ timeout: 15000 });
 
   // --- Failure state first: submitting with no birth date must never silently guess a result. ---
   await page.getByRole('button', { name: /calculate my lá số/i }).click();
@@ -139,11 +138,10 @@ test('TUVI-GIO-02 midnight boundary (23:xx/00:xx): a 23:30 birth resolves to hou
   await registerAndOnboard(page, 'boundary');
 
   await page.goto('/discover/tu-vi');
-  // The real page h1 (features/tu-vi/components/tu-vi-dashboard.tsx, via MvPageHeader) is
-  // "Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số", with "Lá số Tử Vi" rendered as an eyebrow
-  // <paragraph>, not a heading — confirmed against the real rendered DOM. The old assertion
-  // never matched any element on this page; fixed here for all 5 occurrences in this file.
-  await expect(page.getByRole('heading', { name: 'Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số', level: 1 })).toBeVisible({ timeout: 15000 });
+  // Board 02 pass: the real page h1 is now "Lá số Tử Vi", rendered by the TuViHero landing
+  // component (features/tu-vi/components/tu-vi-hero.tsx) — replaced the old MvPageHeader-based
+  // title. Fixed here for all 5 occurrences in this file.
+  await expect(page.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeVisible({ timeout: 15000 });
 
   // Engine-verified fixed point (tu-vi-calendar-context.spec.ts, TUVI-GIO-02): birthDate
   // 2024-03-15, birthTime 23:30 -> hourBranch = Tý, effectiveTuViDate = the SAME calendar day
@@ -169,11 +167,10 @@ test('accessibility: zero axe violations on the input form, the calculated resul
   await registerAndOnboard(page, 'axe');
 
   await page.goto('/discover/tu-vi');
-  // The real page h1 (features/tu-vi/components/tu-vi-dashboard.tsx, via MvPageHeader) is
-  // "Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số", with "Lá số Tử Vi" rendered as an eyebrow
-  // <paragraph>, not a heading — confirmed against the real rendered DOM. The old assertion
-  // never matched any element on this page; fixed here for all 5 occurrences in this file.
-  await expect(page.getByRole('heading', { name: 'Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số', level: 1 })).toBeVisible({ timeout: 15000 });
+  // Board 02 pass: the real page h1 is now "Lá số Tử Vi", rendered by the TuViHero landing
+  // component (features/tu-vi/components/tu-vi-hero.tsx) — replaced the old MvPageHeader-based
+  // title. Fixed here for all 5 occurrences in this file.
+  await expect(page.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeVisible({ timeout: 15000 });
 
   // 1. Input form, idle state.
   const formScan = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
@@ -203,11 +200,10 @@ test('responsive: the calculated chart stays legible with no horizontal overflow
   await registerAndOnboard(page, 'responsive');
 
   await page.goto('/discover/tu-vi');
-  // The real page h1 (features/tu-vi/components/tu-vi-dashboard.tsx, via MvPageHeader) is
-  // "Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số", with "Lá số Tử Vi" rendered as an eyebrow
-  // <paragraph>, not a heading — confirmed against the real rendered DOM. The old assertion
-  // never matched any element on this page; fixed here for all 5 occurrences in this file.
-  await expect(page.getByRole('heading', { name: 'Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số', level: 1 })).toBeVisible({ timeout: 15000 });
+  // Board 02 pass: the real page h1 is now "Lá số Tử Vi", rendered by the TuViHero landing
+  // component (features/tu-vi/components/tu-vi-hero.tsx) — replaced the old MvPageHeader-based
+  // title. Fixed here for all 5 occurrences in this file.
+  await expect(page.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeVisible({ timeout: 15000 });
   await page.getByLabel(/date of birth/i).fill('1984-02-02');
   await page.getByLabel(/time of birth/i).fill('00:30');
   await page.getByLabel('Nam (male)').check();
@@ -255,11 +251,10 @@ test('dignity badges and the Đại Vận/Tiểu Hạn sections render real, int
   const { ageStart, ageEnd } = expectedDaiVanRange();
 
   await page.goto('/discover/tu-vi');
-  // The real page h1 (features/tu-vi/components/tu-vi-dashboard.tsx, via MvPageHeader) is
-  // "Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số", with "Lá số Tử Vi" rendered as an eyebrow
-  // <paragraph>, not a heading — confirmed against the real rendered DOM. The old assertion
-  // never matched any element on this page; fixed here for all 5 occurrences in this file.
-  await expect(page.getByRole('heading', { name: 'Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số', level: 1 })).toBeVisible({ timeout: 15000 });
+  // Board 02 pass: the real page h1 is now "Lá số Tử Vi", rendered by the TuViHero landing
+  // component (features/tu-vi/components/tu-vi-hero.tsx) — replaced the old MvPageHeader-based
+  // title. Fixed here for all 5 occurrences in this file.
+  await expect(page.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeVisible({ timeout: 15000 });
   await page.getByLabel(/date of birth/i).fill('1984-02-02');
   await page.getByLabel(/time of birth/i).fill('00:30');
   await page.getByLabel('Nam (male)').check();
@@ -271,8 +266,11 @@ test('dignity badges and the Đại Vận/Tiểu Hạn sections render real, int
   // engine's own VECTOR-B1 regression (apps/api/src/tu-vi/engine/tu-vi-chart.spec.ts) — so no
   // dignity badge renders there at all; that's correct, not a bug. Tý does hold a chính tinh
   // (Thiên Lương, same regression suite), so it's used here instead.
+  // Board 02 pass: dignity renders as a compact color+text pill badge next to the star name
+  // (features/tu-vi/components/tu-vi-palace-grid.tsx `DIGNITY_TONE`) — plain short label text,
+  // no surrounding parentheses (the old inline "(Miếu)" format this assertion checked for).
   const tyCard = page.locator('[aria-label*=", at Tý"]:visible');
-  await expect(tyCard.getByText(/\((Miếu|Vượng|Đắc|Bình hòa|Hãm)\)/)).toBeVisible();
+  await expect(tyCard.getByText(/^(Miếu|Vượng|Đắc|Bình hòa|Hãm)$/)).toBeVisible();
 
   // Đại Vận timeline: the period actually marked "current" by the app must match the independently
   // computed range above — this is the exact check the source brief calls for ("the UI must not

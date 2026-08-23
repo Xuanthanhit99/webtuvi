@@ -2,10 +2,11 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TuViForm } from './tu-vi-form';
+import { TuViHero } from './tu-vi-hero';
 import { TuViHistoryList } from './tu-vi-history-list';
 import { TuViDetail } from './tu-vi-detail';
 import { TuViTrustSection } from './tu-vi-trust-section';
-import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
+import { MvPage, MvSection } from '@/components/ui/mv-page';
 
 /**
  * `/discover/tu-vi` — intro, birth-data form, reveal, and history, using the same `?item=<id>`
@@ -28,17 +29,15 @@ export function TuViDashboard() {
 
   return (
     <MvPage>
-      <MvPageHeader
-        eyebrow="Lá số Tử Vi"
-        title="Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số"
-        description="Lập lá số thật từ ngày sinh, giờ sinh và giới tính. Cung, sao và Tứ Hóa đều đến từ engine deterministic, không phải nội dung bịa bởi AI."
-      />
+      <TuViHero />
 
       <TuViTrustSection context="tổng quan" />
 
-      <MvSection eyebrow="Nhập dữ liệu sinh" title="Lập lá số">
-        <TuViForm />
-      </MvSection>
+      <div id="tu-vi-form" className="scroll-mt-24">
+        <MvSection eyebrow="Nhập dữ liệu sinh" title="Lập lá số">
+          <TuViForm />
+        </MvSection>
+      </div>
 
       <MvSection eyebrow="Dòng thời gian" title="Lá số đã lưu">
         <TuViHistoryList filters={{}} onSelect={selectItem} />

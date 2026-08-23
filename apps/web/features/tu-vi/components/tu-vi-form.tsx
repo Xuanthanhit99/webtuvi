@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Loader2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { TuViChartDto } from '@beaconvie/types';
 import { Button } from '@/components/ui/button';
@@ -99,6 +100,23 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
     calculate.mutate();
   }
 
+  if (phase === 'calculating') {
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        className="flex flex-col items-center gap-4 rounded-lg border border-[rgba(213,173,98,0.2)] bg-surface px-6 py-14 text-center"
+      >
+        <Loader2 className="h-8 w-8 animate-spin text-insight motion-reduce:animate-none" aria-hidden="true" />
+        <p className="font-display text-body-lg text-text-primary">Đang lập lá số cho bạn…</p>
+        <p className="max-w-sm text-body-sm text-text-secondary">
+          Hệ thống đang tính cung, sao và Tứ Hóa từ ngày, giờ sinh bạn nhập — theo đúng quy tắc xác định, không phải
+          AI lựa chọn.
+        </p>
+      </div>
+    );
+  }
+
   if (phase === 'revealed' && result) {
     return (
       <div className="flex flex-col gap-4">
@@ -127,7 +145,11 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-md border border-border-subtle bg-surface p-4" noValidate>
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-4 rounded-lg border border-[rgba(213,173,98,0.2)] bg-surface p-4 tablet:p-6"
+      noValidate
+    >
       <FormField label="Date of birth" htmlFor="tu-vi-birthdate" required error={fieldError?.field === 'birthDate' ? fieldError.message : undefined}>
         <Input
           id="tu-vi-birthdate"
@@ -201,8 +223,8 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
         </div>
       )}
 
-      <Button type="submit" variant="primary" loading={phase === 'calculating'}>
-        {phase === 'calculating' ? 'Calculating your lá số…' : 'Calculate my lá số'}
+      <Button type="submit" variant="primary">
+        Calculate my lá số
       </Button>
     </form>
   );

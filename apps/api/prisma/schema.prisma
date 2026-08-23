@@ -1737,6 +1737,25 @@ model TarotCard {
   /// from the card's own actual meaning, never arbitrary.
   categories       String[]
   imageSlug        String
+  /// Tarot 78-Card Completion pass — Vietnamese display name. English `name`/`slug` remain the
+  /// canonical identity (never replaced) — this is an additional bilingual display field, mirroring
+  /// the same English-heading + Vietnamese-gloss pattern already established for Natal Chart.
+  nameVi           String      @default("")
+  /// 2-4 short, non-deterministic reflection questions grounded in the card's own real meaning —
+  /// never a fabricated prediction. Empty only for legacy/unseeded rows before this pass's reseed.
+  reflectionPrompts String[]   @default([])
+  /// Concise, topic-framed derivations of the same real upright meaning above — never a separate
+  /// invented meaning, never a guaranteed-outcome claim (see docs/design/tarot-78-artwork-contract.md
+  /// for the full authoring discipline this pass followed).
+  loveMeaning      String      @default("")
+  careerMeaning    String      @default("")
+  financeMeaning   String      @default("")
+  selfMeaning      String      @default("")
+  /// Which canonical-content revision this row's text represents. All 78 rows share one value per
+  /// deck edition — a future rewrite of meanings/keywords should bump this, not silently mutate
+  /// existing text a past reading's own detail view still reads live (see the completion audit's
+  /// "Historical versioning" section for the full policy).
+  deckVersion      String      @default("tarot-v1-78")
   createdAt        DateTime    @default(now())
 
   readingCards TarotReadingCard[]

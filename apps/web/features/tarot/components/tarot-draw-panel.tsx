@@ -15,6 +15,7 @@ import { tarotApi } from '../api/tarot-api';
 import { TarotReadingView } from './tarot-reading-view';
 import { TarotCardVisual } from './tarot-card-face';
 import { READING_TYPE_DESCRIPTIONS, READING_TYPE_LABELS } from '../labels';
+import { TAROT_CARD_BACK_SRC } from '../artwork';
 
 const READING_TYPES: TarotReadingTypeValue[] = ['DAILY_DRAW', 'SINGLE_CARD', 'THREE_CARD'];
 
@@ -119,7 +120,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
                   className="scale-[0.5]"
                   style={{ transform: t === 'THREE_CARD' ? `translateY(${index === 1 ? -4 : 4}px)` : undefined }}
                 >
-                  <TarotCardVisual id={`${t}-${index}`} name={READING_TYPE_LABELS[t]} size="sm" revealed={false} />
+                  <TarotCardVisual id={`${t}-${index}`} name={READING_TYPE_LABELS[t]} size="sm" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
                 </span>
               ))}
             </span>

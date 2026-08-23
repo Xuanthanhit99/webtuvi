@@ -18,7 +18,7 @@ export function MobileNavigation() {
       className="fixed inset-x-0 bottom-0 z-drawer flex border-t border-border-subtle bg-surface pb-[env(safe-area-inset-bottom)] tablet:hidden"
     >
       {mobileItems.map((item) => {
-        const active = pathname.startsWith(item.href);
+        const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
         return (
           <Link
             key={item.href}

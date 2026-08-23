@@ -68,6 +68,25 @@ describe('TuViTieuHanYearNav', () => {
     expect(screen.getByText(/43 tuổi · hiện tại/)).toBeInTheDocument();
   });
 
+  it('shows the real main/auxiliary stars for the current year\'s palace, cross-referenced from the chart itself', () => {
+    const nearbyTieuHan: TuViChartDto['nearbyTieuHan'] = [{ tuoi: 43, lunarYear: 2026, palace: 'Dần' }];
+    render(
+      <TuViTieuHanYearNav
+        chart={baseChart({
+          tieuHanStart: { startPalace: 'Tuất', thuan: true },
+          nearbyTieuHan,
+          currentTieuHan: nearbyTieuHan[0],
+          mainStars: [{ star: 'Tử Vi', position: 'Dần', dignity: 'Miếu địa' }],
+          auxiliaryStars: [{ star: 'Lộc Tồn', position: 'Dần' }],
+        })}
+      />,
+    );
+    expect(screen.getByText('Tiểu Hạn năm 2026')).toBeInTheDocument();
+    expect(screen.getByText('Tử Vi')).toBeInTheDocument();
+    expect(screen.getByText('Miếu')).toBeInTheDocument();
+    expect(screen.getByText('Lộc Tồn')).toBeInTheDocument();
+  });
+
   it('marks exactly the current year with aria-current, not any other year in the window', () => {
     const nearbyTieuHan: TuViChartDto['nearbyTieuHan'] = [
       { tuoi: 41, lunarYear: 2024, palace: 'Dần' },

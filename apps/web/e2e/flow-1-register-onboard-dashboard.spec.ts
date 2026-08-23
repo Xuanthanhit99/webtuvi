@@ -41,6 +41,7 @@ test('landing -> register -> onboarding -> dashboard -> logout', async ({ page }
   await expect(page).toHaveURL('http://localhost:3000/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Flow One');
 
-  await page.getByRole('button', { name: 'Log out' }).click();
+  await page.getByRole('button', { name: 'Account menu' }).click();
+  await page.getByRole('menuitem', { name: 'Log out' }).click();
   await expect(page).toHaveURL(/\/login/);
 });

@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
 import { AppHeader } from './app-header';
 import { useAuth } from '@/providers/auth-provider';
@@ -43,5 +44,40 @@ describe('AppHeader — Operator Tools link visibility', () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: true, refetch: jest.fn() });
     renderWithQuery(<AppHeader />);
     expect(screen.queryByRole('link', { name: 'Operator Tools' })).not.toBeInTheDocument();
+  });
+});
+
+describe('AppHeader — profile menu', () => {
+  beforeEach(() => {
+    (useAuth as jest.Mock).mockReturnValue({
+      user: { id: 'u1', email: 'a@x.com', displayName: 'Thành', role: 'USER', emailVerifiedAt: null, onboardingCompletedAt: null, createdAt: '' },
+      isLoading: false,
+      refetch: jest.fn(),
+    });
+  });
+
+  it('is closed by default and opens a real-route menu on click, using the initials fallback (no avatarUrl in the DTO)', async () => {
+    const user = userEvent.setup();
+    renderWithQuery(<AppHeader />);
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Thành' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Account menu' }));
+
+    expect(screen.getByRole('menuitem', { name: 'Cài đặt' })).toHaveAttribute('href', '/settings');
+    expect(screen.getByRole('menuitem', { name: 'Gói Premium' })).toHaveAttribute('href', '/premium');
+    expect(screen.getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument();
+  });
+
+  it('closes when Escape is pressed', async () => {
+    const user = userEvent.setup();
+    renderWithQuery(<AppHeader />);
+
+    await user.click(screen.getByRole('button', { name: 'Account menu' }));
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
   });
 });

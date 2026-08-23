@@ -19,6 +19,16 @@ function starTags(star: string, cell: PalaceCell): string[] {
   return cell.transformations.filter((t) => t.targetStar === star).map((t) => TRANSFORMATION_TAG[t.transformation] ?? t.transformation);
 }
 
+/** Dignity reinforced by color AND text label together (never color alone), per a fixed 5-state
+ * palette — not a numeric strength score, since the domain model doesn't define one. */
+const DIGNITY_TONE: Record<string, string> = {
+  'Miếu địa': 'bg-insight/20 text-insight',
+  'Vượng địa': 'bg-insight/15 text-insight',
+  'Đắc địa': 'bg-trust/15 text-trust',
+  'Bình hòa': 'bg-surface-raised text-text-secondary',
+  'Hãm địa': 'bg-caution/15 text-caution',
+};
+
 function PalaceCard({ cell, size = 'normal' }: { cell: PalaceCell; size?: 'normal' | 'compact' }) {
   const roleLabelEn = PALACE_ROLE_LABELS_EN[cell.role];
   const markers = [cell.isMenh && 'Mệnh', cell.isThan && 'Thân'].filter(Boolean) as string[];
@@ -27,15 +37,19 @@ function PalaceCard({ cell, size = 'normal' }: { cell: PalaceCell; size?: 'norma
     <div
       role="group"
       aria-label={`${cell.role} palace, at ${cell.branch}${markers.length ? `, ${markers.join(' and ')}` : ''}`}
-      className={`flex h-full flex-col gap-1 rounded-md border p-2 ${
-        cell.isMenh ? 'border-insight bg-insight/5' : cell.isThan ? 'border-trust bg-trust/5' : 'border-border-subtle bg-surface'
+      className={`flex h-full flex-col gap-1.5 rounded-md border p-2 ${
+        cell.isMenh
+          ? 'border-insight bg-insight/5'
+          : cell.isThan
+            ? 'border-trust bg-trust/5'
+            : 'border-[rgba(213,173,98,0.14)] bg-surface'
       } ${size === 'compact' ? 'text-caption' : 'text-body-xs'}`}
     >
       <div className="flex items-center justify-between gap-1">
-        <span className="font-semibold text-text-primary">{cell.role}</span>
+        <span className="font-display font-semibold text-text-primary">{cell.role}</span>
         <span className="text-text-tertiary">{cell.branch}</span>
       </div>
-      <span className="text-text-tertiary">{roleLabelEn}</span>
+      <span className="text-[0.65rem] text-text-tertiary">{roleLabelEn}</span>
 
       {markers.length > 0 && (
         <div className="flex flex-wrap gap-1">
@@ -48,16 +62,19 @@ function PalaceCard({ cell, size = 'normal' }: { cell: PalaceCell; size?: 'norma
       )}
 
       {cell.mainStars.length > 0 && (
-        <ul className="flex flex-col gap-0.5">
+        <ul className="flex flex-col gap-1">
           {cell.mainStars.map(({ star, dignity }) => {
             const tags = starTags(star, cell);
             return (
-              <li key={star} className="font-medium text-text-primary">
-                {star}
-                <span className="ml-1 text-[0.65rem] font-normal text-text-tertiary" aria-label={`dignity: ${dignity}`}>
-                  ({DIGNITY_SHORT_LABEL[dignity]})
+              <li key={star} className="flex flex-wrap items-center gap-1">
+                <span className="text-body-sm font-semibold text-text-primary">{star}</span>
+                <span
+                  className={`rounded-sm px-1 py-0.5 text-[0.6rem] font-semibold leading-none ${DIGNITY_TONE[dignity] ?? 'bg-surface-raised text-text-secondary'}`}
+                  aria-label={`dignity: ${dignity}`}
+                >
+                  {DIGNITY_SHORT_LABEL[dignity]}
                 </span>
-                {tags.length > 0 && <sup className="ml-0.5 text-insight">{tags.join('')}</sup>}
+                {tags.length > 0 && <sup className="text-insight">{tags.join('')}</sup>}
               </li>
             );
           })}
@@ -65,7 +82,7 @@ function PalaceCard({ cell, size = 'normal' }: { cell: PalaceCell; size?: 'norma
       )}
 
       {cell.auxiliaryStars.length > 0 && (
-        <ul className="flex flex-wrap gap-x-1 text-text-secondary">
+        <ul className="flex flex-wrap gap-x-1.5 text-text-secondary">
           {cell.auxiliaryStars.map((star) => {
             const tags = starTags(star, cell);
             return (
@@ -90,8 +107,8 @@ function PalaceCard({ cell, size = 'normal' }: { cell: PalaceCell; size?: 'norma
 
 function ChartSummaryCell({ chart }: { chart: TuViChartDto }) {
   return (
-    <div className="flex h-full flex-col justify-center gap-1 rounded-md border border-border-subtle bg-surface-raised p-2 text-center text-body-xs">
-      <p className="font-display text-body-sm text-text-primary">Lá Số Tử Vi</p>
+    <div className="flex h-full flex-col justify-center gap-1 rounded-md border border-[rgba(213,173,98,0.2)] bg-surface-raised p-2 text-center text-body-xs">
+      <p className="font-display text-body-sm font-semibold text-insight">Lá Số Tử Vi</p>
       <p className="text-text-secondary">
         {chart.canChi.year.stem} {chart.canChi.year.branch} · {chart.sex}
       </p>

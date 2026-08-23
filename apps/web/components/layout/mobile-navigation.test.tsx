@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import { MobileNavigation } from './mobile-navigation';
 
-jest.mock('next/navigation', () => ({ usePathname: () => '/discover/tarot' }));
+const mockUsePathname = jest.fn(() => '/discover/tarot');
+jest.mock('next/navigation', () => ({ usePathname: () => mockUsePathname() }));
 
 describe('MobileNavigation', () => {
   it('renders every nav destination with a real accessible name', () => {
@@ -16,6 +17,11 @@ describe('MobileNavigation', () => {
   it('marks the active route with aria-current="page"', () => {
     render(<MobileNavigation />);
     expect(screen.getByRole('link', { name: 'Tarot' })).toHaveAttribute('aria-current', 'page');
+  });
+
+  it('marks exactly one nav item as current, never also "Hôm nay" (regression — every href used to match "/" via a bare startsWith)', () => {
+    render(<MobileNavigation />);
+    expect(screen.getByRole('link', { name: 'Hôm nay' })).not.toHaveAttribute('aria-current');
   });
 
   it('is phone-only (hidden from tablet width up) — regression for the tablet/phone nav-sharing bug', () => {

@@ -4,10 +4,19 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { CalendarDays, ChevronRight, Compass, Moon, Play, Sparkles, Star, UsersRound } from 'lucide-react';
-import type { ClientAnalyticsEventName, NatalChartDto, NumerologyReadingDto, TarotReadingDto, TuViChartDto } from '@beaconvie/types';
+import { Calculator, ChevronRight, Play, ScrollText, Sparkles, Star } from 'lucide-react';
+import type {
+  ClientAnalyticsEventName,
+  NatalChartDto,
+  NumerologyReadingDto,
+  TarotReadingDto,
+  TuViChartDto,
+  TuViCurrentTieuHanDto,
+  TuViDaiVanCycleDto,
+} from '@beaconvie/types';
 import { calculateLifePathNumber } from '@beaconvie/types/numerology';
 import { dashboardApi } from '../api/dashboard-api';
+import { DestinyOrbit } from './home/destiny-orbit';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog } from '@/components/ui/dialog';
 import { useAuth } from '@/providers/auth-provider';
@@ -125,6 +134,64 @@ function firstName(displayName?: string | null): string {
   return trimmed.split(/\s+/)[0] ?? 'Bạn';
 }
 
+type ContinuityItem = {
+  kind: 'tarot' | 'natal' | 'numerology';
+  createdAt: string;
+  title: string;
+  description: string;
+  href: string;
+};
+
+function buildContinuityItem(
+  tarotReading: TarotReadingDto | null,
+  natalChart: NatalChartDto | null,
+  numerologyReading: NumerologyReadingDto | null,
+  sunSign: string | null,
+  moonSign: string | null,
+  lifePath: number | null,
+): ContinuityItem | null {
+  const items: ContinuityItem[] = [];
+  if (tarotReading) {
+    items.push({
+      kind: 'tarot',
+      createdAt: tarotReading.createdAt,
+      title: 'Tarot gần nhất',
+      description: `${tarotReading.spreadName}${tarotReading.cards[0]?.card.name ? ` · ${tarotReading.cards[0].card.name}` : ''}`,
+      href: '/discover/tarot',
+    });
+  }
+  if (natalChart) {
+    items.push({
+      kind: 'natal',
+      createdAt: natalChart.createdAt,
+      title: 'Bản đồ sao gần nhất',
+      description: `Mặt Trời ${sunSign ?? 'đã tính'} · Mặt Trăng ${moonSign ?? 'đã tính'}`,
+      href: '/discover/natal-chart',
+    });
+  }
+  if (numerologyReading && lifePath !== null) {
+    items.push({
+      kind: 'numerology',
+      createdAt: numerologyReading.createdAt,
+      title: 'Thần số học gần nhất',
+      description: `Con số chủ đạo ${lifePath}`,
+      href: '/discover/numerology',
+    });
+  }
+  if (items.length === 0) return null;
+  return [...items].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0] ?? null;
+}
+
+function formatDaiVan(cycle: TuViDaiVanCycleDto | null): string | null {
+  if (!cycle) return null;
+  return `${cycle.ageStart}–${cycle.ageEnd} tuổi · Cung ${cycle.role} tại ${cycle.position}`;
+}
+
+function formatTieuHan(tieuHan: TuViCurrentTieuHanDto | null): string | null {
+  if (!tieuHan) return null;
+  return `${tieuHan.tuoi} tuổi (Âm lịch ${tieuHan.lunarYear}) · Cung ${tieuHan.palace}`;
+}
+
 export function DashboardView() {
   const { user, isLoading: authLoading } = useAuth();
   const isGuest = !authLoading && !user;
@@ -169,6 +236,8 @@ export function DashboardView() {
   const lifePath = getLifePath(numerologyReading);
   const sunSign = getPlacementSign(natalChart, 'sun');
   const moonSign = getPlacementSign(natalChart, 'moon');
+  const continuityItem = buildContinuityItem(tarotReading, natalChart, numerologyReading, sunSign, moonSign, lifePath);
+  const continuityLoading = !isGuest && (tarotQuery.isLoading || natalQuery.isLoading || numerologyQuery.isLoading);
 
   useEffect(() => {
     if (authLoading) return;
@@ -176,7 +245,7 @@ export function DashboardView() {
   }, [authLoading, isGuest]);
 
   return (
-    <div className="-mx-1 flex flex-col gap-6 text-[#f2eee5] tablet:-mx-2">
+    <div className="-mx-1 flex flex-col gap-8 text-[#f2eee5] tablet:-mx-2">
       <HomeHero
         authLoading={authLoading}
         isGuest={isGuest}
@@ -186,10 +255,12 @@ export function DashboardView() {
         dashboardError={dashboardQuery.isError}
         onRetryDashboard={() => dashboardQuery.refetch()}
         dailyText={dashboardQuery.data?.discoverySuggestion?.description}
+        tuViChart={tuViChart}
+        tuViLoading={!isGuest && tuViQuery.isLoading}
       />
 
       <section aria-labelledby="features-heading" className="space-y-4">
-        <SectionHeading id="features-heading" eyebrow="Khám phá Tử Vi Tarot" title="Bốn cánh cửa chính" />
+        <SectionHeading id="features-heading" eyebrow="Tử Vi · Tarot · Bản đồ sao · Thần số học" title="Khám phá nhanh" />
         <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
           <FeatureCard
             title="Lá số Tử Vi"
@@ -254,25 +325,28 @@ export function DashboardView() {
         </div>
       </section>
 
-      {isGuest && <GuestTrySection />}
+      {isGuest ? (
+        <GuestTrySection />
+      ) : (
+        <ForYouSection
+          tuViChart={tuViChart}
+          tuViLoading={!isGuest && tuViQuery.isLoading}
+          continuityItem={continuityItem}
+          continuityLoading={continuityLoading}
+        />
+      )}
 
-      <div className="grid gap-6 desktop:grid-cols-[minmax(0,1fr)_320px]">
-        <EditorialSection />
-        <aside className="space-y-4">
-          {!isGuest && <UpcomingRail />}
-          <CommunityRail isGuest={isGuest} />
-          {!isGuest && (
-            <PremiumRail
-              isLoading={premiumQuery.isLoading}
-              isError={premiumQuery.isError}
-              onRetry={() => premiumQuery.refetch()}
-              isPremium={premiumQuery.data?.isPremium ?? false}
-              paymentsEnabled={premiumQuery.data?.paymentsEnabled ?? false}
-            />
-          )}
-          <AppPromo />
-        </aside>
-      </div>
+      <EditorialSection />
+
+      {!isGuest && (
+        <PremiumRail
+          isLoading={premiumQuery.isLoading}
+          isError={premiumQuery.isError}
+          onRetry={() => premiumQuery.refetch()}
+          isPremium={premiumQuery.data?.isPremium ?? false}
+          paymentsEnabled={premiumQuery.data?.paymentsEnabled ?? false}
+        />
+      )}
     </div>
   );
 }
@@ -286,6 +360,8 @@ function HomeHero({
   dashboardError,
   dailyText,
   onRetryDashboard,
+  tuViChart,
+  tuViLoading,
 }: {
   authLoading: boolean;
   isGuest: boolean;
@@ -295,11 +371,13 @@ function HomeHero({
   dashboardError: boolean;
   dailyText?: string;
   onRetryDashboard: () => void;
+  tuViChart: TuViChartDto | null;
+  tuViLoading: boolean;
 }) {
   return (
     <section
       aria-labelledby="home-hero-heading"
-      className="relative min-h-[520px] overflow-hidden rounded-[24px] border border-[rgba(213,173,98,0.16)] bg-[#070b12] px-5 py-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] tablet:px-8 desktop:px-10"
+      className="relative min-h-[600px] overflow-hidden rounded-[24px] border border-[rgba(213,173,98,0.16)] bg-[#070b12] px-5 py-8 shadow-[0_24px_80px_rgba(0,0,0,0.35)] tablet:px-8 tablet:py-10 desktop:px-12 desktop:py-12"
     >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_12%,rgba(213,173,98,0.16),transparent_26%),radial-gradient(circle_at_80%_18%,rgba(112,140,121,0.15),transparent_28%),radial-gradient(circle_at_55%_55%,rgba(157,69,62,0.12),transparent_36%)]" />
       <div className="absolute inset-0 opacity-45 [background-image:radial-gradient(circle,rgba(242,238,229,0.58)_1px,transparent_1.5px)] [background-size:42px_42px]" />
@@ -307,7 +385,7 @@ function HomeHero({
       <Image src={`${HOME_ASSET_BASE}/hero-mist.png`} alt="" fill sizes="(min-width: 1280px) 1120px, 100vw" className="pointer-events-none object-cover opacity-55" />
       <CloudLines className="absolute right-4 top-6 hidden h-28 w-60 text-[#d5ad62] opacity-25 tablet:block" />
 
-      <div className="relative z-10 grid min-h-[460px] gap-7 desktop:grid-cols-[minmax(0,1fr)_300px_220px] desktop:items-center">
+      <div className="relative z-10 grid min-h-[540px] gap-9 desktop:grid-cols-[minmax(0,1fr)_360px_260px] desktop:items-center">
         <div className="max-w-xl self-center">
           {authLoading ? (
             <Skeleton className="mb-5 h-20 w-56 bg-white/10" />
@@ -341,89 +419,128 @@ function HomeHero({
               {isGuest ? 'Không cần đăng ký' : 'Giới thiệu Tử Vi Tarot'}
             </HomeButton>
           </div>
+          <QuickActions isGuest={isGuest} />
         </div>
-        <div className="mx-auto w-full max-w-[300px]">
-          <DestinyCompass />
+        <div className="mx-auto w-full max-w-[380px]">
+          <DestinyOrbit className="h-full w-full drop-shadow-[0_0_32px_rgba(213,173,98,0.22)]" />
         </div>
-        <DailyInsight
+        <HeroContextPanel
           isGuest={isGuest}
           loading={dashboardLoading}
           error={dashboardError}
           text={dailyText}
           onRetry={onRetryDashboard}
+          tuViChart={tuViChart}
+          tuViLoading={tuViLoading}
         />
       </div>
     </section>
   );
 }
 
-export function DestinyCompass() {
-  const branches = ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi'];
-  const han = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+const GUEST_QUICK_ACTIONS = [
+  { label: 'Lập lá số', href: '#try-tu-vi', icon: ScrollText },
+  { label: 'Rút Tarot', href: '#try-tarot', icon: Sparkles },
+  { label: 'Bản đồ sao', href: '#editorial-heading', icon: Star },
+  { label: 'Thần số', href: '#try-numerology', icon: Calculator },
+] as const;
+
+const AUTH_QUICK_ACTIONS: Array<{
+  label: string;
+  href: string;
+  icon: typeof ScrollText;
+  analyticsEvent: FeatureAnalyticsEvent;
+  analyticsFeature: 'tu_vi' | 'tarot' | 'natal_chart' | 'numerology';
+}> = [
+  { label: 'Lá số của tôi', href: '/discover/tu-vi', icon: ScrollText, analyticsEvent: 'home_tuvi_clicked', analyticsFeature: 'tu_vi' },
+  { label: 'Tarot hôm nay', href: '/discover/tarot', icon: Sparkles, analyticsEvent: 'home_tarot_clicked', analyticsFeature: 'tarot' },
+  { label: 'Bản đồ sao', href: '/discover/natal-chart', icon: Star, analyticsEvent: 'home_astrology_clicked', analyticsFeature: 'natal_chart' },
+  { label: 'Thần số học', href: '/discover/numerology', icon: Calculator, analyticsEvent: 'home_numerology_clicked', analyticsFeature: 'numerology' },
+];
+
+function QuickActions({ isGuest }: { isGuest: boolean }) {
+  if (isGuest) {
+    return (
+      <div className="mt-8 flex flex-wrap gap-5">
+        {GUEST_QUICK_ACTIONS.map((item) => (
+          <Link
+            key={item.label}
+            href={item.href}
+            className="group flex w-[76px] flex-col items-center gap-2 rounded-full text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d5ad62]"
+          >
+            <span className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d5ad62]/30 bg-[#0b1220]/70 text-[#e6c980] transition-colors group-hover:border-[#d5ad62]/70 group-hover:bg-[#101827]">
+              <item.icon className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <span className="text-caption font-medium leading-tight text-[#d8d1c2]">{item.label}</span>
+          </Link>
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <svg viewBox="0 0 260 260" aria-hidden="true" className="h-full w-full drop-shadow-[0_0_22px_rgba(213,173,98,0.20)]">
-      <defs>
-        <radialGradient id="destinyGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#e6c980" stopOpacity="0.2" />
-          <stop offset="65%" stopColor="#d5ad62" stopOpacity="0.05" />
-          <stop offset="100%" stopColor="#d5ad62" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <circle cx="130" cy="130" r="128" fill="url(#destinyGlow)" />
-      <g className="origin-center animate-[mv-orbit-spin_110s_linear_infinite] motion-reduce:animate-none">
-        {[114, 98, 82, 66, 50].map((radius) => (
-          <circle key={radius} cx="130" cy="130" r={radius} fill="none" stroke="#d5ad62" strokeOpacity={radius === 114 ? 0.42 : 0.2} strokeWidth="1" />
-        ))}
-        {branches.map((branch, index) => {
-          const angle = (index / 12) * Math.PI * 2 - Math.PI / 2;
-          const x1 = 130 + Math.cos(angle) * 42;
-          const y1 = 130 + Math.sin(angle) * 42;
-          const x2 = 130 + Math.cos(angle) * 116;
-          const y2 = 130 + Math.sin(angle) * 116;
-          const tx = 130 + Math.cos(angle) * 100;
-          const ty = 130 + Math.sin(angle) * 100;
-          return (
-            <g key={branch}>
-              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#d5ad62" strokeOpacity="0.2" strokeWidth="1" />
-              <text x={tx} y={ty} textAnchor="middle" dominantBaseline="middle" fill="#f2eee5" fontSize="10" fontWeight="600">
-                {branch}
-              </text>
-              <text x={130 + Math.cos(angle) * 76} y={130 + Math.sin(angle) * 76} textAnchor="middle" dominantBaseline="middle" fill="#8e7243" fontSize="8">
-                {han[index]}
-              </text>
-            </g>
-          );
-        })}
-      </g>
-      <ellipse cx="130" cy="130" rx="106" ry="34" fill="none" stroke="#708c79" strokeOpacity="0.28" strokeWidth="1" transform="rotate(-18 130 130)" />
-      {([
-        [-44, -28],
-        [50, -8],
-        [25, 55],
-      ] as const).map(([dx, dy], index) => (
-        <circle key={`${dx}-${dy}`} cx={130 + dx} cy={130 + dy} r={index === 0 ? 3.5 : 2.6} fill="#e6c980" className="animate-pulse motion-reduce:animate-none" opacity="0.85" />
+    <div className="mt-8 flex flex-wrap gap-5">
+      {AUTH_QUICK_ACTIONS.map((item) => (
+        <Link
+          key={item.label}
+          href={item.href}
+          onClick={() => {
+            trackEvent('home_feature_clicked', { feature: 'home', source: item.label });
+            trackEvent(item.analyticsEvent, { feature: item.analyticsFeature, source: 'home' });
+          }}
+          className="group flex w-[76px] flex-col items-center gap-2 rounded-full text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d5ad62]"
+        >
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d5ad62]/30 bg-[#0b1220]/70 text-[#e6c980] transition-colors group-hover:border-[#d5ad62]/70 group-hover:bg-[#101827]">
+            <item.icon className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span className="text-caption font-medium leading-tight text-[#d8d1c2]">{item.label}</span>
+        </Link>
       ))}
-      <path d="M130 111l5 14 15 5-15 5-5 14-5-14-15-5 15-5z" fill="#e6c980" opacity="0.9" />
-      <circle cx="130" cy="130" r="22" fill="none" stroke="#e6c980" strokeOpacity="0.38" />
-    </svg>
+    </div>
   );
 }
 
-function DailyInsight({ isGuest, loading, error, text, onRetry }: { isGuest: boolean; loading: boolean; error: boolean; text?: string; onRetry: () => void }) {
+function CycleRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-caption uppercase tracking-[0.14em] text-[#a6a7ac]">{label}</p>
+      <p className="mt-1 text-body-sm font-semibold text-[#f2eee5]">{value}</p>
+    </div>
+  );
+}
+
+function HeroContextPanel({
+  isGuest,
+  loading,
+  error,
+  text,
+  onRetry,
+  tuViChart,
+  tuViLoading,
+}: {
+  isGuest: boolean;
+  loading: boolean;
+  error: boolean;
+  text?: string;
+  onRetry: () => void;
+  tuViChart: TuViChartDto | null;
+  tuViLoading: boolean;
+}) {
   if (isGuest) {
     return (
       <div className="rounded-[18px] border border-white/10 bg-[#0b1220]/75 p-4 backdrop-blur">
-        <p className="text-body-sm font-semibold text-[#e6c980]">Bắt đầu nhẹ nhàng</p>
-        <EnergyGauge label="Không có điểm cá nhân khi chưa đăng nhập" />
-        <p className="mt-4 text-body-sm leading-relaxed text-[#d8d1c2]">
-          Thử một lá Tarot hoặc tính nhanh con số chủ đạo trước. Hồ sơ cá nhân, lịch sử và luận giải sâu sẽ mở sau khi bạn đăng nhập.
+        <p className="text-body-sm font-semibold text-[#e6c980]">Vận trình cá nhân</p>
+        <p className="mt-3 text-body-sm leading-relaxed text-[#d8d1c2]">
+          Đăng nhập để xem Đại Vận, Tiểu Hạn và lịch sử của riêng bạn — dữ liệu cá nhân chỉ hiển thị sau khi có tài khoản.
+        </p>
+        <p className="mt-4 text-body-sm leading-relaxed text-[#a6a7ac]">
+          Trong lúc chờ, hãy thử một lá Tarot hoặc tính nhanh con số chủ đạo bên dưới.
         </p>
       </div>
     );
   }
 
-  if (loading) {
+  if (loading || tuViLoading) {
     return (
       <div className="rounded-[18px] border border-white/10 bg-[#0b1220]/75 p-4 backdrop-blur">
         <Skeleton className="mb-4 h-5 w-28 bg-white/10" />
@@ -444,44 +561,118 @@ function DailyInsight({ isGuest, loading, error, text, onRetry }: { isGuest: boo
     );
   }
 
+  const daiVanText = formatDaiVan(tuViChart?.currentDaiVan ?? null);
+  const tieuHanText = formatTieuHan(tuViChart?.currentTieuHan ?? null);
+
   return (
     <div className="rounded-[18px] border border-white/10 bg-[#0b1220]/75 p-4 backdrop-blur">
-      <p className="text-body-sm font-semibold text-[#e6c980]">Vận trình hôm nay</p>
-      <EnergyGauge label="Chưa có điểm năng lượng" />
-      <p className="mt-4 text-body-sm leading-relaxed text-[#d8d1c2]">{text ?? 'Vận trình hôm nay chưa được tạo.'}</p>
-      <Link href="/discover" className="mt-4 inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
-        Xem vận trình hôm nay <ChevronRight className="h-4 w-4" aria-hidden="true" />
-      </Link>
+      <p className="text-body-sm font-semibold text-[#e6c980]">Vận trình hiện tại</p>
+      {tuViChart ? (
+        <div className="mt-3 space-y-3">
+          <CycleRow label="Đại Vận" value={daiVanText ?? 'Chưa xác định cho lá số này.'} />
+          <CycleRow label="Tiểu Hạn" value={tieuHanText ?? 'Chưa xác định cho lá số này.'} />
+        </div>
+      ) : (
+        <div className="mt-3">
+          <p className="text-body-sm text-[#a6a7ac]">Bạn chưa lập lá số Tử Vi.</p>
+          <Link href="/discover/tu-vi" className="mt-3 inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
+            Lập lá số đầu tiên <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
+      )}
+      <div className="mt-5 border-t border-white/10 pt-4">
+        <p className="text-caption uppercase tracking-[0.14em] text-[#a6a7ac]">Gợi ý hôm nay</p>
+        <p className="mt-2 text-body-sm leading-relaxed text-[#d8d1c2]">{text ?? 'Vận trình hôm nay chưa được tạo.'}</p>
+        <Link href="/discover" className="mt-3 inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
+          Xem vận trình hôm nay <ChevronRight className="h-4 w-4" aria-hidden="true" />
+        </Link>
+      </div>
     </div>
   );
 }
 
-export function EnergyGauge({ score, label }: { score?: number; label?: string }) {
-  const normalized = typeof score === 'number' ? Math.max(0, Math.min(score, 100)) : null;
-  const angle = normalized === null ? 0 : (normalized / 100) * 270;
+function ForYouCard({ title, loading, children }: { title: string; loading?: boolean; children: React.ReactNode }) {
   return (
-    <div className="mt-4 flex items-center gap-4" aria-label={normalized === null ? label : `Năng lượng ${normalized} trên 100`}>
-      <svg viewBox="0 0 120 74" className="h-20 w-28" aria-hidden="true">
-        <path d="M18 62a42 42 0 0 1 84 0" fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="10" strokeLinecap="round" />
-        {normalized !== null && (
-          <path
-            d="M18 62a42 42 0 0 1 84 0"
-            fill="none"
-            stroke="#d5ad62"
-            strokeWidth="10"
-            strokeLinecap="round"
-            pathLength="100"
-            strokeDasharray={`${normalized} 100`}
-          />
+    <div className="rounded-[18px] border border-white/10 bg-[#101827] p-5">
+      <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">{title}</p>
+      <div className="mt-3">
+        {loading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-32 bg-white/10" />
+            <Skeleton className="h-4 w-full bg-white/10" />
+          </div>
+        ) : (
+          children
         )}
-        <line x1="60" y1="62" x2="60" y2="30" stroke="#e6c980" strokeWidth="2" strokeLinecap="round" transform={`rotate(${angle - 135} 60 62)`} />
-        <circle cx="60" cy="62" r="4" fill="#e6c980" />
-      </svg>
-      <div>
-        <p className="text-[1.8rem] font-semibold leading-none text-[#f2eee5]">{normalized ?? '--'}</p>
-        <p className="mt-1 text-caption uppercase tracking-[0.16em] text-[#a6a7ac]">{normalized === null ? 'Đang chờ dữ liệu' : 'trên 100'}</p>
       </div>
     </div>
+  );
+}
+
+function ForYouSection({
+  tuViChart,
+  tuViLoading,
+  continuityItem,
+  continuityLoading,
+}: {
+  tuViChart: TuViChartDto | null;
+  tuViLoading: boolean;
+  continuityItem: ContinuityItem | null;
+  continuityLoading: boolean;
+}) {
+  const daiVanText = formatDaiVan(tuViChart?.currentDaiVan ?? null);
+  const tieuHanText = formatTieuHan(tuViChart?.currentTieuHan ?? null);
+
+  return (
+    <section aria-labelledby="for-you-heading" className="space-y-4">
+      <SectionHeading id="for-you-heading" eyebrow="Dành cho bạn" title="Điều đang diễn ra với bạn" />
+      <div className="grid gap-4 tablet:grid-cols-3">
+        <ForYouCard title="Vận trình hiện tại" loading={tuViLoading}>
+          {tuViChart ? (
+            <div className="space-y-3">
+              <CycleRow label="Đại Vận" value={daiVanText ?? 'Chưa xác định cho lá số này.'} />
+              <CycleRow label="Tiểu Hạn" value={tieuHanText ?? 'Chưa xác định cho lá số này.'} />
+              <Link href="/discover/tu-vi" className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
+                Xem chi tiết lá số <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </div>
+          ) : (
+            <>
+              <p className="text-body-sm text-[#a6a7ac]">Bạn chưa lập lá số.</p>
+              <Link href="/discover/tu-vi" className="mt-3 inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
+                Lập lá số đầu tiên <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </>
+          )}
+        </ForYouCard>
+        <ForYouCard title="Tiếp tục hành trình" loading={continuityLoading}>
+          {continuityItem ? (
+            <>
+              <p className="text-body-sm font-semibold text-[#f2eee5]">{continuityItem.title}</p>
+              <p className="mt-2 text-body-sm leading-relaxed text-[#a6a7ac]">{continuityItem.description}</p>
+              <Link href={continuityItem.href} className="mt-3 inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
+                Xem chi tiết <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="text-body-sm text-[#a6a7ac]">Bạn chưa có lần trải bài hay bản đồ nào gần đây.</p>
+              <Link href="/discover" className="mt-3 inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
+                Khám phá ngay <ChevronRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </>
+          )}
+        </ForYouCard>
+        <ForYouCard title="Cộng đồng">
+          <p className="text-body-sm leading-relaxed text-[#a6a7ac]">
+            Một không gian để chia sẻ trải nghiệm và góc nhìn của riêng bạn. Tính năng đang được hoàn thiện.
+          </p>
+          <Link href="/community" className="mt-3 inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
+            Xem trạng thái cộng đồng <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </ForYouCard>
+      </div>
+    </section>
   );
 }
 
@@ -510,8 +701,8 @@ function FeatureCard({
 }) {
   if (loading) {
     return (
-      <div className="flex min-h-[224px] flex-col rounded-[18px] border border-white/10 bg-[#101827] p-5" aria-label={`${title} đang tải`}>
-        <div className="mb-4 h-20">{visual}</div>
+      <div className="flex min-h-[280px] flex-col rounded-[20px] border border-white/10 bg-gradient-to-b from-[#101827] to-[#0b1220] p-6" aria-label={`${title} đang tải`}>
+        <div className="mb-5 h-24">{visual}</div>
         <Skeleton className="h-6 w-28 bg-white/10" />
         <Skeleton className="mt-3 h-16 w-full bg-white/10" />
         <Skeleton className="mt-auto h-5 w-24 bg-white/10" />
@@ -521,8 +712,8 @@ function FeatureCard({
 
   if (error) {
     return (
-      <div className="flex min-h-[224px] flex-col rounded-[18px] border border-white/10 bg-[#101827] p-5">
-        <div className="mb-4 h-20">{visual}</div>
+      <div className="flex min-h-[280px] flex-col rounded-[20px] border border-white/10 bg-gradient-to-b from-[#101827] to-[#0b1220] p-6">
+        <div className="mb-5 h-24">{visual}</div>
         <h3 className="text-body-lg font-semibold text-[#f2eee5]">{title}</h3>
         <p className="mt-2 flex-1 text-body-sm leading-relaxed text-[#a6a7ac]">{error}</p>
         <button
@@ -543,10 +734,10 @@ function FeatureCard({
         trackEvent('home_feature_clicked', { feature: 'home', source: title });
         trackEvent(analyticsEvent, { feature: analyticsFeature, source: 'home' });
       }}
-      className="group flex min-h-[224px] flex-col rounded-[18px] border border-white/10 bg-[#101827] p-5 transition-colors hover:-translate-y-0.5 hover:border-[#d5ad62]/45 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] motion-reduce:transform-none"
+      className="group flex min-h-[280px] flex-col rounded-[20px] border border-white/10 bg-gradient-to-b from-[#101827] to-[#0b1220] p-6 transition-colors hover:-translate-y-0.5 hover:border-[#d5ad62]/45 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] motion-reduce:transform-none"
     >
-      <div className="mb-4 h-20">{visual}</div>
-      <h3 className="text-body-lg font-semibold text-[#f2eee5]">{title}</h3>
+      <div className="mb-5 h-24">{visual}</div>
+      <h3 className="text-heading-md font-semibold text-[#f2eee5]">{title}</h3>
       <p className="mt-2 flex-1 text-body-sm leading-relaxed text-[#a6a7ac]">{description}</p>
       <span className="mt-4 inline-flex items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
         {cta} <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
@@ -559,7 +750,7 @@ function GuestTrySection() {
   return (
     <section aria-labelledby="try-heading" className="grid gap-4 desktop:grid-cols-3">
       <div className="desktop:col-span-3">
-        <SectionHeading id="try-heading" eyebrow="Thử trước khi đăng ký" title="Nhận giá trị trước, lưu lại sau" />
+        <SectionHeading id="try-heading" eyebrow="Dành cho bạn" title="Bắt đầu từ đâu?" />
       </div>
       <GuestTarotPreview />
       <GuestNumerologyPreview />
@@ -807,35 +998,6 @@ function EditorialSection() {
   );
 }
 
-function UpcomingRail() {
-  return (
-    <RailCard title="Sắp tới" icon={<CalendarDays className="h-4 w-4" aria-hidden="true" />}>
-      <p className="text-body-sm text-[#a6a7ac]">Chưa có sự kiện sắp tới.</p>
-      <div className="mt-4 flex gap-2 text-[#d5ad62]">
-        <Moon className="h-4 w-4" aria-hidden="true" />
-        <Star className="h-4 w-4" aria-hidden="true" />
-      </div>
-    </RailCard>
-  );
-}
-
-function CommunityRail({ isGuest }: { isGuest: boolean }) {
-  return (
-    <RailCard title="Cộng đồng" icon={<UsersRound className="h-4 w-4" aria-hidden="true" />}>
-      <p className="text-body-sm text-[#a6a7ac]">
-        Một không gian để chia sẻ trải nghiệm, góc nhìn và những câu chuyện của riêng bạn. Tính năng đang được hoàn thiện.
-      </p>
-      <Link
-        href="/community"
-        onClick={() => trackEvent('home_community_clicked', { feature: 'home', source: isGuest ? 'guest' : 'authenticated' })}
-        className="mt-4 inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]"
-      >
-        Xem trạng thái cộng đồng <ChevronRight className="h-4 w-4" aria-hidden="true" />
-      </Link>
-    </RailCard>
-  );
-}
-
 function PremiumRail({
   isLoading,
   isError,
@@ -875,24 +1037,6 @@ function PremiumRail({
           </Link>
         </>
       )}
-    </RailCard>
-  );
-}
-
-function AppPromo() {
-  return (
-    <RailCard title="Ứng dụng Tử Vi Tarot" icon={<Compass className="h-4 w-4" aria-hidden="true" />}>
-      <div className="relative mb-4 aspect-[4/3] overflow-hidden rounded-[14px] bg-[#070b12]">
-        <Image src={`${HOME_ASSET_BASE}/app-preview.png`} alt="" fill sizes="320px" className="object-cover" />
-      </div>
-      <p className="text-body-sm text-[#a6a7ac]">Sắp ra mắt.</p>
-      <Link
-        href="/contact"
-        onClick={() => trackEvent('home_app_clicked', { feature: 'home', source: 'coming_soon' })}
-        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md border border-[#d5ad62]/35 px-4 text-body-sm font-semibold text-[#e6c980]"
-      >
-        Nhận tin ra mắt
-      </Link>
     </RailCard>
   );
 }

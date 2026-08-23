@@ -1071,6 +1071,8 @@ export interface TarotCardDto {
   id: string;
   slug: string;
   name: string;
+  /** Vietnamese display name — English `name`/`slug` remain the canonical identity. */
+  nameVi: string;
   arcana: TarotArcanaValue;
   suit: TarotSuitValue | null;
   number: number;
@@ -1082,6 +1084,12 @@ export interface TarotCardDto {
   astrological: string | null;
   categories: string[];
   imageSlug: string;
+  reflectionPrompts: string[];
+  loveMeaning: string;
+  careerMeaning: string;
+  financeMeaning: string;
+  selfMeaning: string;
+  deckVersion: string;
 }
 
 export interface TarotReadingCardDto {

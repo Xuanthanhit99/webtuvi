@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Sparkles } from 'lucide-react';
 import { Logo } from '@/components/ui/logo';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
 import { NAV_ITEMS } from './nav-items';
+import { usePremiumStatus } from '@/features/premium/hooks/use-premium-status';
 
 // Accessibility + Product Polish (2026-08-19): tablet (768-1279px) previously fell through this
 // component's `desktop:flex`/`desktop:hidden` binary switch (shared with MobileNavigation) to the
@@ -16,6 +18,7 @@ import { NAV_ITEMS } from './nav-items';
 // accessible name.
 export function Sidebar() {
   const pathname = usePathname();
+  const premiumQuery = usePremiumStatus();
 
   return (
     <nav
@@ -28,7 +31,7 @@ export function Sidebar() {
       </Link>
       <ul className="flex w-full flex-col items-center gap-1 desktop:items-stretch">
         {NAV_ITEMS.map((item) => {
-          const active = pathname.startsWith(item.href);
+          const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
           return (
             <li key={item.href} className="w-full">
               <Link
@@ -53,6 +56,23 @@ export function Sidebar() {
           );
         })}
       </ul>
+      {premiumQuery.data && !premiumQuery.data.isPremium && premiumQuery.data.paymentsEnabled && (
+        <Link
+          href="/premium"
+          className="mt-auto hidden w-full flex-col gap-2 rounded-md border border-insight/25 bg-gradient-to-b from-insight/10 to-transparent p-4 text-left transition-colors hover:border-insight/45 desktop:flex"
+        >
+          <span className="inline-flex items-center gap-1.5 text-body-sm font-semibold text-insight">
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
+            Tử Vi Tarot+
+          </span>
+          <span className="text-caption leading-relaxed text-text-secondary">
+            Mở khóa toàn bộ tính năng và trải nghiệm chuyên sâu.
+          </span>
+          <span className="mt-1 inline-flex min-h-9 items-center justify-center rounded-md bg-insight px-3 text-caption font-semibold text-canvas">
+            Nâng cấp ngay
+          </span>
+        </Link>
+      )}
     </nav>
   );
 }

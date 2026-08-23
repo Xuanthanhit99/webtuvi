@@ -1,7 +1,7 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
-import { DashboardView, DestinyCompass, EnergyGauge } from './dashboard-view';
+import { DashboardView } from './dashboard-view';
 import { dashboardApi } from '../api/dashboard-api';
 import { tarotApi } from '@/features/tarot/api/tarot-api';
 import { numerologyApi } from '@/features/numerology/api/numerology-api';
@@ -222,28 +222,47 @@ describe('Tử Vi Tarot Home page', () => {
     await user.click(screen.getByRole('button', { name: 'Thử lại' }));
     expect(tuViApi.listCharts).toHaveBeenCalledTimes(2);
   });
-});
 
-describe('Tử Vi Tarot Home visuals', () => {
-  it('renders all 12 Destiny Compass branch labels', () => {
-    render(<DestinyCompass />);
 
-    ['Tý', 'Sửu', 'Dần', 'Mão', 'Thìn', 'Tỵ', 'Ngọ', 'Mùi', 'Thân', 'Dậu', 'Tuất', 'Hợi'].forEach((branch) => {
-      expect(screen.getByText(branch)).toBeInTheDocument();
+  it('shows the real current Đại Vận and Tiểu Hạn for a returning user with a saved chart', async () => {
+    const chartWithCycles = {
+      id: 'chart-1',
+      palaces: { menh: 'Tý' },
+      currentDaiVan: { index: 3, ageStart: 24, ageEnd: 33, role: 'Quan Lộc', position: 'Ngọ' },
+      currentTieuHan: { tuoi: 27, lunarYear: 2026, palace: 'Mão' },
+      createdAt: '2026-08-01T00:00:00.000Z',
+    };
+    (tuViApi.listCharts as jest.Mock).mockResolvedValue({ items: [chartWithCycles], total: 1, page: 1, pageSize: 1 });
+
+    renderWithQuery(<DashboardView />);
+
+    expect((await screen.findAllByText('24–33 tuổi · Cung Quan Lộc tại Ngọ')).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('27 tuổi (Âm lịch 2026) · Cung Mão').length).toBeGreaterThan(0);
+  });
+
+  it('shows an honest empty state for a new authenticated user with no saved chart', async () => {
+    renderWithQuery(<DashboardView />);
+
+    expect(await screen.findByText('Bạn chưa lập lá số Tử Vi.')).toBeInTheDocument();
+    expect(screen.getByText('Bạn chưa lập lá số.')).toBeInTheDocument();
+  });
+
+  it('picks the most recently created reading for the "Tiếp tục hành trình" card', async () => {
+    (tarotApi.listReadings as jest.Mock).mockResolvedValue({
+      items: [{ id: 't1', spreadName: 'Một lá', cards: [{ card: { name: 'The Star' } }], createdAt: '2026-08-20T00:00:00.000Z' }],
+      total: 1,
+      page: 1,
+      pageSize: 1,
     });
-  });
+    (natalChartApi.listCharts as jest.Mock).mockResolvedValue({
+      items: [{ id: 'n1', placements: [], createdAt: '2026-08-21T00:00:00.000Z' }],
+      total: 1,
+      page: 1,
+      pageSize: 1,
+    });
 
-  it('renders an accessible Energy Gauge score', () => {
-    render(<EnergyGauge score={78} />);
+    renderWithQuery(<DashboardView />);
 
-    expect(screen.getByLabelText('Năng lượng 78 trên 100')).toBeInTheDocument();
-    expect(screen.getByText('78')).toBeInTheDocument();
-  });
-
-  it('renders an honest empty Energy Gauge state when no score exists', () => {
-    render(<EnergyGauge label="Chưa có điểm năng lượng" />);
-
-    expect(screen.getByLabelText('Chưa có điểm năng lượng')).toBeInTheDocument();
-    expect(screen.getByText('--')).toBeInTheDocument();
+    expect(await screen.findByText('Bản đồ sao gần nhất')).toBeInTheDocument();
   });
 });

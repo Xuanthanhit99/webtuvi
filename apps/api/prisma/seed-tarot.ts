@@ -35,6 +35,7 @@ export async function seedTarotDeck(prisma: PrismaClient): Promise<void> {
       create: card,
       update: {
         name: card.name,
+        nameVi: card.nameVi,
         arcana: card.arcana,
         suit: card.suit,
         number: card.number,
@@ -46,6 +47,12 @@ export async function seedTarotDeck(prisma: PrismaClient): Promise<void> {
         astrological: card.astrological,
         categories: card.categories,
         imageSlug: card.imageSlug,
+        reflectionPrompts: card.reflectionPrompts,
+        loveMeaning: card.loveMeaning,
+        careerMeaning: card.careerMeaning,
+        financeMeaning: card.financeMeaning,
+        selfMeaning: card.selfMeaning,
+        deckVersion: card.deckVersion,
       },
     });
   }

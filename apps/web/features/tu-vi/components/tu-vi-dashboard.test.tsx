@@ -117,7 +117,7 @@ describe('TuViDashboard', () => {
   it('renders the birth-data form and real lá số history by default', async () => {
     (tuViApi.listCharts as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<TuViDashboard />);
-    expect(screen.getByRole('heading', { name: 'Bản đồ vận mệnh theo hệ Tử Vi Đẩu Số' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /calculate my lá số/i })).toBeInTheDocument();
     expect(await screen.findByText(/Hỏa Lục Cục — Mệnh tại Dần/)).toBeInTheDocument();
   });

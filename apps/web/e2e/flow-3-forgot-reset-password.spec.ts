@@ -56,7 +56,8 @@ test('forgot password -> reset password -> login', async ({ page }) => {
   // even though reset-password already revoked the refresh session server-side,
   // so middleware would otherwise keep bouncing an authenticated visit to
   // /login straight back to /dashboard during the restore step below.
-  await page.getByRole('button', { name: 'Log out' }).click();
+  await page.getByRole('button', { name: 'Account menu' }).click();
+  await page.getByRole('menuitem', { name: 'Log out' }).click();
   await expect(page).toHaveURL(/\/login/, { timeout: 10000 });
 
   // Restore the original password so the seeded account stays usable for reruns.

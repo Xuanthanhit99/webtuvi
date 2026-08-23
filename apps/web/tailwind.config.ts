@@ -113,6 +113,10 @@ const config: Config = {
           from: { transform: 'rotate(360deg)' },
           to: { transform: 'rotate(0deg)' },
         },
+        'mv-breathe': {
+          '0%, 100%': { opacity: '0.55' },
+          '50%': { opacity: '1' },
+        },
       },
       animation: {
         'mv-orbit-slow': 'mv-orbit-spin 48s linear infinite',

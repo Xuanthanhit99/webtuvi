@@ -31,10 +31,10 @@ export function TuViHistoryList({ filters, onSelect }: { filters: ListTuViCharts
             <button
               type="button"
               onClick={() => onSelect(chart.id)}
-              className="flex w-full flex-wrap items-center justify-between gap-2 rounded-md border border-border-subtle bg-surface px-3 py-2 text-left transition-colors duration-fast hover:bg-surface-raised"
+              className="flex w-full flex-wrap items-center justify-between gap-2 rounded-md border border-[rgba(213,173,98,0.16)] bg-surface px-4 py-3 text-left transition-colors duration-fast hover:border-insight/40 hover:bg-surface-raised"
             >
               <div className="flex flex-col gap-1">
-                <span className="text-body-sm font-semibold text-text-primary">
+                <span className="font-display text-body-md font-semibold text-text-primary">
                   {chart.cuc} — Mệnh tại {chart.palaces.menh}
                 </span>
                 <span className="text-caption text-text-secondary">

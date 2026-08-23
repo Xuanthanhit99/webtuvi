@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { TarotReadingDto } from '@beaconvie/types';
 import { renderWithQuery } from '@/test/render-with-query';
@@ -28,6 +28,7 @@ const drawnReading: TarotReadingDto = {
         id: 'c1',
         slug: 'major-00-the-fool',
         name: 'The Fool',
+        nameVi: 'Kẻ Khờ',
         arcana: 'MAJOR',
         suit: null,
         number: 0,
@@ -39,6 +40,12 @@ const drawnReading: TarotReadingDto = {
         astrological: 'Uranus',
         categories: [],
         imageSlug: 'major-00-the-fool',
+        reflectionPrompts: ['What would you try if you trusted yourself a little more?', 'Where are you waiting for certainty that may not come?'],
+        loveMeaning: 'A new connection worth approaching openly.',
+        careerMeaning: 'A fresh direction worth meeting with curiosity.',
+        financeMeaning: 'A first step worth a basic plan before leaping.',
+        selfMeaning: 'An invitation to trust your own instincts.',
+        deckVersion: 'tarot-v1-78',
       },
     },
   ],
@@ -74,6 +81,10 @@ describe('TarotDrawPanel', () => {
     expect(screen.queryByText('The Fool')).not.toBeInTheDocument();
 
     resolveDraw(drawnReading);
+    // No artwork file exists for this card yet (real current state, see artwork.ts) — jsdom never
+    // fires a real image load/error, so simulate the same 404-then-fallback a real browser hits.
+    const artwork = await screen.findByTestId('tarot-card-artwork', {}, { timeout: 3000 });
+    fireEvent.error(artwork);
     await waitFor(() => expect(screen.getByText('The Fool')).toBeInTheDocument(), { timeout: 3000 });
     expect(tarotApi.draw).toHaveBeenCalledWith('DAILY_DRAW', undefined);
     expect(onDrawn).toHaveBeenCalledWith(drawnReading);
@@ -111,6 +122,8 @@ describe('TarotDrawPanel', () => {
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
     await user.click(screen.getByRole('button', { name: 'Draw' }));
+    const artwork = await screen.findByTestId('tarot-card-artwork', {}, { timeout: 3000 });
+    fireEvent.error(artwork);
     await waitFor(() => expect(screen.getByText('The Fool')).toBeInTheDocument(), { timeout: 3000 });
 
     await user.click(screen.getByRole('button', { name: 'Draw again' }));

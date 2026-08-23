@@ -11,6 +11,7 @@ import { tarotApi } from '../api/tarot-api';
 import { trackEvent } from '@/lib/analytics';
 import { TarotCardFace } from './tarot-card-face';
 import { TarotCardDetailDialog } from './tarot-card-detail-dialog';
+import { resolveTarotArtworkSrc } from '../artwork';
 import { READING_STATUS_BADGE_VARIANT, READING_STATUS_LABELS, READING_TYPE_LABELS } from '../labels';
 
 /** Phase 6 — a reading's cards, interpretation, and lifecycle actions. Every card face links to
@@ -86,7 +87,12 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
       <div className="flex flex-wrap justify-center gap-4 py-2">
         {reading.cards.map((rc) => (
           <div key={rc.position} className="flex flex-col items-center gap-2">
-            <TarotCardFace card={rc.card} isReversed={rc.isReversed} onClick={() => setDetailCard({ card: rc.card, isReversed: rc.isReversed })} />
+            <TarotCardFace
+              card={rc.card}
+              isReversed={rc.isReversed}
+              imageSrc={resolveTarotArtworkSrc(rc.card)}
+              onClick={() => setDetailCard({ card: rc.card, isReversed: rc.isReversed })}
+            />
             {rc.positionLabel && <span className="text-caption text-text-tertiary">{rc.positionLabel}</span>}
           </div>
         ))}

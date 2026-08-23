@@ -60,7 +60,7 @@ describe('TuViDaiVanTimeline', () => {
 
   it('defaults the detail panel to the current period, not necessarily the first', () => {
     render(<TuViDaiVanTimeline chart={baseChart({ daiVan: cycles, currentDaiVan: cycles[2] })} />);
-    expect(screen.getByText(/Phúc Đức/, { selector: 'dd' })).toBeInTheDocument();
+    expect(screen.getByText(/Cung Phúc Đức/)).toBeInTheDocument();
   });
 
   it('selecting a different period updates the detail panel, never recalculating a new fact client-side', async () => {
@@ -68,13 +68,34 @@ describe('TuViDaiVanTimeline', () => {
     render(<TuViDaiVanTimeline chart={baseChart({ daiVan: cycles, currentDaiVan: cycles[0] })} />);
 
     await user.click(screen.getByRole('tab', { name: /36–45/ }));
-    expect(screen.getByText(/Điền Trạch/, { selector: 'dd' })).toBeInTheDocument();
+    expect(screen.getByText(/Cung Điền Trạch/)).toBeInTheDocument();
     expect(screen.getByRole('tab', { name: /36–45/ })).toHaveAttribute('aria-selected', 'true');
   });
 
   it('with no currentDaiVan (tuổi before the first cycle), still renders and defaults to the first period', () => {
     render(<TuViDaiVanTimeline chart={baseChart({ daiVan: cycles, currentDaiVan: null })} />);
     expect(screen.queryByText(/Hiện tại:/)).not.toBeInTheDocument();
-    expect(screen.getByText(/Mệnh/, { selector: 'dd' })).toBeInTheDocument();
+    expect(screen.getByText(/Cung Mệnh/)).toBeInTheDocument();
+  });
+
+  it('cross-references the real main/auxiliary stars already on the chart for the selected cycle\'s palace', () => {
+    render(
+      <TuViDaiVanTimeline
+        chart={baseChart({
+          daiVan: cycles,
+          currentDaiVan: cycles[0],
+          mainStars: [{ star: 'Tử Vi', position: 'Dần', dignity: 'Miếu địa' }],
+          auxiliaryStars: [{ star: 'Lộc Tồn', position: 'Dần' }],
+        })}
+      />,
+    );
+    expect(screen.getByText('Tử Vi')).toBeInTheDocument();
+    expect(screen.getByText('Miếu')).toBeInTheDocument();
+    expect(screen.getByText('Lộc Tồn')).toBeInTheDocument();
+  });
+
+  it('shows an honest empty state when the selected cycle\'s palace has no main stars, never a fabricated star', () => {
+    render(<TuViDaiVanTimeline chart={baseChart({ daiVan: cycles, currentDaiVan: cycles[0], mainStars: [] })} />);
+    expect(screen.getByText('Không có chính tinh tại cung này.')).toBeInTheDocument();
   });
 });

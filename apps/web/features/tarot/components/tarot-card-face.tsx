@@ -14,6 +14,10 @@ export type TarotCardVisualProps = {
   id: string;
   name: string;
   imageSrc?: string | null;
+  /** Tarot 78-Card Artwork Production pass — the shared card-back image, used only when
+   * `revealed === false`. A separate prop (not `imageSrc`) because a face-down card must never
+   * show the front artwork, even if one happens to be resolved for this same card id. */
+  backImageSrc?: string | null;
   reversed?: boolean;
   size?: 'sm' | 'md' | 'lg';
   revealed?: boolean;
@@ -55,6 +59,7 @@ export function TarotCardVisual({
   id,
   name,
   imageSrc,
+  backImageSrc,
   reversed = false,
   size = 'md',
   revealed = true,
@@ -62,7 +67,10 @@ export function TarotCardVisual({
   numberLabel,
 }: TarotCardVisualProps) {
   const [imageState, setImageState] = useState<'loading' | 'loaded' | 'failed'>(imageSrc ? 'loading' : 'failed');
-  const showImage = Boolean(imageSrc) && imageState !== 'failed';
+  const [backImageState, setBackImageState] = useState<'loading' | 'loaded' | 'failed'>(backImageSrc ? 'loading' : 'failed');
+
+  const showBack = revealed === false && Boolean(backImageSrc) && backImageState !== 'failed';
+  const showFront = revealed !== false && Boolean(imageSrc) && imageState !== 'failed';
 
   return (
     <span
@@ -73,7 +81,21 @@ export function TarotCardVisual({
         reversed && 'rotate-180',
       )}
     >
-      {showImage && (
+      {showBack && (
+        <>
+          {backImageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5" aria-hidden="true" />}
+          {/* eslint-disable-next-line @next/next/no-img-element -- shared static art asset, no Next image optimizer needed. */}
+          <img
+            data-testid="tarot-card-back-artwork"
+            src={backImageSrc ?? undefined}
+            alt=""
+            className={cn('absolute inset-0 h-full w-full object-cover', backImageState === 'loading' && 'opacity-0')}
+            onLoad={() => setBackImageState('loaded')}
+            onError={() => setBackImageState('failed')}
+          />
+        </>
+      )}
+      {showFront && (
         <>
           {imageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5" aria-hidden="true" />}
           {/* eslint-disable-next-line @next/next/no-img-element -- Future approved Tarot art must fail over without Next image optimizer assumptions. */}
@@ -92,7 +114,7 @@ export function TarotCardVisual({
           )}
         </>
       )}
-      {!showImage && <TarotFallbackFace name={name} symbol={symbol} numberLabel={numberLabel} revealed={revealed} />}
+      {!showBack && !showFront && <TarotFallbackFace name={name} symbol={symbol} numberLabel={numberLabel} revealed={revealed} />}
     </span>
   );
 }

@@ -19,20 +19,20 @@ function Section({ title, defaultOpen = false, children }: { title: string; defa
   const [open, setOpen] = useState(defaultOpen);
   const sectionId = `tu-vi-section-${title.toLowerCase().replace(/\s+/g, '-')}`;
   return (
-    <section aria-labelledby={`${sectionId}-heading`}>
+    <section aria-labelledby={`${sectionId}-heading`} className="rounded-lg border border-[rgba(213,173,98,0.16)] bg-surface px-4">
       <button
         type="button"
         id={`${sectionId}-heading`}
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls={sectionId}
-        className="flex w-full items-center justify-between gap-2 py-2 text-left text-body-sm font-semibold text-text-secondary"
+        className="flex w-full items-center justify-between gap-2 py-3 text-left text-body-sm font-semibold text-text-primary"
       >
         {title}
         <ChevronDown className={`h-4 w-4 shrink-0 transition-transform duration-fast ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
       </button>
       {open && (
-        <div id={sectionId} className="pb-2">
+        <div id={sectionId} className="pb-4">
           {children}
         </div>
       )}
@@ -125,15 +125,23 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
           <TuViPalaceGrid chart={chart} />
         </div>
 
-        <div className="space-y-3 rounded-lg border border-border-subtle bg-surface p-4">
-          <p className="text-caption font-semibold uppercase tracking-[0.16em] text-insight">Tổng quan lá số</p>
-          <dl className="grid grid-cols-2 gap-2 text-body-sm">
-            <dt className="text-text-secondary">Mệnh</dt>
-            <dd className="text-text-primary">{chart.palaces.menh}</dd>
-            <dt className="text-text-secondary">Thân</dt>
-            <dd className="text-text-primary">{chart.palaces.than}</dd>
-            <dt className="text-text-secondary">Cục</dt>
-            <dd className="text-text-primary">{chart.cuc}</dd>
+        <div className="space-y-4 rounded-lg border border-[rgba(213,173,98,0.2)] bg-surface p-4">
+          <p className="font-display text-body-sm font-semibold uppercase tracking-[0.16em] text-insight">Tổng quan lá số</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <p className="text-caption text-text-tertiary">Mệnh</p>
+              <p className="font-display text-heading-md font-semibold text-text-primary">{chart.palaces.menh}</p>
+            </div>
+            <div>
+              <p className="text-caption text-text-tertiary">Thân</p>
+              <p className="font-display text-heading-md font-semibold text-text-primary">{chart.palaces.than}</p>
+            </div>
+          </div>
+          <div className="border-t border-[rgba(213,173,98,0.14)] pt-3">
+            <p className="text-caption text-text-tertiary">Cục</p>
+            <p className="text-body-md font-semibold text-text-primary">{chart.cuc}</p>
+          </div>
+          <dl className="grid grid-cols-2 gap-2 border-t border-[rgba(213,173,98,0.14)] pt-3 text-body-sm">
             <dt className="text-text-secondary">Can Chi năm</dt>
             <dd className="text-text-primary">
               {chart.canChi.year.stem} {chart.canChi.year.branch}

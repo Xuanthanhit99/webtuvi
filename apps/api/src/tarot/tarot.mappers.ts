@@ -4,6 +4,7 @@ export interface TarotCardDto {
   id: string;
   slug: string;
   name: string;
+  nameVi: string;
   arcana: TarotCard['arcana'];
   suit: TarotCard['suit'];
   number: number;
@@ -15,6 +16,12 @@ export interface TarotCardDto {
   astrological: string | null;
   categories: string[];
   imageSlug: string;
+  reflectionPrompts: string[];
+  loveMeaning: string;
+  careerMeaning: string;
+  financeMeaning: string;
+  selfMeaning: string;
+  deckVersion: string;
 }
 
 export interface TarotReadingCardDto {
@@ -51,6 +58,7 @@ export function toTarotCardDto(card: TarotCard): TarotCardDto {
     id: card.id,
     slug: card.slug,
     name: card.name,
+    nameVi: card.nameVi,
     arcana: card.arcana,
     suit: card.suit,
     number: card.number,
@@ -62,6 +70,12 @@ export function toTarotCardDto(card: TarotCard): TarotCardDto {
     astrological: card.astrological,
     categories: card.categories,
     imageSlug: card.imageSlug,
+    reflectionPrompts: card.reflectionPrompts,
+    loveMeaning: card.loveMeaning,
+    careerMeaning: card.careerMeaning,
+    financeMeaning: card.financeMeaning,
+    selfMeaning: card.selfMeaning,
+    deckVersion: card.deckVersion,
   };
 }
 
