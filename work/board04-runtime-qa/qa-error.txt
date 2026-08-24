@@ -1,0 +1,6 @@
+locator.waitFor: Timeout 60000ms exceeded.
+Call log:
+[2m  - waiting for locator('ul[aria-label="Matching places"] button').first() to be visible[22m
+
+    at createNatal ([eval]:84:19)
+    at async [eval]:147:3

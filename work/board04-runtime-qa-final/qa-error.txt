@@ -1,0 +1,5 @@
+Error: /natal-charts 403 {"data":null,"error":{"code":"CSRF_TOKEN_MISSING","message":"This request is missing a required security token. Please refresh the page and try again."},"meta":{},"requestId":"df02bf7f-ea7b-4747-8c76-0f69cf8d9d07"}
+    at apiPost ([eval]:19:140)
+    at async createNatalViaApi ([eval]:20:87)
+    at async runMain ([eval]:29:15)
+    at async [eval]:39:13

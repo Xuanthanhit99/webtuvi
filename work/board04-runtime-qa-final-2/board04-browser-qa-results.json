@@ -1,0 +1,539 @@
+{
+  "startedAt": "2026-08-23T15:26:17.220Z",
+  "axe": [
+    {
+      "name": "numerology landing",
+      "counts": {
+        "critical": 0,
+        "serious": 0,
+        "moderate": 0,
+        "minor": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "numerology result",
+      "counts": {
+        "critical": 0,
+        "serious": 0,
+        "moderate": 1,
+        "minor": 0
+      },
+      "violations": [
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "help": "Page should contain a level-one heading",
+          "nodes": [
+            {
+              "target": [
+                "html"
+              ],
+              "html": "<html lang=\"vi\" class=\"__variable_7f1bca __variable_a9b986 __variable_46fe82\">",
+              "failureSummary": "Fix all of the following:\n  Page must have a level-one heading"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natal landing",
+      "counts": {
+        "critical": 0,
+        "serious": 0,
+        "moderate": 0,
+        "minor": 0
+      },
+      "violations": []
+    },
+    {
+      "name": "natal known result",
+      "counts": {
+        "critical": 0,
+        "serious": 0,
+        "moderate": 1,
+        "minor": 0
+      },
+      "violations": [
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "help": "Page should contain a level-one heading",
+          "nodes": [
+            {
+              "target": [
+                "html"
+              ],
+              "html": "<html lang=\"vi\" class=\"__variable_7f1bca __variable_a9b986 __variable_46fe82\">",
+              "failureSummary": "Fix all of the following:\n  Page must have a level-one heading"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "natal unknown-time result",
+      "counts": {
+        "critical": 0,
+        "serious": 0,
+        "moderate": 1,
+        "minor": 0
+      },
+      "violations": [
+        {
+          "id": "page-has-heading-one",
+          "impact": "moderate",
+          "help": "Page should contain a level-one heading",
+          "nodes": [
+            {
+              "target": [
+                "html"
+              ],
+              "html": "<html lang=\"vi\" class=\"__variable_7f1bca __variable_a9b986 __variable_46fe82\">",
+              "failureSummary": "Fix all of the following:\n  Page must have a level-one heading"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "responsive": [
+    {
+      "name": "numerology-landing",
+      "width": 1536,
+      "ok": true,
+      "metrics": {
+        "sw": 1536,
+        "ww": 1536,
+        "body": 1536
+      }
+    },
+    {
+      "name": "numerology-landing",
+      "width": 1440,
+      "ok": true,
+      "metrics": {
+        "sw": 1440,
+        "ww": 1440,
+        "body": 1440
+      }
+    },
+    {
+      "name": "numerology-landing",
+      "width": 1280,
+      "ok": true,
+      "metrics": {
+        "sw": 1280,
+        "ww": 1280,
+        "body": 1280
+      }
+    },
+    {
+      "name": "numerology-landing",
+      "width": 1024,
+      "ok": true,
+      "metrics": {
+        "sw": 1024,
+        "ww": 1024,
+        "body": 1024
+      }
+    },
+    {
+      "name": "numerology-landing",
+      "width": 768,
+      "ok": true,
+      "metrics": {
+        "sw": 768,
+        "ww": 768,
+        "body": 768
+      }
+    },
+    {
+      "name": "numerology-landing",
+      "width": 430,
+      "ok": true,
+      "metrics": {
+        "sw": 430,
+        "ww": 430,
+        "body": 430
+      }
+    },
+    {
+      "name": "numerology-landing",
+      "width": 390,
+      "ok": true,
+      "metrics": {
+        "sw": 390,
+        "ww": 390,
+        "body": 390
+      }
+    },
+    {
+      "name": "numerology-landing",
+      "width": 375,
+      "ok": true,
+      "metrics": {
+        "sw": 375,
+        "ww": 375,
+        "body": 375
+      }
+    },
+    {
+      "name": "numerology-result",
+      "width": 1536,
+      "ok": true,
+      "metrics": {
+        "sw": 1536,
+        "ww": 1536,
+        "body": 1536
+      }
+    },
+    {
+      "name": "numerology-result",
+      "width": 1440,
+      "ok": true,
+      "metrics": {
+        "sw": 1440,
+        "ww": 1440,
+        "body": 1440
+      }
+    },
+    {
+      "name": "numerology-result",
+      "width": 1280,
+      "ok": true,
+      "metrics": {
+        "sw": 1280,
+        "ww": 1280,
+        "body": 1280
+      }
+    },
+    {
+      "name": "numerology-result",
+      "width": 1024,
+      "ok": true,
+      "metrics": {
+        "sw": 1024,
+        "ww": 1024,
+        "body": 1024
+      }
+    },
+    {
+      "name": "numerology-result",
+      "width": 768,
+      "ok": true,
+      "metrics": {
+        "sw": 768,
+        "ww": 768,
+        "body": 768
+      }
+    },
+    {
+      "name": "numerology-result",
+      "width": 430,
+      "ok": true,
+      "metrics": {
+        "sw": 430,
+        "ww": 430,
+        "body": 430
+      }
+    },
+    {
+      "name": "numerology-result",
+      "width": 390,
+      "ok": true,
+      "metrics": {
+        "sw": 390,
+        "ww": 390,
+        "body": 390
+      }
+    },
+    {
+      "name": "numerology-result",
+      "width": 375,
+      "ok": true,
+      "metrics": {
+        "sw": 375,
+        "ww": 375,
+        "body": 375
+      }
+    },
+    {
+      "name": "natal-landing",
+      "width": 1536,
+      "ok": true,
+      "metrics": {
+        "sw": 1536,
+        "ww": 1536,
+        "body": 1536
+      }
+    },
+    {
+      "name": "natal-landing",
+      "width": 1440,
+      "ok": true,
+      "metrics": {
+        "sw": 1440,
+        "ww": 1440,
+        "body": 1440
+      }
+    },
+    {
+      "name": "natal-landing",
+      "width": 1280,
+      "ok": true,
+      "metrics": {
+        "sw": 1280,
+        "ww": 1280,
+        "body": 1280
+      }
+    },
+    {
+      "name": "natal-landing",
+      "width": 1024,
+      "ok": true,
+      "metrics": {
+        "sw": 1024,
+        "ww": 1024,
+        "body": 1024
+      }
+    },
+    {
+      "name": "natal-landing",
+      "width": 768,
+      "ok": true,
+      "metrics": {
+        "sw": 768,
+        "ww": 768,
+        "body": 768
+      }
+    },
+    {
+      "name": "natal-landing",
+      "width": 430,
+      "ok": true,
+      "metrics": {
+        "sw": 430,
+        "ww": 430,
+        "body": 430
+      }
+    },
+    {
+      "name": "natal-landing",
+      "width": 390,
+      "ok": true,
+      "metrics": {
+        "sw": 390,
+        "ww": 390,
+        "body": 390
+      }
+    },
+    {
+      "name": "natal-landing",
+      "width": 375,
+      "ok": true,
+      "metrics": {
+        "sw": 375,
+        "ww": 375,
+        "body": 375
+      }
+    },
+    {
+      "name": "natal-result",
+      "width": 1536,
+      "ok": true,
+      "metrics": {
+        "sw": 1536,
+        "ww": 1536,
+        "body": 1536
+      }
+    },
+    {
+      "name": "natal-result",
+      "width": 1440,
+      "ok": true,
+      "metrics": {
+        "sw": 1440,
+        "ww": 1440,
+        "body": 1440
+      }
+    },
+    {
+      "name": "natal-result",
+      "width": 1280,
+      "ok": true,
+      "metrics": {
+        "sw": 1280,
+        "ww": 1280,
+        "body": 1280
+      }
+    },
+    {
+      "name": "natal-result",
+      "width": 1024,
+      "ok": true,
+      "metrics": {
+        "sw": 1024,
+        "ww": 1024,
+        "body": 1024
+      }
+    },
+    {
+      "name": "natal-result",
+      "width": 768,
+      "ok": true,
+      "metrics": {
+        "sw": 768,
+        "ww": 768,
+        "body": 768
+      }
+    },
+    {
+      "name": "natal-result",
+      "width": 430,
+      "ok": true,
+      "metrics": {
+        "sw": 430,
+        "ww": 430,
+        "body": 430
+      }
+    },
+    {
+      "name": "natal-result",
+      "width": 390,
+      "ok": true,
+      "metrics": {
+        "sw": 390,
+        "ww": 390,
+        "body": 390
+      }
+    },
+    {
+      "name": "natal-result",
+      "width": 375,
+      "ok": true,
+      "metrics": {
+        "sw": 375,
+        "ww": 375,
+        "body": 375
+      }
+    }
+  ],
+  "reducedMotion": [
+    {
+      "name": "numerology landing",
+      "route": "/discover/numerology",
+      "ok": true,
+      "data": {
+        "motion": true,
+        "overflowing": false,
+        "visibleText": "Skip to main content\nTử Vi Tarot\nB\nPlease verify your email address to keep your account secure.\nResend link\n\nTHẦN SỐ HỌC\n\nNhững con số cốt lõi trong hồ sơ của bạn\n\nTính toán deterministic từ họ tên khai sinh và ngày sinh. Mỗi con số giữ lại bước tính để bạn biết kết quả đến từ đâu.\n\nKhám phá con số của bạn\n7\nSỐ CHỦ ĐẠO\n3\n5\n7\n8\n1\n9\n\nChính xác\n\nPhương pháp Pythagorean từ họ tên và ngày sinh.\n\nToàn diện\n\nSáu chỉ số cốt lõi đã được backend hỗ trợ.\n\nỨng dụng\n\nÝ nghĩa truyền thống kèm bước tính minh "
+      }
+    },
+    {
+      "name": "numerology result",
+      "route": "/discover/numerology?item=cmt5ymee2004p12m6ilnrzgxh",
+      "ok": true,
+      "data": {
+        "motion": true,
+        "overflowing": false,
+        "visibleText": "Skip to main content\nTử Vi Tarot\nB\nPlease verify your email address to keep your account secure.\nResend link\n← Back to Numerology\nActive\nCalculated for NGUYEN VAN THANH, born 1995-08-12\nArchive\nDelete\n\nTỔNG QUAN\n\nSố chủ đạo 8\n\nĐây là Life Path do backend tính từ ngày sinh. Các chỉ số còn lại bên dưới vẫn giữ nguyên bước tính và ý nghĩa truyền thống.\n\n8\n\nLife Path\n\n3\n\nExpression\n\n1\n\nSoul Urge\n\n11\n\nPersonality\n\n3\n\nBirthday\n\n3\n\nPersonal Year\n\n8\nSỐ CHỦ ĐẠO\n3\n5\n7\n8\n1\n9\n\nLife Path\n\nThe broadest, most "
+      }
+    },
+    {
+      "name": "natal landing",
+      "route": "/discover/natal-chart",
+      "ok": true,
+      "data": {
+        "motion": true,
+        "overflowing": false,
+        "visibleText": "Skip to main content\nTử Vi Tarot\nB\nPlease verify your email address to keep your account secure.\nResend link\n\nBẢN ĐỒ SAO\n\nBầu trời tại khoảnh khắc bạn sinh ra\n\nBản đồ sao được tính từ ngày, giờ và nơi sinh thật. Mặt Trời, Mặt Trăng, ASC, nhà và góc chiếu đều là dữ liệu từ engine, không phải minh họa trang trí.\n\nLập bản đồ sao của bạn\n♈\n♉\n♊\n♋\n♌\n♍\n♎\n♏\n♐\n♑\n♒\n♓\n☉\n☽\n☿\n♀\n♂\n♃\n♄\n♅\n\nChính xác\n\nDựa trên dữ liệu sinh và engine thiên văn học.\n\nCá nhân hóa\n\nVị trí hành tinh, nhà và góc hợp theo hồ sơ của bạn"
+      }
+    },
+    {
+      "name": "natal known result",
+      "route": "/discover/natal-chart?item=cmt5ymh0a005912m6db0vzpq5",
+      "ok": true,
+      "data": {
+        "motion": true,
+        "overflowing": false,
+        "visibleText": "Skip to main content\nTử Vi Tarot\nB\nPlease verify your email address to keep your account secure.\nResend link\n← Back to Natal Chart\nActive\nBorn 2000-06-15 at 14:30 · Thành phố Hà Nội, Việt Nam\nArchive\nDelete\n\nĐược tính toán từ dữ liệu sinh — calculated from your birth data, never chosen by AI.\n\n♈\n♉\n♊\n♋\n♌\n♍\n♎\n♏\n♐\n♑\n♒\n♓\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n11\n12\nASC\nMC\n♄\n♃\n☉\n♀\n♂\n☿\n☽\n♇\n♆\n♅\n\nTỔNG QUAN\n\nBig Three và cấu trúc chính\n\nCác lớp dưới đây là dữ liệu đã lưu từ engine: hành tinh, nhà, góc hợp và luận giải AI "
+      }
+    },
+    {
+      "name": "natal unknown result",
+      "route": "/discover/natal-chart?item=cmt5ymhbv006o12m6hpmpz41v",
+      "ok": true,
+      "data": {
+        "motion": true,
+        "overflowing": false,
+        "visibleText": "Skip to main content\nTử Vi Tarot\nB\nPlease verify your email address to keep your account secure.\nResend link\n← Back to Natal Chart\nActive\nBorn 2001-04-19 (time unknown) · Thành phố Hà Nội, Việt Nam\nArchive\nDelete\n\nĐược tính toán từ dữ liệu sinh — calculated from your birth data, never chosen by AI.\n\n♈\n♉\n♊\n♋\n♌\n♍\n♎\n♏\n♐\n♑\n♒\n♓\n♀\n☿\n☉\n♄\n♃\n♇\n♂\n♆\n♅\n☽\n\nTỔNG QUAN\n\nBig Three và cấu trúc chính\n\nCác lớp dưới đây là dữ liệu đã lưu từ engine: hành tinh, nhà, góc hợp và luận giải AI được tách riêng.\n\n10\n\nPlanet"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "name": "authenticated runtime",
+      "ok": true,
+      "detail": "board04-1787498777402@example.com"
+    },
+    {
+      "name": "numerology result real render",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "natal known planets visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "natal known rising visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "natal unknown-time boundary visible",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "keyboard focus visible numerology landing",
+      "ok": true,
+      "detail": "{\"tag\":\"A\",\"text\":\"Tử Vi Tarot\",\"outline\":\"solid\",\"boxShadow\":\"none\",\"href\":\"/\",\"aria\":\"Tử Vi Tarot\"}"
+    },
+    {
+      "name": "keyboard focus visible numerology result",
+      "ok": true,
+      "detail": "{\"tag\":\"A\",\"text\":\"Tử Vi Tarot\",\"outline\":\"solid\",\"boxShadow\":\"none\",\"href\":\"/\",\"aria\":\"Tử Vi Tarot\"}"
+    },
+    {
+      "name": "keyboard focus visible natal landing",
+      "ok": true,
+      "detail": "{\"tag\":\"A\",\"text\":\"Tử Vi Tarot\",\"outline\":\"solid\",\"boxShadow\":\"none\",\"href\":\"/\",\"aria\":\"Tử Vi Tarot\"}"
+    },
+    {
+      "name": "keyboard focus visible natal result",
+      "ok": true,
+      "detail": "{\"tag\":\"A\",\"text\":\"Tử Vi Tarot\",\"outline\":\"solid\",\"boxShadow\":\"none\",\"href\":\"/\",\"aria\":\"Tử Vi Tarot\"}"
+    }
+  ],
+  "screenshots": [
+    "D:\\webtuvi\\work\\board04-runtime-qa-final-2\\numerology-landing-1440.png",
+    "D:\\webtuvi\\work\\board04-runtime-qa-final-2\\numerology-result-1440.png",
+    "D:\\webtuvi\\work\\board04-runtime-qa-final-2\\natal-landing-1440.png",
+    "D:\\webtuvi\\work\\board04-runtime-qa-final-2\\natal-known-result-1440.png",
+    "D:\\webtuvi\\work\\board04-runtime-qa-final-2\\natal-unknown-result-1440.png"
+  ],
+  "errors": [],
+  "ids": {
+    "numerology": "cmt5ymee2004p12m6ilnrzgxh",
+    "natalKnown": "cmt5ymh0a005912m6db0vzpq5",
+    "natalUnknown": "cmt5ymhbv006o12m6hpmpz41v"
+  },
+  "geocoding": {
+    "status": 503,
+    "body": "{\"data\":null,\"error\":{\"code\":\"GEOCODING_UNAVAILABLE\",\"message\":\"Location search is temporarily unavailable.\"},\"meta\":{},\"requestId\":\"c1a80146-7143-4b72-bd62-90187b2cad4b\"}"
+  },
+  "finishedAt": "2026-08-23T15:27:06.594Z"
+}

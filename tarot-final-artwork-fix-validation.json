@@ -1,0 +1,22 @@
+{
+  "baseline": "tarot-pre-product-qa-artwork-sha256.json",
+  "current_count": 78,
+  "baseline_count": 78,
+  "changed": [
+    "cups-06.webp",
+    "cups-knight.webp"
+  ],
+  "changed_count": 2,
+  "unchanged_count": 76,
+  "missing": [],
+  "missing_count": 0,
+  "extra": [],
+  "extra_count": 0,
+  "expected_changed": [
+    "cups-06.webp",
+    "cups-knight.webp"
+  ],
+  "unexpected": [],
+  "unexpected_count": 0,
+  "status": "PASS"
+}
