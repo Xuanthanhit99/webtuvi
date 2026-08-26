@@ -2,17 +2,21 @@ import { render } from '@testing-library/react';
 import { DestinyOrbit } from './destiny-orbit';
 
 describe('DestinyOrbit', () => {
-  it('renders the approved Board 01 destiny wheel artwork', () => {
+  it('renders the layered SVG celestial instrument with all 12 Earthly Branch glyphs', () => {
     const { container } = render(<DestinyOrbit />);
 
-    const img = container.querySelector('img');
-    expect(img).toBeInTheDocument();
-    expect(img).toHaveAttribute('src', expect.stringContaining('08_destiny_wheel'));
+    const svg = container.querySelector('svg');
+    expect(svg).toBeInTheDocument();
+
+    const branches = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+    for (const glyph of branches) {
+      expect(container.textContent).toContain(glyph);
+    }
   });
 
   it('is purely decorative and hidden from assistive technology', () => {
     const { container } = render(<DestinyOrbit />);
 
-    expect(container.querySelector('img')).toHaveAttribute('aria-hidden', 'true');
+    expect(container.firstElementChild).toHaveAttribute('aria-hidden', 'true');
   });
 });

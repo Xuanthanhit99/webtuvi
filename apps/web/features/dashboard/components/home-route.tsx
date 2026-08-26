@@ -46,9 +46,17 @@ export function HomeRoute() {
           section (see HomeHero's isGuest branch in dashboard-view.tsx) that must sit flush under
           the sticky, transparent-until-scrolled header so header + hero read as one continuous
           canvas, not "header, then a gap, then a boxed card." Everything after the Hero still gets
-          its own horizontal padding from the max-w wrapper below. */}
+          its own horizontal padding from the max-w wrapper below.
+
+          BOARD 01 FINAL SCALE PASS: this wrapper used to cap at 1360px while the Hero's own inner
+          content column (dashboard-view.tsx HomeHero) caps at 1600px — measured before this fix:
+          at 1536px viewport the Hero content rendered 1472px wide but Discovery/Editorial/Trust
+          below it were stuck at 1312px, a 160px gap (64px at 1440px, already ~0 at 1280px, where
+          the old 1360 cap wasn't binding). That's the exact "cinematic Hero → narrow dashboard
+          content" discontinuity — fixed by matching this cap to Hero's own 1600px, not by
+          widening any individual section. */}
       <main id="main-content" className="pb-16">
-        <div className="mx-auto w-full max-w-[1360px] px-4 tablet:px-8">
+        <div className="mx-auto w-full max-w-[1600px] px-4 tablet:px-8">
           <DashboardView />
         </div>
       </main>
@@ -97,7 +105,7 @@ function GuestHeader() {
             href="/register?next=%2F"
             className="inline-flex min-h-11 items-center justify-center rounded-md bg-[#d5ad62] px-4 text-body-sm font-semibold text-[#070b12] hover:bg-[#e6c980]"
           >
-            Bắt đầu miễn phí
+            Đăng ký
           </Link>
         </div>
       </div>

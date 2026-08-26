@@ -47,40 +47,40 @@ model User {
   createdAt             DateTime   @default(now())
   updatedAt             DateTime   @updatedAt
 
-  sessions                UserSession[]
-  passwordResetTokens     PasswordResetToken[]
-  emailVerificationTokens EmailVerificationToken[]
-  profile                 UserProfile?
-  preference              UserPreference?
-  onboardingProgress      OnboardingProgress?
-  activityEvents          ActivityEvent[]
-  memoryNotes             MemoryNote[]
-  companionMessages       CompanionMessage[]
-  conversations           Conversation[]
-  aiUsages                AIUsage[]
-  memories                Memory[]
-  memoryCandidates        MemoryCandidate[]
-  memoryConsentSetting    MemoryConsentSetting?
-  memoryTypeConsents      MemoryTypeConsent[]
-  memoryAudits            MemoryAudit[]
-  memoryDuplicates        MemoryDuplicate[]
-  memoryConflicts         MemoryConflict[]
-  memoryMergeSuggestions  MemoryMergeSuggestion[]
-  memoryRetrievalLogs     MemoryRetrievalLog[]
-  journalEntries          JournalEntry[]
-  reflectionCandidates    ReflectionCandidate[]
-  insightCandidates       InsightCandidate[]
-  insightRelationships    InsightRelationship[]
-  reviews                 Review[]
-  goals                   Goal[]
-  tarotReadings           TarotReading[]
-  paymentOrders           PaymentOrder[]
-  premiumEntitlements     PremiumEntitlement[]
-  numerologyReadings      NumerologyReading[]
-  natalCharts             NatalChart[]
-  notifications           Notification[]
-  notificationPreference  NotificationPreference?
-  destinyReports          DestinyReport[]
+  sessions                 UserSession[]
+  passwordResetTokens      PasswordResetToken[]
+  emailVerificationTokens  EmailVerificationToken[]
+  profile                  UserProfile?
+  preference               UserPreference?
+  onboardingProgress       OnboardingProgress?
+  activityEvents           ActivityEvent[]
+  memoryNotes              MemoryNote[]
+  companionMessages        CompanionMessage[]
+  conversations            Conversation[]
+  aiUsages                 AIUsage[]
+  memories                 Memory[]
+  memoryCandidates         MemoryCandidate[]
+  memoryConsentSetting     MemoryConsentSetting?
+  memoryTypeConsents       MemoryTypeConsent[]
+  memoryAudits             MemoryAudit[]
+  memoryDuplicates         MemoryDuplicate[]
+  memoryConflicts          MemoryConflict[]
+  memoryMergeSuggestions   MemoryMergeSuggestion[]
+  memoryRetrievalLogs      MemoryRetrievalLog[]
+  journalEntries           JournalEntry[]
+  reflectionCandidates     ReflectionCandidate[]
+  insightCandidates        InsightCandidate[]
+  insightRelationships     InsightRelationship[]
+  reviews                  Review[]
+  goals                    Goal[]
+  tarotReadings            TarotReading[]
+  paymentOrders            PaymentOrder[]
+  premiumEntitlements      PremiumEntitlement[]
+  numerologyReadings       NumerologyReading[]
+  natalCharts              NatalChart[]
+  notifications            Notification[]
+  notificationPreference   NotificationPreference?
+  destinyReports           DestinyReport[]
   easternHoroscopeProfiles EasternHoroscopeProfile[]
   tuViCharts               TuViChart[]
 
@@ -1714,49 +1714,49 @@ enum TarotReadingHistoryAction {
 /// `imageSlug` is a stable reference for a future art asset pipeline — no illustration exists yet
 /// (disclosed, not faked; the frontend renders a typographic/symbolic card face instead).
 model TarotCard {
-  id               String      @id @default(cuid())
+  id                String      @id @default(cuid())
   /// URL-safe, stable, human-readable (e.g. "major-00-the-fool", "wands-05-five-of-wands").
-  slug             String      @unique
-  name             String
-  arcana           TarotArcana
+  slug              String      @unique
+  name              String
+  arcana            TarotArcana
   /// Null for Major Arcana.
-  suit             TarotSuit?
+  suit              TarotSuit?
   /// Major Arcana: 0-21 (The Fool through The World). Minor Arcana: 1-14 (Ace, 2-10, Page=11,
   /// Knight=12, Queen=13, King=14).
-  number           Int
-  uprightKeywords  String[]
-  uprightMeaning   String
-  reversedKeywords String[]
-  reversedMeaning  String
+  number            Int
+  uprightKeywords   String[]
+  uprightMeaning    String
+  reversedKeywords  String[]
+  reversedMeaning   String
   /// Real, traditional elemental correspondence (Fire/Water/Air/Earth) — null only where the
   /// traditional system genuinely assigns none.
-  element          String?
+  element           String?
   /// Real, traditional planet/zodiac correspondence, where the traditional system assigns one.
-  astrological     String?
+  astrological      String?
   /// Real thematic tags (e.g. "love", "career", "change") for Phase 5's search/filter — derived
   /// from the card's own actual meaning, never arbitrary.
-  categories       String[]
-  imageSlug        String
+  categories        String[]
+  imageSlug         String
   /// Tarot 78-Card Completion pass — Vietnamese display name. English `name`/`slug` remain the
   /// canonical identity (never replaced) — this is an additional bilingual display field, mirroring
   /// the same English-heading + Vietnamese-gloss pattern already established for Natal Chart.
-  nameVi           String      @default("")
+  nameVi            String      @default("")
   /// 2-4 short, non-deterministic reflection questions grounded in the card's own real meaning —
   /// never a fabricated prediction. Empty only for legacy/unseeded rows before this pass's reseed.
-  reflectionPrompts String[]   @default([])
+  reflectionPrompts String[]    @default([])
   /// Concise, topic-framed derivations of the same real upright meaning above — never a separate
   /// invented meaning, never a guaranteed-outcome claim (see docs/design/tarot-78-artwork-contract.md
   /// for the full authoring discipline this pass followed).
-  loveMeaning      String      @default("")
-  careerMeaning    String      @default("")
-  financeMeaning   String      @default("")
-  selfMeaning      String      @default("")
+  loveMeaning       String      @default("")
+  careerMeaning     String      @default("")
+  financeMeaning    String      @default("")
+  selfMeaning       String      @default("")
   /// Which canonical-content revision this row's text represents. All 78 rows share one value per
   /// deck edition — a future rewrite of meanings/keywords should bump this, not silently mutate
   /// existing text a past reading's own detail view still reads live (see the completion audit's
   /// "Historical versioning" section for the full policy).
-  deckVersion      String      @default("tarot-v1-78")
-  createdAt        DateTime    @default(now())
+  deckVersion       String      @default("tarot-v1-78")
+  createdAt         DateTime    @default(now())
 
   readingCards TarotReadingCard[]
 
@@ -2591,10 +2591,10 @@ model EasternHoroscopeProfile {
   /// anything downstream. Small closed sets stored as plain strings (mirrors NumerologyValue's own
   /// `type` column), not Prisma enums — avoids a schema migration every time a reference-table
   /// value is merely re-labeled in copy.
-  stem        String
-  branch      String
-  element     String
-  yinYang     String
+  stem           String
+  branch         String
+  element        String
+  yinYang        String
   zodiacAnimalEn String
   zodiacAnimalVi String
 
@@ -2661,10 +2661,10 @@ enum TuViChartHistoryAction {
 /// genuinely fixed-shape data, not open-ended one-to-many facts needing individual per-row
 /// metadata the way NumerologyValue's multiple distinct number types do.
 model TuViChart {
-  id     String           @id @default(cuid())
+  id     String          @id @default(cuid())
   userId String
-  user   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status TuViChartStatus  @default(ACTIVE)
+  user   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status TuViChartStatus @default(ACTIVE)
 
   /// Date-only, `YYYY-MM-DD` semantics enforced at the application layer
   /// (`tu-vi-canonical-input.ts`) — stored as a real `DateTime` at UTC midnight, mirrors

@@ -31,25 +31,49 @@ import { trackEvent } from '@/lib/analytics';
 
 const HOME_ASSET_BASE = '/assets/menh-vi/home';
 /**
- * BOARD 01 LOCKED IMPLEMENTATION: the founder-approved Board 01 reference ships its own final
- * artwork (hero mountains/mist/clouds, the Destiny Wheel, and all 4 Discovery feature
- * illustrations + their small icon badges) at this path — see
- * apps/web/public/assets/menh_vi_board01_generated_assets/README.txt and manifest.json. This
- * directory is canonical; every Home visual that has an approved asset here uses it directly
- * instead of an SVG/CSS approximation.
+ * The founder-approved Board 01 reference art (hero mountains/mist/clouds and the 4 small
+ * circular icon badges) lives at this path — see
+ * apps/web/public/assets/menh_vi_board01_generated_assets/README.txt and manifest.json. The
+ * Destiny Wheel is hand-authored SVG — see `home/destiny-orbit.tsx`.
  */
 const BOARD01_ASSET_BASE = '/assets/menh_vi_board01_generated_assets';
+
+/**
+ * PRODUCTION FEATURE-ART ASSET CONTRACT (2026-08-26): after two rejected hand-SVG passes
+ * (`home/feature-illustrations.tsx`, kept on disk but no longer imported — rollback only, not
+ * production), the art direction is now HYBRID: Hero + feature illustrations are commissioned
+ * raster, Destiny Wheel + UI glyphs stay SVG. The founder will supply transparent-background
+ * artwork at:
+ *
+ *   apps/web/public/assets/menh-vi/features/feature-tuvi.webp
+ *   apps/web/public/assets/menh-vi/features/feature-tarot.webp
+ *   apps/web/public/assets/menh-vi/features/feature-natal.webp
+ *   apps/web/public/assets/menh-vi/features/feature-numerology.webp
+ *
+ * Recommended spec for whoever produces that art: ~1024×1024 (or the card's own ~4:5), true
+ * alpha transparency (PNG or lossless WebP — matches every existing Board 01 asset, verified via
+ * PNG IHDR earlier in this project), main subject weighted toward the bottom-right third with at
+ * least ~15% clear transparent margin on the other edges so it can bleed into the card's alpha
+ * mask (see FeatureCard/guest-try components below) without a visible hard crop line.
+ *
+ * Until that art lands, this points at the pre-existing approved Board 01 raster
+ * (06/07/09/10_feature_*.webp) as an honest interim placeholder, per the founder's explicit
+ * instruction to use the previous approved asset rather than a generic icon or a fabricated
+ * "final" claim. Swap only the values below when the new files exist — no other code changes
+ * should be needed, since the card/mask treatment is already built for this contract.
+ */
+const FEATURE_ART_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', string> = {
+  tu_vi: `${BOARD01_ASSET_BASE}/07_feature_tuvi_pagoda.webp`,
+  tarot: `${BOARD01_ASSET_BASE}/06_feature_tarot_cards.webp`,
+  natal_chart: `${BOARD01_ASSET_BASE}/09_feature_natal_orbit.webp`,
+  numerology: `${BOARD01_ASSET_BASE}/10_feature_numerology.webp`,
+};
+
 const FEATURE_ICON_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', string> = {
   tu_vi: '02_icon_tuvi',
   tarot: '03_icon_tarot',
   natal_chart: '04_icon_natal',
   numerology: '05_icon_numerology',
-};
-const FEATURE_ILLUSTRATION_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', string> = {
-  tu_vi: '07_feature_tuvi_pagoda',
-  tarot: '06_feature_tarot_cards',
-  natal_chart: '09_feature_natal_orbit',
-  numerology: '10_feature_numerology',
 };
 /** Sparse hero sky stars — [xPercent, yPercent, radius, opacity]. */
 const HERO_STARS = [
@@ -438,7 +462,11 @@ function HomeHero({
             // readable inside its own centered max-width. Auth (isGuest=false) keeps the original
             // boxed treatment — it renders inside AppShell's sidebar layout, a different context
             // this pass isn't correcting.
-            'left-1/2 right-1/2 -mx-[50vw] w-screen px-5 py-10 tablet:px-8 tablet:py-14 desktop:py-20'
+            // BOARD 01 SCALE PASS: desktop padding cut from py-20 (80px) to py-10 (40px) — the
+            // founder flagged the Hero as too tall/dominant; this plus the smaller Wheel and
+            // headline clamp below bring the measured section height from 898px to the requested
+            // ~560–620px band at 1440/1536, without touching the mountain/mist artwork itself.
+            'left-1/2 right-1/2 -mx-[50vw] w-screen px-5 py-10 tablet:px-8 tablet:py-12 desktop:py-8'
           : 'min-h-[600px] rounded-[24px] border border-[rgba(213,173,98,0.2)] bg-[#0c1420] px-5 py-8 shadow-[0_24px_80px_rgba(0,0,0,0.35)] tablet:px-8 tablet:py-10 desktop:min-h-[660px] desktop:px-12 desktop:py-10',
       )}
     >
@@ -525,7 +553,12 @@ function HomeHero({
           guest), but headline/orbit/panel/quick-actions stay inside a wide-but-centered column so
           text remains readable while the artwork itself reads as panoramic. */}
       <div className="relative z-10 mx-auto w-full max-w-[1600px]">
-        <div className="grid gap-7 tablet:grid-cols-[1fr_1fr] tablet:gap-6 desktop:grid-cols-[1.7fr_2.1fr_1fr] desktop:items-stretch desktop:gap-8">
+        <div
+          className={cn(
+            'grid gap-7 tablet:grid-cols-[1fr_1fr] tablet:gap-6 desktop:items-stretch desktop:gap-8',
+            isGuest ? 'desktop:grid-cols-[1.6fr_1.4fr]' : 'desktop:grid-cols-[1.7fr_2.1fr_1fr]',
+          )}
+        >
           <div className="max-w-lg self-center tablet:self-start">
             {authLoading ? (
               <Skeleton className="mb-5 h-20 w-56 bg-white/10" />
@@ -534,13 +567,13 @@ function HomeHero({
                 <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#e6c980]">Tử Vi Tarot</p>
                 <h1
                   id="home-hero-heading"
-                  className="mt-3 font-display text-[clamp(2.6rem,4.9vw,4.8rem)] font-bold uppercase leading-[1.04] tracking-normal text-[#f2eee5]"
+                  className="mt-3 font-display text-[clamp(2.2rem,3.6vw,3.6rem)] font-bold uppercase leading-[1.06] tracking-normal text-[#f2eee5]"
                 >
                   Hiểu mình.
                   <br />
-                  Nắm thời vận.
+                  Hiểu vận.
                   <br />
-                  Sống chủ động hơn.
+                  Sống an nhiên.
                 </h1>
               </>
             ) : (
@@ -558,30 +591,44 @@ function HomeHero({
               <HomeButton href={isGuest ? '#try-tarot' : '/discover'} variant="primary">
                 {isGuest ? 'Khám phá ngay' : 'Xem vận trình hôm nay'}
               </HomeButton>
-              <HomeButton href={isGuest ? '#try-numerology' : '/companion'} variant="secondary" icon={<Play className="h-4 w-4" aria-hidden="true" />}>
-                {isGuest ? 'Không cần đăng ký' : 'Giới thiệu Tử Vi Tarot'}
+              <HomeButton
+                href={isGuest ? '#features-heading' : '/companion'}
+                variant="secondary"
+                icon={isGuest ? undefined : <Play className="h-4 w-4" aria-hidden="true" />}
+              >
+                {isGuest ? 'Tìm hiểu thêm' : 'Giới thiệu Tử Vi Tarot'}
               </HomeButton>
             </div>
           </div>
-          <div className="col-auto row-auto mx-auto w-full max-w-[260px] self-center tablet:col-start-2 tablet:row-start-1 tablet:max-w-[380px] tablet:self-start desktop:col-auto desktop:row-auto desktop:max-w-[560px] desktop:self-center">
+          <div
+            className={cn(
+              'col-auto row-auto mx-auto w-full max-w-[260px] self-center tablet:col-start-2 tablet:row-start-1 tablet:max-w-[340px] tablet:self-start desktop:col-auto desktop:row-auto desktop:self-center',
+              isGuest ? 'desktop:max-w-[420px]' : 'desktop:max-w-[400px]',
+            )}
+          >
             <DestinyOrbit className="h-full w-full drop-shadow-[0_0_24px_rgba(213,173,98,0.18)]" />
           </div>
-          {/* V8: `desktop:self-end` moves the panel down from the top-aligned position the audit
-              flagged — it now sits toward the lower half of the hero, secondary to the headline
-              and Orbit rather than pinned level with the Orbit's top edge. */}
-          <div className="col-auto row-auto mx-auto w-full max-w-[280px] tablet:col-start-2 tablet:row-start-2 tablet:ml-auto tablet:mr-0 tablet:max-w-[260px] desktop:col-auto desktop:row-auto desktop:max-w-none desktop:self-end">
-            <HeroContextPanel
-              isGuest={isGuest}
-              loading={dashboardLoading}
-              error={dashboardError}
-              text={dailyText}
-              onRetry={onRetryDashboard}
-              tuViChart={tuViChart}
-              tuViLoading={tuViLoading}
-            />
-          </div>
+          {/* BOARD 01 FINAL CORRECTION: the founder-approved guest reference has no right-side
+              context panel — only the authenticated screen does. Removed for guests (presentation
+              only; HeroContextPanel's data/API wiring is untouched and still renders for auth). The
+              freed column goes to the headline/Orbit instead (see the grid-cols swap above). */}
+          {!isGuest && (
+            // V8: `desktop:self-end` moves the panel down from the top-aligned position the audit
+            // flagged — it now sits toward the lower half of the hero, secondary to the headline
+            // and Orbit rather than pinned level with the Orbit's top edge.
+            <div className="col-auto row-auto mx-auto w-full max-w-[280px] tablet:col-start-2 tablet:row-start-2 tablet:ml-auto tablet:mr-0 tablet:max-w-[260px] desktop:col-auto desktop:row-auto desktop:max-w-none desktop:self-end">
+              <HeroContextPanel
+                loading={dashboardLoading}
+                error={dashboardError}
+                text={dailyText}
+                onRetry={onRetryDashboard}
+                tuViChart={tuViChart}
+                tuViLoading={tuViLoading}
+              />
+            </div>
+          )}
         </div>
-        <div className="mt-6 border-t border-white/[0.06] pt-5 desktop:mt-7 desktop:pt-5">
+        <div className="mt-6 border-t border-white/[0.06] pt-5 desktop:mt-5 desktop:pt-4">
           <QuickActions isGuest={isGuest} />
         </div>
       </div>
@@ -659,7 +706,6 @@ function CycleRow({ label, value }: { label: string; value: string }) {
 }
 
 function HeroContextPanel({
-  isGuest,
   loading,
   error,
   text,
@@ -667,7 +713,6 @@ function HeroContextPanel({
   tuViChart,
   tuViLoading,
 }: {
-  isGuest: boolean;
   loading: boolean;
   error: boolean;
   text?: string;
@@ -675,21 +720,6 @@ function HeroContextPanel({
   tuViChart: TuViChartDto | null;
   tuViLoading: boolean;
 }) {
-  if (isGuest) {
-    return (
-      <div className="rounded-[16px] border border-[#d5ad62]/20 bg-[#0e1726]/80 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.35)]">
-        <p className="text-body-sm font-semibold text-[#f2eee5]">Vận trình của riêng bạn</p>
-        <p className="mt-2 text-caption leading-relaxed text-[#a6a7ac]">Đăng nhập để xem Đại Vận, Tiểu Hạn và hành trình đã lưu.</p>
-        <Link
-          href="/login?next=%2F"
-          className="mt-3 inline-flex min-h-9 items-center gap-1.5 text-caption font-semibold text-[#e6c980] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]"
-        >
-          Đăng nhập <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-        </Link>
-      </div>
-    );
-  }
-
   if (loading || tuViLoading) {
     return (
       <div className="rounded-[18px] border border-[#d5ad62]/20 bg-[#0e1726]/80 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.35)]">
@@ -827,12 +857,13 @@ function ForYouSection({
 }
 
 /**
- * V8 (Board 01 reference-fidelity): the reference's 4 Discovery cards are compact and
- * text-forward — icon, title, description and CTA occupy the card's real space, with a small
- * illustration integrated into one corner, not a distinct illustration panel on top of a tall
- * poster-shaped card. Height dropped from 278/308px to 188/204px accordingly.
+ * BOARD 01 FINAL CORRECTION: the prior 188/204px height was tuned to avoid a "tall poster" card,
+ * but it also left no room for the approved illustration to read as anything but a small corner
+ * thumbnail — the founder's explicit "still reads like a dashboard card with a thumbnail attached"
+ * call-out. Grown enough for the artwork to have real atmospheric presence (see the illustration
+ * block below) while staying a compact card, not a poster.
  */
-const FEATURE_CARD_SHAPE = 'flex h-[188px] flex-col rounded-[18px] border border-white/[0.14] p-4 tablet:h-[204px] tablet:p-5';
+const FEATURE_CARD_SHAPE = 'flex h-[248px] flex-col rounded-[18px] border border-white/[0.14] p-4 tablet:h-[264px] tablet:p-5 desktop:h-[284px]';
 
 /**
  * V7 reference-fidelity: Board 01's 4 Discovery cards are one coherent dark-navy family, not four
@@ -915,26 +946,42 @@ function FeatureCard({
       )}
     >
       <div className="pointer-events-none absolute inset-0" style={{ background: accent }} aria-hidden="true" />
-      {/* BOARD 01 LOCKED: the founder-approved feature illustration, a small ornamental engraving
-          tucked into the bottom-right corner — masked to fade toward the text — never a
-          standalone panel occupying the top of the card. Copy stays the dominant visual element. */}
+      {/* PRODUCTION ART CONTAINER (§8 contract): right ~52% of the card, full height so the
+          artwork can bleed toward the top/bottom edges rather than sitting in a boxed corner —
+          only the left edge is masked (a wide soft fade toward the text column), so there's no
+          hard rectangular boundary anywhere else. Opacity kept high (not a low watermark) since
+          the fade itself is what protects legibility. Swap FEATURE_ART_ASSET's values when
+          commissioned art lands; no other change needed here. */}
       <div
-        className="pointer-events-none absolute -bottom-3 -right-3 h-[120px] w-[150px] opacity-70 transition-opacity duration-standard group-hover:opacity-90 tablet:h-[130px] tablet:w-[160px]"
+        className="pointer-events-none absolute inset-y-0 right-0 w-[52%] opacity-90 transition-[opacity,transform] duration-standard group-hover:opacity-100 group-hover:scale-[1.02]"
         style={{
-          WebkitMaskImage: 'linear-gradient(135deg, transparent 12%, black 52%)',
-          maskImage: 'linear-gradient(135deg, transparent 12%, black 52%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 45%, transparent 92%)',
+          maskImage: 'linear-gradient(to left, black 45%, transparent 92%)',
         }}
       >
-        <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ILLUSTRATION_ASSET[asset]}.webp`} alt="" fill sizes="160px" className="object-contain object-bottom" />
+        <Image src={FEATURE_ART_ASSET[asset]} alt="" fill sizes="(min-width: 1280px) 300px, 220px" className="object-contain object-bottom" />
       </div>
+      {/* Protects the copy column: a soft left-to-right scrim instead of relying on the mask alone
+          to keep text legible now that the artwork is larger and brighter. */}
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#080b12]/75 via-[#080b12]/30 to-transparent"
+        aria-hidden="true"
+      />
       <div className="relative flex items-center gap-2">
         <span className="relative h-6 w-6 shrink-0">
           <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ICON_ASSET[asset]}.webp`} alt="" fill sizes="24px" className="object-contain" />
         </span>
         <h3 className="text-caption font-semibold uppercase tracking-[0.1em] text-[#e6c980]">{title}</h3>
       </div>
-      <p className="relative mt-2 line-clamp-2 max-w-[75%] flex-1 text-caption leading-snug text-[#a6a7ac]">{description}</p>
-      <span className="relative mt-2 inline-flex items-center gap-1.5 text-caption font-semibold text-[#e6c980]">
+      {/* `flex-1` previously lived on this <p> to push the CTA to the card's bottom edge, but that
+          combination silently defeats `line-clamp-2` — Tailwind's clamp needs the box's own content
+          height, and a flex-grown box instead stretches to fill the remaining column, so a 3rd
+          wrapped line stays visible below the "clamped" 2 lines instead of being cut. Verified via
+          computed styles: height was 186px (~11 line-heights) with `flex-1`, not the ~33px 2 lines
+          should occupy. Fixed by keeping the paragraph's natural clamped height and pushing the CTA
+          down with `mt-auto` on the flex column instead. */}
+      <p className="relative mt-2 line-clamp-2 max-w-[60%] text-caption leading-snug text-[#a6a7ac]">{description}</p>
+      <span className="relative mt-auto inline-flex items-center gap-1.5 pt-2 text-caption font-semibold text-[#e6c980]">
         {cta} <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
       </span>
     </Link>
@@ -993,23 +1040,25 @@ function GuestTarotPreview() {
       className="relative overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
       style={{ background: `radial-gradient(circle at 92% 4%, rgba(122,142,168,0.16), transparent 55%), ${GUEST_SECTION_BASE}` }}
     >
-      {/* V7: dialed back from a bold, near-opaque 210×260 fan to a restrained ~30–40% visual-weight
-          accent that supports the copy instead of competing with it. */}
+      {/* PRODUCTION ART CONTAINER (§9): Tarot emerges from the right side — full-height zone,
+          content anchored right so the card fan reads as entering the frame rather than sitting
+          in a corner. */}
       <div
-        className="pointer-events-none absolute -right-4 -top-4 h-[150px] w-[190px] opacity-45"
+        className="pointer-events-none absolute inset-y-0 right-0 w-[46%] opacity-85"
         style={{
-          WebkitMaskImage: 'linear-gradient(to left, black 45%, transparent 92%)',
-          maskImage: 'linear-gradient(to left, black 45%, transparent 92%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 42%, transparent 90%)',
+          maskImage: 'linear-gradient(to left, black 42%, transparent 90%)',
         }}
         aria-hidden="true"
       >
-        <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ILLUSTRATION_ASSET.tarot}.webp`} alt="" fill sizes="190px" className="object-contain" />
+        <Image src={FEATURE_ART_ASSET.tarot} alt="" fill sizes="260px" className="object-contain object-right" />
       </div>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#080b12]/70 via-[#080b12]/20 to-transparent" aria-hidden="true" />
       <div className="relative">
         <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Tarot</p>
-        <h3 className="mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Rút một lá cho hôm nay</h3>
+        <h3 className="relative mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Rút một lá cho hôm nay</h3>
       </div>
-      <p className="relative mt-2 max-w-[60%] text-body-sm leading-relaxed text-[#a6a7ac]">Bản thử này không lưu lịch sử và không gọi AI. Luận giải đầy đủ cần tài khoản để giữ ngữ cảnh cho bạn.</p>
+      <p className="relative mt-2 max-w-[58%] text-body-sm leading-relaxed text-[#a6a7ac]">Bản thử này không lưu lịch sử và không gọi AI. Luận giải đầy đủ cần tài khoản để giữ ngữ cảnh cho bạn.</p>
       {isDrawing && <Skeleton className="relative mt-4 h-28 w-full bg-white/10" />}
       {card && (
         <div className="relative mt-4 rounded-[14px] border border-[#d5ad62]/20 bg-[#070b12]/70 p-4" aria-live="polite">
@@ -1079,19 +1128,20 @@ function GuestNumerologyPreview() {
       className="relative overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
       style={{ background: `radial-gradient(circle at 92% 4%, rgba(213,173,98,0.14), transparent 55%), ${GUEST_SECTION_BASE}` }}
     >
-      {/* V7: small number geometry tucked in the upper-right, form stays readable — not a large
-          bold mandala fighting with the date input for attention. The date input keeps its own
-          opaque background regardless. */}
+      {/* PRODUCTION ART CONTAINER (§9): the numerology artifact sits on the right side, full
+          height. The date input below keeps its own opaque background so it stays usable
+          regardless of the art behind it. */}
       <div
-        className="pointer-events-none absolute -right-6 -top-8 h-[150px] w-[170px] opacity-40"
+        className="pointer-events-none absolute inset-y-0 right-0 w-[48%] opacity-85"
         style={{
-          WebkitMaskImage: 'linear-gradient(115deg, transparent 10%, black 48%)',
-          maskImage: 'linear-gradient(115deg, transparent 10%, black 48%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 40%, transparent 90%)',
+          maskImage: 'linear-gradient(to left, black 40%, transparent 90%)',
         }}
         aria-hidden="true"
       >
-        <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ILLUSTRATION_ASSET.numerology}.webp`} alt="" fill sizes="170px" className="object-contain" />
+        <Image src={FEATURE_ART_ASSET.numerology} alt="" fill sizes="260px" className="object-contain" />
       </div>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#080b12]/70 via-[#080b12]/20 to-transparent" aria-hidden="true" />
       <div className="relative">
         <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Thần số học</p>
         <h3 className="mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Tính nhanh con số chủ đạo</h3>
@@ -1146,18 +1196,19 @@ function GuestTuViBoundary() {
       className="relative overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
       style={{ background: `radial-gradient(circle at 92% 4%, rgba(198,146,67,0.14), transparent 55%), ${GUEST_SECTION_BASE}` }}
     >
-      {/* V7: thin palace geometry tucked to the right, copy stays anchored left — not a bold
-          composed manuscript/mountain scene competing for the eye. */}
+      {/* PRODUCTION ART CONTAINER (§9): the pavilion/landscape scene grows from the lower-right
+          corner rather than sitting boxed in a fixed frame. */}
       <div
-        className="pointer-events-none absolute -right-6 -top-8 h-[150px] w-[170px] opacity-40"
+        className="pointer-events-none absolute -bottom-4 -right-4 h-[92%] w-[58%] opacity-85"
         style={{
-          WebkitMaskImage: 'linear-gradient(115deg, transparent 10%, black 48%)',
-          maskImage: 'linear-gradient(115deg, transparent 10%, black 48%)',
+          WebkitMaskImage: 'linear-gradient(128deg, transparent 6%, transparent 22%, black 55%)',
+          maskImage: 'linear-gradient(128deg, transparent 6%, transparent 22%, black 55%)',
         }}
         aria-hidden="true"
       >
-        <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ILLUSTRATION_ASSET.tu_vi}.webp`} alt="" fill sizes="170px" className="object-contain" />
+        <Image src={FEATURE_ART_ASSET.tu_vi} alt="" fill sizes="260px" className="object-contain object-bottom" />
       </div>
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#080b12]/70 via-[#080b12]/20 to-transparent" aria-hidden="true" />
       <div className="relative">
         <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Lá số Tử Vi</p>
         <h3 className="mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Xem trước cách lập lá số</h3>
@@ -1240,11 +1291,14 @@ function EditorialSection() {
   return (
     <section aria-labelledby="editorial-heading" className="space-y-5">
       <SectionHeading id="editorial-heading" eyebrow="Bài viết nổi bật" title="Đọc thêm để hiểu mình" />
-      <div className="grid gap-4 desktop:h-[460px] desktop:grid-cols-[1.5fr_1fr]">
+      {/* BOARD 01 FINAL CORRECTION: grown from 460px to 528px on desktop — the founder flagged this
+          section as feeling small against the full desktop canvas. Same layout/imagery, just more
+          room for the featured card and the 3-row secondary list to breathe. */}
+      <div className="grid gap-4 desktop:h-[528px] desktop:grid-cols-[1.5fr_1fr]">
         <Link
           href={featured.href}
           onClick={() => trackEvent('home_article_clicked', { feature: 'home', source: featured.slug })}
-          className="group relative flex h-[280px] flex-col justify-end overflow-hidden rounded-[18px] border border-[#d5ad62]/12 transition-colors hover:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] desktop:h-full"
+          className="group relative flex h-[320px] flex-col justify-end overflow-hidden rounded-[18px] border border-[#d5ad62]/12 transition-colors hover:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] desktop:h-full"
         >
           <Image src={featured.image} alt="" fill sizes="(min-width: 1280px) 780px, 100vw" className="object-cover transition-transform duration-500 ease-organic group-hover:scale-[1.03]" />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0c1420] via-[#0c1420]/35 to-transparent" />
@@ -1335,7 +1389,7 @@ function RailCard({ title, icon, children }: { title: string; icon: React.ReactN
 
 function TrustCompassGlyph() {
   return (
-    <svg viewBox="0 0 40 40" className="h-6 w-6" aria-hidden="true">
+    <svg viewBox="0 0 40 40" className="h-7 w-7" aria-hidden="true">
       <circle cx="20" cy="20" r="17" fill="none" stroke="#d5ad62" strokeOpacity="0.6" strokeWidth="1.3" />
       <circle cx="20" cy="20" r="11" fill="none" stroke="#d5ad62" strokeOpacity="0.36" strokeWidth="1.2" />
       <path d="M20 6v6M20 28v6M6 20h6M28 20h6" stroke="#d5ad62" strokeOpacity="0.6" strokeWidth="1.3" />
@@ -1346,7 +1400,7 @@ function TrustCompassGlyph() {
 
 function TrustCardsGlyph() {
   return (
-    <svg viewBox="0 0 40 40" className="h-6 w-6" aria-hidden="true">
+    <svg viewBox="0 0 40 40" className="h-7 w-7" aria-hidden="true">
       <rect x="9" y="7" width="17" height="26" rx="3" fill="none" stroke="#d5ad62" strokeOpacity="0.42" strokeWidth="1.2" transform="rotate(-10 17.5 20)" />
       <rect x="14" y="6" width="17" height="26" rx="3" fill="#0b1220" stroke="#d5ad62" strokeOpacity="0.75" strokeWidth="1.2" transform="rotate(8 22.5 19)" />
       <path d="M22.5 15l2 4.6 4.6 2-4.6 2-2 4.6-2-4.6-4.6-2 4.6-2z" fill="#e6c980" opacity="0.85" />
@@ -1356,7 +1410,7 @@ function TrustCardsGlyph() {
 
 function TrustSparkleGlyph() {
   return (
-    <svg viewBox="0 0 40 40" className="h-6 w-6" aria-hidden="true">
+    <svg viewBox="0 0 40 40" className="h-7 w-7" aria-hidden="true">
       <path d="M20 5l4 11 11 4-11 4-4 11-4-11-11-4 11-4z" fill="none" stroke="#708c79" strokeOpacity="0.65" strokeWidth="1.3" strokeLinejoin="round" />
       <circle cx="20" cy="20" r="3.5" fill="#e6c980" opacity="0.9" />
     </svg>
@@ -1393,16 +1447,19 @@ function TrustSection() {
           Tính toán trước. AI giải thích sau.
         </h2>
       </div>
-      <div className="grid gap-4 tablet:grid-cols-3">
+      {/* BOARD 01 FINAL CORRECTION: the founder flagged this row as visually thin/weak. Grown via
+          padding, a larger icon badge, and a slightly heavier title — still 3 restrained pillars,
+          no structural redesign. */}
+      <div className="grid gap-5 tablet:grid-cols-3">
         {TRUST_POINTS.map((point) => (
-          <div key={point.title} className="relative flex items-center gap-5 overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#16233a]/60 px-6 py-5">
+          <div key={point.title} className="relative flex items-center gap-5 overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#16233a]/60 px-7 py-7">
             <div className="pointer-events-none absolute inset-0" style={{ background: point.atmosphere }} aria-hidden="true" />
-            <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d5ad62]/20 bg-[#070b12]/50">
+            <span className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#d5ad62]/25 bg-[#070b12]/50">
               <point.glyph />
             </span>
             <div className="relative">
-              <h3 className="text-body-sm font-semibold text-[#f2eee5]">{point.title}</h3>
-              <p className="mt-0.5 text-caption leading-snug text-[#a6a7ac]">{point.description}</p>
+              <h3 className="text-body-md font-semibold text-[#f2eee5]">{point.title}</h3>
+              <p className="mt-1 text-body-sm leading-snug text-[#a6a7ac]">{point.description}</p>
             </div>
           </div>
         ))}
@@ -1413,15 +1470,18 @@ function TrustSection() {
 
 function FinalCta({ isGuest }: { isGuest: boolean }) {
   return (
-    <section aria-labelledby="final-cta-heading" className="relative overflow-hidden rounded-[24px] border border-[rgba(213,173,98,0.22)] bg-[#132030] px-6 py-12 text-center tablet:px-10 desktop:py-16">
+    <section aria-labelledby="final-cta-heading" className="relative overflow-hidden rounded-[24px] border border-[rgba(213,173,98,0.22)] bg-[#132030] px-6 py-14 text-center tablet:px-10 desktop:py-20">
       {/* Real painted celestial-mountain artwork (founder-supplied, previously unused) instead of a
-          synthetic SVG approximation — gives the closing chapter genuine atmospheric depth. */}
+          synthetic SVG approximation — gives the closing chapter genuine atmospheric depth.
+          BOARD 01 FINAL CORRECTION: opacity raised (45% → 60%) and section padding grown so this
+          reads as a deliberate cinematic close rather than a small banner in empty space. Same
+          artwork, same layout — presence only. */}
       <Image
         src={`${HOME_ASSET_BASE}/ChatGPT Image Aug 21, 2026, 10_14_23 PM.png`}
         alt=""
         fill
         sizes="(min-width: 1280px) 1200px, 100vw"
-        className="object-cover opacity-45"
+        className="object-cover opacity-60"
       />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(213,173,98,0.12),transparent_55%)]" />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#132030]/55 via-[#132030]/15 to-[#132030]/65" />
