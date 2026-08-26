@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Calculator, ChevronRight, Play, ScrollText, Sparkles, Star } from 'lucide-react';
+import { ChevronRight, Play, Sparkles } from 'lucide-react';
 import type {
   ClientAnalyticsEventName,
   NatalChartDto,
@@ -30,6 +30,42 @@ import { cn } from '@/lib/cn';
 import { trackEvent } from '@/lib/analytics';
 
 const HOME_ASSET_BASE = '/assets/menh-vi/home';
+/**
+ * BOARD 01 LOCKED IMPLEMENTATION: the founder-approved Board 01 reference ships its own final
+ * artwork (hero mountains/mist/clouds, the Destiny Wheel, and all 4 Discovery feature
+ * illustrations + their small icon badges) at this path — see
+ * apps/web/public/assets/menh_vi_board01_generated_assets/README.txt and manifest.json. This
+ * directory is canonical; every Home visual that has an approved asset here uses it directly
+ * instead of an SVG/CSS approximation.
+ */
+const BOARD01_ASSET_BASE = '/assets/menh_vi_board01_generated_assets';
+const FEATURE_ICON_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', string> = {
+  tu_vi: '02_icon_tuvi',
+  tarot: '03_icon_tarot',
+  natal_chart: '04_icon_natal',
+  numerology: '05_icon_numerology',
+};
+const FEATURE_ILLUSTRATION_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', string> = {
+  tu_vi: '07_feature_tuvi_pagoda',
+  tarot: '06_feature_tarot_cards',
+  natal_chart: '09_feature_natal_orbit',
+  numerology: '10_feature_numerology',
+};
+/** Sparse hero sky stars — [xPercent, yPercent, radius, opacity]. */
+const HERO_STARS = [
+  [6, 10, 1.4, 0.55],
+  [16, 24, 1, 0.4],
+  [28, 6, 1.2, 0.45],
+  [40, 30, 0.9, 0.35],
+  [52, 14, 1.3, 0.5],
+  [64, 34, 1, 0.4],
+  [76, 8, 1.1, 0.45],
+  [88, 26, 1.4, 0.5],
+  [96, 12, 0.9, 0.35],
+  [12, 42, 1, 0.4],
+  [34, 48, 1.2, 0.4],
+  [58, 44, 0.9, 0.35],
+] as const;
 const HOME_QUERY_OPTIONS = {
   enabled: false,
   staleTime: 60_000,
@@ -245,7 +281,8 @@ export function DashboardView() {
   }, [authLoading, isGuest]);
 
   return (
-    <div className="-mx-1 flex flex-col gap-8 text-[#f2eee5] tablet:-mx-2">
+    <div className="relative -mx-1 flex flex-col gap-14 text-[#f2eee5] tablet:-mx-2 desktop:gap-16">
+      <PageAtmosphere />
       <HomeHero
         authLoading={authLoading}
         isGuest={isGuest}
@@ -259,12 +296,12 @@ export function DashboardView() {
         tuViLoading={!isGuest && tuViQuery.isLoading}
       />
 
-      <section aria-labelledby="features-heading" className="space-y-4">
+      <section aria-labelledby="features-heading" className="space-y-5">
         <SectionHeading id="features-heading" eyebrow="Tử Vi · Tarot · Bản đồ sao · Thần số học" title="Khám phá nhanh" />
-        <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 tablet:gap-4 desktop:grid-cols-4">
           <FeatureCard
             title="Lá số Tử Vi"
-            description={isGuest ? 'Khám phá lá số của bạn, rồi đăng nhập để lập và lưu lá số đầy đủ.' : tuViChart ? `Lá số gần nhất: Mệnh an tại ${tuViChart.palaces.menh}.` : 'Khám phá bản đồ vận mệnh của bạn.'}
+            description={isGuest ? 'Khám phá lá số của bạn, rồi đăng nhập để lưu lá số đầy đủ.' : tuViChart ? `Mệnh an tại ${tuViChart.palaces.menh}.` : 'Bản đồ vận mệnh theo Tử Vi Đẩu Số.'}
             cta={isGuest ? 'Bắt đầu' : tuViChart ? 'Xem lá số' : 'Lập lá số'}
             href={isGuest ? '#try-tu-vi' : '/discover/tu-vi'}
             loading={!isGuest && tuViQuery.isLoading}
@@ -272,7 +309,9 @@ export function DashboardView() {
             onRetry={() => tuViQuery.refetch()}
             analyticsEvent="home_tuvi_clicked"
             analyticsFeature="tu_vi"
-            visual={<TuViFeatureVisual />}
+            asset="tu_vi"
+            surface={CARD_SURFACE}
+            accent="radial-gradient(circle at 12% 0%, rgba(198,146,67,0.16), transparent 60%)"
           />
           <FeatureCard
             title="Tarot"
@@ -280,7 +319,7 @@ export function DashboardView() {
               isGuest
                 ? 'Một lá bài cho câu hỏi hôm nay.'
                 : tarotReading
-                ? `Lần đọc gần nhất: ${tarotReading.spreadName}${tarotReading.cards[0]?.card.name ? ` · ${tarotReading.cards[0].card.name}` : ''}.`
+                ? `Gần nhất: ${tarotReading.spreadName}${tarotReading.cards[0]?.card.name ? ` · ${tarotReading.cards[0].card.name}` : ''}.`
                 : 'Một lá bài cho câu hỏi của bạn.'
             }
             cta={isGuest ? 'Rút một lá' : tarotReading ? 'Xem trải bài' : 'Rút bài'}
@@ -290,16 +329,18 @@ export function DashboardView() {
             onRetry={() => tarotQuery.refetch()}
             analyticsEvent="home_tarot_clicked"
             analyticsFeature="tarot"
-            visual={<TarotFeatureVisual />}
+            asset="tarot"
+            surface={CARD_SURFACE}
+            accent="radial-gradient(circle at 12% 0%, rgba(122,142,168,0.16), transparent 60%)"
           />
           <FeatureCard
             title="Bản đồ sao"
             description={
               isGuest
-                ? 'Khám phá bản đồ bầu trời khi bạn sinh ra.'
+                ? 'Khám phá bầu trời lúc bạn sinh ra.'
                 : natalChart
-                ? `Mặt Trời ${sunSign ?? 'đã tính'} · Mặt Trăng ${moonSign ?? 'đã tính'}${natalChart.ascendant ? ` · ASC ${natalSignLabels[natalChart.ascendant.sign] ?? natalChart.ascendant.sign}` : ''}.`
-                : 'Cần ngày, giờ và nơi sinh để hoàn thiện bản đồ sao.'
+                ? `Mặt Trời ${sunSign ?? 'đã tính'} · Mặt Trăng ${moonSign ?? 'đã tính'}.`
+                : 'Cần ngày, giờ và nơi sinh để lập bản đồ.'
             }
             cta={isGuest ? 'Tìm hiểu' : natalChart ? 'Xem bản đồ' : 'Tạo bản đồ'}
             href={isGuest ? '#editorial-heading' : '/discover/natal-chart'}
@@ -308,11 +349,13 @@ export function DashboardView() {
             onRetry={() => natalQuery.refetch()}
             analyticsEvent="home_astrology_clicked"
             analyticsFeature="natal_chart"
-            visual={<NatalFeatureVisual />}
+            asset="natal_chart"
+            surface={CARD_SURFACE}
+            accent="radial-gradient(circle at 12% 0%, rgba(143,174,159,0.14), transparent 60%)"
           />
           <FeatureCard
             title="Thần số học"
-            description={isGuest ? 'Con số nào đang kể câu chuyện của bạn?' : lifePath ? `Con số chủ đạo gần nhất: ${lifePath}.` : 'Tính các con số cốt lõi từ tên và ngày sinh.'}
+            description={isGuest ? 'Con số nào đang kể câu chuyện của bạn?' : lifePath ? `Con số chủ đạo: ${lifePath}.` : 'Các con số cốt lõi từ tên và ngày sinh.'}
             cta={isGuest ? 'Tính thử' : lifePath ? 'Xem luận giải' : 'Tính ngay'}
             href={isGuest ? '#try-numerology' : '/discover/numerology'}
             loading={!isGuest && numerologyQuery.isLoading}
@@ -320,7 +363,9 @@ export function DashboardView() {
             onRetry={() => numerologyQuery.refetch()}
             analyticsEvent="home_numerology_clicked"
             analyticsFeature="numerology"
-            visual={<NumerologyFeatureVisual />}
+            asset="numerology"
+            surface={CARD_SURFACE}
+            accent="radial-gradient(circle at 12% 0%, rgba(213,173,98,0.14), transparent 60%)"
           />
         </div>
       </section>
@@ -347,6 +392,10 @@ export function DashboardView() {
           paymentsEnabled={premiumQuery.data?.paymentsEnabled ?? false}
         />
       )}
+
+      <TrustSection />
+
+      <FinalCta isGuest={isGuest} />
     </div>
   );
 }
@@ -377,121 +426,221 @@ function HomeHero({
   return (
     <section
       aria-labelledby="home-hero-heading"
-      className="relative min-h-[600px] overflow-hidden rounded-[24px] border border-[rgba(213,173,98,0.16)] bg-[#070b12] px-5 py-8 shadow-[0_24px_80px_rgba(0,0,0,0.35)] tablet:px-8 tablet:py-10 desktop:px-12 desktop:py-12"
+      className={cn(
+        'relative overflow-hidden',
+        isGuest
+          ? // V8 (Board 01 reference-fidelity): full-bleed breakout. A boxed rounded/bordered
+            // card here made the page read as "a website with a hero card on it" instead of
+            // Board 01's continuous cinematic composition where header + hero share one canvas.
+            // The `left-1/2 right-1/2 -mx-[50vw] w-screen` triplet is the standard breakout
+            // technique — it escapes the parent's max-width/padding regardless of viewport, so
+            // the background art reaches the true page edges while the inner content below stays
+            // readable inside its own centered max-width. Auth (isGuest=false) keeps the original
+            // boxed treatment — it renders inside AppShell's sidebar layout, a different context
+            // this pass isn't correcting.
+            'left-1/2 right-1/2 -mx-[50vw] w-screen px-5 py-10 tablet:px-8 tablet:py-14 desktop:py-20'
+          : 'min-h-[600px] rounded-[24px] border border-[rgba(213,173,98,0.2)] bg-[#0c1420] px-5 py-8 shadow-[0_24px_80px_rgba(0,0,0,0.35)] tablet:px-8 tablet:py-10 desktop:min-h-[660px] desktop:px-12 desktop:py-10',
+      )}
     >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_12%,rgba(213,173,98,0.16),transparent_26%),radial-gradient(circle_at_80%_18%,rgba(112,140,121,0.15),transparent_28%),radial-gradient(circle_at_55%_55%,rgba(157,69,62,0.12),transparent_36%)]" />
-      <div className="absolute inset-0 opacity-45 [background-image:radial-gradient(circle,rgba(242,238,229,0.58)_1px,transparent_1.5px)] [background-size:42px_42px]" />
-      <Image src={`${HOME_ASSET_BASE}/hero-mountains.png`} alt="" fill priority sizes="(min-width: 1280px) 1120px, 100vw" className="object-cover object-bottom opacity-70" />
-      <Image src={`${HOME_ASSET_BASE}/hero-mist.png`} alt="" fill sizes="(min-width: 1280px) 1120px, 100vw" className="pointer-events-none object-cover opacity-55" />
-      <CloudLines className="absolute right-4 top-6 hidden h-28 w-60 text-[#d5ad62] opacity-25 tablet:block" />
+      {/* BOARD 01 LOCKED: sky base stays a deliberate vertical gradient (deep ink navy → a touch
+          warmer near the horizon) — the approved asset set has no full-sky texture of its own,
+          so this CSS layer is the sky the approved raster layers below sit on top of. */}
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,#0a1220_0%,#0d1a2c_45%,#16233a_100%)]" />
+      {/* Sparse sky stars — the approved asset set has no dedicated full-sky starfield (only the
+          constellation/nebula patch below), and Board 01 clearly shows stars scattered across the
+          whole sky, not just in one patch. A few plain dots, not an illustration system. */}
+      <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+        {HERO_STARS.map(([x, y, r, o], index) => (
+          <circle key={index} cx={`${x}%`} cy={`${y}%`} r={r} fill="#f1e9db" opacity={o} />
+        ))}
+      </svg>
+      {/* Approved constellation/nebula patch, used as the localized celestial glow behind the
+          Destiny Wheel instead of a CSS radial-gradient approximation — the founder's brief
+          explicitly called out "not a giant yellow radial gradient." */}
+      <Image
+        src={`${BOARD01_ASSET_BASE}/12_constellation_cloud.webp`}
+        alt=""
+        aria-hidden="true"
+        width={380}
+        height={280}
+        sizes="(min-width: 1280px) 480px, 320px"
+        className="pointer-events-none absolute right-[6%] top-[6%] hidden h-auto w-[42%] max-w-[480px] opacity-70 desktop:block"
+      />
+      {/* Approved Board 01 hero mountains — replaces the earlier flat/dark placeholder raster
+          with the founder-approved, richly-lit artwork (visible peaks, warm valley light,
+          foreground/midground separation already baked into the asset). */}
+      <Image
+        src={`${BOARD01_ASSET_BASE}/11_hero_mountains.webp`}
+        alt=""
+        aria-hidden="true"
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover object-bottom opacity-95"
+      />
+      {/* Approved center mist/mountain glow — the brightest point of the scene, the "sun through
+          the valley" the reference reads as celestial illumination, not a flat yellow wash. */}
+      <Image
+        src={`${BOARD01_ASSET_BASE}/15_mist_mountains_center.webp`}
+        alt=""
+        aria-hidden="true"
+        width={550}
+        height={175}
+        sizes="(min-width: 1280px) 820px, 70vw"
+        className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-auto w-[75%] max-w-[820px] opacity-90"
+      />
+      {/* Approved left mist bank. */}
+      <Image
+        src={`${BOARD01_ASSET_BASE}/14_mist_left.webp`}
+        alt=""
+        aria-hidden="true"
+        width={430}
+        height={175}
+        sizes="(min-width: 1280px) 430px, 40vw"
+        className="pointer-events-none absolute bottom-0 left-0 hidden h-auto w-[38%] max-w-[430px] opacity-80 tablet:block"
+      />
+      {/* Approved gold cloud-scroll ornaments — small, peripheral corner accents (replaces the
+          earlier hand-drawn CloudLines SVG approximation of this exact eastern cloud-scroll
+          motif with the founder-approved artwork). */}
+      <Image
+        src={`${BOARD01_ASSET_BASE}/16_cloud_ornament_center.webp`}
+        alt=""
+        aria-hidden="true"
+        width={315}
+        height={155}
+        sizes="220px"
+        className="pointer-events-none absolute bottom-[10%] left-[2%] hidden h-auto w-[16%] max-w-[190px] opacity-50 tablet:block"
+      />
+      <Image
+        src={`${BOARD01_ASSET_BASE}/17_cloud_ornament_right.webp`}
+        alt=""
+        aria-hidden="true"
+        width={455}
+        height={165}
+        sizes="240px"
+        className="pointer-events-none absolute bottom-[12%] right-[2%] hidden h-auto w-[18%] max-w-[210px] opacity-50 tablet:block"
+      />
 
-      <div className="relative z-10 grid min-h-[540px] gap-9 desktop:grid-cols-[minmax(0,1fr)_360px_260px] desktop:items-center">
-        <div className="max-w-xl self-center">
-          {authLoading ? (
-            <Skeleton className="mb-5 h-20 w-56 bg-white/10" />
-          ) : isGuest ? (
-            <>
-              <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#e6c980]">Tử Vi Tarot</p>
-              <h1 id="home-hero-heading" className="mt-3 text-[clamp(2.7rem,8vw,4.4rem)] font-semibold leading-[0.95] tracking-normal text-[#f2eee5]">
-                Hiểu mình.
-                <br />
-                Nắm thời vận.
-                <br />
-                Sống chủ động hơn.
-              </h1>
-            </>
-          ) : (
-            <>
-              <p className="text-body-md text-[#e6c980]">{greeting}</p>
-              <h1 id="home-hero-heading" className="mt-2 text-[clamp(2.75rem,7vw,4.35rem)] font-semibold leading-[0.95] tracking-normal text-[#f2eee5]">
-                {userName}
-              </h1>
-            </>
-          )}
-          <p className="mt-5 max-w-md text-body-lg leading-relaxed text-[#d8d1c2]">
-            {isGuest ? 'Tử Vi · Tarot · Bản đồ sao · Thần số học. Không cần đăng ký để bắt đầu khám phá.' : 'Vũ trụ luôn vận động. Hiểu mình, hiểu thời vận, sống chủ động hơn mỗi ngày.'}
-          </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <HomeButton href={isGuest ? '#try-tarot' : '/discover'} variant="primary">
-              {isGuest ? 'Khám phá ngay' : 'Xem vận trình hôm nay'}
-            </HomeButton>
-            <HomeButton href={isGuest ? '#try-numerology' : '/companion'} variant="secondary" icon={<Play className="h-4 w-4" aria-hidden="true" />}>
-              {isGuest ? 'Không cần đăng ký' : 'Giới thiệu Tử Vi Tarot'}
-            </HomeButton>
+      {/* V8: content wrapper — the background layers above are full-bleed (edge to edge on
+          guest), but headline/orbit/panel/quick-actions stay inside a wide-but-centered column so
+          text remains readable while the artwork itself reads as panoramic. */}
+      <div className="relative z-10 mx-auto w-full max-w-[1600px]">
+        <div className="grid gap-7 tablet:grid-cols-[1fr_1fr] tablet:gap-6 desktop:grid-cols-[1.7fr_2.1fr_1fr] desktop:items-stretch desktop:gap-8">
+          <div className="max-w-lg self-center tablet:self-start">
+            {authLoading ? (
+              <Skeleton className="mb-5 h-20 w-56 bg-white/10" />
+            ) : isGuest ? (
+              <>
+                <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#e6c980]">Tử Vi Tarot</p>
+                <h1
+                  id="home-hero-heading"
+                  className="mt-3 font-display text-[clamp(2.6rem,4.9vw,4.8rem)] font-bold uppercase leading-[1.04] tracking-normal text-[#f2eee5]"
+                >
+                  Hiểu mình.
+                  <br />
+                  Nắm thời vận.
+                  <br />
+                  Sống chủ động hơn.
+                </h1>
+              </>
+            ) : (
+              <>
+                <p className="text-body-md text-[#e6c980]">{greeting}</p>
+                <h1 id="home-hero-heading" className="mt-2 font-display text-[clamp(2.4rem,4.2vw,4.3rem)] font-semibold leading-[1.08] tracking-normal text-[#f2eee5]">
+                  {userName}
+                </h1>
+              </>
+            )}
+            <p className="mt-4 text-body-md leading-relaxed text-[#d8d1c2]">
+              {isGuest ? 'Tử Vi · Tarot · Bản đồ sao · Thần số học. Không cần đăng ký để bắt đầu khám phá.' : 'Vũ trụ luôn vận động. Hiểu mình, hiểu thời vận, sống chủ động hơn mỗi ngày.'}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <HomeButton href={isGuest ? '#try-tarot' : '/discover'} variant="primary">
+                {isGuest ? 'Khám phá ngay' : 'Xem vận trình hôm nay'}
+              </HomeButton>
+              <HomeButton href={isGuest ? '#try-numerology' : '/companion'} variant="secondary" icon={<Play className="h-4 w-4" aria-hidden="true" />}>
+                {isGuest ? 'Không cần đăng ký' : 'Giới thiệu Tử Vi Tarot'}
+              </HomeButton>
+            </div>
           </div>
+          <div className="col-auto row-auto mx-auto w-full max-w-[260px] self-center tablet:col-start-2 tablet:row-start-1 tablet:max-w-[380px] tablet:self-start desktop:col-auto desktop:row-auto desktop:max-w-[560px] desktop:self-center">
+            <DestinyOrbit className="h-full w-full drop-shadow-[0_0_24px_rgba(213,173,98,0.18)]" />
+          </div>
+          {/* V8: `desktop:self-end` moves the panel down from the top-aligned position the audit
+              flagged — it now sits toward the lower half of the hero, secondary to the headline
+              and Orbit rather than pinned level with the Orbit's top edge. */}
+          <div className="col-auto row-auto mx-auto w-full max-w-[280px] tablet:col-start-2 tablet:row-start-2 tablet:ml-auto tablet:mr-0 tablet:max-w-[260px] desktop:col-auto desktop:row-auto desktop:max-w-none desktop:self-end">
+            <HeroContextPanel
+              isGuest={isGuest}
+              loading={dashboardLoading}
+              error={dashboardError}
+              text={dailyText}
+              onRetry={onRetryDashboard}
+              tuViChart={tuViChart}
+              tuViLoading={tuViLoading}
+            />
+          </div>
+        </div>
+        <div className="mt-6 border-t border-white/[0.06] pt-5 desktop:mt-7 desktop:pt-5">
           <QuickActions isGuest={isGuest} />
         </div>
-        <div className="mx-auto w-full max-w-[380px]">
-          <DestinyOrbit className="h-full w-full drop-shadow-[0_0_32px_rgba(213,173,98,0.22)]" />
-        </div>
-        <HeroContextPanel
-          isGuest={isGuest}
-          loading={dashboardLoading}
-          error={dashboardError}
-          text={dailyText}
-          onRetry={onRetryDashboard}
-          tuViChart={tuViChart}
-          tuViLoading={tuViLoading}
-        />
       </div>
     </section>
   );
 }
 
 const GUEST_QUICK_ACTIONS = [
-  { label: 'Lập lá số', href: '#try-tu-vi', icon: ScrollText },
-  { label: 'Rút Tarot', href: '#try-tarot', icon: Sparkles },
-  { label: 'Bản đồ sao', href: '#editorial-heading', icon: Star },
-  { label: 'Thần số', href: '#try-numerology', icon: Calculator },
+  { label: 'Lập lá số', href: '#try-tu-vi', asset: 'tu_vi' },
+  { label: 'Rút Tarot', href: '#try-tarot', asset: 'tarot' },
+  { label: 'Bản đồ sao', href: '#editorial-heading', asset: 'natal_chart' },
+  { label: 'Thần số', href: '#try-numerology', asset: 'numerology' },
 ] as const;
 
 const AUTH_QUICK_ACTIONS: Array<{
   label: string;
   href: string;
-  icon: typeof ScrollText;
+  asset: 'tu_vi' | 'tarot' | 'natal_chart' | 'numerology';
   analyticsEvent: FeatureAnalyticsEvent;
   analyticsFeature: 'tu_vi' | 'tarot' | 'natal_chart' | 'numerology';
 }> = [
-  { label: 'Lá số của tôi', href: '/discover/tu-vi', icon: ScrollText, analyticsEvent: 'home_tuvi_clicked', analyticsFeature: 'tu_vi' },
-  { label: 'Tarot hôm nay', href: '/discover/tarot', icon: Sparkles, analyticsEvent: 'home_tarot_clicked', analyticsFeature: 'tarot' },
-  { label: 'Bản đồ sao', href: '/discover/natal-chart', icon: Star, analyticsEvent: 'home_astrology_clicked', analyticsFeature: 'natal_chart' },
-  { label: 'Thần số học', href: '/discover/numerology', icon: Calculator, analyticsEvent: 'home_numerology_clicked', analyticsFeature: 'numerology' },
+  { label: 'Lá số của tôi', href: '/discover/tu-vi', asset: 'tu_vi', analyticsEvent: 'home_tuvi_clicked', analyticsFeature: 'tu_vi' },
+  { label: 'Tarot hôm nay', href: '/discover/tarot', asset: 'tarot', analyticsEvent: 'home_tarot_clicked', analyticsFeature: 'tarot' },
+  { label: 'Bản đồ sao', href: '/discover/natal-chart', asset: 'natal_chart', analyticsEvent: 'home_astrology_clicked', analyticsFeature: 'natal_chart' },
+  { label: 'Thần số học', href: '/discover/numerology', asset: 'numerology', analyticsEvent: 'home_numerology_clicked', analyticsFeature: 'numerology' },
 ];
 
+/**
+ * BOARD 01 LOCKED: quick actions now render the founder-approved circular icon badges
+ * (02–05_icon_*.webp) directly — those assets already bake in their own dark circle + gold ring,
+ * so the old Lucide-icon-inside-a-CSS-circle treatment is removed rather than layered underneath.
+ */
 function QuickActions({ isGuest }: { isGuest: boolean }) {
-  if (isGuest) {
-    return (
-      <div className="mt-8 flex flex-wrap gap-5">
-        {GUEST_QUICK_ACTIONS.map((item) => (
-          <Link
-            key={item.label}
-            href={item.href}
-            className="group flex w-[76px] flex-col items-center gap-2 rounded-full text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d5ad62]"
-          >
-            <span className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d5ad62]/30 bg-[#0b1220]/70 text-[#e6c980] transition-colors group-hover:border-[#d5ad62]/70 group-hover:bg-[#101827]">
-              <item.icon className="h-5 w-5" aria-hidden="true" />
-            </span>
-            <span className="text-caption font-medium leading-tight text-[#d8d1c2]">{item.label}</span>
-          </Link>
-        ))}
-      </div>
-    );
-  }
-
+  const items = isGuest ? GUEST_QUICK_ACTIONS : AUTH_QUICK_ACTIONS;
   return (
-    <div className="mt-8 flex flex-wrap gap-5">
-      {AUTH_QUICK_ACTIONS.map((item) => (
+    <div className="flex flex-wrap justify-center gap-6 tablet:justify-start tablet:gap-9">
+      {items.map((item) => (
         <Link
           key={item.label}
           href={item.href}
-          onClick={() => {
-            trackEvent('home_feature_clicked', { feature: 'home', source: item.label });
-            trackEvent(item.analyticsEvent, { feature: item.analyticsFeature, source: 'home' });
-          }}
-          className="group flex w-[76px] flex-col items-center gap-2 rounded-full text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d5ad62]"
+          onClick={
+            'analyticsEvent' in item
+              ? () => {
+                  trackEvent('home_feature_clicked', { feature: 'home', source: item.label });
+                  trackEvent(item.analyticsEvent, { feature: item.analyticsFeature, source: 'home' });
+                }
+              : undefined
+          }
+          className="group flex w-[84px] flex-col items-center gap-2.5 rounded-full text-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d5ad62]"
         >
-          <span className="flex h-14 w-14 items-center justify-center rounded-full border border-[#d5ad62]/30 bg-[#0b1220]/70 text-[#e6c980] transition-colors group-hover:border-[#d5ad62]/70 group-hover:bg-[#101827]">
-            <item.icon className="h-5 w-5" aria-hidden="true" />
+          <span className="relative flex h-16 w-16 items-center justify-center transition-transform duration-standard group-hover:scale-[1.06]">
+            <Image
+              src={`${BOARD01_ASSET_BASE}/${FEATURE_ICON_ASSET[item.asset]}.webp`}
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes="64px"
+              className="object-contain drop-shadow-[0_0_0_rgba(0,0,0,0)] transition-[filter] group-hover:drop-shadow-[0_0_14px_rgba(213,173,98,0.35)]"
+            />
           </span>
           <span className="text-caption font-medium leading-tight text-[#d8d1c2]">{item.label}</span>
         </Link>
@@ -528,21 +677,22 @@ function HeroContextPanel({
 }) {
   if (isGuest) {
     return (
-      <div className="rounded-[18px] border border-white/10 bg-[#0b1220]/75 p-4 backdrop-blur">
-        <p className="text-body-sm font-semibold text-[#e6c980]">Vận trình cá nhân</p>
-        <p className="mt-3 text-body-sm leading-relaxed text-[#d8d1c2]">
-          Đăng nhập để xem Đại Vận, Tiểu Hạn và lịch sử của riêng bạn — dữ liệu cá nhân chỉ hiển thị sau khi có tài khoản.
-        </p>
-        <p className="mt-4 text-body-sm leading-relaxed text-[#a6a7ac]">
-          Trong lúc chờ, hãy thử một lá Tarot hoặc tính nhanh con số chủ đạo bên dưới.
-        </p>
+      <div className="rounded-[16px] border border-[#d5ad62]/20 bg-[#0e1726]/80 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.35)]">
+        <p className="text-body-sm font-semibold text-[#f2eee5]">Vận trình của riêng bạn</p>
+        <p className="mt-2 text-caption leading-relaxed text-[#a6a7ac]">Đăng nhập để xem Đại Vận, Tiểu Hạn và hành trình đã lưu.</p>
+        <Link
+          href="/login?next=%2F"
+          className="mt-3 inline-flex min-h-9 items-center gap-1.5 text-caption font-semibold text-[#e6c980] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]"
+        >
+          Đăng nhập <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+        </Link>
       </div>
     );
   }
 
   if (loading || tuViLoading) {
     return (
-      <div className="rounded-[18px] border border-white/10 bg-[#0b1220]/75 p-4 backdrop-blur">
+      <div className="rounded-[18px] border border-[#d5ad62]/20 bg-[#0e1726]/80 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.35)]">
         <Skeleton className="mb-4 h-5 w-28 bg-white/10" />
         <Skeleton className="h-28 w-full bg-white/10" />
       </div>
@@ -551,7 +701,7 @@ function HeroContextPanel({
 
   if (error) {
     return (
-      <div className="rounded-[18px] border border-white/10 bg-[#0b1220]/75 p-4 backdrop-blur">
+      <div className="rounded-[18px] border border-[#d5ad62]/20 bg-[#0e1726]/80 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.35)]">
         <p className="text-body-sm font-semibold text-[#e6c980]">Vận trình hôm nay</p>
         <p className="mt-3 text-body-sm text-[#a6a7ac]">Không thể tải vận trình hôm nay.</p>
         <button type="button" onClick={onRetry} className="mt-4 min-h-11 rounded-md border border-[#d5ad62]/35 px-4 text-body-sm font-semibold text-[#e6c980]">
@@ -565,7 +715,7 @@ function HeroContextPanel({
   const tieuHanText = formatTieuHan(tuViChart?.currentTieuHan ?? null);
 
   return (
-    <div className="rounded-[18px] border border-white/10 bg-[#0b1220]/75 p-4 backdrop-blur">
+    <div className="rounded-[18px] border border-[#d5ad62]/20 bg-[#0e1726]/80 p-4 shadow-[0_8px_28px_rgba(0,0,0,0.35)]">
       <p className="text-body-sm font-semibold text-[#e6c980]">Vận trình hiện tại</p>
       {tuViChart ? (
         <div className="mt-3 space-y-3">
@@ -591,9 +741,9 @@ function HeroContextPanel({
   );
 }
 
-function ForYouCard({ title, loading, children }: { title: string; loading?: boolean; children: React.ReactNode }) {
+function StripItem({ title, loading, children }: { title: string; loading?: boolean; children: React.ReactNode }) {
   return (
-    <div className="rounded-[18px] border border-white/10 bg-[#101827] p-5">
+    <div className="flex-1 px-6 py-5 first:pl-0 last:pr-0 tablet:py-0">
       <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">{title}</p>
       <div className="mt-3">
         {loading ? (
@@ -624,10 +774,10 @@ function ForYouSection({
   const tieuHanText = formatTieuHan(tuViChart?.currentTieuHan ?? null);
 
   return (
-    <section aria-labelledby="for-you-heading" className="space-y-4">
+    <section aria-labelledby="for-you-heading" className="space-y-5">
       <SectionHeading id="for-you-heading" eyebrow="Dành cho bạn" title="Điều đang diễn ra với bạn" />
-      <div className="grid gap-4 tablet:grid-cols-3">
-        <ForYouCard title="Vận trình hiện tại" loading={tuViLoading}>
+      <div className="flex flex-col divide-y divide-white/[0.08] rounded-[18px] border border-white/[0.1] bg-[#16233a]/70 px-6 tablet:flex-row tablet:divide-x tablet:divide-y-0">
+        <StripItem title="Vận trình hiện tại" loading={tuViLoading}>
           {tuViChart ? (
             <div className="space-y-3">
               <CycleRow label="Đại Vận" value={daiVanText ?? 'Chưa xác định cho lá số này.'} />
@@ -644,8 +794,8 @@ function ForYouSection({
               </Link>
             </>
           )}
-        </ForYouCard>
-        <ForYouCard title="Tiếp tục hành trình" loading={continuityLoading}>
+        </StripItem>
+        <StripItem title="Tiếp tục hành trình" loading={continuityLoading}>
           {continuityItem ? (
             <>
               <p className="text-body-sm font-semibold text-[#f2eee5]">{continuityItem.title}</p>
@@ -662,19 +812,35 @@ function ForYouSection({
               </Link>
             </>
           )}
-        </ForYouCard>
-        <ForYouCard title="Cộng đồng">
+        </StripItem>
+        <StripItem title="Cộng đồng">
           <p className="text-body-sm leading-relaxed text-[#a6a7ac]">
             Một không gian để chia sẻ trải nghiệm và góc nhìn của riêng bạn. Tính năng đang được hoàn thiện.
           </p>
           <Link href="/community" className="mt-3 inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
             Xem trạng thái cộng đồng <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </Link>
-        </ForYouCard>
+        </StripItem>
       </div>
     </section>
   );
 }
+
+/**
+ * V8 (Board 01 reference-fidelity): the reference's 4 Discovery cards are compact and
+ * text-forward — icon, title, description and CTA occupy the card's real space, with a small
+ * illustration integrated into one corner, not a distinct illustration panel on top of a tall
+ * poster-shaped card. Height dropped from 278/308px to 188/204px accordingly.
+ */
+const FEATURE_CARD_SHAPE = 'flex h-[188px] flex-col rounded-[18px] border border-white/[0.14] p-4 tablet:h-[204px] tablet:p-5';
+
+/**
+ * V7 reference-fidelity: Board 01's 4 Discovery cards are one coherent dark-navy family, not four
+ * differently-hued "modules." Every card now shares this exact base gradient — per-feature
+ * distinction comes only from a small `accent` corner wash (see call sites), never from a
+ * different base hue.
+ */
+const CARD_SURFACE = 'linear-gradient(165deg, rgba(14,20,32,0.78) 0%, rgba(10,15,24,0.85) 55%, rgba(7,10,16,0.92) 100%)';
 
 function FeatureCard({
   title,
@@ -686,7 +852,9 @@ function FeatureCard({
   onRetry,
   analyticsEvent,
   analyticsFeature,
-  visual,
+  asset,
+  surface,
+  accent,
 }: {
   title: string;
   description: string;
@@ -697,29 +865,35 @@ function FeatureCard({
   onRetry: () => void;
   analyticsEvent: FeatureAnalyticsEvent;
   analyticsFeature: 'tu_vi' | 'tarot' | 'natal_chart' | 'numerology';
-  visual: React.ReactNode;
+  /** Selects the founder-approved Board 01 icon badge + feature illustration for this card. */
+  asset: 'tu_vi' | 'tarot' | 'natal_chart' | 'numerology';
+  /** Shared translucent navy base (real alpha, not opaque) so the page's own background scenery
+      shows through the card. Always CARD_SURFACE — kept as a prop rather than hard-coded so the
+      loading/error states above can render without it. */
+  surface: string;
+  /** The one small per-feature distinction allowed: a faint corner-only tint wash, not a
+      different base hue. */
+  accent: string;
 }) {
   if (loading) {
     return (
-      <div className="flex min-h-[280px] flex-col rounded-[20px] border border-white/10 bg-gradient-to-b from-[#101827] to-[#0b1220] p-6" aria-label={`${title} đang tải`}>
-        <div className="mb-5 h-24">{visual}</div>
-        <Skeleton className="h-6 w-28 bg-white/10" />
-        <Skeleton className="mt-3 h-16 w-full bg-white/10" />
-        <Skeleton className="mt-auto h-5 w-24 bg-white/10" />
+      <div className={cn(FEATURE_CARD_SHAPE, 'bg-[#12203350]')} aria-label={`${title} đang tải`}>
+        <Skeleton className="h-5 w-24 bg-white/10" />
+        <Skeleton className="mt-2 h-8 w-full bg-white/10" />
+        <Skeleton className="mt-auto h-4 w-20 bg-white/10" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex min-h-[280px] flex-col rounded-[20px] border border-white/10 bg-gradient-to-b from-[#101827] to-[#0b1220] p-6">
-        <div className="mb-5 h-24">{visual}</div>
-        <h3 className="text-body-lg font-semibold text-[#f2eee5]">{title}</h3>
-        <p className="mt-2 flex-1 text-body-sm leading-relaxed text-[#a6a7ac]">{error}</p>
+      <div className={cn(FEATURE_CARD_SHAPE, 'bg-[#12203350]')}>
+        <h3 className="text-body-md font-semibold text-[#f2eee5]">{title}</h3>
+        <p className="mt-1.5 line-clamp-2 flex-1 text-caption leading-snug text-[#a6a7ac]">{error}</p>
         <button
           type="button"
           onClick={onRetry}
-          className="mt-4 inline-flex min-h-11 items-center justify-center rounded-md border border-[#d5ad62]/35 px-4 text-body-sm font-semibold text-[#e6c980] transition-colors hover:border-[#d5ad62]/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]"
+          className="mt-2 inline-flex min-h-8 items-center text-caption font-semibold text-[#e6c980] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]"
         >
           Thử lại
         </button>
@@ -734,13 +908,34 @@ function FeatureCard({
         trackEvent('home_feature_clicked', { feature: 'home', source: title });
         trackEvent(analyticsEvent, { feature: analyticsFeature, source: 'home' });
       }}
-      className="group flex min-h-[280px] flex-col rounded-[20px] border border-white/10 bg-gradient-to-b from-[#101827] to-[#0b1220] p-6 transition-colors hover:-translate-y-0.5 hover:border-[#d5ad62]/45 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] motion-reduce:transform-none"
+      style={{ background: surface }}
+      className={cn(
+        FEATURE_CARD_SHAPE,
+        'group relative overflow-hidden backdrop-blur-[2px] transition-colors hover:border-[#d5ad62]/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]',
+      )}
     >
-      <div className="mb-5 h-24">{visual}</div>
-      <h3 className="text-heading-md font-semibold text-[#f2eee5]">{title}</h3>
-      <p className="mt-2 flex-1 text-body-sm leading-relaxed text-[#a6a7ac]">{description}</p>
-      <span className="mt-4 inline-flex items-center gap-2 text-body-sm font-semibold text-[#e6c980]">
-        {cta} <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0" style={{ background: accent }} aria-hidden="true" />
+      {/* BOARD 01 LOCKED: the founder-approved feature illustration, a small ornamental engraving
+          tucked into the bottom-right corner — masked to fade toward the text — never a
+          standalone panel occupying the top of the card. Copy stays the dominant visual element. */}
+      <div
+        className="pointer-events-none absolute -bottom-3 -right-3 h-[120px] w-[150px] opacity-70 transition-opacity duration-standard group-hover:opacity-90 tablet:h-[130px] tablet:w-[160px]"
+        style={{
+          WebkitMaskImage: 'linear-gradient(135deg, transparent 12%, black 52%)',
+          maskImage: 'linear-gradient(135deg, transparent 12%, black 52%)',
+        }}
+      >
+        <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ILLUSTRATION_ASSET[asset]}.webp`} alt="" fill sizes="160px" className="object-contain object-bottom" />
+      </div>
+      <div className="relative flex items-center gap-2">
+        <span className="relative h-6 w-6 shrink-0">
+          <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ICON_ASSET[asset]}.webp`} alt="" fill sizes="24px" className="object-contain" />
+        </span>
+        <h3 className="text-caption font-semibold uppercase tracking-[0.1em] text-[#e6c980]">{title}</h3>
+      </div>
+      <p className="relative mt-2 line-clamp-2 max-w-[75%] flex-1 text-caption leading-snug text-[#a6a7ac]">{description}</p>
+      <span className="relative mt-2 inline-flex items-center gap-1.5 text-caption font-semibold text-[#e6c980]">
+        {cta} <ChevronRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
       </span>
     </Link>
   );
@@ -748,16 +943,26 @@ function FeatureCard({
 
 function GuestTrySection() {
   return (
-    <section aria-labelledby="try-heading" className="grid gap-4 desktop:grid-cols-3">
-      <div className="desktop:col-span-3">
-        <SectionHeading id="try-heading" eyebrow="Dành cho bạn" title="Bắt đầu từ đâu?" />
+    <section aria-labelledby="try-heading" className="space-y-5">
+      <SectionHeading id="try-heading" eyebrow="Dành cho bạn" title="Bắt đầu từ đâu?" />
+      <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-[1.12fr_1fr_1fr]">
+        <div className="tablet:col-span-2 desktop:col-span-1">
+          <GuestTarotPreview />
+        </div>
+        <GuestNumerologyPreview />
+        <GuestTuViBoundary />
       </div>
-      <GuestTarotPreview />
-      <GuestNumerologyPreview />
-      <GuestTuViBoundary />
     </section>
   );
 }
+
+/**
+ * V7 reference-fidelity: the 3 guest-try sections previously carried visibly different saturated
+ * hues (indigo/jade/brown) at high alpha — the same "different colored modules" mismatch flagged
+ * for the Discovery cards. All three now share one navy base; distinction comes only from a small
+ * corner tint, matching each feature's own Discovery-card accent.
+ */
+const GUEST_SECTION_BASE = 'linear-gradient(135deg, rgba(14,20,32,0.85) 0%, rgba(10,15,24,0.9) 55%, rgba(7,10,16,0.94) 100%)';
 
 function GuestTarotPreview() {
   const [card, setCard] = useState<(typeof guestTarotCards)[number] | null>(null);
@@ -783,18 +988,36 @@ function GuestTarotPreview() {
   }
 
   return (
-    <section id="try-tarot" className="rounded-[18px] border border-white/10 bg-[#101827] p-5">
-      <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Tarot</p>
-      <h3 className="mt-2 text-body-lg font-semibold text-[#f2eee5]">Rút một lá cho hôm nay</h3>
-      <p className="mt-2 text-body-sm leading-relaxed text-[#a6a7ac]">Bản thử này không lưu lịch sử và không gọi AI. Luận giải đầy đủ cần tài khoản để giữ ngữ cảnh cho bạn.</p>
-      {isDrawing && <Skeleton className="mt-4 h-28 w-full bg-white/10" />}
+    <section
+      id="try-tarot"
+      className="relative overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
+      style={{ background: `radial-gradient(circle at 92% 4%, rgba(122,142,168,0.16), transparent 55%), ${GUEST_SECTION_BASE}` }}
+    >
+      {/* V7: dialed back from a bold, near-opaque 210×260 fan to a restrained ~30–40% visual-weight
+          accent that supports the copy instead of competing with it. */}
+      <div
+        className="pointer-events-none absolute -right-4 -top-4 h-[150px] w-[190px] opacity-45"
+        style={{
+          WebkitMaskImage: 'linear-gradient(to left, black 45%, transparent 92%)',
+          maskImage: 'linear-gradient(to left, black 45%, transparent 92%)',
+        }}
+        aria-hidden="true"
+      >
+        <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ILLUSTRATION_ASSET.tarot}.webp`} alt="" fill sizes="190px" className="object-contain" />
+      </div>
+      <div className="relative">
+        <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Tarot</p>
+        <h3 className="mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Rút một lá cho hôm nay</h3>
+      </div>
+      <p className="relative mt-2 max-w-[60%] text-body-sm leading-relaxed text-[#a6a7ac]">Bản thử này không lưu lịch sử và không gọi AI. Luận giải đầy đủ cần tài khoản để giữ ngữ cảnh cho bạn.</p>
+      {isDrawing && <Skeleton className="relative mt-4 h-28 w-full bg-white/10" />}
       {card && (
-        <div className="mt-4 rounded-[14px] border border-[#d5ad62]/20 bg-[#070b12]/70 p-4" aria-live="polite">
+        <div className="relative mt-4 rounded-[14px] border border-[#d5ad62]/20 bg-[#070b12]/70 p-4" aria-live="polite">
           <p className="font-display text-heading-md text-[#f2eee5]">{card.name}</p>
           <p className="mt-2 text-body-sm text-[#d8d1c2]">{card.meaning}</p>
         </div>
       )}
-      <div className="mt-4 flex flex-wrap gap-3">
+      <div className="relative mt-4 flex flex-wrap gap-3">
         <button type="button" onClick={drawCard} disabled={isDrawing} className="min-h-11 rounded-md bg-[#d5ad62] px-4 text-body-sm font-semibold text-[#070b12] disabled:cursor-not-allowed disabled:opacity-70">
           {isDrawing ? 'Đang rút...' : card ? 'Rút lá khác' : 'Rút một lá'}
         </button>
@@ -851,36 +1074,57 @@ function GuestNumerologyPreview() {
   }
 
   return (
-    <section id="try-numerology" className="rounded-[18px] border border-white/10 bg-[#101827] p-5">
-      <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Thần số học</p>
-      <h3 className="mt-2 text-body-lg font-semibold text-[#f2eee5]">Tính nhanh con số chủ đạo</h3>
-      <p className="mt-2 text-body-sm leading-relaxed text-[#a6a7ac]">Ngày sinh chỉ ở trong trình duyệt cho bản thử này. Hồ sơ đầy đủ dùng engine backend sau khi đăng nhập.</p>
-      <form onSubmit={calculate} noValidate className="mt-4 flex flex-col gap-3">
-        <label htmlFor="guest-birth-date" className="text-body-sm font-semibold text-[#f2eee5]">
+    <section
+      id="try-numerology"
+      className="relative overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
+      style={{ background: `radial-gradient(circle at 92% 4%, rgba(213,173,98,0.14), transparent 55%), ${GUEST_SECTION_BASE}` }}
+    >
+      {/* V7: small number geometry tucked in the upper-right, form stays readable — not a large
+          bold mandala fighting with the date input for attention. The date input keeps its own
+          opaque background regardless. */}
+      <div
+        className="pointer-events-none absolute -right-6 -top-8 h-[150px] w-[170px] opacity-40"
+        style={{
+          WebkitMaskImage: 'linear-gradient(115deg, transparent 10%, black 48%)',
+          maskImage: 'linear-gradient(115deg, transparent 10%, black 48%)',
+        }}
+        aria-hidden="true"
+      >
+        <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ILLUSTRATION_ASSET.numerology}.webp`} alt="" fill sizes="170px" className="object-contain" />
+      </div>
+      <div className="relative">
+        <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Thần số học</p>
+        <h3 className="mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Tính nhanh con số chủ đạo</h3>
+      </div>
+      <p className="relative mt-2 max-w-[58%] text-body-sm leading-relaxed text-[#a6a7ac]">Ngày sinh chỉ ở trong trình duyệt cho bản thử này. Hồ sơ đầy đủ dùng engine backend sau khi đăng nhập.</p>
+      <form onSubmit={calculate} noValidate className="relative mt-4 flex flex-col gap-2">
+        <label htmlFor="guest-birth-date" className="sr-only">
           Ngày sinh
         </label>
-        <input
-          id="guest-birth-date"
-          type="date"
-          value={birthDate}
-          max={new Date().toISOString().slice(0, 10)}
-          onChange={(event) => {
-            setBirthDate(event.target.value);
-            setError(null);
-          }}
-          className="min-h-11 rounded-md border border-white/10 bg-[#0b1220] px-3 text-body-sm text-[#f2eee5]"
-        />
+        <div className="flex gap-2">
+          <input
+            id="guest-birth-date"
+            type="date"
+            value={birthDate}
+            max={new Date().toISOString().slice(0, 10)}
+            onChange={(event) => {
+              setBirthDate(event.target.value);
+              setError(null);
+            }}
+            className="min-h-11 min-w-0 flex-1 rounded-md border border-white/10 bg-[#0b1220] px-3 text-body-sm text-[#f2eee5]"
+          />
+          <button type="submit" className="min-h-11 shrink-0 rounded-md bg-[#d5ad62] px-4 text-body-sm font-semibold text-[#070b12]">
+            Tính thử
+          </button>
+        </div>
         {error && (
           <p className="text-body-sm text-[#e6c980]" role="alert">
             {error}
           </p>
         )}
-        <button type="submit" className="min-h-11 rounded-md bg-[#d5ad62] px-4 text-body-sm font-semibold text-[#070b12]">
-          Tính thử
-        </button>
       </form>
       {result !== null && (
-        <div className="mt-4 rounded-[14px] border border-[#d5ad62]/20 bg-[#070b12]/70 p-4">
+        <div className="relative mt-4 rounded-[14px] border border-[#d5ad62]/20 bg-[#070b12]/70 p-4">
           <p className="text-caption uppercase tracking-[0.14em] text-[#a6a7ac]">Con số chủ đạo</p>
           <p className="mt-1 text-[2rem] font-semibold leading-none text-[#f2eee5]">{result}</p>
           <p className="mt-2 text-body-sm text-[#d8d1c2]">Đây là phần mở đầu của hồ sơ thần số học. Luận giải đầy đủ sẽ dùng engine backend sau khi bạn đăng nhập.</p>
@@ -897,11 +1141,29 @@ function GuestNumerologyPreview() {
 function GuestTuViBoundary() {
   const [gateOpen, setGateOpen] = useState(false);
   return (
-    <section id="try-tu-vi" className="rounded-[18px] border border-white/10 bg-[#101827] p-5">
-      <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Lá số Tử Vi</p>
-      <h3 className="mt-2 text-body-lg font-semibold text-[#f2eee5]">Xem trước cách Tử Vi Tarot lập lá số</h3>
-      <p className="mt-2 text-body-sm leading-relaxed text-[#a6a7ac]">
-        Tử Vi cần giờ sinh và giới tính, nên Tử Vi Tarot chỉ mở phần lập lá số đầy đủ sau khi bạn có tài khoản để bảo vệ dữ liệu cá nhân và lưu kết quả đúng nơi.
+    <section
+      id="try-tu-vi"
+      className="relative overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
+      style={{ background: `radial-gradient(circle at 92% 4%, rgba(198,146,67,0.14), transparent 55%), ${GUEST_SECTION_BASE}` }}
+    >
+      {/* V7: thin palace geometry tucked to the right, copy stays anchored left — not a bold
+          composed manuscript/mountain scene competing for the eye. */}
+      <div
+        className="pointer-events-none absolute -right-6 -top-8 h-[150px] w-[170px] opacity-40"
+        style={{
+          WebkitMaskImage: 'linear-gradient(115deg, transparent 10%, black 48%)',
+          maskImage: 'linear-gradient(115deg, transparent 10%, black 48%)',
+        }}
+        aria-hidden="true"
+      >
+        <Image src={`${BOARD01_ASSET_BASE}/${FEATURE_ILLUSTRATION_ASSET.tu_vi}.webp`} alt="" fill sizes="170px" className="object-contain" />
+      </div>
+      <div className="relative">
+        <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Lá số Tử Vi</p>
+        <h3 className="mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Xem trước cách lập lá số</h3>
+      </div>
+      <p className="relative mt-2 max-w-[58%] text-body-sm leading-relaxed text-[#a6a7ac]">
+        Tử Vi cần giờ sinh và giới tính, nên phần lập lá số đầy đủ chỉ mở sau khi bạn có tài khoản để bảo vệ dữ liệu cá nhân và lưu đúng nơi.
       </p>
       <button
         type="button"
@@ -909,7 +1171,7 @@ function GuestTuViBoundary() {
           trackEvent('guest_tuvi_started', { feature: 'tu_vi' });
           setGateOpen(true);
         }}
-        className="mt-4 min-h-11 rounded-md bg-[#d5ad62] px-4 text-body-sm font-semibold text-[#070b12]"
+        className="relative mt-4 min-h-11 rounded-md bg-[#d5ad62] px-4 text-body-sm font-semibold text-[#070b12]"
       >
         Lập lá số đầy đủ
       </button>
@@ -964,7 +1226,7 @@ function SectionHeading({ id, eyebrow, title }: { id: string; eyebrow: string; t
   return (
     <div>
       <p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">{eyebrow}</p>
-      <h2 id={id} className="mt-1 text-heading-md font-semibold text-[#f2eee5]">
+      <h2 id={id} className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">
         {title}
       </h2>
     </div>
@@ -972,27 +1234,45 @@ function SectionHeading({ id, eyebrow, title }: { id: string; eyebrow: string; t
 }
 
 function EditorialSection() {
+  const [featured, ...rest] = editorialFallbacks;
+  if (!featured) return null;
+
   return (
-    <section aria-labelledby="editorial-heading" className="space-y-4">
+    <section aria-labelledby="editorial-heading" className="space-y-5">
       <SectionHeading id="editorial-heading" eyebrow="Bài viết nổi bật" title="Đọc thêm để hiểu mình" />
-      <div className="grid gap-4 tablet:grid-cols-2">
-        {editorialFallbacks.map((article) => (
-          <Link
-            key={article.title}
-            href={article.href}
-            onClick={() => trackEvent('home_article_clicked', { feature: 'home', source: article.slug })}
-            className="group overflow-hidden rounded-[18px] border border-white/10 bg-[#101827] transition-colors hover:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]"
-          >
-            <div className="relative aspect-[16/10]">
-              <Image src={article.image} alt="" fill sizes="(min-width: 768px) 360px, 100vw" className="object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-            </div>
-            <div className="p-4">
-              <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">{article.category}</p>
-              <h3 className="mt-2 text-body-lg font-semibold text-[#f2eee5]">{article.title}</h3>
-              <p className="mt-2 text-caption text-[#a6a7ac]">{article.readTime}</p>
-            </div>
-          </Link>
-        ))}
+      <div className="grid gap-4 desktop:h-[460px] desktop:grid-cols-[1.5fr_1fr]">
+        <Link
+          href={featured.href}
+          onClick={() => trackEvent('home_article_clicked', { feature: 'home', source: featured.slug })}
+          className="group relative flex h-[280px] flex-col justify-end overflow-hidden rounded-[18px] border border-[#d5ad62]/12 transition-colors hover:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] desktop:h-full"
+        >
+          <Image src={featured.image} alt="" fill sizes="(min-width: 1280px) 780px, 100vw" className="object-cover transition-transform duration-500 ease-organic group-hover:scale-[1.03]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0c1420] via-[#0c1420]/35 to-transparent" />
+          <div className="relative z-10 p-5 desktop:p-7">
+            <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#e6c980]">{featured.category}</p>
+            <h3 className="mt-2 max-w-md text-heading-md font-semibold text-[#f2eee5] desktop:text-heading-lg">{featured.title}</h3>
+            <p className="mt-2 text-caption text-[#d8d1c2]">{featured.readTime}</p>
+          </div>
+        </Link>
+        <div className="grid gap-4 tablet:grid-cols-3 desktop:grid-cols-1 desktop:grid-rows-3">
+          {rest.map((article) => (
+            <Link
+              key={article.title}
+              href={article.href}
+              onClick={() => trackEvent('home_article_clicked', { feature: 'home', source: article.slug })}
+              className="group flex gap-4 overflow-hidden rounded-[18px] border border-[#d5ad62]/12 bg-[#1c2c46]/65 backdrop-blur-[2px] transition-colors hover:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] desktop:h-full"
+            >
+              <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-[12px] desktop:h-auto">
+                <Image src={article.image} alt="" fill sizes="96px" className="object-cover transition-transform duration-500 ease-organic group-hover:scale-[1.03]" />
+              </div>
+              <div className="min-w-0 py-0.5">
+                <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#e6c980]">{article.category}</p>
+                <h3 className="mt-1 line-clamp-2 text-body-sm font-semibold text-[#f2eee5]">{article.title}</h3>
+                <p className="mt-1 text-caption text-[#a6a7ac]">{article.readTime}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -1043,12 +1323,144 @@ function PremiumRail({
 
 function RailCard({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-[18px] border border-white/10 bg-[#101827] p-4">
+    <section className="rounded-[18px] border border-white/10 bg-[#1c2c46]/65 p-4 backdrop-blur-[2px]">
       <div className="mb-3 flex items-center gap-2 text-[#e6c980]">
         {icon}
         <h3 className="text-body-sm font-semibold uppercase tracking-[0.14em]">{title}</h3>
       </div>
       {children}
+    </section>
+  );
+}
+
+function TrustCompassGlyph() {
+  return (
+    <svg viewBox="0 0 40 40" className="h-6 w-6" aria-hidden="true">
+      <circle cx="20" cy="20" r="17" fill="none" stroke="#d5ad62" strokeOpacity="0.6" strokeWidth="1.3" />
+      <circle cx="20" cy="20" r="11" fill="none" stroke="#d5ad62" strokeOpacity="0.36" strokeWidth="1.2" />
+      <path d="M20 6v6M20 28v6M6 20h6M28 20h6" stroke="#d5ad62" strokeOpacity="0.6" strokeWidth="1.3" />
+      <path d="M20 12l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#e6c980" opacity="0.85" />
+    </svg>
+  );
+}
+
+function TrustCardsGlyph() {
+  return (
+    <svg viewBox="0 0 40 40" className="h-6 w-6" aria-hidden="true">
+      <rect x="9" y="7" width="17" height="26" rx="3" fill="none" stroke="#d5ad62" strokeOpacity="0.42" strokeWidth="1.2" transform="rotate(-10 17.5 20)" />
+      <rect x="14" y="6" width="17" height="26" rx="3" fill="#0b1220" stroke="#d5ad62" strokeOpacity="0.75" strokeWidth="1.2" transform="rotate(8 22.5 19)" />
+      <path d="M22.5 15l2 4.6 4.6 2-4.6 2-2 4.6-2-4.6-4.6-2 4.6-2z" fill="#e6c980" opacity="0.85" />
+    </svg>
+  );
+}
+
+function TrustSparkleGlyph() {
+  return (
+    <svg viewBox="0 0 40 40" className="h-6 w-6" aria-hidden="true">
+      <path d="M20 5l4 11 11 4-11 4-4 11-4-11-11-4 11-4z" fill="none" stroke="#708c79" strokeOpacity="0.65" strokeWidth="1.3" strokeLinejoin="round" />
+      <circle cx="20" cy="20" r="3.5" fill="#e6c980" opacity="0.9" />
+    </svg>
+  );
+}
+
+const TRUST_POINTS = [
+  {
+    glyph: TrustCompassGlyph,
+    title: 'Tử Vi · Chiêm tinh · Thần số',
+    description: 'Tính bằng công thức xác định, không do AI tạo ra.',
+    atmosphere: 'radial-gradient(circle at 0% 0%, rgba(213,173,98,0.1), transparent 65%)',
+  },
+  {
+    glyph: TrustCardsGlyph,
+    title: 'Tarot',
+    description: 'Rút ngẫu nhiên, minh bạch trong bộ 78 lá cổ điển.',
+    atmosphere: 'radial-gradient(circle at 0% 0%, rgba(122,142,168,0.14), transparent 65%)',
+  },
+  {
+    glyph: TrustSparkleGlyph,
+    title: 'AI',
+    description: 'Chỉ diễn giải kết quả — không thay đổi số liệu gốc.',
+    atmosphere: 'radial-gradient(circle at 0% 0%, rgba(112,140,121,0.12), transparent 65%)',
+  },
+] as const;
+
+function TrustSection() {
+  return (
+    <section aria-labelledby="trust-heading" className="space-y-6">
+      <div className="max-w-xl">
+        <p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Cách chúng tôi làm việc</p>
+        <h2 id="trust-heading" className="mt-2 font-display text-heading-lg font-semibold text-[#f2eee5]">
+          Tính toán trước. AI giải thích sau.
+        </h2>
+      </div>
+      <div className="grid gap-4 tablet:grid-cols-3">
+        {TRUST_POINTS.map((point) => (
+          <div key={point.title} className="relative flex items-center gap-5 overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#16233a]/60 px-6 py-5">
+            <div className="pointer-events-none absolute inset-0" style={{ background: point.atmosphere }} aria-hidden="true" />
+            <span className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#d5ad62]/20 bg-[#070b12]/50">
+              <point.glyph />
+            </span>
+            <div className="relative">
+              <h3 className="text-body-sm font-semibold text-[#f2eee5]">{point.title}</h3>
+              <p className="mt-0.5 text-caption leading-snug text-[#a6a7ac]">{point.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function FinalCta({ isGuest }: { isGuest: boolean }) {
+  return (
+    <section aria-labelledby="final-cta-heading" className="relative overflow-hidden rounded-[24px] border border-[rgba(213,173,98,0.22)] bg-[#132030] px-6 py-12 text-center tablet:px-10 desktop:py-16">
+      {/* Real painted celestial-mountain artwork (founder-supplied, previously unused) instead of a
+          synthetic SVG approximation — gives the closing chapter genuine atmospheric depth. */}
+      <Image
+        src={`${HOME_ASSET_BASE}/ChatGPT Image Aug 21, 2026, 10_14_23 PM.png`}
+        alt=""
+        fill
+        sizes="(min-width: 1280px) 1200px, 100vw"
+        className="object-cover opacity-45"
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(213,173,98,0.12),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#132030]/55 via-[#132030]/15 to-[#132030]/65" />
+      {/* Approved Board 01 cloud-scroll ornaments replace the earlier hand-drawn CloudLines SVG
+          approximation of the same motif. */}
+      <Image
+        src={`${BOARD01_ASSET_BASE}/16_cloud_ornament_center.webp`}
+        alt=""
+        aria-hidden="true"
+        width={315}
+        height={155}
+        sizes="180px"
+        className="pointer-events-none absolute -left-6 bottom-10 hidden h-auto w-44 opacity-[0.18] tablet:block"
+      />
+      <Image
+        src={`${BOARD01_ASSET_BASE}/17_cloud_ornament_right.webp`}
+        alt=""
+        aria-hidden="true"
+        width={455}
+        height={165}
+        sizes="180px"
+        className="pointer-events-none absolute -right-6 bottom-10 hidden h-auto w-44 -scale-x-100 opacity-[0.18] tablet:block"
+      />
+      <div className="relative mx-auto max-w-xl">
+        <h2 id="final-cta-heading" className="font-display text-heading-lg font-semibold text-[#f2eee5] desktop:text-display-lg">
+          Hiểu mình từ nhiều góc nhìn.
+        </h2>
+        <p className="mt-3 text-body-md leading-relaxed text-[#d8d1c2]">
+          Tử Vi, Tarot, bản đồ sao và thần số học — mỗi hệ thống một góc nhìn, cùng hướng về một câu hỏi: bạn là ai, và bạn đang ở đâu trên hành trình của mình.
+        </p>
+        <div className="mt-7 flex flex-wrap justify-center gap-3">
+          <HomeButton href={isGuest ? '#try-tu-vi' : '/discover'} variant="primary">
+            Khám phá bản thân
+          </HomeButton>
+          <HomeButton href={isGuest ? '#try-tarot' : '/discover/tarot'} variant="secondary">
+            Trải Tarot
+          </HomeButton>
+        </div>
+      </div>
     </section>
   );
 }
@@ -1070,68 +1482,70 @@ function HomeButton({ href, children, variant, icon }: { href: string; children:
   );
 }
 
-function CloudLines({ className }: { className?: string }) {
+const PAGE_STARS = [
+  [4, 8, 1.6, 0.4],
+  [92, 4, 1.2, 0.3],
+  [12, 22, 1, 0.25],
+  [80, 30, 1.8, 0.35],
+  [30, 15, 0.9, 0.2],
+  [60, 45, 1.3, 0.3],
+  [8, 55, 1, 0.22],
+  [95, 60, 1.5, 0.32],
+  [45, 70, 1, 0.2],
+  [22, 85, 1.6, 0.35],
+  [70, 90, 1, 0.22],
+  [88, 95, 1.3, 0.28],
+] as const;
+
+/**
+ * A very sparse, low-opacity star field + near-invisible film grain behind the whole Home page
+ * (negative z-index so it sits behind every section without touching each section's own markup).
+ * Home-scoped only — lives inside DashboardView, never touches styles/globals.css, so it can't leak
+ * into any other route or Board. Positions are percentages so it scales with the page's real content
+ * height instead of a fixed pixel canvas.
+ */
+/**
+ * Approximate chapter journey down the page — soft, broad, percentage-positioned gradient washes
+ * on this one shared layer. Section heights vary by content/auth state, so these are deliberately
+ * diffuse rather than pinned to exact pixel boundaries — the goal is a quiet ambient drift as you
+ * scroll, not a hard-edged zone map.
+ *
+ * V7 note (Board 01 reference-fidelity pass): the founder rejected the earlier version's two full
+ * painted ink-wash mountain ridges + cloud bank + manuscript arc drawn across the middle of the
+ * page as "filling every empty area" with scenery, when the reference keeps the middle of the page
+ * quiet and reserves strong landscape art for the Hero and Final CTA (which already have their own
+ * real imagery). This layer is now just the gradient wash + one faint celestial ring + sparse
+ * stars — deep navy atmosphere, not a fantasy landscape.
+ */
+const CHAPTER_ATMOSPHERE = [
+  'radial-gradient(ellipse 100% 22% at 50% 20%, rgba(198,146,67,0.1), transparent 72%)',
+  'radial-gradient(ellipse 100% 24% at 50% 55%, rgba(30,44,66,0.4), transparent 72%)',
+  'radial-gradient(ellipse 100% 20% at 50% 90%, rgba(198,146,67,0.08), transparent 72%)',
+  'linear-gradient(to bottom, #0c1420 0%, #101c2e 25%, #0f1c2c 50%, #0d1826 75%, #0c1420 100%)',
+].join(', ');
+
+function PageAtmosphere() {
   return (
-    <svg viewBox="0 0 260 120" className={className} fill="none" aria-hidden="true">
-      <path d="M18 72h52c18 0 18-22 0-22H54c0-20 31-24 41-8 11-24 52-18 52 8h24c18 0 18 22 0 22H98" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      <path d="M96 88h72c14 0 14-17 0-17h-12c0-15 22-18 30-6 9-19 40-14 40 6h14" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-    </svg>
+    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+      <div className="absolute inset-0" style={{ background: CHAPTER_ATMOSPHERE }} />
+      {/* One faint celestial ring behind the Discovery region only — an "occasional antique-gold
+          haze," not scenery drawn at every chapter boundary. */}
+      <svg className="h-full w-full" viewBox="0 0 1000 2600" preserveAspectRatio="none" aria-hidden="true">
+        <circle cx="150" cy="480" r="420" fill="none" stroke="#e0bd72" strokeOpacity="0.12" strokeWidth="1.5" />
+      </svg>
+      <svg className="h-full w-full" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <filter id="page-grain">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch" result="noise" />
+            <feColorMatrix in="noise" type="matrix" values="0 0 0 0 0.94  0 0 0 0 0.91  0 0 0 0 0.86  0 0 0 0.05 0" />
+          </filter>
+        </defs>
+        <rect width="100%" height="100%" filter="url(#page-grain)" />
+        {PAGE_STARS.map(([x, y, r, o], i) => (
+          <circle key={i} cx={`${x}%`} cy={`${y}%`} r={r} fill={i % 5 === 0 ? '#e0bd72' : '#f1e9db'} opacity={o} />
+        ))}
+      </svg>
+    </div>
   );
 }
 
-function TuViFeatureVisual() {
-  return (
-    <svg viewBox="0 0 180 78" className="h-full w-full" aria-hidden="true">
-      <rect x="28" y="8" width="58" height="58" fill="none" stroke="#d5ad62" strokeOpacity="0.75" />
-      {[1, 2].map((i) => (
-        <line key={i} x1={28 + i * 19.3} y1="8" x2={28 + i * 19.3} y2="66" stroke="#d5ad62" strokeOpacity="0.32" />
-      ))}
-      {[1, 2].map((i) => (
-        <line key={i} x1="28" y1={8 + i * 19.3} x2="86" y2={8 + i * 19.3} stroke="#d5ad62" strokeOpacity="0.32" />
-      ))}
-      <circle cx="122" cy="37" r="24" fill="none" stroke="#708c79" strokeOpacity="0.55" />
-      <path d="M122 17v40M102 37h40" stroke="#708c79" strokeOpacity="0.35" />
-    </svg>
-  );
-}
-
-function TarotFeatureVisual() {
-  return (
-    <svg viewBox="0 0 180 78" className="h-full w-full" aria-hidden="true">
-      <rect x="56" y="12" width="34" height="52" rx="5" fill="#0b1220" stroke="#d5ad62" strokeOpacity="0.72" transform="rotate(-8 73 38)" />
-      <rect x="88" y="11" width="34" height="52" rx="5" fill="#0b1220" stroke="#d5ad62" strokeOpacity="0.72" transform="rotate(8 105 37)" />
-      <path d="M73 29l3 7 7 3-7 3-3 7-3-7-7-3 7-3zM105 28l3 7 7 3-7 3-3 7-3-7-7-3 7-3z" fill="#e6c980" opacity="0.75" />
-    </svg>
-  );
-}
-
-function NatalFeatureVisual() {
-  return (
-    <svg viewBox="0 0 180 78" className="h-full w-full" aria-hidden="true">
-      <circle cx="88" cy="38" r="28" fill="none" stroke="#d5ad62" strokeOpacity="0.68" />
-      <circle cx="88" cy="38" r="15" fill="none" stroke="#708c79" strokeOpacity="0.45" />
-      <path d="M88 10v56M60 38h56M68 18l40 40M108 18L68 58" stroke="#d5ad62" strokeOpacity="0.22" />
-      <circle cx="67" cy="20" r="3" fill="#e6c980" />
-      <circle cx="108" cy="57" r="3" fill="#708c79" />
-      <circle cx="116" cy="34" r="2.5" fill="#9d453e" />
-    </svg>
-  );
-}
-
-function NumerologyFeatureVisual() {
-  return (
-    <svg viewBox="0 0 180 78" className="h-full w-full" aria-hidden="true">
-      {[0, 1, 2].map((row) =>
-        [0, 1, 2].map((col) => (
-          <rect key={`${row}-${col}`} x={54 + col * 24} y={8 + row * 20} width="18" height="14" rx="3" fill="none" stroke="#d5ad62" strokeOpacity="0.45" />
-        )),
-      )}
-      {['1', '8', '6', '3', '9'].map((digit, index) => (
-        <text key={digit + index} x={63 + (index % 3) * 24} y={19 + Math.floor(index / 3) * 20} textAnchor="middle" fill="#f2eee5" fontSize="10" fontWeight="700">
-          {digit}
-        </text>
-      ))}
-      <path d="M42 38c25-28 70-28 96 0-26 28-71 28-96 0z" fill="none" stroke="#708c79" strokeOpacity="0.38" />
-    </svg>
-  );
-}

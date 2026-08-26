@@ -1,0 +1,240 @@
+{
+  "01_brand_logo": {
+    "box": [
+      25,
+      18,
+      455,
+      160
+    ],
+    "size": [
+      430,
+      142
+    ],
+    "png": "01_brand_logo.png",
+    "webp": "01_brand_logo.webp"
+  },
+  "02_icon_tuvi": {
+    "box": [
+      535,
+      18,
+      685,
+      160
+    ],
+    "size": [
+      150,
+      142
+    ],
+    "png": "02_icon_tuvi.png",
+    "webp": "02_icon_tuvi.webp"
+  },
+  "03_icon_tarot": {
+    "box": [
+      690,
+      18,
+      845,
+      160
+    ],
+    "size": [
+      155,
+      142
+    ],
+    "png": "03_icon_tarot.png",
+    "webp": "03_icon_tarot.webp"
+  },
+  "04_icon_natal": {
+    "box": [
+      845,
+      18,
+      1000,
+      160
+    ],
+    "size": [
+      155,
+      142
+    ],
+    "png": "04_icon_natal.png",
+    "webp": "04_icon_natal.webp"
+  },
+  "05_icon_numerology": {
+    "box": [
+      1000,
+      18,
+      1160,
+      160
+    ],
+    "size": [
+      160,
+      142
+    ],
+    "png": "05_icon_numerology.png",
+    "webp": "05_icon_numerology.webp"
+  },
+  "06_feature_tarot_cards": {
+    "box": [
+      1245,
+      0,
+      1535,
+      245
+    ],
+    "size": [
+      290,
+      245
+    ],
+    "png": "06_feature_tarot_cards.png",
+    "webp": "06_feature_tarot_cards.webp"
+  },
+  "07_feature_tuvi_pagoda": {
+    "box": [
+      45,
+      210,
+      365,
+      560
+    ],
+    "size": [
+      320,
+      350
+    ],
+    "png": "07_feature_tuvi_pagoda.png",
+    "webp": "07_feature_tuvi_pagoda.webp"
+  },
+  "08_destiny_wheel": {
+    "box": [
+      410,
+      155,
+      865,
+      575
+    ],
+    "size": [
+      455,
+      420
+    ],
+    "png": "08_destiny_wheel.png",
+    "webp": "08_destiny_wheel.webp"
+  },
+  "09_feature_natal_orbit": {
+    "box": [
+      895,
+      215,
+      1260,
+      575
+    ],
+    "size": [
+      365,
+      360
+    ],
+    "png": "09_feature_natal_orbit.png",
+    "webp": "09_feature_natal_orbit.webp"
+  },
+  "10_feature_numerology": {
+    "box": [
+      1265,
+      230,
+      1530,
+      575
+    ],
+    "size": [
+      265,
+      345
+    ],
+    "png": "10_feature_numerology.png",
+    "webp": "10_feature_numerology.webp"
+  },
+  "11_hero_mountains": {
+    "box": [
+      0,
+      555,
+      875,
+      850
+    ],
+    "size": [
+      875,
+      295
+    ],
+    "png": "11_hero_mountains.png",
+    "webp": "11_hero_mountains.webp"
+  },
+  "12_constellation_cloud": {
+    "box": [
+      885,
+      565,
+      1265,
+      845
+    ],
+    "size": [
+      380,
+      280
+    ],
+    "png": "12_constellation_cloud.png",
+    "webp": "12_constellation_cloud.webp"
+  },
+  "13_tarot_orbit_card": {
+    "box": [
+      1235,
+      555,
+      1535,
+      850
+    ],
+    "size": [
+      300,
+      295
+    ],
+    "png": "13_tarot_orbit_card.png",
+    "webp": "13_tarot_orbit_card.webp"
+  },
+  "14_mist_left": {
+    "box": [
+      0,
+      840,
+      430,
+      1015
+    ],
+    "size": [
+      430,
+      175
+    ],
+    "png": "14_mist_left.png",
+    "webp": "14_mist_left.webp"
+  },
+  "15_mist_mountains_center": {
+    "box": [
+      425,
+      840,
+      975,
+      1015
+    ],
+    "size": [
+      550,
+      175
+    ],
+    "png": "15_mist_mountains_center.png",
+    "webp": "15_mist_mountains_center.webp"
+  },
+  "16_cloud_ornament_center": {
+    "box": [
+      950,
+      835,
+      1265,
+      990
+    ],
+    "size": [
+      315,
+      155
+    ],
+    "png": "16_cloud_ornament_center.png",
+    "webp": "16_cloud_ornament_center.webp"
+  },
+  "17_cloud_ornament_right": {
+    "box": [
+      1080,
+      850,
+      1535,
+      1015
+    ],
+    "size": [
+      455,
+      165
+    ],
+    "png": "17_cloud_ornament_right.png",
+    "webp": "17_cloud_ornament_right.webp"
+  }
+}

@@ -21,6 +21,20 @@ One growing table across boards — never overwritten, only appended to.
 | 01 | Global Shell | Sidebar "Lịch sử" / "Sự kiện" nav items | MISSING_ASSET | no `/history` or `/events` route exists | NOT_AVAILABLE — intentionally omitted | not added; would be a fake route |
 | 01 | Global Shell | Guest top nav | REAL_API/DECORATIVE mix | static brand nav + real `/login`, `/register` links | READY (pre-existing) | `home-route.tsx` `GuestHeader` |
 | 01 | Global Shell | Mobile bottom nav | REAL_API | same `NAV_ITEMS` as sidebar, phone-only subset | READY (pre-existing) | [mobile-navigation.tsx](../../apps/web/components/layout/mobile-navigation.tsx) |
+| 01 V3 | Home Hero | Destiny Orbit (enlarged, outer ornamental bezel ring added) | CODE_GENERATED_VISUAL | pure SVG/CSS, 6 concentric layers, `aria-hidden` | READY | [destiny-orbit.tsx](../../apps/web/features/dashboard/components/home/destiny-orbit.tsx) |
+| 01 V3 | Home Hero | Mountain silhouette | REUSE_EXISTING_ASSET | `hero-mountains.png` (menh-vi prototype art, audited and kept — high quality, on-brand) | READY | `HomeHero` |
+| 01 V3 | Home Hero | Mist/depth layer | REUSE_EXISTING_ASSET | `hero-mist.png`, now `priority`-loaded so it never disappears above the fold | READY | `HomeHero` |
+| 01 V3 | Home Hero | Background starfield | REUSE_EXISTING_ASSET | `hero-stars.png` at 16% opacity, desktop-only, behind mountains | READY | `HomeHero` |
+| 01 V3 | Home Hero | Eastern cloud-line motif | CODE_GENERATED_VISUAL | existing hand-authored `CloudLines` SVG, mirrored to both hero corners | READY | `CloudLines` |
+| 01 V3 | Home Hero | `cloud-lines.png` (menh-vi prototype asset) | REJECTED_ASSET | audited: a fiery orange/red backdrop with a gold hex-grid — wrong mood/palette for the navy-gold Home hero | NOT_USED | superseded by the code-generated `CloudLines` SVG above |
+| 01 V3 | Discovery | 1 dominant (Tử Vi) + 3 supporting portals | CODE_GENERATED_VISUAL + REAL_API | same 4 module visuals/copy as Board 01, regrouped into an asymmetric `1.35fr/1fr` layout | READY | `FeatureCard` (`dominant` variant) |
+| 01 V3 | Personal strip (auth) | "Điều đang diễn ra với bạn" | REAL_API | same 3 real data sources as Board 01, restyled from 3 bordered boxes to one divided strip | READY | `ForYouSection`, `StripItem` |
+| 01 V3 | Personal strip (guest) | "Bắt đầu từ đâu?" | REAL_INTERACTIVE (client-only trial) | same 3 guest trials as Board 01 (Tarot draw, Numerology calc, Tử Vi boundary), regrouped 1 dominant + 2 supporting | READY | `GuestTrySection` |
+| 01 V3 | Editorial | 1 featured + 3 supporting articles | STATIC_EDITORIAL | same `editorialFallbacks` as Board 01, regrouped from a 2×2 grid into a featured+list layout | READY | `EditorialSection` |
+| 01 V3 | Editorial | Article artwork | REUSE_EXISTING_ASSET | `article-tuvi.png`, `article-tarot.png`, `article-astrology.png`, `article-numerology.png` (menh-vi prototype art, audited — high quality) | READY | `EditorialSection` |
+| 01 V3 | Trust | "Tính toán trước. AI giải thích sau." | STATIC_EDITORIAL | new section explaining the deterministic-engine vs. AI-narration boundary already true of every Discovery system | READY (new this pass) | `TrustSection` |
+| 01 V3 | Final CTA | "Hiểu mình từ nhiều góc nhìn." | STATIC_EDITORIAL | new closing section, links to real `/discover` and `/discover/tarot` routes | READY (new this pass) | `FinalCta` |
+| 01 V3 | Guest header | Scroll-triggered transparency (transparent at top, blurred after scroll) | CODE_GENERATED_VISUAL | passive `scroll` listener, guest-only marketing header (not shared with the authenticated shell) | READY (new this pass) | `home-route.tsx` `GuestHeader` |
 | 02 | Tử Vi Landing | Hero headline/CTA | STATIC_EDITORIAL | fixed copy, CTA is an in-page anchor to the real form | READY (added this pass) | [tu-vi-hero.tsx](../../apps/web/features/tu-vi/components/tu-vi-hero.tsx) |
 | 02 | Tử Vi Landing | Hero decorative visual | CODE_GENERATED_VISUAL | reuses Board 01's `DestinyOrbit` (already generic/system-agnostic, `aria-hidden`) — not a second graphic | READY (added this pass) | `tu-vi-hero.tsx` |
 | 02 | Tử Vi Landing | Trust/feature row (Chính xác/Khoa học/Chi tiết/Chu kỳ vận mệnh) | STATIC_EDITORIAL | methodology claims already substantiated by `TuViTrustSection`'s glossary — no numbers, no user data | READY (added this pass) | `tu-vi-hero.tsx` |
@@ -78,6 +92,30 @@ One growing table across boards — never overwritten, only appended to.
 - Percentage/score widgets shown in some Board 01 sub-panels ("78/100", "Công việc 82", etc.) are
   not implemented anywhere in this codebase and were not added — there is no verified computation
   backing them (per the Board 01 brief's explicit prohibition on fabricated personalization scores).
+
+## Notes — Board 01 V3
+
+- This pass is a visual/composition rebuild of the existing, already-real Board 01 Home (see
+  "Notes — Board 01" above for the data-honesty decisions already made in the first pass — none of
+  those decisions changed). No new API calls, DTOs, or backend routes were added; every section
+  still reads from the same `dashboardApi`, `tuViApi`, `tarotApi`, `natalChartApi`,
+  `numerologyApi`, and `usePremiumStatus()` calls as before.
+- The founder reference image's per-panel score widgets (career/love/finance/health numbers,
+  "78/100" style dials) do not exist in this board's reference either, but the same class of
+  fabricated-score risk was checked again for this pass and confirmed absent from the final
+  implementation — nothing in Home V3 invents a personalization score.
+- `apps/web/features/menh-vi/**` (an unrelated, archived internal design prototype — see
+  `CLAUDE.md` — not the real product) was audited for reusable assets and technique only. Its raster
+  art (`hero-mountains.png`, `hero-mist.png`, `hero-stars.png`, 4 article images) was reused because
+  it visually matches this board's palette and quality bar. Its **code** (`MvDestinyOrbit`,
+  `MvHero`, etc.) was deliberately not reused — it renders a fabricated "Năng lượng hôm nay" energy
+  score and a violet accent color, both of which would violate this board's "no fabricated scores"
+  and "no global purple" rules. Only the real, already-existing `DestinyOrbit` component was
+  extended (bigger, one added ornamental ring layer) — its per-user chart data was never touched.
+- The shared authenticated shell (`AppShell`, `Sidebar`, `AppHeader`, `MobileNavigation`) was left
+  untouched. Only `GuestHeader` (rendered exclusively on the logged-out Home page, never on Board
+  02/03/04 routes) was polished with scroll-triggered transparency, since it carries zero shared-shell
+  regression risk.
 
 ## Notes — Board 02
 

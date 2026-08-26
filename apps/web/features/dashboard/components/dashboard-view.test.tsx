@@ -87,10 +87,10 @@ describe('Tử Vi Tarot Home page', () => {
   it('renders honest empty states for missing discovery data', async () => {
     renderWithQuery(<DashboardView />);
 
-    expect(await screen.findByText('Khám phá bản đồ vận mệnh của bạn.')).toBeInTheDocument();
+    expect(await screen.findByText(/Bản đồ vận mệnh theo Tử Vi Đẩu Số/)).toBeInTheDocument();
     expect(screen.getByText('Một lá bài cho câu hỏi của bạn.')).toBeInTheDocument();
-    expect(screen.getByText('Cần ngày, giờ và nơi sinh để hoàn thiện bản đồ sao.')).toBeInTheDocument();
-    expect(screen.getByText('Tính các con số cốt lõi từ tên và ngày sinh.')).toBeInTheDocument();
+    expect(screen.getByText(/Cần ngày, giờ và nơi sinh/)).toBeInTheDocument();
+    expect(screen.getByText(/[Cc]ác con số cốt lõi từ tên và ngày sinh/)).toBeInTheDocument();
   });
 
   it('shows a module-level daily insight error without crashing Home', async () => {
@@ -189,7 +189,7 @@ describe('Tử Vi Tarot Home page', () => {
     renderWithQuery(<DashboardView />);
     const user = userEvent.setup();
 
-    await screen.findByText('Cần ngày, giờ và nơi sinh để hoàn thiện bản đồ sao.');
+    await screen.findByText(/Cần ngày, giờ và nơi sinh/);
     const tuVi = screen.getAllByRole('link', { name: /Lá số Tử Vi/i }).find((link) => link.getAttribute('href') === '/discover/tu-vi')!;
     const tarot = screen.getAllByRole('link', { name: /Tarot/i }).find((link) => link.getAttribute('href') === '/discover/tarot')!;
     const natal = screen.getAllByRole('link', { name: /Bản đồ sao/i }).find((link) => link.getAttribute('href') === '/discover/natal-chart')!;
