@@ -62,11 +62,17 @@ const BOARD01_ASSET_BASE = '/assets/menh_vi_board01_generated_assets';
  * "final" claim. Swap only the values below when the new files exist — no other code changes
  * should be needed, since the card/mask treatment is already built for this contract.
  */
+/**
+ * HD ART INTEGRATION (2026-08-27): founder-approved 1254×1254 RGBA replacements for the
+ * previous sub-400px placeholders — see HD_FEATURE_ART_BRIEF.md in BOARD01_ASSET_BASE for the
+ * brief this was delivered against. Old `07/06/09/10_feature_*.webp` files are left on disk,
+ * unreferenced, in case of rollback.
+ */
 const FEATURE_ART_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', string> = {
-  tu_vi: `${BOARD01_ASSET_BASE}/07_feature_tuvi_pagoda.webp`,
-  tarot: `${BOARD01_ASSET_BASE}/06_feature_tarot_cards.webp`,
-  natal_chart: `${BOARD01_ASSET_BASE}/09_feature_natal_orbit.webp`,
-  numerology: `${BOARD01_ASSET_BASE}/10_feature_numerology.webp`,
+  tu_vi: `${BOARD01_ASSET_BASE}/07_feature_tuvi_pagoda_hd.png`,
+  tarot: `${BOARD01_ASSET_BASE}/06_feature_tarot_cards_hd.png`,
+  natal_chart: `${BOARD01_ASSET_BASE}/09_feature_natal_orbit_hd.png`,
+  numerology: `${BOARD01_ASSET_BASE}/10_feature_numerology_hd.png`,
 };
 
 const FEATURE_ICON_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', string> = {
@@ -75,7 +81,26 @@ const FEATURE_ICON_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology
   natal_chart: '04_icon_natal',
   numerology: '05_icon_numerology',
 };
-/** Sparse hero sky stars — [xPercent, yPercent, radius, opacity]. */
+
+/**
+ * HD ART INTEGRATION: the previous per-asset multipliers here were calibrated against the old
+ * sub-400px files' four different native aspect ratios — not valid for the new HD set, which is
+ * a uniform 1254×1254 (1:1) across all four, so `object-contain` alone already gives identical
+ * optical footprints without any correction. Reset to neutral; re-tune only if live inspection
+ * shows an actual mismatch (it doesn't — verified below).
+ */
+const FEATURE_ART_SCALE: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', number> = {
+  tu_vi: 1,
+  tarot: 1,
+  natal_chart: 1,
+  numerology: 1,
+};
+/**
+ * Sparse hero sky stars — [xPercent, yPercent, radius, opacity].
+ * V9 COMPOSITION PASS: added 8 more, weighted toward the very top strip (y 1-6%) — the founder's
+ * "upper sky reads too empty" call-out — plus 2 slightly larger accent stars for a touch of
+ * variety. Still a scatter of plain dots, not an illustration.
+ */
 const HERO_STARS = [
   [6, 10, 1.4, 0.55],
   [16, 24, 1, 0.4],
@@ -89,6 +114,14 @@ const HERO_STARS = [
   [12, 42, 1, 0.4],
   [34, 48, 1.2, 0.4],
   [58, 44, 0.9, 0.35],
+  [3, 3, 1.1, 0.4],
+  [22, 2, 0.9, 0.35],
+  [46, 4, 1, 0.4],
+  [68, 2, 1.6, 0.5],
+  [82, 4, 0.9, 0.32],
+  [98, 3, 1.1, 0.38],
+  [44, 20, 1.7, 0.55],
+  [8, 32, 1.6, 0.48],
 ] as const;
 const HOME_QUERY_OPTIONS = {
   enabled: false,
@@ -335,7 +368,7 @@ export function DashboardView() {
             analyticsFeature="tu_vi"
             asset="tu_vi"
             surface={CARD_SURFACE}
-            accent="radial-gradient(circle at 12% 0%, rgba(198,146,67,0.16), transparent 60%)"
+            accent="radial-gradient(circle at 82% 78%, rgba(198,146,67,0.22), transparent 62%)"
           />
           <FeatureCard
             title="Tarot"
@@ -355,7 +388,7 @@ export function DashboardView() {
             analyticsFeature="tarot"
             asset="tarot"
             surface={CARD_SURFACE}
-            accent="radial-gradient(circle at 12% 0%, rgba(122,142,168,0.16), transparent 60%)"
+            accent="radial-gradient(circle at 82% 78%, rgba(122,142,168,0.22), transparent 62%)"
           />
           <FeatureCard
             title="Bản đồ sao"
@@ -375,7 +408,7 @@ export function DashboardView() {
             analyticsFeature="natal_chart"
             asset="natal_chart"
             surface={CARD_SURFACE}
-            accent="radial-gradient(circle at 12% 0%, rgba(143,174,159,0.14), transparent 60%)"
+            accent="radial-gradient(circle at 82% 78%, rgba(143,174,159,0.2), transparent 62%)"
           />
           <FeatureCard
             title="Thần số học"
@@ -389,7 +422,7 @@ export function DashboardView() {
             analyticsFeature="numerology"
             asset="numerology"
             surface={CARD_SURFACE}
-            accent="radial-gradient(circle at 12% 0%, rgba(213,173,98,0.14), transparent 60%)"
+            accent="radial-gradient(circle at 82% 78%, rgba(213,173,98,0.2), transparent 62%)"
           />
         </div>
       </section>
@@ -481,6 +514,15 @@ function HomeHero({
         {HERO_STARS.map(([x, y, r, o], index) => (
           <circle key={index} cx={`${x}%`} cy={`${y}%`} r={r} fill="#f1e9db" opacity={o} />
         ))}
+        {/* V9 COMPOSITION PASS: one faint gold construction-line + linked nodes in the upper sky —
+            Zone 1's "very subtle constellation structure, small gold accents." SVG `d` path data
+            doesn't accept percentage units, so this is two plain `<line>`s (which do) rather than
+            a curved path — same restrained visual result, the same language as
+            DestinyOrbit/PageAtmosphere. */}
+        <line x1="20%" y1="8%" x2="34%" y2="3%" stroke="#d5ad62" strokeOpacity="0.16" strokeWidth="0.6" />
+        <line x1="34%" y1="3%" x2="50%" y2="9%" stroke="#d5ad62" strokeOpacity="0.16" strokeWidth="0.6" />
+        <circle cx="20%" cy="8%" r="1.1" fill="#e0bd72" opacity="0.4" />
+        <circle cx="50%" cy="9%" r="0.9" fill="#e0bd72" opacity="0.35" />
       </svg>
       {/* Approved constellation/nebula patch, used as the localized celestial glow behind the
           Destiny Wheel instead of a CSS radial-gradient approximation — the founder's brief
@@ -494,11 +536,15 @@ function HomeHero({
         sizes="(min-width: 1280px) 480px, 320px"
         className="pointer-events-none absolute right-[6%] top-[6%] hidden h-auto w-[42%] max-w-[480px] opacity-70 desktop:block"
       />
-      {/* Approved Board 01 hero mountains — replaces the earlier flat/dark placeholder raster
-          with the founder-approved, richly-lit artwork (visible peaks, warm valley light,
-          foreground/midground separation already baked into the asset). */}
+      {/* V8 SHARPNESS PASS (2026-08-27): the Board 01 sheet's own mountain layer
+          (11_hero_mountains.webp) is only 875×295px — stretched across a full-bleed 100vw hero
+          (≥1440px, ≥2880px at 2x DPR) that's a measured 1.6-3.3x upscale, the actual root cause of
+          the founder's "looks blurry" call-out (verified via naturalWidth vs rendered rect, not
+          guessed). `menh-vi/home/hero-mountains.png` is the same restrained dark-navy/gold-rim-lit
+          silhouette direction at 1840×854 — sharp at this section's real render size. The mist/sky
+          glow still comes from the approved Board 01 overlay layers below, unchanged. */}
       <Image
-        src={`${BOARD01_ASSET_BASE}/11_hero_mountains.webp`}
+        src="/assets/menh-vi/home/hero-mountains.png"
         alt=""
         aria-hidden="true"
         fill
@@ -507,16 +553,33 @@ function HomeHero({
         className="object-cover object-bottom opacity-95"
       />
       {/* Approved center mist/mountain glow — the brightest point of the scene, the "sun through
-          the valley" the reference reads as celestial illumination, not a flat yellow wash. */}
+          the valley" the reference reads as celestial illumination, not a flat yellow wash.
+          V9 COMPOSITION PASS: the founder read this as "a dense horizontal band... pasted across
+          the Hero" rather than atmosphere. Per the explicit instruction not to just drop opacity
+          globally: narrowed 75%/820px→58%/620px so it reads as a localized glow instead of
+          spanning most of the Hero width, added a soft top/side mask-fade so its own edges blend
+          into the sky rather than having a visible boundary, and switched to `screen` blend mode
+          so it lightens the mountain/sky beneath it (like light) instead of sitting on top of it
+          like a translucent sheet — opacity only dropped as a secondary adjustment (0.9→0.7),
+          alongside those other changes, not as the fix on its own. */}
       <Image
         src={`${BOARD01_ASSET_BASE}/15_mist_mountains_center.webp`}
         alt=""
         aria-hidden="true"
         width={550}
         height={175}
-        sizes="(min-width: 1280px) 820px, 70vw"
-        className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-auto w-[75%] max-w-[820px] opacity-90"
+        sizes="(min-width: 1280px) 620px, 55vw"
+        className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-auto w-[58%] max-w-[620px] opacity-70 mix-blend-screen"
+        style={{
+          WebkitMaskImage: 'radial-gradient(ellipse 55% 75% at 50% 85%, black 35%, transparent 88%)',
+          maskImage: 'radial-gradient(ellipse 55% 75% at 50% 85%, black 35%, transparent 88%)',
+        }}
       />
+      {/* V9 COMPOSITION PASS: a restrained horizon depth gradient — Zone 3's "visible depth" —
+          without touching the mountain raster itself (no blur, no upscale). Just a dark wash
+          right at the skyline transitioning to nothing, so the ridge reads with more separation
+          from the sky above it. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[28%] h-[18%] bg-[linear-gradient(to_bottom,transparent_0%,rgba(6,10,18,0.35)_100%)]" />
       {/* Approved left mist bank. */}
       <Image
         src={`${BOARD01_ASSET_BASE}/14_mist_left.webp`}
@@ -873,6 +936,29 @@ const FEATURE_CARD_SHAPE = 'flex h-[248px] flex-col rounded-[18px] border border
  */
 const CARD_SURFACE = 'linear-gradient(165deg, rgba(14,20,32,0.78) 0%, rgba(10,15,24,0.85) 55%, rgba(7,10,16,0.92) 100%)';
 
+/**
+ * V9 COMPOSITION PASS: a tiny, fixed (non-random, so SSR/CSR markup matches exactly) scatter of
+ * dots + one thin arc behind the artwork zone — the "restrained background glow / subtle star
+ * field / faint celestial construction line" the founder asked for so each card reads as one
+ * composed panel, not text-plus-pasted-image. Deliberately reuses the exact gold tones and
+ * near-invisible opacities already established by `DestinyOrbit`/`PageAtmosphere` rather than
+ * inventing a new decorative language.
+ */
+function CardCelestialAccent() {
+  return (
+    <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+      <circle cx="78%" cy="18%" r="0.9" fill="#f1e3bb" opacity="0.35" />
+      <circle cx="90%" cy="34%" r="0.7" fill="#e0bd72" opacity="0.3" />
+      <circle cx="70%" cy="46%" r="1" fill="#f1e3bb" opacity="0.28" />
+      <circle cx="95%" cy="58%" r="0.7" fill="#e0bd72" opacity="0.25" />
+      {/* SVG `d` path data doesn't accept percentage units, so this is plain `<line>`s (which do)
+          rather than a curved arc path. */}
+      <line x1="62%" y1="12%" x2="80%" y2="24%" stroke="#d5ad62" strokeOpacity="0.14" strokeWidth="0.6" />
+      <line x1="80%" y1="24%" x2="98%" y2="48%" stroke="#d5ad62" strokeOpacity="0.14" strokeWidth="0.6" />
+    </svg>
+  );
+}
+
 function FeatureCard({
   title,
   description,
@@ -942,24 +1028,36 @@ function FeatureCard({
       style={{ background: surface }}
       className={cn(
         FEATURE_CARD_SHAPE,
-        'group relative overflow-hidden backdrop-blur-[2px] transition-colors hover:border-[#d5ad62]/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]',
+        // V8 SHARPNESS PASS: `backdrop-blur` here was softening this card's own artwork layer
+        // (measured — verified this was a real applied blur(2px), not an illusion of "AI-looking"
+        // art), for no visible purpose since CARD_SURFACE is dark enough not to need it.
+        'group relative overflow-hidden transition-colors hover:border-[#d5ad62]/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]',
       )}
     >
+      {/* V9 COMPOSITION PASS: `accent` now centers on the artwork zone (lower-right) instead of the
+          top-left corner — a restrained background glow the artwork sits inside, so the card reads
+          as one composed panel rather than "text + a pasted image." */}
       <div className="pointer-events-none absolute inset-0" style={{ background: accent }} aria-hidden="true" />
-      {/* PRODUCTION ART CONTAINER (§8 contract): right ~52% of the card, full height so the
-          artwork can bleed toward the top/bottom edges rather than sitting in a boxed corner —
-          only the left edge is masked (a wide soft fade toward the text column), so there's no
-          hard rectangular boundary anywhere else. Opacity kept high (not a low watermark) since
-          the fade itself is what protects legibility. Swap FEATURE_ART_ASSET's values when
-          commissioned art lands; no other change needed here. */}
+      <CardCelestialAccent />
+      {/* PRODUCTION ART CONTAINER (§8 contract), V9 COMPOSITION PASS: narrowed from 52%→38% of the
+          card — the founder's explicit call-out was that artwork read as too large/"object-like"
+          against the reduced-scale reference (target ~35-50% of the card's visual area, not
+          60-75%). Still full height so it can bleed toward top/bottom rather than sitting boxed. */}
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 w-[52%] opacity-90 transition-[opacity,transform] duration-standard group-hover:opacity-100 group-hover:scale-[1.02]"
+        className="pointer-events-none absolute inset-y-0 right-0 w-[38%] opacity-90 transition-[opacity,transform] duration-standard group-hover:opacity-100 group-hover:scale-[1.02]"
         style={{
-          WebkitMaskImage: 'linear-gradient(to left, black 45%, transparent 92%)',
-          maskImage: 'linear-gradient(to left, black 45%, transparent 92%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 88%)',
+          maskImage: 'linear-gradient(to left, black 30%, transparent 88%)',
         }}
       >
-        <Image src={FEATURE_ART_ASSET[asset]} alt="" fill sizes="(min-width: 1280px) 300px, 220px" className="object-contain object-bottom" />
+        <Image
+          src={FEATURE_ART_ASSET[asset]}
+          alt=""
+          fill
+          sizes="(min-width: 1280px) 220px, 160px"
+          className="object-contain object-bottom"
+          style={{ transform: `scale(${FEATURE_ART_SCALE[asset]})`, transformOrigin: 'bottom center' }}
+        />
       </div>
       {/* Protects the copy column: a soft left-to-right scrim instead of relying on the mask alone
           to keep text legible now that the artwork is larger and brighter. */}
@@ -992,8 +1090,17 @@ function GuestTrySection() {
   return (
     <section aria-labelledby="try-heading" className="space-y-5">
       <SectionHeading id="try-heading" eyebrow="Dành cho bạn" title="Bắt đầu từ đâu?" />
-      <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-[1.12fr_1fr_1fr]">
-        <div className="tablet:col-span-2 desktop:col-span-1">
+      {/* V8.1 FOUNDER CORRECTION: the founder rejected the previous 1.12fr/1fr/1fr asymmetry —
+          all 3 cards must render at equal width. Straight grid-cols-3, no special-casing for the
+          Tarot preview's richer content. */}
+      <div className="grid items-stretch gap-4 tablet:grid-cols-2 desktop:grid-cols-3">
+        {/* V9 COMPOSITION PASS fix: this extra wrapper div (needed for the tablet col-span) doesn't
+            inherit the grid's stretched cell height by itself — it was left at its child's
+            intrinsic content height, so when V9's wider text max-widths let GuestTarotPreview wrap
+            one line shorter, this card alone shrank (229px vs its siblings' 252px, measured live).
+            `h-full` on both this wrapper and GuestTarotPreview's own root propagates the grid's
+            stretch all the way down again. */}
+        <div className="h-full tablet:col-span-2 desktop:col-span-1">
           <GuestTarotPreview />
         </div>
         <GuestNumerologyPreview />
@@ -1037,26 +1144,29 @@ function GuestTarotPreview() {
   return (
     <section
       id="try-tarot"
-      className="relative overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
+      className="relative h-full overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
       style={{ background: `radial-gradient(circle at 92% 4%, rgba(122,142,168,0.16), transparent 55%), ${GUEST_SECTION_BASE}` }}
     >
-      {/* PRODUCTION ART CONTAINER (§9): Tarot emerges from the right side — full-height zone,
-          content anchored right so the card fan reads as entering the frame rather than sitting
-          in a corner. */}
+      {/* PRODUCTION ART CONTAINER (§9), V9 COMPOSITION PASS: narrowed 46%→26-34% (responsive —
+          smaller on mobile, growing at wider breakpoints instead of holding the desktop scale at
+          every width) and the text column's max-width tightened to a matching complement, so the
+          two bounding boxes never overlap by construction — not "usually fine because of the mask
+          fade." Card fan still bleeds off the right edge for atmosphere via the same mask-fade
+          technique. */}
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 w-[46%] opacity-85"
+        className="pointer-events-none absolute inset-y-0 right-0 w-[26%] opacity-85 tablet:w-[30%] desktop:w-[34%]"
         style={{
-          WebkitMaskImage: 'linear-gradient(to left, black 42%, transparent 90%)',
-          maskImage: 'linear-gradient(to left, black 42%, transparent 90%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 88%)',
+          maskImage: 'linear-gradient(to left, black 30%, transparent 88%)',
         }}
         aria-hidden="true"
       >
-        <Image src={FEATURE_ART_ASSET.tarot} alt="" fill sizes="260px" className="object-contain object-right" />
+        <Image src={FEATURE_ART_ASSET.tarot} alt="" fill sizes="200px" className="object-contain object-right" />
       </div>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#080b12]/70 via-[#080b12]/20 to-transparent" aria-hidden="true" />
       <div className="relative">
         <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Tarot</p>
-        <h3 className="relative mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Rút một lá cho hôm nay</h3>
+        <h3 className="relative mt-2 max-w-[58%] text-body-lg font-semibold text-[#f2eee5]">Rút một lá cho hôm nay</h3>
       </div>
       <p className="relative mt-2 max-w-[58%] text-body-sm leading-relaxed text-[#a6a7ac]">Bản thử này không lưu lịch sử và không gọi AI. Luận giải đầy đủ cần tài khoản để giữ ngữ cảnh cho bạn.</p>
       {isDrawing && <Skeleton className="relative mt-4 h-28 w-full bg-white/10" />}
@@ -1066,7 +1176,10 @@ function GuestTarotPreview() {
           <p className="mt-2 text-body-sm text-[#d8d1c2]">{card.meaning}</p>
         </div>
       )}
-      <div className="relative mt-4 flex flex-wrap gap-3">
+      {/* V9 COMPOSITION PASS fix: this row had no max-width, so the 2 buttons together could
+          extend further right than the (constrained) title/paragraph above them, into the
+          artwork zone — measured live as a real 16px bounding-box overlap. */}
+      <div className="relative mt-4 flex max-w-[58%] flex-wrap gap-3">
         <button type="button" onClick={drawCard} disabled={isDrawing} className="min-h-11 rounded-md bg-[#d5ad62] px-4 text-body-sm font-semibold text-[#070b12] disabled:cursor-not-allowed disabled:opacity-70">
           {isDrawing ? 'Đang rút...' : card ? 'Rút lá khác' : 'Rút một lá'}
         </button>
@@ -1128,26 +1241,27 @@ function GuestNumerologyPreview() {
       className="relative overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
       style={{ background: `radial-gradient(circle at 92% 4%, rgba(213,173,98,0.14), transparent 55%), ${GUEST_SECTION_BASE}` }}
     >
-      {/* PRODUCTION ART CONTAINER (§9): the numerology artifact sits on the right side, full
-          height. The date input below keeps its own opaque background so it stays usable
-          regardless of the art behind it. */}
+      {/* PRODUCTION ART CONTAINER (§9), V9 COMPOSITION PASS: narrowed 48%→28-36% (responsive) with
+          a matching text-column max-width so the illustration and the date-input row never share
+          the same horizontal space — a real non-overlap guarantee, not reliant on the input's
+          opaque background to mask a collision. */}
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 w-[48%] opacity-85"
+        className="pointer-events-none absolute inset-y-0 right-0 w-[28%] opacity-85 tablet:w-[32%] desktop:w-[36%]"
         style={{
-          WebkitMaskImage: 'linear-gradient(to left, black 40%, transparent 90%)',
-          maskImage: 'linear-gradient(to left, black 40%, transparent 90%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 28%, transparent 88%)',
+          maskImage: 'linear-gradient(to left, black 28%, transparent 88%)',
         }}
         aria-hidden="true"
       >
-        <Image src={FEATURE_ART_ASSET.numerology} alt="" fill sizes="260px" className="object-contain" />
+        <Image src={FEATURE_ART_ASSET.numerology} alt="" fill sizes="200px" className="object-contain" />
       </div>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#080b12]/70 via-[#080b12]/20 to-transparent" aria-hidden="true" />
       <div className="relative">
         <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Thần số học</p>
-        <h3 className="mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Tính nhanh con số chủ đạo</h3>
+        <h3 className="mt-2 max-w-[56%] text-body-lg font-semibold text-[#f2eee5]">Tính nhanh con số chủ đạo</h3>
       </div>
-      <p className="relative mt-2 max-w-[58%] text-body-sm leading-relaxed text-[#a6a7ac]">Ngày sinh chỉ ở trong trình duyệt cho bản thử này. Hồ sơ đầy đủ dùng engine backend sau khi đăng nhập.</p>
-      <form onSubmit={calculate} noValidate className="relative mt-4 flex flex-col gap-2">
+      <p className="relative mt-2 max-w-[56%] text-body-sm leading-relaxed text-[#a6a7ac]">Ngày sinh chỉ ở trong trình duyệt cho bản thử này. Hồ sơ đầy đủ dùng engine backend sau khi đăng nhập.</p>
+      <form onSubmit={calculate} noValidate className="relative mt-4 flex max-w-[56%] flex-col gap-2">
         <label htmlFor="guest-birth-date" className="sr-only">
           Ngày sinh
         </label>
@@ -1196,24 +1310,25 @@ function GuestTuViBoundary() {
       className="relative overflow-hidden rounded-[18px] border border-white/[0.1] p-5"
       style={{ background: `radial-gradient(circle at 92% 4%, rgba(198,146,67,0.14), transparent 55%), ${GUEST_SECTION_BASE}` }}
     >
-      {/* PRODUCTION ART CONTAINER (§9): the pavilion/landscape scene grows from the lower-right
-          corner rather than sitting boxed in a fixed frame. */}
+      {/* PRODUCTION ART CONTAINER (§9), V9 COMPOSITION PASS: shrunk from 92%×58%→70%×36-44%
+          (responsive) with the diagonal fade starting earlier, so the pavilion scene reads as a
+          lower-right corner accent rather than a large scene competing with the body copy. */}
       <div
-        className="pointer-events-none absolute -bottom-4 -right-4 h-[92%] w-[58%] opacity-85"
+        className="pointer-events-none absolute -bottom-4 -right-4 h-[70%] w-[36%] opacity-85 tablet:w-[40%] desktop:w-[44%]"
         style={{
-          WebkitMaskImage: 'linear-gradient(128deg, transparent 6%, transparent 22%, black 55%)',
-          maskImage: 'linear-gradient(128deg, transparent 6%, transparent 22%, black 55%)',
+          WebkitMaskImage: 'linear-gradient(128deg, transparent 6%, transparent 14%, black 50%)',
+          maskImage: 'linear-gradient(128deg, transparent 6%, transparent 14%, black 50%)',
         }}
         aria-hidden="true"
       >
-        <Image src={FEATURE_ART_ASSET.tu_vi} alt="" fill sizes="260px" className="object-contain object-bottom" />
+        <Image src={FEATURE_ART_ASSET.tu_vi} alt="" fill sizes="200px" className="object-contain object-bottom" />
       </div>
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#080b12]/70 via-[#080b12]/20 to-transparent" aria-hidden="true" />
       <div className="relative">
         <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Lá số Tử Vi</p>
-        <h3 className="mt-2 max-w-[55%] text-body-lg font-semibold text-[#f2eee5]">Xem trước cách lập lá số</h3>
+        <h3 className="mt-2 max-w-[48%] text-body-lg font-semibold text-[#f2eee5]">Xem trước cách lập lá số</h3>
       </div>
-      <p className="relative mt-2 max-w-[58%] text-body-sm leading-relaxed text-[#a6a7ac]">
+      <p className="relative mt-2 max-w-[48%] text-body-sm leading-relaxed text-[#a6a7ac]">
         Tử Vi cần giờ sinh và giới tính, nên phần lập lá số đầy đủ chỉ mở sau khi bạn có tài khoản để bảo vệ dữ liệu cá nhân và lưu đúng nơi.
       </p>
       <button
@@ -1314,7 +1429,7 @@ function EditorialSection() {
               key={article.title}
               href={article.href}
               onClick={() => trackEvent('home_article_clicked', { feature: 'home', source: article.slug })}
-              className="group flex gap-4 overflow-hidden rounded-[18px] border border-[#d5ad62]/12 bg-[#1c2c46]/65 backdrop-blur-[2px] transition-colors hover:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] desktop:h-full"
+              className="group flex gap-4 overflow-hidden rounded-[18px] border border-[#d5ad62]/12 bg-[#1c2c46]/65 transition-colors hover:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] desktop:h-full"
             >
               <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-[12px] desktop:h-auto">
                 <Image src={article.image} alt="" fill sizes="96px" className="object-cover transition-transform duration-500 ease-organic group-hover:scale-[1.03]" />
@@ -1542,19 +1657,33 @@ function HomeButton({ href, children, variant, icon }: { href: string; children:
   );
 }
 
+/**
+ * V9 COMPOSITION PASS: 12 stars over a page that can run several thousand px tall reads as
+ * essentially none per viewport — doubled the count and nudged opacity up (~×1.3) so the field is
+ * actually visible while scrolling, still a plain low-opacity dot scatter, nothing added per
+ * section.
+ */
 const PAGE_STARS = [
-  [4, 8, 1.6, 0.4],
-  [92, 4, 1.2, 0.3],
-  [12, 22, 1, 0.25],
-  [80, 30, 1.8, 0.35],
-  [30, 15, 0.9, 0.2],
-  [60, 45, 1.3, 0.3],
-  [8, 55, 1, 0.22],
-  [95, 60, 1.5, 0.32],
-  [45, 70, 1, 0.2],
-  [22, 85, 1.6, 0.35],
-  [70, 90, 1, 0.22],
-  [88, 95, 1.3, 0.28],
+  [4, 8, 1.6, 0.42],
+  [92, 4, 1.2, 0.32],
+  [12, 22, 1, 0.3],
+  [80, 30, 1.8, 0.4],
+  [30, 15, 0.9, 0.26],
+  [60, 45, 1.3, 0.34],
+  [8, 55, 1, 0.28],
+  [95, 60, 1.5, 0.36],
+  [45, 70, 1, 0.26],
+  [22, 85, 1.6, 0.38],
+  [70, 90, 1, 0.28],
+  [88, 95, 1.3, 0.32],
+  [55, 10, 1.2, 0.3],
+  [18, 40, 1.4, 0.3],
+  [38, 60, 1, 0.24],
+  [65, 65, 1.3, 0.3],
+  [3, 78, 1.5, 0.34],
+  [50, 82, 1, 0.24],
+  [78, 48, 1.6, 0.32],
+  [98, 88, 1.1, 0.26],
 ] as const;
 
 /**
@@ -1577,21 +1706,33 @@ const PAGE_STARS = [
  * real imagery). This layer is now just the gradient wash + one faint celestial ring + sparse
  * stars — deep navy atmosphere, not a fantasy landscape.
  */
+/**
+ * V9 COMPOSITION PASS: the founder read the post-Hero page as "nearly flat black" — this system
+ * already existed (added after an *earlier* rejection of two full painted mountain
+ * ridges/cloud-bank filling the middle of the page, see the note below), so the fix here is
+ * turning its existing washes up, not adding new landscape illustration. 3 washes → 5, roughly
+ * lined up with Discovery / "Bắt đầu từ đâu" / Editorial / Trust / Final-CTA, each a little
+ * stronger than before, still the same restrained navy+antique-gold family (no new hue, no new
+ * imagery).
+ */
 const CHAPTER_ATMOSPHERE = [
-  'radial-gradient(ellipse 100% 22% at 50% 20%, rgba(198,146,67,0.1), transparent 72%)',
-  'radial-gradient(ellipse 100% 24% at 50% 55%, rgba(30,44,66,0.4), transparent 72%)',
-  'radial-gradient(ellipse 100% 20% at 50% 90%, rgba(198,146,67,0.08), transparent 72%)',
-  'linear-gradient(to bottom, #0c1420 0%, #101c2e 25%, #0f1c2c 50%, #0d1826 75%, #0c1420 100%)',
+  'radial-gradient(ellipse 100% 20% at 50% 14%, rgba(198,146,67,0.16), transparent 72%)',
+  'radial-gradient(ellipse 100% 22% at 50% 34%, rgba(122,142,168,0.14), transparent 72%)',
+  'radial-gradient(ellipse 100% 24% at 50% 55%, rgba(30,44,66,0.55), transparent 72%)',
+  'radial-gradient(ellipse 100% 20% at 50% 74%, rgba(143,174,159,0.1), transparent 72%)',
+  'radial-gradient(ellipse 100% 22% at 50% 92%, rgba(198,146,67,0.14), transparent 72%)',
+  'linear-gradient(to bottom, #0b131f 0%, #101c2e 25%, #0f1c2c 50%, #0d1826 75%, #0b131f 100%)',
 ].join(', ');
 
 function PageAtmosphere() {
   return (
     <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
       <div className="absolute inset-0" style={{ background: CHAPTER_ATMOSPHERE }} />
-      {/* One faint celestial ring behind the Discovery region only — an "occasional antique-gold
-          haze," not scenery drawn at every chapter boundary. */}
+      {/* Two faint celestial rings — Discovery and Trust — an "occasional antique-gold haze," not
+          scenery drawn at every chapter boundary. V9: added the 2nd ring, opacity nudged up. */}
       <svg className="h-full w-full" viewBox="0 0 1000 2600" preserveAspectRatio="none" aria-hidden="true">
-        <circle cx="150" cy="480" r="420" fill="none" stroke="#e0bd72" strokeOpacity="0.12" strokeWidth="1.5" />
+        <circle cx="150" cy="480" r="420" fill="none" stroke="#e0bd72" strokeOpacity="0.16" strokeWidth="1.5" />
+        <circle cx="880" cy="1980" r="360" fill="none" stroke="#e0bd72" strokeOpacity="0.13" strokeWidth="1.2" />
       </svg>
       <svg className="h-full w-full" preserveAspectRatio="none" aria-hidden="true">
         <defs>

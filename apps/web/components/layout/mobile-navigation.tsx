@@ -10,7 +10,9 @@ import { NAV_ITEMS } from './nav-items';
 // rail. Now strictly phone-only (<768px) — see sidebar.tsx for the tablet/desktop split.
 export function MobileNavigation() {
   const pathname = usePathname();
-  const mobileItems = NAV_ITEMS.filter((item) => ['/', '/discover/tu-vi', '/discover/tarot', '/settings'].includes(item.href));
+  const mobileItems = NAV_ITEMS.filter((item) =>
+    ['/', '/discover/tu-vi', '/discover/tarot', '/discover', '/settings'].includes(item.href),
+  );
 
   return (
     <nav

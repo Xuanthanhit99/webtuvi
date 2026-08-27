@@ -60,7 +60,70 @@ export function HomeRoute() {
           <DashboardView />
         </div>
       </main>
+      <GuestFooter />
     </div>
+  );
+}
+
+const footerColumns = [
+  {
+    title: 'Về chúng tôi',
+    links: [{ label: 'Giới thiệu', href: '/about' }],
+  },
+  {
+    title: 'Sản phẩm',
+    links: [
+      { label: 'Tử Vi', href: '/discover/tu-vi' },
+      { label: 'Tarot', href: '/discover/tarot' },
+      { label: 'Bản đồ sao', href: '/discover/natal-chart' },
+      { label: 'Thần số học', href: '/discover/numerology' },
+    ],
+  },
+  {
+    title: 'Hỗ trợ',
+    links: [{ label: 'Liên hệ', href: '/contact' }],
+  },
+  {
+    title: 'Pháp lý',
+    links: [
+      { label: 'Điều khoản sử dụng', href: '/terms' },
+      { label: 'Chính sách bảo mật', href: '/privacy' },
+    ],
+  },
+] as const;
+
+function GuestFooter() {
+  return (
+    <footer className="border-t border-white/10">
+      <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-10 px-4 py-12 tablet:px-8 desktop:flex-row desktop:justify-between">
+        <div className="max-w-xs">
+          <Link href="/" aria-label="Tử Vi Tarot" className="flex items-center gap-3">
+            <Logo withWordmark={false} />
+            <span className="font-display text-body-lg font-semibold text-[#f2eee5]">Tử Vi Tarot</span>
+          </Link>
+          <p className="mt-3 text-body-sm leading-relaxed text-[#a6a7ac]">Hiểu mình. Hiểu vận. Sống an nhiên.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-8 desktop:grid-cols-4 desktop:gap-12">
+          {footerColumns.map((column) => (
+            <div key={column.title}>
+              <p className="text-body-sm font-semibold text-[#f2eee5]">{column.title}</p>
+              <ul className="mt-3 flex flex-col gap-2">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="text-body-sm text-[#a6a7ac] hover:text-[#f2eee5]">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p className="border-t border-white/[0.06] py-6 text-center text-caption text-[#6f7075]">
+        © {new Date().getFullYear()} Tử Vi Tarot. All rights reserved.
+      </p>
+    </footer>
   );
 }
 

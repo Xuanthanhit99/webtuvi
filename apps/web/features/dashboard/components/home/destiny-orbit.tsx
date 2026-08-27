@@ -163,8 +163,14 @@ export function DestinyOrbit({ className }: { className?: string }) {
           className="motion-safe:animate-[mv-breathe_14s_ease-in-out_infinite]"
         />
 
-        {/* Layer 3 — star-dust particles scattered just outside the bezel. Ultra-slow drift. */}
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_340s_linear_infinite]">
+        {/* Layer 3 — star-dust particles scattered just outside the bezel. Very slow drift.
+            V8.1 MOTION TUNING: 340s→170s. V9 MOTION TUNING (this pass): 170s→165s — the founder
+            again reported the wheel as imperceptibly static after V8.1's measured 40px/5s
+            displacement, so every layer was cut further, this time toward the founder's own
+            explicit perceptual bands (primary ring 60-90s, inner astrolabe 55-90s, marker
+            18-32s, outer geometry 120-200s) rather than a uniform halving. Relative speed
+            ordering and alternating cw/ccw directions preserved again. */}
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_165s_linear_infinite]">
           {DUST.map((d, i) => {
             const p = polar(d.r, d.deg);
             return <circle key={i} cx={p.x} cy={p.y} r={i % 5 === 0 ? 1.3 : 0.7} fill="#f1e3bb" opacity={i % 5 === 0 ? 0.5 : 0.28} />;
@@ -173,8 +179,9 @@ export function DestinyOrbit({ className }: { className?: string }) {
 
         {/* Layer 4 — outer engraved bezel: bright ring + dimmer inner ring (alternating
             brightness) + a dashed engraved line + a 3-tier tick system (minor/mid/major) + one
-            restrained seal-red mark. Clockwise, very slow — cast metal turning, not spinning. */}
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_260s_linear_infinite]">
+            restrained seal-red mark. Clockwise, very slow — cast metal turning, not spinning.
+            V8.1 MOTION TUNING: 260s→150s. */}
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_125s_linear_infinite]">
           {/* primary structural ring — the brightest line on the whole instrument, real cast-metal
               gradient rather than a flat stroke */}
           <circle cx={CENTER} cy={CENTER} r={244} fill="none" stroke={g('metal')} strokeWidth="2" strokeOpacity="0.92" />
@@ -206,8 +213,11 @@ export function DestinyOrbit({ className }: { className?: string }) {
         </g>
 
         {/* Layer 5 — celestial symbol ring: 16 small diamond ornaments offset from the Earthly
-            Branch sectors, plus a fine ring line. Counter-clockwise, independent of the bezel. */}
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_205s_linear_infinite]">
+            Branch sectors, plus a fine ring line. Counter-clockwise, independent of the bezel.
+            V8.1 MOTION TUNING: 205s→105s — this is the most visually prominent rotating ring
+            (16 gold diamond ornaments), tuned toward the founder's "primary visible celestial
+            ring" band (80-140s) so it's the layer most likely to read as moving within 5-10s. */}
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_75s_linear_infinite]">
           <circle cx={CENTER} cy={CENTER} r={205} fill="none" stroke="#c9a568" strokeWidth="0.5" strokeOpacity="0.3" />
           {SYMBOL_RING.map((deg, i) => {
             const p = polar(205, deg);
@@ -216,8 +226,9 @@ export function DestinyOrbit({ className }: { className?: string }) {
         </g>
 
         {/* Layer 6 — inner ring set: a broken (dashed/segmented) arc, one fine solid ring, and 12
-            radial construction lines reaching toward the sector band. Clockwise. */}
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_150s_linear_infinite]">
+            radial construction lines reaching toward the sector band. Clockwise.
+            V8.1 MOTION TUNING: 150s→95s. */}
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_65s_linear_infinite]">
           <circle cx={CENTER} cy={CENTER} r={168} fill="none" stroke={g('gold')} strokeWidth="0.9" strokeOpacity="0.45" strokeDasharray="16 6" />
           <circle cx={CENTER} cy={CENTER} r={140} fill="none" stroke="#d5ad62" strokeWidth="0.6" strokeOpacity="0.3" />
           {TWELVE.map((deg) => {
@@ -228,8 +239,9 @@ export function DestinyOrbit({ className }: { className?: string }) {
         </g>
 
         {/* Layer 7 — eccentric elliptical astrolabe geometry: two tilted orbital paths with
-            intersection nodes, the "armillary" reading beneath the constellation network. */}
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_120s_linear_infinite]">
+            intersection nodes, the "armillary" reading beneath the constellation network.
+            V8.1 MOTION TUNING: 120s→75s. */}
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_60s_linear_infinite]">
           <ellipse cx={CENTER} cy={CENTER} rx={128} ry={62} fill="none" stroke={g('goldDim')} strokeWidth="0.7" strokeOpacity="0.4" transform={`rotate(-24 ${CENTER} ${CENTER})`} />
           <ellipse cx={CENTER} cy={CENTER} rx={104} ry={48} fill="none" stroke={g('goldDim')} strokeWidth="0.6" strokeOpacity="0.34" transform={`rotate(31 ${CENTER} ${CENTER})`} />
           <circle cx={CENTER + 118} cy={CENTER - 18} r={2.6} fill="#f3d998" opacity="0.85" />
@@ -237,8 +249,8 @@ export function DestinyOrbit({ className }: { className?: string }) {
         </g>
 
         {/* Layer 8 — constellation network: ~19 stars (3 brighter "named" points, 4 jade) linked
-            by thin lines into two loose clusters. Very slow drift. */}
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_320s_linear_infinite]">
+            by thin lines into two loose clusters. Very slow drift. V8.1 MOTION TUNING: 320s→160s. */}
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_150s_linear_infinite]">
           {CONSTELLATION_LINKS.map(([a, b], i) => {
             const from = CONSTELLATION_NODES[a]!;
             const to = CONSTELLATION_NODES[b]!;
@@ -278,23 +290,26 @@ export function DestinyOrbit({ className }: { className?: string }) {
         </g>
 
         {/* Layer 9 — independently-orbiting small celestial markers, each its own speed/direction
-            so they read as separate wandering points rather than one mechanism. */}
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_78s_linear_infinite]">
+            so they read as separate wandering points rather than one mechanism.
+            V8.1 MOTION TUNING: these are the fastest layers on the instrument and the ones most
+            likely to show plainly visible displacement within a 5-10s glance — retuned into the
+            founder's "small traveling marker" band (35-60s), each still a distinct speed. */}
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_32s_linear_infinite]">
           <path d={fourPointStar(polar(177, 20).x, polar(177, 20).y, 4.4, 1.5)} fill="#f3d998" opacity="0.85" />
         </g>
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_95s_linear_infinite]">
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_28s_linear_infinite]">
           <path d={fourPointStar(polar(177, 140).x, polar(177, 140).y, 3.8, 1.3)} fill="#f3d998" opacity="0.8" />
         </g>
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_62s_linear_infinite]">
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_24s_linear_infinite]">
           <path d={fourPointStar(polar(104, 65).x, polar(104, 65).y, 3.4, 1.2)} fill="#e6c980" opacity="0.75" />
         </g>
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_70s_linear_infinite]">
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_30s_linear_infinite]">
           <path d={fourPointStar(polar(104, 255).x, polar(104, 255).y, 3.4, 1.2)} fill="#e6c980" opacity="0.75" />
         </g>
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_47s_linear_infinite]">
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin_22s_linear_infinite]">
           <circle cx={polar(74, 300).x} cy={polar(74, 300).y} r={2.6} fill={g('jade')} opacity="0.7" />
         </g>
-        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_54s_linear_infinite]">
+        <g style={{ transformOrigin: '260px 260px' }} className="motion-safe:animate-[mv-orbit-spin-reverse_26s_linear_infinite]">
           <circle cx={polar(190, 170).x} cy={polar(190, 170).y} r={1.6} fill="#f3d998" opacity="0.6" />
         </g>
 
