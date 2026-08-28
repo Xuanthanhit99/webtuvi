@@ -6,6 +6,21 @@ if (typeof crypto !== 'undefined' && typeof crypto.randomUUID !== 'function') {
   crypto.randomUUID = randomUUID;
 }
 
+// jsdom doesn't implement window.matchMedia (used by components/motion/use-prefers-reduced-motion.ts).
+if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+  window.matchMedia = (query: string) =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as unknown as MediaQueryList;
+}
+
 // jsdom doesn't implement <dialog>'s showModal()/close() (used by components/ui/dialog.tsx).
 // See https://github.com/jsdom/jsdom/issues/3294 — this is a jsdom gap, not app behavior.
 if (typeof HTMLDialogElement !== 'undefined') {

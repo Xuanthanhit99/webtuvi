@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { motion, MotionConfig } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, Eye, Library, MoonStar, Sparkles } from 'lucide-react';
 import type { TarotReadingDto, TarotReadingTypeValue } from '@beaconvie/types';
@@ -15,6 +16,10 @@ import { TarotReadingView } from './tarot-reading-view';
 import { TarotCardVisual } from './tarot-card-face';
 import { READING_TYPE_DESCRIPTIONS, READING_TYPE_LABELS } from '../labels';
 import { TAROT_CARD_BACK_SRC } from '../artwork';
+import { SHUFFLE_TOTAL_MS, SHUFFLE_TOTAL_MS_REDUCED, useTarotRitual } from '../ritual/use-tarot-ritual';
+import { RitualStage } from '../ritual/ritual-stage';
+import { TarotDeckShuffle } from '../ritual/tarot-deck-shuffle';
+import { TarotRevealSequence } from '../ritual/tarot-reveal-sequence';
 
 const READING_TYPES: TarotReadingTypeValue[] = ['DAILY_DRAW', 'SINGLE_CARD', 'THREE_CARD'];
 
@@ -69,10 +74,25 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
   const count = CARD_COUNT[type];
   const activeIntention = useMemo(() => INTENTIONS.find((item) => item.id === intention) ?? INTENTIONS[0], [intention]);
 
+  const ritual = useTarotRitual();
+  const beginFocusAt = useRef(0);
+  // Lets the shuffle's own "Bỏ qua" button cut the ritual's minimum-wait short too — skipping the
+  // animation shouldn't leave the user staring at an already-settled deck for the remainder of it.
+  const ritualWaitResolver = useRef<(() => void) | null>(null);
+
   const draw = useMutation({
     mutationFn: () => tarotApi.draw(type, type === 'DAILY_DRAW' ? undefined : question.trim() || undefined),
     onSuccess: async (reading) => {
-      await new Promise((resolve) => setTimeout(resolve, 520));
+      const minMs = ritual.reducedMotion ? SHUFFLE_TOTAL_MS_REDUCED : SHUFFLE_TOTAL_MS;
+      const remaining = Math.max(0, minMs - (performance.now() - beginFocusAt.current));
+      await new Promise<void>((resolve) => {
+        const timer = setTimeout(resolve, remaining);
+        ritualWaitResolver.current = () => {
+          clearTimeout(timer);
+          resolve();
+        };
+      });
+      ritualWaitResolver.current = null;
       setPendingReading(reading);
       setSelectedSlots([]);
       setPhase('select');
@@ -96,8 +116,35 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     setResult(null);
     setSelectedSlots([]);
     setPhase('focus');
+    beginFocusAt.current = performance.now();
+    ritual.startShuffle();
     trackEvent('tarot_started', { feature: 'tarot', spreadType: ANALYTICS_SPREAD_TYPE[type] });
     draw.mutate();
+  }
+
+  function skipShuffle() {
+    ritual.skipShuffle();
+    ritualWaitResolver.current?.();
+  }
+
+  // Roving keyboard nav across the fan (Tab/Enter already work via native buttons — this adds
+  // Arrow/Home/End movement between the *selectable* cards, skipping decorative filler and
+  // whichever cards have already flown out to the placement row).
+  const fanRefs = useRef<Record<number, HTMLButtonElement | null>>({});
+
+  function handleFanKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    const focusable = Array.from({ length: count }, (_, i) => i).filter((i) => !selectedSlots.includes(i));
+    if (focusable.length === 0) return;
+    const activeIndex = Number((document.activeElement as HTMLElement | null)?.dataset.fanIndex ?? -1);
+    const currentPos = focusable.indexOf(activeIndex);
+    let nextPos = currentPos;
+    if (event.key === 'ArrowLeft') nextPos = currentPos <= 0 ? focusable.length - 1 : currentPos - 1;
+    else if (event.key === 'ArrowRight') nextPos = currentPos === -1 ? 0 : (currentPos + 1) % focusable.length;
+    else if (event.key === 'Home') nextPos = 0;
+    else if (event.key === 'End') nextPos = focusable.length - 1;
+    event.preventDefault();
+    fanRefs.current[focusable[nextPos]!]?.focus();
   }
 
   function selectSlot(index: number) {
@@ -111,6 +158,16 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     }
   }
 
+  // Ritual-only: the reveal-flip sequence starts once the real result is committed, kept in a
+  // separate effect rather than inline in `selectSlot` so it can't influence the business
+  // transition it's reacting to.
+  useEffect(() => {
+    if (phase === 'revealed') {
+      ritual.startReveal(count);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
   async function refreshResult() {
     if (!result) return;
     const fresh = await tarotApi.getReading(result.id);
@@ -123,9 +180,19 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     setSelectedSlots([]);
     setResult(null);
     setLimitBanner(null);
+    ritual.resetRitual();
   }
 
   if (phase === 'revealed' && result) {
+    if (ritual.revealStage !== 'done') {
+      return (
+        <MotionConfig reducedMotion="user">
+          <RitualStage>
+            <TarotRevealSequence reading={result} revealStage={ritual.revealStage} onSkip={ritual.skipReveal} />
+          </RitualStage>
+        </MotionConfig>
+      );
+    }
     return (
       <div className="flex flex-col gap-4">
         <TarotReadingView reading={result} onChanged={refreshResult} />
@@ -142,6 +209,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
   }
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className={`${TAROT_PANEL} ${TAROT_STARS}`}>
       {phase !== 'landing' && (
         <div className="relative flex items-center justify-between gap-3 border-b border-[rgba(213,173,98,0.18)] bg-[#101827]/70 px-4 py-3">
@@ -279,56 +347,96 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
       )}
 
       {phase === 'focus' && (
-        <section className="relative flex min-h-96 flex-col items-center justify-center gap-6 p-8 text-center" role="status">
-          <div className="relative h-52 w-80 max-w-full" aria-hidden="true">
-            {[0, 1, 2, 3, 4, 5, 6].map((index) => (
-              <span key={index} className="absolute left-1/2 top-0 -translate-x-1/2" style={{ transform: `translateX(-50%) rotate(${(index - 2) * 9}deg) translateY(${Math.abs(index - 2) * 6}px)` }}>
-                <TarotCardVisual id={`shuffle-${index}`} name="Tarot card back" size="sm" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
-              </span>
-            ))}
-          </div>
-          <div>
-            <p className="font-display text-heading-md text-insight">Hãy tập trung và chọn {count} lá bài</p>
-            <p className="mt-2 max-w-md text-body-sm text-text-secondary">Lá bài đã được hệ thống rút một cách nhất quán; khoảnh khắc này chỉ để bạn chậm lại trước khi lật bài.</p>
-          </div>
-        </section>
+        <RitualStage>
+          <section className="relative flex min-h-96 flex-col items-center justify-center gap-6 p-8 text-center" role="status">
+            <TarotDeckShuffle stage={ritual.shuffleStage} reducedMotion={ritual.reducedMotion} onSkip={skipShuffle} />
+            <div>
+              <p className="font-display text-heading-md text-insight">Hãy tập trung và chọn {count} lá bài</p>
+              <p className="mt-2 max-w-md text-body-sm text-text-secondary">Lá bài đã được hệ thống rút một cách nhất quán; khoảnh khắc này chỉ để bạn chậm lại trước khi lật bài.</p>
+            </div>
+          </section>
+        </RitualStage>
       )}
 
       {phase === 'select' && pendingReading && (
-        <section className="relative flex flex-col items-center gap-5 p-4 tablet:p-6">
-          <div className="text-center">
-            <h2 className="font-display text-heading-lg text-insight">Chọn lá bài úp</h2>
-            <p className="mt-2 text-body-sm text-text-secondary" aria-live="polite">
-              Đã chọn {selectedSlots.length} / {count}
+        <RitualStage>
+          <section className="relative flex flex-col items-center gap-5 p-4 tablet:p-6">
+            <div className="text-center">
+              <h2 className="font-display text-heading-lg text-insight">Chọn lá bài úp</h2>
+              <p className="mt-2 text-body-sm text-text-secondary" aria-live="polite">
+                Đã chọn {selectedSlots.length} / {count}
+              </p>
+            </div>
+            {/* Fixed-width placement slots + the fan below both size for desktop first — at
+                390px wide that's wider than the viewport (3 slots alone run ~400px), so this
+                whole block scales down on mobile only (same shrink-for-mobile pattern as the
+                landing hero above) rather than resizing the shared `TarotCardVisual` sizes
+                themselves, which other Tarot views also depend on. */}
+            <div className="w-full origin-top scale-[0.72] tablet:scale-100">
+            {/* Placement row: a selected fan card shares a `layoutId` with its slot here, so
+                framer-motion animates the flight from fan position to slot automatically instead
+                of an instant jump. Purely presentational — slot order just mirrors selection
+                order, it carries no card identity of its own. */}
+            <div className="flex justify-center gap-2 tablet:gap-3" aria-hidden="true">
+              {Array.from({ length: count }).map((_, slotPos) => {
+                const filledIndex = selectedSlots[slotPos];
+                return (
+                  <div key={slotPos} className="flex h-48 w-32 items-center justify-center rounded-md border border-dashed border-insight/25">
+                    {filledIndex !== undefined ? (
+                      <motion.span layout layoutId={`tarot-fan-card-${filledIndex}`} transition={{ duration: ritual.reducedMotion ? 0.15 : 0.5, ease: [0.22, 1, 0.36, 1] }}>
+                        <TarotCardVisual id={`select-${filledIndex}`} name="Tarot card back" size="md" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
+                      </motion.span>
+                    ) : (
+                      <span className="text-caption text-text-tertiary">{slotPos + 1}</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-5 flex w-full flex-wrap justify-center gap-2 tablet:gap-3" onKeyDown={handleFanKeyDown}>
+              {(() => {
+                const totalSlots = Math.max(7, count + 4);
+                // Rotation/lift is keyed to each card's position *among the cards still in the
+                // fan*, not its original slot index — otherwise the remaining cards keep their
+                // old curve values after one flies out, and the arc reads as broken/lopsided
+                // instead of re-settling into a smooth fan (confirmed visually during QA).
+                const remaining = Array.from({ length: totalSlots }, (_, i) => i).filter((i) => !selectedSlots.includes(i));
+                const remainingCenter = (remaining.length - 1) / 2;
+                return remaining.map((index, visualPos) => {
+                  const available = index < count;
+                  return (
+                    <motion.button
+                      key={index}
+                      ref={(el) => {
+                        fanRefs.current[index] = el;
+                      }}
+                      data-fan-index={index}
+                      type="button"
+                      disabled={!available}
+                      aria-label={available ? `Chọn lá ${index + 1}` : `Lá trang trí ${index + 1}`}
+                      onClick={() => selectSlot(index)}
+                      layout
+                      layoutId={`tarot-fan-card-${index}`}
+                      style={{ y: Math.abs(visualPos - remainingCenter) * 3, rotate: (visualPos - remainingCenter) * 6 }}
+                      whileHover={available ? { y: -14, scale: 1.04 } : undefined}
+                      whileFocus={available ? { y: -14, scale: 1.04 } : undefined}
+                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                      className={`transition-[filter] duration-standard focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight motion-reduce:transform-none ${
+                        available ? 'hover:brightness-110' : 'opacity-35'
+                      }`}
+                    >
+                      <TarotCardVisual id={`select-${index}`} name="Tarot card back" size="md" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
+                    </motion.button>
+                  );
+                });
+              })()}
+            </div>
+            </div>
+            <p className="max-w-lg text-center text-caption text-text-tertiary">
+              Vị trí bạn bấm chỉ chọn slot úp; card ID và chiều xuôi/ngược không bao giờ được gửi từ trình duyệt.
             </p>
-          </div>
-          <div className="flex w-full flex-wrap justify-center gap-2 tablet:gap-3">
-            {Array.from({ length: Math.max(7, count + 4) }).map((_, index) => {
-              const available = index < count;
-              const selected = selectedSlots.includes(index);
-              const center = (Math.max(7, count + 4) - 1) / 2;
-              return (
-                <button
-                  key={index}
-                  type="button"
-                  disabled={!available || selected}
-                  aria-label={available ? `Chọn lá ${index + 1}` : `Lá trang trí ${index + 1}`}
-                  aria-pressed={selected}
-                  onClick={() => selectSlot(index)}
-                  className={`transition duration-standard focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight motion-reduce:transform-none ${
-                    selected ? 'opacity-70' : available ? 'hover:brightness-110' : 'opacity-35'
-                  }`}
-                  style={{ transform: `translateY(${selected ? -12 : Math.abs(index - center) * 3}px) rotate(${(index - center) * 6}deg)` }}
-                >
-                  <TarotCardVisual id={`select-${index}`} name="Tarot card back" size="md" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
-                </button>
-              );
-            })}
-          </div>
-          <p className="max-w-lg text-center text-caption text-text-tertiary">
-            Vị trí bạn bấm chỉ chọn slot úp; card ID và chiều xuôi/ngược không bao giờ được gửi từ trình duyệt.
-          </p>
-        </section>
+          </section>
+        </RitualStage>
       )}
 
       <div className="border-t border-insight/10 px-4 py-3 text-caption text-text-tertiary">
@@ -336,5 +444,6 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
         Tarot là gợi ý phản chiếu, không phải cam kết dự đoán chắc chắn.
       </div>
     </div>
+    </MotionConfig>
   );
 }

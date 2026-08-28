@@ -117,6 +117,10 @@ const config: Config = {
           '0%, 100%': { opacity: '0.55' },
           '50%': { opacity: '1' },
         },
+        'mv-mist-drift': {
+          '0%, 100%': { transform: 'translateX(-1.4%)' },
+          '50%': { transform: 'translateX(1.4%)' },
+        },
       },
       animation: {
         'mv-orbit-slow': 'mv-orbit-spin 48s linear infinite',

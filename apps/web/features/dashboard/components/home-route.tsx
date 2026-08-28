@@ -55,8 +55,8 @@ export function HomeRoute() {
           the old 1360 cap wasn't binding). That's the exact "cinematic Hero → narrow dashboard
           content" discontinuity — fixed by matching this cap to Hero's own 1600px, not by
           widening any individual section. */}
-      <main id="main-content" className="pb-16">
-        <div className="mx-auto w-full max-w-[1600px] px-4 tablet:px-8">
+      <main id="main-content" className="pb-10">
+        <div className="mx-auto w-full max-w-[1536px] px-3 tablet:px-5 desktop:px-7">
           <DashboardView />
         </div>
       </main>
@@ -146,7 +146,7 @@ function GuestHeader() {
         scrolled ? 'border-white/10 bg-[#070b12]/85 backdrop-blur' : 'border-transparent bg-transparent',
       )}
     >
-      <div className="mx-auto flex min-h-16 max-w-[1360px] items-center justify-between gap-4 px-4 tablet:px-8">
+      <div className="mx-auto flex min-h-14 max-w-[1536px] items-center justify-between gap-4 px-3 tablet:px-5 desktop:px-7">
         <Link href="/" aria-label="Tử Vi Tarot" className="flex shrink-0 items-center gap-3">
           <Logo withWordmark={false} />
           <span className="font-display text-body-lg font-semibold text-[#f2eee5]">Tử Vi Tarot</span>

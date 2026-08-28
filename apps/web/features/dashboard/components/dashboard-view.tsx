@@ -17,6 +17,7 @@ import type {
 import { calculateLifePathNumber } from '@beaconvie/types/numerology';
 import { dashboardApi } from '../api/dashboard-api';
 import { DestinyOrbit } from './home/destiny-orbit';
+import { useHeroParallax } from './home/use-hero-parallax';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Dialog } from '@/components/ui/dialog';
 import { useAuth } from '@/providers/auth-provider';
@@ -24,7 +25,6 @@ import { tarotApi } from '@/features/tarot/api/tarot-api';
 import { numerologyApi } from '@/features/numerology/api/numerology-api';
 import { natalChartApi } from '@/features/natal-chart/api/natal-chart-api';
 import { tuViApi } from '@/features/tu-vi/api/tu-vi-api';
-import { usePremiumStatus } from '@/features/premium/hooks/use-premium-status';
 import { readGuestNumerologyTrial, readGuestTarotTrial, saveGuestNumerologyTrial, saveGuestTarotTrial } from '@/features/guest-trials/guest-trial-storage';
 import { cn } from '@/lib/cn';
 import { trackEvent } from '@/lib/analytics';
@@ -69,10 +69,10 @@ const BOARD01_ASSET_BASE = '/assets/menh_vi_board01_generated_assets';
  * unreferenced, in case of rollback.
  */
 const FEATURE_ART_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', string> = {
-  tu_vi: `${BOARD01_ASSET_BASE}/07_feature_tuvi_pagoda_hd.png`,
-  tarot: `${BOARD01_ASSET_BASE}/06_feature_tarot_cards_hd.png`,
-  natal_chart: `${BOARD01_ASSET_BASE}/09_feature_natal_orbit_hd.png`,
-  numerology: `${BOARD01_ASSET_BASE}/10_feature_numerology_hd.png`,
+  tu_vi: `${BOARD01_ASSET_BASE}/07_feature_tuvi_pagoda.webp`,
+  tarot: `${BOARD01_ASSET_BASE}/06_feature_tarot_cards.webp`,
+  natal_chart: `${BOARD01_ASSET_BASE}/09_feature_natal_orbit.webp`,
+  numerology: `${BOARD01_ASSET_BASE}/10_feature_numerology.webp`,
 };
 
 const FEATURE_ICON_ASSET: Record<'tu_vi' | 'tarot' | 'natal_chart' | 'numerology', string> = {
@@ -319,7 +319,6 @@ export function DashboardView() {
     queryFn: () => numerologyApi.listReadings({ status: 'ACTIVE', page: 1, pageSize: 1 }),
     enabled: !!user,
   });
-  const premiumQuery = usePremiumStatus({ enabled: !!user });
 
   const greeting = useMemo(() => greetingForNow(), []);
   const tuViChart = latest<TuViChartDto>(tuViQuery.data?.items);
@@ -338,7 +337,7 @@ export function DashboardView() {
   }, [authLoading, isGuest]);
 
   return (
-    <div className="relative -mx-1 flex flex-col gap-14 text-[#f2eee5] tablet:-mx-2 desktop:gap-16">
+    <div className="relative flex flex-col gap-7 text-[#f2eee5] tablet:gap-8 desktop:gap-9">
       <PageAtmosphere />
       <HomeHero
         authLoading={authLoading}
@@ -353,9 +352,13 @@ export function DashboardView() {
         tuViLoading={!isGuest && tuViQuery.isLoading}
       />
 
-      <section aria-labelledby="features-heading" className="space-y-5">
-        <SectionHeading id="features-heading" eyebrow="Tử Vi · Tarot · Bản đồ sao · Thần số học" title="Khám phá nhanh" />
-        <div className="grid grid-cols-2 gap-3 tablet:gap-4 desktop:grid-cols-4">
+      <section aria-labelledby="features-heading" className="space-y-3">
+        <SectionHeading
+          id="features-heading"
+          eyebrow={isGuest ? '' : 'Khám phá nhanh'}
+          title={isGuest ? 'Khám phá 4 hệ thống chính' : 'Tử Vi · Tarot · Bản đồ sao · Thần số học'}
+        />
+        <div className="grid grid-cols-2 gap-2.5 tablet:gap-3 desktop:grid-cols-4">
           <FeatureCard
             title="Lá số Tử Vi"
             description={isGuest ? 'Khám phá lá số của bạn, rồi đăng nhập để lưu lá số đầy đủ.' : tuViChart ? `Mệnh an tại ${tuViChart.palaces.menh}.` : 'Bản đồ vận mệnh theo Tử Vi Đẩu Số.'}
@@ -427,9 +430,7 @@ export function DashboardView() {
         </div>
       </section>
 
-      {isGuest ? (
-        <GuestTrySection />
-      ) : (
+      {!isGuest && (
         <ForYouSection
           tuViChart={tuViChart}
           tuViLoading={!isGuest && tuViQuery.isLoading}
@@ -438,21 +439,12 @@ export function DashboardView() {
         />
       )}
 
-      <EditorialSection />
-
-      {!isGuest && (
-        <PremiumRail
-          isLoading={premiumQuery.isLoading}
-          isError={premiumQuery.isError}
-          onRetry={() => premiumQuery.refetch()}
-          isPremium={premiumQuery.data?.isPremium ?? false}
-          paymentsEnabled={premiumQuery.data?.paymentsEnabled ?? false}
-        />
+      {isGuest && (
+        <>
+          <TrustSection />
+          <GuestTrySection />
+        </>
       )}
-
-      <TrustSection />
-
-      <FinalCta isGuest={isGuest} />
     </div>
   );
 }
@@ -480,13 +472,15 @@ function HomeHero({
   tuViChart: TuViChartDto | null;
   tuViLoading: boolean;
 }) {
+  const parallaxRef = useHeroParallax<HTMLElement>();
   return (
     <section
+      ref={parallaxRef}
       aria-labelledby="home-hero-heading"
       className={cn(
         'relative overflow-hidden',
         isGuest
-          ? // V8 (Board 01 reference-fidelity): full-bleed breakout. A boxed rounded/bordered
+          ? // Board 01 guest hero is a contained cinematic panel, aligned with the sections below.
             // card here made the page read as "a website with a hero card on it" instead of
             // Board 01's continuous cinematic composition where header + hero share one canvas.
             // The `left-1/2 right-1/2 -mx-[50vw] w-screen` triplet is the standard breakout
@@ -499,8 +493,8 @@ function HomeHero({
             // founder flagged the Hero as too tall/dominant; this plus the smaller Wheel and
             // headline clamp below bring the measured section height from 898px to the requested
             // ~560–620px band at 1440/1536, without touching the mountain/mist artwork itself.
-            'left-1/2 right-1/2 -mx-[50vw] w-screen px-5 py-10 tablet:px-8 tablet:py-12 desktop:py-8'
-          : 'min-h-[600px] rounded-[24px] border border-[rgba(213,173,98,0.2)] bg-[#0c1420] px-5 py-8 shadow-[0_24px_80px_rgba(0,0,0,0.35)] tablet:px-8 tablet:py-10 desktop:min-h-[660px] desktop:px-12 desktop:py-10',
+            'min-h-[360px] rounded-[10px] border border-[#d5ad62]/25 px-4 py-6 tablet:min-h-[390px] tablet:px-6 tablet:py-7 desktop:min-h-[410px] desktop:px-8 desktop:py-7'
+          : 'min-h-[390px] rounded-[10px] border border-[#d5ad62]/25 bg-[#0c1420]/80 px-4 py-6 shadow-[0_18px_60px_rgba(0,0,0,0.28)] tablet:min-h-[420px] tablet:px-6 tablet:py-7 desktop:min-h-[440px] desktop:px-8 desktop:py-7',
       )}
     >
       {/* BOARD 01 LOCKED: sky base stays a deliberate vertical gradient (deep ink navy → a touch
@@ -543,14 +537,19 @@ function HomeHero({
           guessed). `menh-vi/home/hero-mountains.png` is the same restrained dark-navy/gold-rim-lit
           silhouette direction at 1840×854 — sharp at this section's real render size. The mist/sky
           glow still comes from the approved Board 01 overlay layers below, unchanged. */}
+      {/* Parallax: `--px`/`--py` come from `useHeroParallax` on the section; each layer scales
+          them into its own few-px offset (see the brief's depth budget: far/mountain ~2px,
+          mist ~4px, wheel ~2px) — desktop pointer only, no-op elsewhere. */}
       <Image
-        src="/assets/menh-vi/home/hero-mountains.png"
+        src="/assets/menh-vi/home/hero-mountains-board01-v2.png"
         alt=""
         aria-hidden="true"
         fill
         priority
+        unoptimized
         sizes="100vw"
         className="object-cover object-bottom opacity-95"
+        style={{ transform: 'scale(1.02) translate(calc(var(--px, 0) * 2px), calc(var(--py, 0) * 2px))' }}
       />
       {/* Approved center mist/mountain glow — the brightest point of the scene, the "sun through
           the valley" the reference reads as celestial illumination, not a flat yellow wash.
@@ -562,24 +561,30 @@ function HomeHero({
           so it lightens the mountain/sky beneath it (like light) instead of sitting on top of it
           like a translucent sheet — opacity only dropped as a secondary adjustment (0.9→0.7),
           alongside those other changes, not as the fix on its own. */}
+      {/* V9 COMPOSITION PASS: a restrained horizon depth gradient — Zone 3's "visible depth" —
+          without touching the mountain raster itself (no blur, no upscale). Just a dark wash
+          right at the skyline transitioning to nothing, so the ridge reads with more separation
+          from the sky above it. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[28%] h-[18%] bg-[linear-gradient(to_bottom,transparent_0%,rgba(6,10,18,0.35)_100%)]" />
+      {/* Approved center mist, restored after the hero-shrink pass (min-h 600-660px -> 360-410px)
+          dropped it — max-w/width caps scaled down ~0.6x to match, since the mist's fixed intrinsic
+          aspect ratio would otherwise read oversized against the now-shorter hero. Very slow
+          alternating horizontal drift (`motion-safe:` only) plus the same pointer-parallax budget
+          as the mountain/wheel layers, just a touch stronger since it's meant to feel airborne. */}
       <Image
         src={`${BOARD01_ASSET_BASE}/15_mist_mountains_center.webp`}
         alt=""
         aria-hidden="true"
         width={550}
         height={175}
-        sizes="(min-width: 1280px) 620px, 55vw"
-        className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-auto w-[58%] max-w-[620px] opacity-70 mix-blend-screen"
+        sizes="(min-width: 1280px) 380px, 42vw"
+        className="pointer-events-none absolute inset-x-0 bottom-0 mx-auto h-auto w-[40%] max-w-[380px] opacity-70 mix-blend-screen motion-safe:animate-[mv-mist-drift_66s_ease-in-out_infinite]"
         style={{
           WebkitMaskImage: 'radial-gradient(ellipse 55% 75% at 50% 85%, black 35%, transparent 88%)',
           maskImage: 'radial-gradient(ellipse 55% 75% at 50% 85%, black 35%, transparent 88%)',
+          translate: 'calc(var(--px, 0) * 4px) calc(var(--py, 0) * 4px)',
         }}
       />
-      {/* V9 COMPOSITION PASS: a restrained horizon depth gradient — Zone 3's "visible depth" —
-          without touching the mountain raster itself (no blur, no upscale). Just a dark wash
-          right at the skyline transitioning to nothing, so the ridge reads with more separation
-          from the sky above it. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-[28%] h-[18%] bg-[linear-gradient(to_bottom,transparent_0%,rgba(6,10,18,0.35)_100%)]" />
       {/* Approved left mist bank. */}
       <Image
         src={`${BOARD01_ASSET_BASE}/14_mist_left.webp`}
@@ -587,20 +592,22 @@ function HomeHero({
         aria-hidden="true"
         width={430}
         height={175}
-        sizes="(min-width: 1280px) 430px, 40vw"
-        className="pointer-events-none absolute bottom-0 left-0 hidden h-auto w-[38%] max-w-[430px] opacity-80 tablet:block"
+        sizes="(min-width: 1280px) 260px, 26vw"
+        className="pointer-events-none absolute bottom-0 left-0 hidden h-auto w-[26%] max-w-[260px] opacity-80 motion-safe:animate-[mv-mist-drift_74s_ease-in-out_infinite] tablet:block"
+        style={{ translate: 'calc(var(--px, 0) * 4px) calc(var(--py, 0) * 4px)' }}
       />
       {/* Approved gold cloud-scroll ornaments — small, peripheral corner accents (replaces the
           earlier hand-drawn CloudLines SVG approximation of this exact eastern cloud-scroll
-          motif with the founder-approved artwork). */}
+          motif with the founder-approved artwork). Static — the brief keeps only mist adrift,
+          ornaments stay put as fixed corner accents. */}
       <Image
         src={`${BOARD01_ASSET_BASE}/16_cloud_ornament_center.webp`}
         alt=""
         aria-hidden="true"
         width={315}
         height={155}
-        sizes="220px"
-        className="pointer-events-none absolute bottom-[10%] left-[2%] hidden h-auto w-[16%] max-w-[190px] opacity-50 tablet:block"
+        sizes="130px"
+        className="pointer-events-none absolute bottom-[10%] left-[2%] hidden h-auto w-[11%] max-w-[130px] opacity-50 tablet:block"
       />
       <Image
         src={`${BOARD01_ASSET_BASE}/17_cloud_ornament_right.webp`}
@@ -608,8 +615,8 @@ function HomeHero({
         aria-hidden="true"
         width={455}
         height={165}
-        sizes="240px"
-        className="pointer-events-none absolute bottom-[12%] right-[2%] hidden h-auto w-[18%] max-w-[210px] opacity-50 tablet:block"
+        sizes="145px"
+        className="pointer-events-none absolute bottom-[12%] right-[2%] hidden h-auto w-[12%] max-w-[145px] opacity-50 tablet:block"
       />
 
       {/* V8: content wrapper — the background layers above are full-bleed (edge to edge on
@@ -618,8 +625,8 @@ function HomeHero({
       <div className="relative z-10 mx-auto w-full max-w-[1600px]">
         <div
           className={cn(
-            'grid gap-7 tablet:grid-cols-[1fr_1fr] tablet:gap-6 desktop:items-stretch desktop:gap-8',
-            isGuest ? 'desktop:grid-cols-[1.6fr_1.4fr]' : 'desktop:grid-cols-[1.7fr_2.1fr_1fr]',
+            'grid gap-5 tablet:grid-cols-[1fr_1fr] tablet:gap-5 desktop:items-stretch desktop:gap-6',
+            isGuest ? 'desktop:grid-cols-[1.05fr_1fr]' : 'desktop:grid-cols-[0.9fr_1.2fr_0.78fr]',
           )}
         >
           <div className="max-w-lg self-center tablet:self-start">
@@ -630,7 +637,7 @@ function HomeHero({
                 <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#e6c980]">Tử Vi Tarot</p>
                 <h1
                   id="home-hero-heading"
-                  className="mt-3 font-display text-[clamp(2.2rem,3.6vw,3.6rem)] font-bold uppercase leading-[1.06] tracking-normal text-[#f2eee5]"
+                  className="mt-2 font-display text-[clamp(2rem,3vw,3.15rem)] font-semibold uppercase leading-[1.07] tracking-normal text-[#f2eee5]"
                 >
                   Hiểu mình.
                   <br />
@@ -647,10 +654,10 @@ function HomeHero({
                 </h1>
               </>
             )}
-            <p className="mt-4 text-body-md leading-relaxed text-[#d8d1c2]">
+            <p className="mt-3 max-w-md text-body-sm leading-relaxed text-[#d8d1c2]">
               {isGuest ? 'Tử Vi · Tarot · Bản đồ sao · Thần số học. Không cần đăng ký để bắt đầu khám phá.' : 'Vũ trụ luôn vận động. Hiểu mình, hiểu thời vận, sống chủ động hơn mỗi ngày.'}
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-4 flex flex-wrap gap-2.5">
               <HomeButton href={isGuest ? '#try-tarot' : '/discover'} variant="primary">
                 {isGuest ? 'Khám phá ngay' : 'Xem vận trình hôm nay'}
               </HomeButton>
@@ -665,11 +672,13 @@ function HomeHero({
           </div>
           <div
             className={cn(
-              'col-auto row-auto mx-auto w-full max-w-[260px] self-center tablet:col-start-2 tablet:row-start-1 tablet:max-w-[340px] tablet:self-start desktop:col-auto desktop:row-auto desktop:self-center',
-              isGuest ? 'desktop:max-w-[420px]' : 'desktop:max-w-[400px]',
+              'col-auto row-auto mx-auto w-full max-w-[230px] self-center tablet:col-start-2 tablet:row-start-1 tablet:max-w-[300px] tablet:self-start desktop:col-auto desktop:row-auto desktop:self-center',
+              isGuest ? 'desktop:max-w-[360px]' : 'desktop:max-w-[340px]',
             )}
           >
-            <DestinyOrbit className="h-full w-full drop-shadow-[0_0_24px_rgba(213,173,98,0.18)]" />
+            <div style={{ translate: 'calc(var(--px, 0) * 2px) calc(var(--py, 0) * 2px)' }}>
+              <DestinyOrbit className="h-full w-full drop-shadow-[0_0_24px_rgba(213,173,98,0.18)]" />
+            </div>
           </div>
           {/* BOARD 01 FINAL CORRECTION: the founder-approved guest reference has no right-side
               context panel — only the authenticated screen does. Removed for guests (presentation
@@ -691,9 +700,11 @@ function HomeHero({
             </div>
           )}
         </div>
-        <div className="mt-6 border-t border-white/[0.06] pt-5 desktop:mt-5 desktop:pt-4">
-          <QuickActions isGuest={isGuest} />
-        </div>
+        {!isGuest && (
+          <div className="mt-4 border-t border-white/[0.06] pt-3">
+            <QuickActions isGuest={false} />
+          </div>
+        )}
       </div>
     </section>
   );
@@ -926,7 +937,7 @@ function ForYouSection({
  * call-out. Grown enough for the artwork to have real atmospheric presence (see the illustration
  * block below) while staying a compact card, not a poster.
  */
-const FEATURE_CARD_SHAPE = 'flex h-[248px] flex-col rounded-[18px] border border-white/[0.14] p-4 tablet:h-[264px] tablet:p-5 desktop:h-[284px]';
+const FEATURE_CARD_SHAPE = 'flex h-[176px] flex-col rounded-[10px] border border-[#d5ad62]/25 p-3 tablet:h-[184px] tablet:p-3.5 desktop:h-[192px]';
 
 /**
  * V7 reference-fidelity: Board 01's 4 Discovery cards are one coherent dark-navy family, not four
@@ -1031,7 +1042,10 @@ function FeatureCard({
         // V8 SHARPNESS PASS: `backdrop-blur` here was softening this card's own artwork layer
         // (measured — verified this was a real applied blur(2px), not an illusion of "AI-looking"
         // art), for no visible purpose since CARD_SURFACE is dark enough not to need it.
-        'group relative overflow-hidden transition-colors hover:border-[#d5ad62]/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]',
+        // Ritual milestone 1: card now lifts 3px + gets a restrained gold bloom on hover/focus,
+        // on top of the existing border/artwork response — still within duration-standard (250ms),
+        // still no glow explosion per the brief's "no exaggerated" rule.
+        'group relative overflow-hidden transition-[color,border-color,transform,box-shadow] duration-standard hover:-translate-y-[3px] hover:border-[#d5ad62]/50 hover:shadow-[0_10px_26px_-8px_rgba(213,173,98,0.28)] focus-visible:-translate-y-[3px] focus-visible:border-[#d5ad62]/50 focus-visible:shadow-[0_10px_26px_-8px_rgba(213,173,98,0.28)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] motion-reduce:transform-none',
       )}
     >
       {/* V9 COMPOSITION PASS: `accent` now centers on the artwork zone (lower-right) instead of the
@@ -1044,16 +1058,17 @@ function FeatureCard({
           against the reduced-scale reference (target ~35-50% of the card's visual area, not
           60-75%). Still full height so it can bleed toward top/bottom rather than sitting boxed. */}
       <div
-        className="pointer-events-none absolute inset-y-0 right-0 w-[38%] opacity-90 transition-[opacity,transform] duration-standard group-hover:opacity-100 group-hover:scale-[1.02]"
+        className="pointer-events-none absolute inset-y-0 right-0 w-[48%] opacity-90 transition-[opacity,transform] duration-standard group-hover:opacity-100 group-hover:scale-[1.02]"
         style={{
-          WebkitMaskImage: 'linear-gradient(to left, black 30%, transparent 88%)',
-          maskImage: 'linear-gradient(to left, black 30%, transparent 88%)',
+          WebkitMaskImage: 'linear-gradient(to left, black 72%, transparent 100%)',
+          maskImage: 'linear-gradient(to left, black 72%, transparent 100%)',
         }}
       >
         <Image
           src={FEATURE_ART_ASSET[asset]}
           alt=""
           fill
+          unoptimized
           sizes="(min-width: 1280px) 220px, 160px"
           className="object-contain object-bottom"
           style={{ transform: `scale(${FEATURE_ART_SCALE[asset]})`, transformOrigin: 'bottom center' }}
@@ -1391,8 +1406,8 @@ function AuthValueGate({ open, onClose, source }: { open: boolean; onClose: () =
 function SectionHeading({ id, eyebrow, title }: { id: string; eyebrow: string; title: string }) {
   return (
     <div>
-      <p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">{eyebrow}</p>
-      <h2 id={id} className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">
+      {eyebrow && <p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">{eyebrow}</p>}
+      <h2 id={id} className={cn('font-display text-heading-md font-semibold text-[#f2eee5]', eyebrow && 'mt-1')}>
         {title}
       </h2>
     </div>
@@ -1555,21 +1570,20 @@ const TRUST_POINTS = [
 
 function TrustSection() {
   return (
-    <section aria-labelledby="trust-heading" className="space-y-6">
-      <div className="max-w-xl">
-        <p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Cách chúng tôi làm việc</p>
-        <h2 id="trust-heading" className="mt-2 font-display text-heading-lg font-semibold text-[#f2eee5]">
-          Tính toán trước. AI giải thích sau.
+    <section aria-labelledby="trust-heading" className="space-y-3">
+      <div className="text-center">
+        <h2 id="trust-heading" className="font-display text-heading-md font-semibold uppercase text-[#d5ad62]">
+          Bắt đầu hành trình của bạn
         </h2>
       </div>
       {/* BOARD 01 FINAL CORRECTION: the founder flagged this row as visually thin/weak. Grown via
           padding, a larger icon badge, and a slightly heavier title — still 3 restrained pillars,
           no structural redesign. */}
-      <div className="grid gap-5 tablet:grid-cols-3">
+      <div className="grid overflow-hidden rounded-[10px] border border-[#d5ad62]/20 tablet:grid-cols-3 tablet:divide-x tablet:divide-[#d5ad62]/15">
         {TRUST_POINTS.map((point) => (
-          <div key={point.title} className="relative flex items-center gap-5 overflow-hidden rounded-[16px] border border-white/[0.1] bg-[#16233a]/60 px-7 py-7">
+          <div key={point.title} className="relative flex min-h-[92px] items-center gap-3 overflow-hidden border-b border-[#d5ad62]/15 bg-[#0d1623]/55 px-4 py-3 last:border-b-0 tablet:border-b-0">
             <div className="pointer-events-none absolute inset-0" style={{ background: point.atmosphere }} aria-hidden="true" />
-            <span className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[#d5ad62]/25 bg-[#070b12]/50">
+            <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#d5ad62]/25 bg-[#070b12]/50">
               <point.glyph />
             </span>
             <div className="relative">
@@ -1742,11 +1756,29 @@ function PageAtmosphere() {
           </filter>
         </defs>
         <rect width="100%" height="100%" filter="url(#page-grain)" />
+        {/* A handful of stars breathe (fixed indices/durations, not runtime Math.random — avoids
+            SSR/CSR hydration mismatch, same approach as DestinyOrbit's constellation nodes). Most
+            stars stay static per the brief's "not every star" rule. */}
         {PAGE_STARS.map(([x, y, r, o], i) => (
-          <circle key={i} cx={`${x}%`} cy={`${y}%`} r={r} fill={i % 5 === 0 ? '#e0bd72' : '#f1e9db'} opacity={o} />
+          <circle
+            key={i}
+            cx={`${x}%`}
+            cy={`${y}%`}
+            r={r}
+            fill={i % 5 === 0 ? '#e0bd72' : '#f1e9db'}
+            opacity={o}
+            className={
+              i === 3
+                ? 'motion-safe:animate-[mv-breathe_6s_ease-in-out_infinite]'
+                : i === 9
+                  ? 'motion-safe:animate-[mv-breathe_8s_ease-in-out_infinite]'
+                  : i === 16
+                    ? 'motion-safe:animate-[mv-breathe_9.5s_ease-in-out_infinite]'
+                    : undefined
+            }
+          />
         ))}
       </svg>
     </div>
   );
 }
-

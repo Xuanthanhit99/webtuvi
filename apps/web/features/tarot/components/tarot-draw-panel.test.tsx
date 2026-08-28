@@ -140,8 +140,50 @@ describe('TarotDrawPanel', () => {
     fireEvent.error(artwork);
     await waitFor(() => expect(screen.getAllByText('The Fool').length).toBeGreaterThan(0), { timeout: 3000 });
 
-    await user.click(screen.getByRole('button', { name: 'Rút trải bài khác' }));
+    // The reveal-flip ritual runs for a short real interval before "Rút trải bài khác" appears
+    // (TarotReadingView only renders once the reveal sequence's `revealStage` reaches 'done') —
+    // findByRole already polls, so just give it enough time to finish.
+    await user.click(await screen.findByRole('button', { name: 'Rút trải bài khác' }, { timeout: 3000 }));
     expect(screen.getByRole('button', { name: /Bắt đầu trải bài/ })).toBeInTheDocument();
     expect(screen.queryByText('The Fool')).not.toBeInTheDocument();
+  });
+
+  it('skipping the shuffle ritual reaches selection quickly without a second draw call', async () => {
+    (tarotApi.draw as jest.Mock).mockResolvedValue(drawnReading);
+    const user = userEvent.setup();
+    renderWithQuery(<TarotDrawPanel />);
+    await goToSpreadStep(user);
+    await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
+
+    await user.click(await screen.findByRole('button', { name: 'Bỏ qua' }));
+    expect(await screen.findByRole('button', { name: 'Chọn lá 1' }, { timeout: 3000 })).toBeInTheDocument();
+    expect(tarotApi.draw).toHaveBeenCalledTimes(1);
+  });
+
+  it('under prefers-reduced-motion, the same real result still hands off through onDrawn', async () => {
+    const matchMediaSpy = jest.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
+      matches: query.includes('reduce'),
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }) as unknown as MediaQueryList);
+
+    try {
+      (tarotApi.draw as jest.Mock).mockResolvedValue(drawnReading);
+      const onDrawn = jest.fn();
+      const user = userEvent.setup();
+      renderWithQuery(<TarotDrawPanel onDrawn={onDrawn} />);
+      await goToSpreadStep(user);
+      await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
+      await user.click(await screen.findByRole('button', { name: 'Chọn lá 1' }, { timeout: 3000 }));
+      await waitFor(() => expect(onDrawn).toHaveBeenCalledWith(drawnReading));
+      expect(await screen.findByRole('button', { name: 'Rút trải bài khác' }, { timeout: 3000 })).toBeInTheDocument();
+    } finally {
+      matchMediaSpy.mockRestore();
+    }
   });
 });
