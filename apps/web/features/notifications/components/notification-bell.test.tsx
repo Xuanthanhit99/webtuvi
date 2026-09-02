@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
 import { NotificationBell } from './notification-bell';
 import { notificationsApi } from '../api/notifications-api';
+import { useAuth } from '@/providers/auth-provider';
 
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 
@@ -10,10 +11,18 @@ jest.mock('../api/notifications-api', () => ({
   notificationsApi: { unreadCount: jest.fn(), list: jest.fn(), markRead: jest.fn(), markAllRead: jest.fn() },
 }));
 
+jest.mock('@/providers/auth-provider', () => ({
+  useAuth: jest.fn(),
+}));
+
 describe('NotificationBell', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (notificationsApi.list as jest.Mock).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
+    // NotificationBell renders for guests too (AppHeader is now shared by the whole Home shell),
+    // so its unread-count query is gated on a real user — these tests exercise the authenticated
+    // bell, matching their existing intent.
+    (useAuth as jest.Mock).mockReturnValue({ user: { id: 'u1', displayName: 'Thành' }, isLoading: false });
   });
 
   it('renders no badge when there are zero unread notifications', async () => {
@@ -49,5 +58,13 @@ describe('NotificationBell', () => {
     await user.click(await screen.findByRole('button', { name: 'Notifications' }));
 
     expect(await screen.findByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
+  });
+
+  it('renders for a guest without calling the unread-count API (no auth cookie to check against)', async () => {
+    (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false });
+    renderWithQuery(<NotificationBell />);
+
+    expect(await screen.findByRole('button', { name: 'Notifications' })).toBeInTheDocument();
+    expect(notificationsApi.unreadCount).not.toHaveBeenCalled();
   });
 });

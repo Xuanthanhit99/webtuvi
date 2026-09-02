@@ -7,6 +7,7 @@ import { notificationsApi } from '../api/notifications-api';
 import { IconButton } from '@/components/ui/icon-button';
 import { Dialog } from '@/components/ui/dialog';
 import { NotificationCenter } from './notification-center';
+import { useAuth } from '@/providers/auth-provider';
 
 const UNREAD_COUNT_POLL_MS = 60_000;
 
@@ -24,11 +25,13 @@ const UNREAD_COUNT_POLL_MS = 60_000;
  */
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
+  const { user } = useAuth();
 
   const { data } = useQuery({
     queryKey: ['notifications', 'unread-count'],
     queryFn: () => notificationsApi.unreadCount(),
     refetchInterval: UNREAD_COUNT_POLL_MS,
+    enabled: !!user,
   });
 
   const count = data?.count ?? 0;

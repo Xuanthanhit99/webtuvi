@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
 import { DashboardView } from './dashboard-view';
@@ -70,7 +70,7 @@ function mockHomeData() {
   (premiumApi.status as jest.Mock).mockResolvedValue(freeStatus);
 }
 
-describe('Tử Vi Tarot Home page', () => {
+describe('Mệnh Vi Home page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     window.sessionStorage.clear();
@@ -100,7 +100,20 @@ describe('Tử Vi Tarot Home page', () => {
 
     expect(await screen.findByText('Không thể tải vận trình hôm nay.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Thử lại' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Lá số Tử Vi/ })).toBeInTheDocument();
+    // Both the Discovery card and the footer nav now link here — no longer a single match.
+    expect(screen.getAllByRole('link', { name: /Lá số Tử Vi/ }).length).toBeGreaterThan(0);
+  });
+
+  it('always renders the persistent sidebar shell — no separate top-nav landing page for guests', async () => {
+    (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
+
+    renderWithQuery(<DashboardView />);
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
+    expect(screen.getByText(/Đăng nhập để xem Dòng chảy hôm nay/i)).toBeInTheDocument();
+    // The old onboarding/trust sections are gone entirely, not replaced by something similar.
+    expect(screen.queryByText('Bắt đầu hành trình của bạn')).not.toBeInTheDocument();
+    expect(screen.queryByText('Bắt đầu từ đâu?')).not.toBeInTheDocument();
   });
 
   it('renders guest Home without calling private personalized APIs', async () => {
@@ -108,81 +121,13 @@ describe('Tử Vi Tarot Home page', () => {
 
     renderWithQuery(<DashboardView />);
 
-    expect(screen.getByRole('heading', { level: 1, name: /Hiểu mình/i })).toBeInTheDocument();
-    expect(screen.getByText(/Không cần đăng ký để bắt đầu khám phá/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Tarot Một lá bài cho câu hỏi hôm nay/i })).toHaveAttribute('href', '#try-tarot');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
+    const tuViLinks = screen.getAllByRole('link', { name: /Lá số Tử Vi/i });
+    expect(tuViLinks.some((link) => link.getAttribute('href')?.startsWith('/register?next='))).toBe(true);
     expect(dashboardApi.get).not.toHaveBeenCalled();
     expect(tarotApi.listReadings).not.toHaveBeenCalled();
     expect(premiumApi.status).not.toHaveBeenCalled();
     await waitFor(() => expect(trackEvent).toHaveBeenCalledWith('home_viewed', { feature: 'home', source: 'guest' }));
-  });
-
-  it('shows guest value boundaries for Tarot, Numerology, and Tử Vi', () => {
-    (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
-
-    renderWithQuery(<DashboardView />);
-
-    expect(screen.getByRole('button', { name: 'Rút một lá' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Tính thử' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Lập lá số đầy đủ' })).toBeInTheDocument();
-    expect(screen.getByText(/không lưu lịch sử và không gọi AI/i)).toBeInTheDocument();
-  });
-
-  it('preserves a guest Tarot preview locally and continues auth to the Tarot step', async () => {
-    (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
-    const user = userEvent.setup();
-
-    renderWithQuery(<DashboardView />);
-
-    await user.click(screen.getByRole('button', { name: 'Rút một lá' }));
-    expect(screen.getByRole('button', { name: 'Đang rút...' })).toBeDisabled();
-    expect(await within(document.querySelector('#try-tarot')!).findByText(/The Star|The Magician|Temperance/)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Rút lá khác' })).toBeInTheDocument();
-    expect(window.sessionStorage.getItem('mv_guest_tarot_preview')).toContain('"type":"tarot"');
-    expect(trackEvent).toHaveBeenCalledWith('guest_tarot_started', { feature: 'tarot', spreadType: 'single_card' });
-    expect(trackEvent).toHaveBeenCalledWith('guest_tarot_preview_completed', { feature: 'tarot', spreadType: 'single_card' });
-
-    await user.click(screen.getByRole('button', { name: 'Xem luận giải đầy đủ' }));
-    expect(screen.getByRole('link', { name: 'Đăng ký miễn phí' })).toHaveAttribute('href', '/register?next=%2Fdiscover%2Ftarot');
-    expect(screen.getByRole('link', { name: 'Đã có tài khoản? Đăng nhập' })).toHaveAttribute('href', '/login?next=%2Fdiscover%2Ftarot');
-  });
-
-  it('shows guest numerology validation without storing invalid DOB values', async () => {
-    (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
-    const user = userEvent.setup();
-
-    renderWithQuery(<DashboardView />);
-
-    await user.click(screen.getByRole('button', { name: 'Tính thử' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Vui lòng chọn ngày sinh.');
-    expect(window.sessionStorage.getItem('mv_guest_numerology_preview')).toBeNull();
-
-    await user.type(screen.getByLabelText('Ngày sinh'), '2999-01-01');
-    await user.click(screen.getByRole('button', { name: 'Tính thử' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Ngày sinh không thể ở tương lai.');
-    expect(window.sessionStorage.getItem('mv_guest_numerology_preview')).toBeNull();
-  });
-
-  it('uses the canonical Life Path preview, stores DOB only in sessionStorage, and continues auth to Numerology', async () => {
-    (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
-    const user = userEvent.setup();
-
-    renderWithQuery(<DashboardView />);
-
-    await user.type(screen.getByLabelText('Ngày sinh'), '1995-08-17');
-    await user.click(screen.getByRole('button', { name: 'Tính thử' }));
-
-    expect(screen.getByText('22')).toBeInTheDocument();
-    expect(window.sessionStorage.getItem('mv_guest_numerology_preview')).toContain('"birthDate":"1995-08-17"');
-    expect(trackEvent).toHaveBeenCalledWith('guest_numerology_started', { feature: 'numerology' });
-    expect(trackEvent).toHaveBeenCalledWith('guest_numerology_preview_completed', { feature: 'numerology' });
-
-    await user.click(screen.getByRole('button', { name: 'Xem hồ sơ đầy đủ' }));
-    expect(screen.getByRole('link', { name: 'Đăng ký miễn phí' })).toHaveAttribute('href', '/register?next=%2Fdiscover%2Fnumerology');
-    expect(screen.getByRole('link', { name: 'Đã có tài khoản? Đăng nhập' })).toHaveAttribute(
-      'href',
-      '/login?next=%2Fdiscover%2Fnumerology',
-    );
   });
 
   it('maps authenticated Home CTAs to real routes and fires specific analytics', async () => {
@@ -222,7 +167,6 @@ describe('Tử Vi Tarot Home page', () => {
     await user.click(screen.getByRole('button', { name: 'Thử lại' }));
     expect(tuViApi.listCharts).toHaveBeenCalledTimes(2);
   });
-
 
   it('shows the real current Đại Vận and Tiểu Hạn for a returning user with a saved chart', async () => {
     const chartWithCycles = {

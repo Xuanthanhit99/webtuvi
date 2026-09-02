@@ -2,6 +2,7 @@ import { screen } from '@testing-library/react';
 import { renderWithQuery } from '@/test/render-with-query';
 import { Sidebar } from './sidebar';
 import { premiumApi } from '@/features/premium/api/premium-api';
+import { useAuth } from '@/providers/auth-provider';
 
 const mockUsePathname = jest.fn(() => '/');
 jest.mock('next/navigation', () => ({ usePathname: () => mockUsePathname() }));
@@ -20,7 +21,18 @@ jest.mock('@/features/premium/api/premium-api', () => ({
   },
 }));
 
+jest.mock('@/providers/auth-provider', () => ({
+  useAuth: jest.fn(),
+}));
+
 describe('Sidebar', () => {
+  beforeEach(() => {
+    // Sidebar now renders for guests too (no more separate top-nav guest landing page), so its
+    // premium-status query is gated on a real user — most of these tests exercise the
+    // authenticated shell, matching their existing intent.
+    (useAuth as jest.Mock).mockReturnValue({ user: { id: 'u1', displayName: 'Thành' }, isLoading: false });
+  });
+
   it('renders every nav destination with a real accessible name, even at the icon-rail width', () => {
     renderWithQuery(<Sidebar />);
     // Labels use sr-only (not `hidden`) at the tablet icon-rail width, so they must still be
@@ -57,7 +69,7 @@ describe('Sidebar', () => {
 
   it('gives the logo link a real accessible name independent of the icon/wordmark responsive swap', () => {
     renderWithQuery(<Sidebar />);
-    expect(screen.getByRole('link', { name: 'Tử Vi Tarot' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Mệnh Vi' })).toBeInTheDocument();
   });
 
   it('shows the Premium upsell only once real status data confirms the user is not premium and payments are enabled', async () => {
@@ -86,6 +98,15 @@ describe('Sidebar', () => {
     });
     renderWithQuery(<Sidebar />);
     await screen.findByRole('link', { name: 'Hôm nay' });
+    expect(screen.queryByRole('link', { name: /Nâng cấp ngay/ })).not.toBeInTheDocument();
+  });
+
+  it('renders for a guest without calling the premium-status API (no auth cookie to check against)', async () => {
+    (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false });
+    (premiumApi.status as jest.Mock).mockClear();
+    renderWithQuery(<Sidebar />);
+    await screen.findByRole('link', { name: 'Hôm nay' });
+    expect(premiumApi.status).not.toHaveBeenCalled();
     expect(screen.queryByRole('link', { name: /Nâng cấp ngay/ })).not.toBeInTheDocument();
   });
 });

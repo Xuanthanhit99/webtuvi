@@ -15,7 +15,7 @@ import {
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import type { Request, Response } from 'express';
-import type { SessionDto, UserDto } from '@beaconvie/types';
+import type { MobileAuthResponseDto, SessionDto, UserDto } from '@beaconvie/types';
 import { AuthService } from './auth.service';
 import { CookieService, REFRESH_TOKEN_COOKIE } from './cookie.service';
 import { EmailVerificationService } from './email-verification.service';
@@ -26,6 +26,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { MobileRefreshDto } from './dto/mobile-refresh.dto';
 import { UsersService } from '../users/users.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { AuthThrottlerGuard } from '../common/guards/auth-throttler.guard';
@@ -148,6 +149,55 @@ export class AuthController {
     await this.authService.logout(refreshToken);
     this.cookieService.clearAuthCookies(res);
     this.cookieService.setCsrfCookie(res, this.csrfService.generateToken());
+  }
+
+  // ---------------------------------------------------------------------------------------------
+  // Mobile (Bearer-token) variants — Phase 02. Same AuthService methods, same guards/throttling/
+  // CSRF-skip as their web siblings above; only the transport differs (tokens in the JSON body
+  // instead of httpOnly cookies, since the mobile app has no cookie jar shared with the API — see
+  // apps/mobile/src/lib/auth/session-client.ts). Every OTHER protected route (`/auth/me` included)
+  // is not duplicated: JwtAuthGuard/OptionalJwtAuthGuard now accept `Authorization: Bearer` as a
+  // fallback (see access-token.util.ts), so this is the only new surface needed.
+  // ---------------------------------------------------------------------------------------------
+
+  @Post('mobile/register')
+  @SkipCsrf()
+  @UseGuards(AuthThrottlerGuard)
+  @Throttle(AUTH_THROTTLE)
+  @SkipThrottle(SKIP_UNRELATED_THROTTLERS)
+  @ApiOperation({ summary: '[Mobile] Create an account with email + password, tokens returned in body' })
+  async mobileRegister(@Body() dto: RegisterDto, @Req() req: Request): Promise<MobileAuthResponseDto> {
+    const { user, tokens } = await this.authService.register(dto, req.headers['user-agent']);
+    return { user: this.usersService.toDto(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+  }
+
+  @Post('mobile/login')
+  @SkipCsrf()
+  @UseGuards(LoginThrottlerGuard)
+  @Throttle(AUTH_THROTTLE)
+  @SkipThrottle(SKIP_UNRELATED_THROTTLERS)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '[Mobile] Log in with email + password, tokens returned in body' })
+  async mobileLogin(@Body() dto: LoginDto, @Req() req: Request): Promise<MobileAuthResponseDto> {
+    const { user, tokens } = await this.authService.login(dto, req.headers['user-agent']);
+    return { user: this.usersService.toDto(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+  }
+
+  @Post('mobile/refresh')
+  @SkipCsrf()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '[Mobile] Rotate the session using a refresh token from the request body' })
+  async mobileRefresh(@Body() dto: MobileRefreshDto, @Req() req: Request): Promise<MobileAuthResponseDto> {
+    const { user, tokens } = await this.authService.refresh(dto.refreshToken, req.headers['user-agent']);
+    return { user: this.usersService.toDto(user), accessToken: tokens.accessToken, refreshToken: tokens.refreshToken };
+  }
+
+  @Post('mobile/logout')
+  @SkipCsrf()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({ summary: '[Mobile] Revoke the session identified by the given refresh token' })
+  async mobileLogout(@Body() dto: MobileRefreshDto): Promise<void> {
+    await this.authService.logout(dto.refreshToken);
   }
 
   @Get('me')

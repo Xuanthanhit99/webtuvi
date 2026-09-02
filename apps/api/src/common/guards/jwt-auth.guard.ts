@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
 import type { AppConfiguration } from '../../config/configuration';
-import { ACCESS_TOKEN_COOKIE } from '../../auth/cookie.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import type { AuthenticatedUser } from '../decorators/current-user.decorator';
+import { resolveAccessToken } from './access-token.util';
 
 interface AccessTokenPayload {
   sub: string;
@@ -23,7 +23,7 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request & { user?: AuthenticatedUser }>();
-    const token = request.cookies?.[ACCESS_TOKEN_COOKIE];
+    const token = resolveAccessToken(request);
 
     if (!token) {
       throw new UnauthorizedException('Your session has expired. Please log in again.');

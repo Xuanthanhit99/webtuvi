@@ -1,0 +1,210 @@
+[
+  {
+    "file": "backgrounds/hero-home.webp",
+    "width": 1896,
+    "height": 830,
+    "alpha_from_source": false,
+    "data_binding": "none (visual only)",
+    "status": "REPLACE"
+  },
+  {
+    "file": "backgrounds/journey-banner.webp",
+    "width": 1672,
+    "height": 941,
+    "alpha_from_source": false,
+    "data_binding": "none (visual only)",
+    "status": "REPLACE"
+  },
+  {
+    "file": "decor/blossom-large.webp",
+    "width": 320,
+    "height": 150,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "decor/blossom-small.webp",
+    "width": 225,
+    "height": 150,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "decor/clouds-center.webp",
+    "width": 365,
+    "height": 160,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "decor/clouds-left.webp",
+    "width": 410,
+    "height": 160,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "decor/cranes.webp",
+    "width": 295,
+    "height": 190,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "decor/gold-ornaments.webp",
+    "width": 995,
+    "height": 170,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "decor/lanterns.webp",
+    "width": 358,
+    "height": 240,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "decor/lotus.webp",
+    "width": 120,
+    "height": 125,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "decor/moon-planets.webp",
+    "width": 470,
+    "height": 155,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "decor/mountains.webp",
+    "width": 370,
+    "height": 205,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "feature-art/ban-do-sao.webp",
+    "width": 1414,
+    "height": 1112,
+    "alpha_from_source": false,
+    "data_binding": "none (visual only)",
+    "status": "REPLACE"
+  },
+  {
+    "file": "feature-art/tarot.webp",
+    "width": 1415,
+    "height": 1112,
+    "alpha_from_source": false,
+    "data_binding": "none (visual only)",
+    "status": "REPLACE"
+  },
+  {
+    "file": "feature-art/than-so-hoc.webp",
+    "width": 1414,
+    "height": 1112,
+    "alpha_from_source": false,
+    "data_binding": "none (visual only)",
+    "status": "REPLACE"
+  },
+  {
+    "file": "feature-art/tu-vi.webp",
+    "width": 1415,
+    "height": 1112,
+    "alpha_from_source": false,
+    "data_binding": "none (visual only)",
+    "status": "REPLACE"
+  },
+  {
+    "file": "hero-overlays/astrology-wheel.webp",
+    "width": 150,
+    "height": 160,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "hero-overlays/numerology-orb.webp",
+    "width": 158,
+    "height": 160,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "hero-overlays/tarot-stack.webp",
+    "width": 245,
+    "height": 175,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "hero-overlays/tu-vi-wheel.webp",
+    "width": 150,
+    "height": 155,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "mobile-visuals/app-promo.webp",
+    "width": 1050,
+    "height": 1498,
+    "alpha_from_source": false,
+    "data_binding": "none (visual only)",
+    "status": "NEW"
+  },
+  {
+    "file": "mobile-visuals/astrology.webp",
+    "width": 113,
+    "height": 250,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "mobile-visuals/home.webp",
+    "width": 108,
+    "height": 250,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "mobile-visuals/numerology.webp",
+    "width": 114,
+    "height": 250,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "mobile-visuals/tarot.webp",
+    "width": 110,
+    "height": 250,
+    "alpha_from_source": true,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  },
+  {
+    "file": "reference/approved-text-free-asset-board.webp",
+    "width": 1536,
+    "height": 1024,
+    "alpha_from_source": false,
+    "data_binding": "none (visual only)",
+    "status": "KEEP"
+  }
+]

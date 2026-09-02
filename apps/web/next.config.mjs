@@ -4,6 +4,9 @@ import { withSentryConfig } from '@sentry/nextjs';
 const nextConfig = {
   reactStrictMode: true,
   transpilePackages: ['@beaconvie/types'],
+  images: {
+    qualities: [75, 88, 90],
+  },
   // Sprint 13 — produces `.next/standalone` (a self-contained server bundle with only the
   // dependencies it actually uses traced in, not the full node_modules tree), which is what
   // `apps/web/Dockerfile` copies into the runtime image. No effect on `next dev` or on anything

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/cn';
 import { NAV_ITEMS } from './nav-items';
 import { usePremiumStatus } from '@/features/premium/hooks/use-premium-status';
+import { useAuth } from '@/providers/auth-provider';
 
 // Accessibility + Product Polish (2026-08-19): tablet (768-1279px) previously fell through this
 // component's `desktop:flex`/`desktop:hidden` binary switch (shared with MobileNavigation) to the
@@ -18,14 +19,15 @@ import { usePremiumStatus } from '@/features/premium/hooks/use-premium-status';
 // accessible name.
 export function Sidebar() {
   const pathname = usePathname();
-  const premiumQuery = usePremiumStatus();
+  const { user } = useAuth();
+  const premiumQuery = usePremiumStatus({ enabled: !!user });
 
   return (
     <nav
       aria-label="Main navigation"
-      className="hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-[rgba(213,173,98,0.16)] bg-canvas/95 px-2 py-6 tablet:flex desktop:w-64 desktop:items-stretch desktop:px-4"
+      className="hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-[rgba(213,173,98,0.16)] bg-canvas/95 px-2 py-6 tablet:flex desktop:w-56 desktop:items-stretch desktop:px-4"
     >
-      <Link href="/" aria-label="Tử Vi Tarot" className="flex items-center justify-center px-2 desktop:justify-start">
+      <Link href="/" aria-label="Mệnh Vi" className="flex items-center justify-center px-2 desktop:justify-start">
         <Logo withWordmark={false} className="desktop:hidden" />
         <Logo className="hidden desktop:flex" />
       </Link>
@@ -40,8 +42,9 @@ export function Sidebar() {
                 className={cn(
                   'flex min-h-11 items-center justify-center gap-3 rounded-md px-3 py-2 text-body-md transition-colors duration-fast desktop:justify-start',
                   active
-                    ? 'bg-surface text-text-primary'
-                    : 'text-text-secondary hover:bg-surface hover:text-text-primary',
+                    ? // Subtle indigo wash + a thin antique-gold outline — not a bright fill.
+                      'bg-[#4b3f9e]/[0.14] text-text-primary ring-1 ring-inset ring-[#d5ad62]/30'
+                    : 'text-white/40 hover:bg-white/[0.04] hover:text-text-primary',
                 )}
               >
                 <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -63,7 +66,7 @@ export function Sidebar() {
         >
           <span className="inline-flex items-center gap-1.5 text-body-sm font-semibold text-insight">
             <Sparkles className="h-4 w-4" aria-hidden="true" />
-            Tử Vi Tarot+
+            Mệnh Vi+
           </span>
           <span className="text-caption leading-relaxed text-text-secondary">
             Mở khóa toàn bộ tính năng và trải nghiệm chuyên sâu.

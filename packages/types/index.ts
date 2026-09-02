@@ -17,6 +17,17 @@ export interface UserDto {
   role: UserRoleValue;
 }
 
+/** Mobile Phase 02 — body shape returned by POST /auth/mobile/{register,login,refresh}. Web never
+ * sees these fields (its tokens live only in httpOnly cookies); this is the one genuinely new
+ * cross-boundary contract the mobile Bearer-auth extension introduces. See
+ * apps/api/src/auth/auth.controller.ts's mobile* handlers and
+ * apps/mobile/src/lib/auth/auth-api.ts. */
+export interface MobileAuthResponseDto {
+  user: UserDto;
+  accessToken: string;
+  refreshToken: string;
+}
+
 // ---------------------------------------------------------------------------
 // Interim Sprint — Admin Operator Tooling. Response shapes for the five
 // read-only operator lookups. Every field is an explicit ALLOW-listed value —

@@ -9,6 +9,7 @@
   "scripts": {
     "dev:web": "pnpm --filter @beaconvie/web dev",
     "dev:api": "pnpm --filter @beaconvie/api start:dev",
+    "dev:mobile": "pnpm --filter @beaconvie/mobile start",
     "build": "pnpm --filter @beaconvie/api build && pnpm --filter @beaconvie/web build",
     "build:api": "pnpm --filter @beaconvie/api build",
     "build:web": "pnpm --filter @beaconvie/web build",

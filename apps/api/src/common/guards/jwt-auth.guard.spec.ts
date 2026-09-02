@@ -8,8 +8,8 @@ function makeConfigMock() {
   return { get: jest.fn(() => ({ jwt: { accessSecret: ACCESS_SECRET } })) };
 }
 
-function makeContext(cookies: Record<string, string>): ExecutionContext {
-  const request: { cookies: Record<string, string>; user?: unknown } = { cookies };
+function makeContext(cookies: Record<string, string>, headers: Record<string, string> = {}): ExecutionContext {
+  const request: { cookies: Record<string, string>; headers: Record<string, string>; user?: unknown } = { cookies, headers };
   return {
     switchToHttp: () => ({ getRequest: () => request }),
   } as unknown as ExecutionContext;
@@ -80,5 +80,51 @@ describe('JwtAuthGuard', () => {
     const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
 
     await expect(guard.canActivate(makeContext({ beaconvie_access_token: token }))).rejects.toThrow(UnauthorizedException);
+  });
+
+  describe('Phase 02 — Bearer-token fallback (mobile)', () => {
+    it('accepts a valid Authorization: Bearer token when no cookie is present', async () => {
+      const token = signToken({ sub: 'user-1', email: 'user@example.com' });
+      const prisma = { user: { findUnique: jest.fn(async () => ({ status: 'ACTIVE', role: 'USER' })) } };
+      const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
+
+      const context = makeContext({}, { authorization: `Bearer ${token}` });
+      await expect(guard.canActivate(context)).resolves.toBe(true);
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'user-1' }, select: { status: true, role: true } });
+    });
+
+    it('prefers the cookie over a Bearer header when both are present — web precedence is unchanged', async () => {
+      const cookieToken = signToken({ sub: 'cookie-user', email: 'cookie@example.com' });
+      const bearerToken = signToken({ sub: 'bearer-user', email: 'bearer@example.com' });
+      const prisma = { user: { findUnique: jest.fn(async () => ({ status: 'ACTIVE', role: 'USER' })) } };
+      const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
+
+      const context = makeContext({ beaconvie_access_token: cookieToken }, { authorization: `Bearer ${bearerToken}` });
+      await guard.canActivate(context);
+      expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'cookie-user' }, select: { status: true, role: true } });
+    });
+
+    it('rejects a malformed Authorization header (no "Bearer " prefix)', async () => {
+      const token = signToken({ sub: 'user-1', email: 'user@example.com' });
+      const prisma = { user: { findUnique: jest.fn() } };
+      const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
+
+      await expect(guard.canActivate(makeContext({}, { authorization: token }))).rejects.toThrow(UnauthorizedException);
+      expect(prisma.user.findUnique).not.toHaveBeenCalled();
+    });
+
+    it('rejects an empty "Bearer " token', async () => {
+      const prisma = { user: { findUnique: jest.fn() } };
+      const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
+
+      await expect(guard.canActivate(makeContext({}, { authorization: 'Bearer ' }))).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('rejects a request with neither cookie nor Authorization header', async () => {
+      const prisma = { user: { findUnique: jest.fn() } };
+      const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
+
+      await expect(guard.canActivate(makeContext({}))).rejects.toThrow(UnauthorizedException);
+    });
   });
 });

@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { CsrfService } from './csrf.service';
 import { CSRF_HEADER, CSRF_TOKEN_COOKIE, SKIP_CSRF_KEY } from './csrf.constants';
+import { hasBearerAuthorization } from '../guards/access-token.util';
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
 
@@ -28,6 +29,14 @@ export class CsrfGuard implements CanActivate {
       context.getClass(),
     ]);
     if (skip) return true;
+
+    // Bearer-authenticated requests (mobile) carry no session cookie, so double-submit CSRF is
+    // inapplicable — the equivalent protection is simply "a valid Bearer token is required",
+    // enforced downstream by JwtAuthGuard/OptionalJwtAuthGuard. Presence-only check: this guard
+    // runs before any route guard, so it can't yet know whether the token is valid — an invalid
+    // one still gets rejected by the 401 downstream, so skipping CSRF here is never itself a
+    // bypass. Web requests never send this header, so this is a no-op for every existing web flow.
+    if (hasBearerAuthorization(request)) return true;
 
     const cookieToken = request.cookies?.[CSRF_TOKEN_COOKIE] as string | undefined;
     const headerTokenRaw = request.headers[CSRF_HEADER];

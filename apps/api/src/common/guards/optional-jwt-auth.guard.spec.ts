@@ -1,8 +1,11 @@
 import { ExecutionContext } from '@nestjs/common';
 import { OptionalJwtAuthGuard } from './optional-jwt-auth.guard';
 
-function makeContext(cookies: Record<string, string>): { context: ExecutionContext; request: Record<string, unknown> } {
-  const request: Record<string, unknown> = { cookies };
+function makeContext(
+  cookies: Record<string, string>,
+  headers: Record<string, string> = {},
+): { context: ExecutionContext; request: Record<string, unknown> } {
+  const request: Record<string, unknown> = { cookies, headers };
   const context = {
     switchToHttp: () => ({ getRequest: () => request }),
   } as unknown as ExecutionContext;
@@ -56,5 +59,28 @@ describe('OptionalJwtAuthGuard (Sprint 13 Release Closure §22 — deleted/inact
     await expect(guard.canActivate(context)).resolves.toBe(true);
     expect(request.user).toBeUndefined();
     expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+
+  describe('Phase 02 — Bearer-token fallback (mobile)', () => {
+    it('populates request.user from a valid Bearer token when no cookie is present', async () => {
+      const { guard } = makeGuard({ status: 'ACTIVE' });
+      const { context, request } = makeContext({}, { authorization: 'Bearer valid-token' });
+      await expect(guard.canActivate(context)).resolves.toBe(true);
+      expect(request.user).toEqual({ id: 'user-1', email: 'user@example.com', sessionId: 'sess-1' });
+    });
+
+    it('prefers the cookie over a Bearer header when both are present', async () => {
+      const { guard, jwtService } = makeGuard({ status: 'ACTIVE' });
+      const { context } = makeContext({ beaconvie_access_token: 'cookie-token' }, { authorization: 'Bearer bearer-token' });
+      await guard.canActivate(context);
+      expect(jwtService.verify).toHaveBeenCalledWith('cookie-token', expect.anything());
+    });
+
+    it('still never rejects for a malformed Authorization header', async () => {
+      const { guard } = makeGuard(null);
+      const { context, request } = makeContext({}, { authorization: 'not-bearer-shaped' });
+      await expect(guard.canActivate(context)).resolves.toBe(true);
+      expect(request.user).toBeUndefined();
+    });
   });
 });
