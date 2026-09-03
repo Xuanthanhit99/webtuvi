@@ -118,7 +118,7 @@ describe('TuViDashboard', () => {
     (tuViApi.listCharts as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<TuViDashboard />);
     expect(screen.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /calculate my lá số/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /lập lá số của tôi/i })).toBeInTheDocument();
     expect(await screen.findByText(/Hỏa Lục Cục — Mệnh tại Dần/)).toBeInTheDocument();
   });
 
@@ -139,7 +139,7 @@ describe('TuViDashboard', () => {
   it('shows an empty state when there is no history yet', async () => {
     (tuViApi.listCharts as jest.Mock).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
     renderWithQuery(<TuViDashboard />);
-    expect(await screen.findByText('No lá số yet')).toBeInTheDocument();
+    expect(await screen.findByText('Chưa có lá số')).toBeInTheDocument();
   });
 
   it('opening ?item=<id> renders the real chart detail instead of the form/history view', async () => {
@@ -149,8 +149,8 @@ describe('TuViDashboard', () => {
 
     expect(await screen.findByText('Tổng quan lá số')).toBeInTheDocument();
     expect(tuViApi.getChart).toHaveBeenCalledWith('c1');
-    expect(screen.queryByRole('button', { name: /calculate my lá số/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '← Back to Tử Vi Lá Số' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /lập lá số của tôi/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '← Quay lại Lá số Tử Vi' })).toBeInTheDocument();
   });
 
   it('shows the Đại Vận timeline and Tiểu Hạn year nav in the real chart detail view, with the current period pre-selected', async () => {
@@ -171,7 +171,7 @@ describe('TuViDashboard', () => {
     renderWithQuery(<TuViDashboard />);
 
     await screen.findByText('Tổng quan lá số');
-    await user.click(screen.getByRole('button', { name: '← Back to Tử Vi Lá Số' }));
+    await user.click(screen.getByRole('button', { name: '← Quay lại Lá số Tử Vi' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/discover/tu-vi', { scroll: false }));
   });
 
@@ -181,11 +181,11 @@ describe('TuViDashboard', () => {
     renderWithQuery(<TuViDashboard />);
 
     await screen.findByText('Tổng quan lá số');
-    expect(screen.getByText(/calculated from your birth data/i)).toBeInTheDocument();
-    expect(screen.getByText('Deterministic — never AI-generated')).toBeInTheDocument();
-    expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
-    expect(screen.getByText(/written by ai/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /AI không an sao cho bạn/i })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(/hệ quy tắc cố định/i)).toBeInTheDocument();
+    expect(screen.getByText('Dữ liệu lá số · Không do AI tạo')).toBeInTheDocument();
+    expect(screen.getByText('Luận giải bằng AI')).toBeInTheDocument();
+    expect(screen.getByText(/AI chỉ diễn giải dữ liệu/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /AI không an sao cho bạn/i })).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('renders all 12 palaces with real, visible role names (accessible textual grid, not decorative-only)', async () => {
@@ -197,5 +197,17 @@ describe('TuViDashboard', () => {
     for (const role of ['Mệnh', 'Phụ Mẫu', 'Phúc Đức', 'Điền Trạch', 'Quan Lộc', 'Nô Bộc', 'Thiên Di', 'Tật Ách', 'Tài Bạch', 'Tử Tức', 'Phu Thê', 'Huynh Đệ']) {
       expect(screen.getAllByLabelText(new RegExp(`^${role} palace`)).length).toBeGreaterThan(0);
     }
+  });
+
+  it('lets keyboard and touch users select a palace and read its real detail', async () => {
+    mockSearchParamsValue = 'item=c1';
+    (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
+    const user = userEvent.setup();
+    renderWithQuery(<TuViDashboard />);
+
+    const careerPalace = (await screen.findAllByRole('button', { name: /^Quan Lộc palace/ }))[0]!;
+    await user.click(careerPalace);
+    expect(careerPalace).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('heading', { name: 'Quan Lộc' })).toBeInTheDocument();
   });
 });

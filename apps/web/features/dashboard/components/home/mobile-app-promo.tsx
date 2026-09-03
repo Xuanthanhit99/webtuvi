@@ -48,24 +48,24 @@ export function MobileAppPromo() {
         <circle cx="85%" cy="85%" r="1" fill="#a68df0" opacity="0.4" />
       </svg>
 
-      <div className="relative grid gap-6 p-6 tablet:grid-cols-[minmax(220px,0.9fr)_1fr_auto] tablet:items-center tablet:gap-10 tablet:p-9">
-        <div className="relative mx-auto aspect-[7/10] w-full max-w-[270px] overflow-hidden rounded-[18px] tablet:mx-0 tablet:max-w-[300px]">
+      <div className="relative grid grid-cols-[104px_1fr] items-center gap-x-4 gap-y-4 p-4 min-[430px]:grid-cols-[120px_1fr] min-[430px]:p-5 tablet:grid-cols-[minmax(220px,0.9fr)_1fr_auto] tablet:gap-10 tablet:p-9">
+        <div className="relative aspect-[7/10] w-full overflow-hidden rounded-[14px] tablet:max-w-[300px] tablet:rounded-[18px]">
           <Image
             src={HOME_MOBILE_VISUALS.appPromo}
             alt=""
             fill
-            sizes="(max-width: 767px) 270px, 300px"
+            sizes="(max-width: 429px) 104px, (max-width: 767px) 120px, 300px"
             className="object-cover object-center"
           />
-          <div className="pointer-events-none absolute inset-0 rounded-[18px] ring-1 ring-inset ring-white/10" />
+          <div className="pointer-events-none absolute inset-0 rounded-[14px] ring-1 ring-inset ring-white/10 tablet:rounded-[18px]" />
         </div>
 
-        <div className="text-center tablet:text-left">
+        <div className="text-left">
           <h2 id="mobile-promo-heading" className="font-display text-heading-md font-semibold text-[#f2eee5]">
             Mang Mệnh Vi theo bên mình
           </h2>
           <p className="mt-1.5 text-body-sm text-[#a6a7ac]">Ứng dụng Mệnh Vi đang được hoàn thiện cho trải nghiệm hằng ngày.</p>
-          <ul className="mt-4 flex flex-col items-center gap-2 tablet:items-start">
+          <ul className="mt-3 flex flex-col items-start gap-2 tablet:mt-4">
             {BENEFITS.map((benefit) => (
               <li key={benefit.text} className="inline-flex items-center gap-2 text-body-sm text-[#d8d1c2]">
                 <benefit.icon className="h-4 w-4 text-[#e6c980]" aria-hidden="true" />
@@ -73,13 +73,13 @@ export function MobileAppPromo() {
               </li>
             ))}
           </ul>
-          <div className="mt-5 flex flex-wrap justify-center gap-3 tablet:justify-start">
+          <div className="mt-4 flex flex-wrap justify-start gap-2 tablet:mt-5 tablet:gap-3">
             <StoreBadge sub="Sắp ra mắt trên" label="App Store" />
             <StoreBadge sub="Sắp ra mắt trên" label="Google Play" />
           </div>
         </div>
 
-        <div className="mx-auto flex flex-col items-center gap-2 tablet:mx-0">
+        <div className="col-span-2 hidden flex-col items-center gap-2 tablet:col-auto tablet:mx-0 tablet:flex">
           <div className="flex h-24 w-24 items-center justify-center rounded-[14px] border border-white/15 bg-[#0b1220]/70">
             <Mail className="h-10 w-10 text-[#d8d1c2]" aria-hidden="true" />
           </div>

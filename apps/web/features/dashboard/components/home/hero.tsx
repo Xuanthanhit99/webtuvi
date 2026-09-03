@@ -41,7 +41,7 @@ function HeroStatusBar({ isGuest }: { isGuest: boolean }) {
           </span>
           <span className="h-3.5 w-px bg-white/15" aria-hidden="true" />
           <span>
-            Mệnh khí của bạn: <span className="font-semibold text-[#e6c980]">78/100</span>
+            Mệnh khí của bạn: <span className="font-semibold text-[#e6c980]">đang cập nhật</span>
           </span>
         </>
       )}

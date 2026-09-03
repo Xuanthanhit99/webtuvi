@@ -39,9 +39,11 @@ export function TuViDashboard() {
         </MvSection>
       </div>
 
-      <MvSection eyebrow="Dòng thời gian" title="Lá số đã lưu">
-        <TuViHistoryList filters={{}} onSelect={selectItem} />
-      </MvSection>
+      <div id="tu-vi-history" className="scroll-mt-24">
+        <MvSection eyebrow="Dòng thời gian" title="Lá số đã lưu">
+          <TuViHistoryList filters={{}} onSelect={selectItem} />
+        </MvSection>
+      </div>
     </MvPage>
   );
 }

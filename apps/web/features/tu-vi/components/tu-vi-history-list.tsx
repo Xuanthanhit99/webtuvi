@@ -18,7 +18,7 @@ export function TuViHistoryList({ filters, onSelect }: { filters: ListTuViCharts
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   if (!data || data.items.length === 0) {
-    return <EmptyState title="No lá số yet" description="Calculate your lá số to start your Tử Vi history." />;
+    return <EmptyState title="Chưa có lá số" description="Lập lá số đầu tiên để bắt đầu hành trình khám phá của bạn." />;
   }
 
   const atFreeCap = !premiumStatus?.isPremium && data.total >= FREE_HISTORY_LIMIT;
@@ -38,7 +38,7 @@ export function TuViHistoryList({ filters, onSelect }: { filters: ListTuViCharts
                   {chart.cuc} — Mệnh tại {chart.palaces.menh}
                 </span>
                 <span className="text-caption text-text-secondary">
-                  Born {chart.birthDate} at {chart.birthTime} · {chart.sex}
+                  Sinh ngày {chart.birthDate}, lúc {chart.birthTime} · {chart.sex}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -51,9 +51,9 @@ export function TuViHistoryList({ filters, onSelect }: { filters: ListTuViCharts
       </ul>
       {atFreeCap && (
         <p className="text-caption text-text-secondary">
-          Showing your most recent {FREE_HISTORY_LIMIT} lá số on the Free plan.{' '}
+          Gói Miễn phí hiển thị {FREE_HISTORY_LIMIT} lá số gần nhất.{' '}
           <Link href="/premium?reason=required" className="text-insight hover:underline">
-            Upgrade for unlimited history
+            Nâng cấp để lưu không giới hạn
           </Link>
           .
         </p>

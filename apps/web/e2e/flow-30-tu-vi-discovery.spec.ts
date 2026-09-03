@@ -73,18 +73,18 @@ test('Calculate VECTOR-B1, verify exact deterministic facts, generate interpreta
   await expect(page.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeVisible({ timeout: 15000 });
 
   // --- Failure state first: submitting with no birth date must never silently guess a result. ---
-  await page.getByRole('button', { name: /calculate my lá số/i }).click();
-  await expect(page.getByText('Birth date is required.')).toBeVisible({ timeout: 5000 });
-  await expect(page.getByText('Deterministic — never AI-generated')).not.toBeVisible();
+  await page.getByRole('button', { name: /lập lá số của tôi/i }).click();
+  await expect(page.getByText('Vui lòng chọn ngày sinh.')).toBeVisible({ timeout: 5000 });
+  await expect(page.getByText('Dữ liệu lá số · Không do AI tạo')).not.toBeVisible();
 
   // --- VECTOR-B1 (Sprint 18A.5/18B.8/18B.9/18B.11) — independently rule-derived, never called
   // from the app under test. 1984-02-02, 00:30, Nam. ---
-  await page.getByLabel(/date of birth/i).fill('1984-02-02');
-  await page.getByLabel(/time of birth/i).fill('00:30');
-  await page.getByLabel('Nam (male)').check();
-  await page.getByRole('button', { name: /calculate my lá số/i }).click();
+  await page.getByLabel(/ngày sinh dương lịch/i).fill('1984-02-02');
+  await page.getByLabel(/giờ sinh chính xác/i).fill('00:30');
+  await page.getByLabel('Nam').check();
+  await page.getByRole('button', { name: /lập lá số của tôi/i }).click();
 
-  await expect(page.getByText('Deterministic — never AI-generated').first()).toBeVisible({ timeout: 60000 });
+  await expect(page.getByText('Dữ liệu lá số · Không do AI tạo').first()).toBeVisible({ timeout: 60000 });
   await expect(page.getByText('Hỏa Lục Cục').first()).toBeVisible();
   await expect(page.locator('[aria-label^="Mệnh palace, at Dần"]:visible')).toBeVisible();
   await expect(page.getByText('Giáp Tý', { exact: true })).toBeVisible();
@@ -104,33 +104,33 @@ test('Calculate VECTOR-B1, verify exact deterministic facts, generate interpreta
   // --- AI interpretation. The backend already attempts this once, synchronously, right after
   // calculation, so it is usually already present by the time the UI reveals it; if a
   // budget/lock edge case left it null, the "Generate interpretation" affordance is used instead.
-  const generateButton = page.getByRole('button', { name: /generate interpretation/i });
+  const generateButton = page.getByRole('button', { name: /tạo luận giải/i });
   if (await generateButton.isVisible().catch(() => false)) {
     await generateButton.click();
   }
-  await expect(page.getByText('Interpretation isn’t ready yet.')).not.toBeVisible({ timeout: 30000 });
-  await expect(page.getByText('AI Interpretation')).toBeVisible();
-  await expect(page.getByText(/written by ai/i)).toBeVisible();
+  await expect(page.getByText('Phần luận giải chưa sẵn sàng.')).not.toBeVisible({ timeout: 30000 });
+  await expect(page.getByText('Luận giải bằng AI')).toBeVisible();
+  await expect(page.getByText(/AI chỉ diễn giải dữ liệu/i)).toBeVisible();
 
   // --- Deterministic facts must survive AI interpretation completely unchanged. ---
   await expect(page.getByText('Hỏa Lục Cục').first()).toHaveText(beforeCuc!);
   await expect(page.locator('[aria-label^="Mệnh palace, at Dần"]:visible')).toHaveAttribute('aria-label', beforeMenh!);
 
   // --- History -> detail: the real, persisted chart survives navigation (a real DB row). ---
-  await page.getByRole('button', { name: /calculate another lá số/i }).click();
+  await page.getByRole('button', { name: /lập một lá số khác/i }).click();
   const historyList = page.getByRole('list', { name: 'Lá số history' });
   await expect(historyList.getByRole('listitem')).toHaveCount(1, { timeout: 15000 });
   await historyList.getByRole('listitem').first().getByRole('button').click();
-  await expect(page.getByRole('button', { name: '← Back to Tử Vi Lá Số' })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('button', { name: '← Quay lại Lá số Tử Vi' })).toBeVisible({ timeout: 15000 });
   await expect(page.getByText('Hỏa Lục Cục').first()).toBeVisible();
 
   // --- Lifecycle: archive -> restore round trip, real state transitions. ---
-  await page.getByRole('button', { name: 'Archive', exact: true }).click();
-  await expect(page.getByText('Archived', { exact: true })).toBeVisible({ timeout: 10000 });
-  await page.getByRole('button', { name: 'Restore', exact: true }).click();
-  await expect(page.getByText('Active', { exact: true })).toBeVisible({ timeout: 10000 });
+  await page.getByRole('button', { name: 'Lưu trữ', exact: true }).click();
+  await expect(page.getByText('Đã lưu trữ', { exact: true })).toBeVisible({ timeout: 10000 });
+  await page.getByRole('button', { name: 'Khôi phục', exact: true }).click();
+  await expect(page.getByText('Đang dùng', { exact: true })).toBeVisible({ timeout: 10000 });
 
-  await page.getByRole('button', { name: '← Back to Tử Vi Lá Số' }).click();
+  await page.getByRole('button', { name: '← Quay lại Lá số Tử Vi' }).click();
   await expect(page).toHaveURL(/\/discover\/tu-vi$/);
 });
 
@@ -146,16 +146,16 @@ test('TUVI-GIO-02 midnight boundary (23:xx/00:xx): a 23:30 birth resolves to hou
   // Engine-verified fixed point (tu-vi-calendar-context.spec.ts, TUVI-GIO-02): birthDate
   // 2024-03-15, birthTime 23:30 -> hourBranch = Tý, effectiveTuViDate = the SAME calendar day
   // (2024-03-15), never shifted forward into the 16th despite crossing into the Tý window.
-  await page.getByLabel(/date of birth/i).fill('2024-03-15');
-  await page.getByLabel(/time of birth/i).fill('23:30');
-  await page.getByLabel('Nữ (female)').check();
-  await page.getByRole('button', { name: /calculate my lá số/i }).click();
+  await page.getByLabel(/ngày sinh dương lịch/i).fill('2024-03-15');
+  await page.getByLabel(/giờ sinh chính xác/i).fill('23:30');
+  await page.getByLabel('Nữ').check();
+  await page.getByRole('button', { name: /lập lá số của tôi/i }).click();
 
   // A generous timeout here: `calculate()` synchronously awaits the AI interpretation attempt
   // before returning (18B.10 architecture), and this dev environment's real
   // DEFAULT_AI_PROVIDER=openai has no billing credits — each attempt retries against it before
   // falling back to mock, which can add real wall-clock time under load (see flow header).
-  await expect(page.getByText('Deterministic — never AI-generated').first()).toBeVisible({ timeout: 60000 });
+  await expect(page.getByText('Dữ liệu lá số · Không do AI tạo').first()).toBeVisible({ timeout: 60000 });
   // "Giờ sinh" also appears in the (collapsed by default) trust-section prose, so a plain text
   // match is ambiguous — the dt/dd pair below is the precise, unambiguous check.
   // The hour-branch fact row shows exactly "Tý" — the frozen undivided 23:00–00:59 window, not a
@@ -178,18 +178,18 @@ test('accessibility: zero axe violations on the input form, the calculated resul
 
   // 2. Calculated result: deterministic facts, 12-palace grid, and the AI interpretation section
   // together on one page.
-  await page.getByLabel(/date of birth/i).fill('1984-02-02');
-  await page.getByLabel(/time of birth/i).fill('00:30');
-  await page.getByLabel('Nam (male)').check();
-  await page.getByRole('button', { name: /calculate my lá số/i }).click();
-  await expect(page.getByText('Deterministic — never AI-generated').first()).toBeVisible({ timeout: 60000 });
-  await expect(page.getByText('AI Interpretation')).toBeVisible({ timeout: 30000 });
+  await page.getByLabel(/ngày sinh dương lịch/i).fill('1984-02-02');
+  await page.getByLabel(/giờ sinh chính xác/i).fill('00:30');
+  await page.getByLabel('Nam').check();
+  await page.getByRole('button', { name: /lập lá số của tôi/i }).click();
+  await expect(page.getByText('Dữ liệu lá số · Không do AI tạo').first()).toBeVisible({ timeout: 60000 });
+  await expect(page.getByText('Luận giải bằng AI')).toBeVisible({ timeout: 30000 });
 
   const resultScan = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
   expect(resultScan.violations, JSON.stringify(resultScan.violations, null, 2)).toEqual([]);
 
   // 3. History list.
-  await page.getByRole('button', { name: /calculate another lá số/i }).click();
+  await page.getByRole('button', { name: /lập một lá số khác/i }).click();
   await expect(page.getByRole('list', { name: 'Lá số history' }).getByRole('listitem')).toHaveCount(1, { timeout: 15000 });
 
   const historyScan = await new AxeBuilder({ page }).disableRules(['color-contrast']).analyze();
@@ -204,11 +204,11 @@ test('responsive: the calculated chart stays legible with no horizontal overflow
   // component (features/tu-vi/components/tu-vi-hero.tsx) — replaced the old MvPageHeader-based
   // title. Fixed here for all 5 occurrences in this file.
   await expect(page.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeVisible({ timeout: 15000 });
-  await page.getByLabel(/date of birth/i).fill('1984-02-02');
-  await page.getByLabel(/time of birth/i).fill('00:30');
-  await page.getByLabel('Nam (male)').check();
-  await page.getByRole('button', { name: /calculate my lá số/i }).click();
-  await expect(page.getByText('Deterministic — never AI-generated').first()).toBeVisible({ timeout: 60000 });
+  await page.getByLabel(/ngày sinh dương lịch/i).fill('1984-02-02');
+  await page.getByLabel(/giờ sinh chính xác/i).fill('00:30');
+  await page.getByLabel('Nam').check();
+  await page.getByRole('button', { name: /lập lá số của tôi/i }).click();
+  await expect(page.getByText('Dữ liệu lá số · Không do AI tạo').first()).toBeVisible({ timeout: 60000 });
 
   // The 11 breakpoints the Tử Vi Depth + Time Cycles closure pass requires (desktop down to small
   // mobile), straddling both custom Tailwind breakpoints this feature uses (`tablet`=768,
@@ -255,11 +255,11 @@ test('dignity badges and the Đại Vận/Tiểu Hạn sections render real, int
   // component (features/tu-vi/components/tu-vi-hero.tsx) — replaced the old MvPageHeader-based
   // title. Fixed here for all 5 occurrences in this file.
   await expect(page.getByRole('heading', { name: 'Lá số Tử Vi', level: 1 })).toBeVisible({ timeout: 15000 });
-  await page.getByLabel(/date of birth/i).fill('1984-02-02');
-  await page.getByLabel(/time of birth/i).fill('00:30');
-  await page.getByLabel('Nam (male)').check();
-  await page.getByRole('button', { name: /calculate my lá số/i }).click();
-  await expect(page.getByText('Deterministic — never AI-generated').first()).toBeVisible({ timeout: 60000 });
+  await page.getByLabel(/ngày sinh dương lịch/i).fill('1984-02-02');
+  await page.getByLabel(/giờ sinh chính xác/i).fill('00:30');
+  await page.getByLabel('Nam').check();
+  await page.getByRole('button', { name: /lập lá số của tôi/i }).click();
+  await expect(page.getByText('Dữ liệu lá số · Không do AI tạo').first()).toBeVisible({ timeout: 60000 });
 
   // Dignity badge: present and shows one of the 5 real states, never blank/undefined. Mệnh itself
   // (at Dần) is Vô Chính Diệu for this exact birth data — zero chính tinh, confirmed by the

@@ -1,26 +1,12 @@
-import type { TuViChartDto } from '@beaconvie/types';
-import { PALACE_ROLE_LABELS_EN, DIGNITY_SHORT_LABEL } from '../labels';
-import { buildPalaceCells, orderFromMenh, PALACE_GRID_POSITION, type PalaceCell } from '../tu-vi-projection';
+'use client';
 
-/** Vietnamese abbreviations for the 4 Tứ Hóa transformations, shown as a small superscript-style
- * tag next to the star they attach to — matches how printed lá số charts annotate them. */
-const TRANSFORMATION_TAG: Record<string, string> = {
-  'Hóa Lộc': 'L',
-  'Hóa Quyền': 'Q',
-  'Hóa Khoa': 'K',
-  'Hóa Kỵ': 'K.',
-};
+import { useState } from 'react';
+import type { EarthlyBranchValue, TuViChartDto } from '@beaconvie/types';
+import { ChevronRight } from 'lucide-react';
+import { DIGNITY_SHORT_LABEL } from '../labels';
+import { buildPalaceCells, PALACE_GRID_POSITION, type PalaceCell } from '../tu-vi-projection';
 
-/** Tags `star` only with the transformation(s) that actually name it as `targetStar` — never a
- * transformation merely co-located in the same palace (a real Tử Vi lá số palace routinely holds
- * 2+ stars; tagging every star in the palace with any transformation present would misattribute
- * it). The authoritative Tứ Hóa list is also rendered separately below the grid regardless. */
-function starTags(star: string, cell: PalaceCell): string[] {
-  return cell.transformations.filter((t) => t.targetStar === star).map((t) => TRANSFORMATION_TAG[t.transformation] ?? t.transformation);
-}
-
-/** Dignity reinforced by color AND text label together (never color alone), per a fixed 5-state
- * palette — not a numeric strength score, since the domain model doesn't define one. */
+const TRANSFORMATION_TAG: Record<string, string> = { 'Hóa Lộc': 'L', 'Hóa Quyền': 'Q', 'Hóa Khoa': 'K', 'Hóa Kỵ': 'K.' };
 const DIGNITY_TONE: Record<string, string> = {
   'Miếu địa': 'bg-insight/20 text-insight',
   'Vượng địa': 'bg-insight/15 text-insight',
@@ -29,139 +15,90 @@ const DIGNITY_TONE: Record<string, string> = {
   'Hãm địa': 'bg-caution/15 text-caution',
 };
 
-function PalaceCard({ cell, size = 'normal' }: { cell: PalaceCell; size?: 'normal' | 'compact' }) {
-  const roleLabelEn = PALACE_ROLE_LABELS_EN[cell.role];
+function starTags(star: string, cell: PalaceCell): string[] {
+  return cell.transformations.filter((item) => item.targetStar === star).map((item) => TRANSFORMATION_TAG[item.transformation] ?? item.transformation);
+}
+
+function PalaceButton({ cell, selected, compact = false, onSelect }: { cell: PalaceCell; selected: boolean; compact?: boolean; onSelect: () => void }) {
   const markers = [cell.isMenh && 'Mệnh', cell.isThan && 'Thân'].filter(Boolean) as string[];
-
   return (
-    <div
-      role="group"
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={selected}
       aria-label={`${cell.role} palace, at ${cell.branch}${markers.length ? `, ${markers.join(' and ')}` : ''}`}
-      className={`flex h-full flex-col gap-1.5 rounded-md border p-2 ${
-        cell.isMenh
-          ? 'border-insight bg-insight/5'
-          : cell.isThan
-            ? 'border-trust bg-trust/5'
-            : 'border-[rgba(213,173,98,0.14)] bg-surface'
-      } ${size === 'compact' ? 'text-caption' : 'text-body-xs'}`}
+      className={`group flex h-full w-full flex-col rounded-md border text-left transition-[border-color,background-color,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] ${selected ? 'border-[#d5ad62] bg-[#d5ad62]/[0.08]' : cell.isThan ? 'border-[#708c79]/45 bg-[#708c79]/[0.04]' : 'border-[#d5ad62]/15 bg-[#0b1220] hover:border-[#d5ad62]/40'} ${compact ? 'min-h-[76px] p-2' : 'p-2.5'}`}
     >
-      <div className="flex items-center justify-between gap-1">
-        <span className="font-display font-semibold text-text-primary">{cell.role}</span>
-        <span className="text-text-tertiary">{cell.branch}</span>
-      </div>
-      <span className="text-[0.65rem] text-text-tertiary">{roleLabelEn}</span>
-
-      {markers.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {markers.map((m) => (
-            <span key={m} className={`rounded-sm px-1 py-0.5 text-[0.65rem] font-medium ${m === 'Mệnh' ? 'bg-insight/15 text-insight' : 'bg-trust/15 text-trust'}`}>
-              {m}
-            </span>
+      <span className="flex w-full items-start justify-between gap-1">
+        <span className={`font-display font-semibold text-[#f2eee5] ${compact ? 'text-caption' : 'text-body-sm'}`}>{cell.role}</span>
+        <span className="text-caption text-[#777b83]">{cell.branch}</span>
+      </span>
+      {markers.length > 0 && <span className="mt-1 text-[0.65rem] font-semibold text-[#e6c980]">{markers.join(' · ')}</span>}
+      {!compact && cell.mainStars.length > 0 && (
+        <ul className="mt-2 space-y-1">
+          {cell.mainStars.map(({ star, dignity }) => (
+            <li key={star} className="flex flex-wrap items-center gap-1">
+              <span className="text-caption font-semibold text-[#f2eee5]">{star}</span>
+              <span className={`rounded-sm px-1 py-0.5 text-[0.58rem] font-semibold leading-none ${DIGNITY_TONE[dignity] ?? 'bg-surface-raised text-text-secondary'}`} aria-label={`dignity: ${dignity}`}>{DIGNITY_SHORT_LABEL[dignity]}</span>
+              {starTags(star, cell).length > 0 && <sup className="text-[#e6c980]">{starTags(star, cell).join('')}</sup>}
+            </li>
           ))}
-        </div>
-      )}
-
-      {cell.mainStars.length > 0 && (
-        <ul className="flex flex-col gap-1">
-          {cell.mainStars.map(({ star, dignity }) => {
-            const tags = starTags(star, cell);
-            return (
-              <li key={star} className="flex flex-wrap items-center gap-1">
-                <span className="text-body-sm font-semibold text-text-primary">{star}</span>
-                <span
-                  className={`rounded-sm px-1 py-0.5 text-[0.6rem] font-semibold leading-none ${DIGNITY_TONE[dignity] ?? 'bg-surface-raised text-text-secondary'}`}
-                  aria-label={`dignity: ${dignity}`}
-                >
-                  {DIGNITY_SHORT_LABEL[dignity]}
-                </span>
-                {tags.length > 0 && <sup className="text-insight">{tags.join('')}</sup>}
-              </li>
-            );
-          })}
         </ul>
       )}
-
-      {cell.auxiliaryStars.length > 0 && (
-        <ul className="flex flex-wrap gap-x-1.5 text-text-secondary">
-          {cell.auxiliaryStars.map((star) => {
-            const tags = starTags(star, cell);
-            return (
-              <li key={star}>
-                {star}
-                {tags.length > 0 && <sup className="ml-0.5 text-insight">{tags.join('')}</sup>}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {(cell.hasTuan || cell.hasTriet) && (
-        <div className="mt-auto flex flex-wrap gap-1 pt-1">
-          {cell.hasTuan && <span className="rounded-sm bg-surface-raised px-1 py-0.5 text-[0.65rem] text-text-secondary">Tuần</span>}
-          {cell.hasTriet && <span className="rounded-sm bg-surface-raised px-1 py-0.5 text-[0.65rem] text-text-secondary">Triệt</span>}
-        </div>
-      )}
-    </div>
+      {!compact && cell.auxiliaryStars.length > 0 && <p className="mt-1 text-[0.67rem] leading-snug text-[#a6a7ac]">{cell.auxiliaryStars.join(' · ')}</p>}
+      {compact && <span className="mt-auto flex w-full items-end justify-between gap-1 pt-2 text-[0.65rem] text-[#a6a7ac]"><span>{cell.mainStars.length ? `${cell.mainStars.length} chính tinh` : 'Vô chính diệu'}</span><ChevronRight className="h-3 w-3" aria-hidden="true" /></span>}
+      {!compact && (cell.hasTuan || cell.hasTriet) && <span className="mt-auto pt-1 text-[0.65rem] font-medium text-[#a6a7ac]">{[cell.hasTuan && 'Tuần', cell.hasTriet && 'Triệt'].filter(Boolean).join(' · ')}</span>}
+    </button>
   );
 }
 
 function ChartSummaryCell({ chart }: { chart: TuViChartDto }) {
   return (
-    <div className="flex h-full flex-col justify-center gap-1 rounded-md border border-[rgba(213,173,98,0.2)] bg-surface-raised p-2 text-center text-body-xs">
-      <p className="font-display text-body-sm font-semibold text-insight">Lá Số Tử Vi</p>
-      <p className="text-text-secondary">
-        {chart.canChi.year.stem} {chart.canChi.year.branch} · {chart.sex}
-      </p>
-      <p className="text-text-secondary">{chart.cuc}</p>
-      <p className="text-text-tertiary">
-        Giờ {chart.hourBranch} · {chart.lunarDate.lunarDay}/{chart.lunarDate.lunarMonth}
-        {chart.lunarDate.isLeapMonth ? ' (nhuận)' : ''}/{chart.lunarDate.lunarYear} âm lịch
-      </p>
+    <div className="flex h-full flex-col items-center justify-center rounded-md border border-[#d5ad62]/25 bg-[radial-gradient(circle_at_center,rgba(213,173,98,0.09),transparent_65%),#101827] p-4 text-center">
+      <span className="mb-3 h-px w-16 bg-gradient-to-r from-transparent via-[#d5ad62]/70 to-transparent" />
+      <p className="font-display text-body-lg font-semibold text-[#e6c980]">Lá số Tử Vi</p>
+      <p className="mt-1 text-body-sm text-[#d8d1c2]">{chart.canChi.year.stem} {chart.canChi.year.branch} · {chart.sex}</p>
+      <p className="mt-1 text-caption font-semibold text-[#f2eee5]">{chart.cuc}</p>
+      <p className="mt-2 text-caption text-[#a6a7ac]">Giờ {chart.hourBranch} · {chart.lunarDate.lunarDay}/{chart.lunarDate.lunarMonth}{chart.lunarDate.isLeapMonth ? ' nhuận' : ''}/{chart.lunarDate.lunarYear} âm lịch</p>
     </div>
   );
 }
 
-/**
- * Sprint 18B.11 — the 12-palace lá số visualization. Every cell is a real, directly legible DOM
- * element with visible text (Vietnamese palace name + English gloss + branch + stars) — not a
- * decorative graphic with a separate hidden text equivalent, since the traditional grid layout is
- * already inherently tabular and accessible. `tablet:` and up shows the classic 4×4 grid (12
- * palaces around a blank center reserved for chart identity); below that, the same 12 palaces
- * render as a single-column list in clockwise reading order starting from Mệnh — no information is
- * lost, and a narrow-viewport reader gets a more legible single-column read rather than a cramped
- * shrunk grid.
- */
+function PalaceDetail({ cell }: { cell: PalaceCell }) {
+  return (
+    <section aria-live="polite" aria-labelledby="selected-palace-heading" className="rounded-[16px] border border-[#d5ad62]/25 bg-[#101827] p-4 tablet:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.07] pb-3">
+        <div><p className="text-caption uppercase tracking-[0.14em] text-[#d5ad62]">Cung đang chọn · {cell.branch}</p><h3 id="selected-palace-heading" className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">{cell.role}</h3></div>
+        <div className="flex gap-1">{cell.isMenh && <span className="rounded-sm bg-[#d5ad62]/15 px-2 py-1 text-caption font-semibold text-[#e6c980]">Mệnh</span>}{cell.isThan && <span className="rounded-sm bg-[#708c79]/15 px-2 py-1 text-caption font-semibold text-[#9eb5a5]">Thân</span>}</div>
+      </div>
+      <div className="mt-4 grid gap-5 tablet:grid-cols-2">
+        <div><p className="text-caption font-semibold uppercase tracking-[0.12em] text-[#777b83]">Chính tinh</p>{cell.mainStars.length ? <ul className="mt-2 space-y-2">{cell.mainStars.map(({ star, dignity }) => <li key={star} className="flex flex-wrap items-center gap-2 text-body-md font-semibold text-[#f2eee5]">{star}<span className={`rounded-sm px-1.5 py-0.5 text-caption ${DIGNITY_TONE[dignity]}`}>{DIGNITY_SHORT_LABEL[dignity]}</span>{starTags(star, cell).map((tag) => <sup key={tag} className="text-[#e6c980]">{tag}</sup>)}</li>)}</ul> : <p className="mt-2 text-body-sm text-[#a6a7ac]">Cung này không có chính tinh.</p>}</div>
+        <div><p className="text-caption font-semibold uppercase tracking-[0.12em] text-[#777b83]">Phụ tinh và dấu hiệu</p>{cell.auxiliaryStars.length ? <p className="mt-2 text-body-sm leading-relaxed text-[#d8d1c2]">{cell.auxiliaryStars.join(' · ')}</p> : <p className="mt-2 text-body-sm text-[#a6a7ac]">Không có phụ tinh.</p>}<p className="mt-2 text-caption text-[#a6a7ac]">{[cell.hasTuan && 'Tuần', cell.hasTriet && 'Triệt'].filter(Boolean).join(' · ') || 'Không có Tuần / Triệt tại cung này'}</p></div>
+      </div>
+    </section>
+  );
+}
+
 export function TuViPalaceGrid({ chart }: { chart: TuViChartDto }) {
   const cells = buildPalaceCells(chart);
-  const stackedOrder = orderFromMenh(cells);
+  const [selectedBranch, setSelectedBranch] = useState<EarthlyBranchValue>(chart.palaces.menh);
+  const selected = cells.find((cell) => cell.branch === selectedBranch) ?? cells[0]!;
 
   return (
-    <div>
-      {/* tablet+ : the traditional 4×4 grid — listed first in DOM order since it's the primary
-          representation; narrow viewports fall back to the stacked list below via CSS only, so a
-          `.first()` query (tests, assistive tech landmark order) resolves to the visible one. */}
-      <div className="hidden tablet:grid tablet:aspect-square tablet:grid-cols-4 tablet:grid-rows-4 tablet:gap-1.5" aria-label="12 palaces, traditional lá số grid layout">
-        {cells.map((cell) => {
-          const pos = PALACE_GRID_POSITION[cell.branch];
-          return (
-            <div key={cell.branch} style={{ gridRow: pos.row, gridColumn: pos.col }}>
-              <PalaceCard cell={cell} size="compact" />
-            </div>
-          );
-        })}
-        <div style={{ gridRow: '2 / span 2', gridColumn: '2 / span 2' }}>
-          <ChartSummaryCell chart={chart} />
+    <div className="space-y-4">
+      <div className="hidden aspect-square grid-cols-4 grid-rows-4 gap-1.5 tablet:grid" aria-label="12 palaces, traditional lá số grid layout">
+        {cells.map((cell) => { const pos = PALACE_GRID_POSITION[cell.branch]; return <div key={cell.branch} style={{ gridRow: pos.row, gridColumn: pos.col }}><PalaceButton cell={cell} selected={cell.branch === selectedBranch} onSelect={() => setSelectedBranch(cell.branch)} /></div>; })}
+        <div style={{ gridRow: '2 / span 2', gridColumn: '2 / span 2' }}><ChartSummaryCell chart={chart} /></div>
+      </div>
+
+      <div className="tablet:hidden">
+        <div className="mb-3 rounded-md border border-[#d5ad62]/20 bg-[#101827] p-3 text-center"><p className="font-display text-body-md font-semibold text-[#e6c980]">{chart.cuc}</p><p className="mt-1 text-caption text-[#a6a7ac]">Mệnh tại {chart.palaces.menh} · Thân tại {chart.palaces.than} · Giờ {chart.hourBranch}</p></div>
+        <div className="grid grid-cols-3 gap-1.5" aria-label="12 palaces, mobile overview">
+          {cells.map((cell) => <PalaceButton key={cell.branch} cell={cell} compact selected={cell.branch === selectedBranch} onSelect={() => setSelectedBranch(cell.branch)} />)}
         </div>
       </div>
 
-      {/* Narrow viewports: stacked list, clockwise from Mệnh. */}
-      <ul className="flex flex-col gap-2 tablet:hidden" aria-label="12 palaces, in clockwise order starting from Mệnh">
-        {stackedOrder.map((cell) => (
-          <li key={cell.branch}>
-            <PalaceCard cell={cell} />
-          </li>
-        ))}
-      </ul>
+      <PalaceDetail cell={selected} />
     </div>
   );
 }

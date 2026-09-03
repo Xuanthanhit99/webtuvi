@@ -87,16 +87,16 @@ export function TodaySuggestions({ energyText }: { energyText?: string }) {
         style={{ WebkitMaskImage: 'radial-gradient(ellipse 55% 60% at 50% 60%, black 35%, transparent 85%)', maskImage: 'radial-gradient(ellipse 55% 60% at 50% 60%, black 35%, transparent 85%)' }}
       />
 
-      <div className="relative grid gap-8 p-7 tablet:grid-cols-4 tablet:gap-7 tablet:p-9">
+      <div className="relative grid grid-cols-2 gap-x-4 gap-y-6 p-4 min-[430px]:p-5 tablet:grid-cols-4 tablet:gap-7 tablet:p-9">
         {SUGGESTIONS.map((item) => (
           <div key={item.label}>
             <div className="flex items-center gap-2 text-[#e6c980]">
               <item.icon className="h-4 w-4" aria-hidden="true" />
               <p className="text-caption font-semibold uppercase tracking-[0.14em]">{item.label}</p>
             </div>
-            <div className="mt-2.5 space-y-1">
+            <div className="mt-2 space-y-1 tablet:mt-2.5">
               {item.lines.map((line) => (
-                <p key={line} className="text-body-sm leading-relaxed text-[#d8d1c2]">
+                <p key={line} className="text-caption leading-relaxed text-[#d8d1c2] tablet:text-body-sm">
                   {line}
                 </p>
               ))}
@@ -108,7 +108,7 @@ export function TodaySuggestions({ energyText }: { energyText?: string }) {
             <Sparkles className="h-4 w-4" aria-hidden="true" />
             <p className="text-caption font-semibold uppercase tracking-[0.14em]">Năng lượng</p>
           </div>
-          <p className="mt-2.5 text-body-sm leading-relaxed text-[#d8d1c2]">
+          <p className="mt-2 text-caption leading-relaxed text-[#d8d1c2] tablet:mt-2.5 tablet:text-body-sm">
             {energyText ?? 'Năng lượng hôm nay ở mức tốt, hãy duy trì tinh thần tích cực.'}
           </p>
         </div>

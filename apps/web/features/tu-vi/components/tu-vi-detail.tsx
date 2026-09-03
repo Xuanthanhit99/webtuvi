@@ -13,10 +13,10 @@ export function TuViDetail({ id, onClose }: { id: string; onClose: () => void })
   return (
     <div className="flex flex-col gap-4">
       <Button variant="ghost" size="sm" onClick={onClose}>
-        ← Back to Tử Vi Lá Số
+        ← Quay lại Lá số Tử Vi
       </Button>
-      {isLoading && <Skeleton className="h-64 w-full" />}
-      {isError && <ErrorState description="Couldn't load that lá số." onRetry={() => refetch()} />}
+      {isLoading && <Skeleton className="h-[520px] w-full rounded-[20px]" />}
+      {isError && <ErrorState description="Chưa thể tải lá số này." onRetry={() => refetch()} />}
       {data && (
         <TuViChartView
           chart={data}

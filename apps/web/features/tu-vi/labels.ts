@@ -3,9 +3,9 @@ import type { BadgeVariant } from '@/components/ui/badge';
 
 /** Plain-language labels only — never AI wording. */
 export const CHART_STATUS_LABELS: Record<TuViChartStatusValue, string> = {
-  ACTIVE: 'Active',
-  ARCHIVED: 'Archived',
-  DELETED: 'Deleted',
+  ACTIVE: 'Đang dùng',
+  ARCHIVED: 'Đã lưu trữ',
+  DELETED: 'Đã xóa',
 };
 
 export const CHART_STATUS_BADGE_VARIANT: Record<TuViChartStatusValue, BadgeVariant> = {
