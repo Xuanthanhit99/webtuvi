@@ -16,11 +16,6 @@ const SHUFFLE_STEPS: Array<{ stage: ShuffleStage; after: number }> = [
 ];
 const SHUFFLE_STEPS_REDUCED: Array<{ stage: ShuffleStage; after: number }> = [{ stage: 'settled', after: 150 }];
 
-/** Exported so `TarotDrawPanel` can size its real-data wait to match the shuffle's own total
- * runtime instead of duplicating the figure — see `useTarotRitual`'s `startShuffle`. */
-export const SHUFFLE_TOTAL_MS = SHUFFLE_STEPS.reduce((sum, step) => sum + step.after, 0);
-export const SHUFFLE_TOTAL_MS_REDUCED = SHUFFLE_STEPS_REDUCED.reduce((sum, step) => sum + step.after, 0);
-
 /**
  * Purely visual ritual state — shuffle choreography and the per-card reveal-flip sequence — kept
  * entirely separate from `TarotDrawPanel`'s business state (`selectedSlots`/`pendingReading`/

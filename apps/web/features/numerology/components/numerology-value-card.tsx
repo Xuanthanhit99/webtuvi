@@ -15,7 +15,7 @@ export function NumerologyValueCard({ entry, meaning }: { entry: NumerologyValue
   const detailId = `numerology-value-${entry.type}-steps`;
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-[#d5ad62]/20 bg-[#071827] p-4">
+    <article className="flex min-w-0 flex-col gap-3 rounded-lg border border-[#b78ad0]/16 bg-[#0d1120]/80 p-4 transition-colors hover:border-[#b78ad0]/32">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-body-sm font-semibold text-text-secondary">{VALUE_TYPE_LABELS[entry.type]}</p>
@@ -25,8 +25,8 @@ export function NumerologyValueCard({ entry, meaning }: { entry: NumerologyValue
       </div>
 
       <div className="flex items-center gap-3">
-        <span className="font-mono text-heading-lg text-[#efb96c]">{entry.value}</span>
-        {entry.isMasterNumber && <Badge variant="insight">Master Number</Badge>}
+        <span className="font-serif text-[2.5rem] leading-none text-[#f1d69d]">{entry.value}</span>
+        {entry.isMasterNumber && <Badge variant="insight">Số đặc biệt</Badge>}
       </div>
 
       {meaning && (
@@ -40,19 +40,19 @@ export function NumerologyValueCard({ entry, meaning }: { entry: NumerologyValue
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
         aria-controls={detailId}
-        className="flex w-fit items-center gap-1 text-body-sm text-[#8ddbd0] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
+        className="flex min-h-11 w-fit items-center gap-1 text-body-sm text-[#c39cdb] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
       >
         <ChevronDown className={`h-4 w-4 transition-transform duration-fast ${expanded ? 'rotate-180' : ''}`} aria-hidden="true" />
-        {expanded ? 'Hide calculation' : `Why is my number ${entry.value}?`}
+        {expanded ? 'Ẩn cách tính' : `Vì sao là số ${entry.value}?`}
       </button>
 
       {expanded && (
-        <ol id={detailId} className="flex flex-col gap-1 rounded-md border border-[#d5ad62]/20 bg-[#06111d] p-3 text-body-sm text-text-secondary">
+        <ol id={detailId} className="flex min-w-0 flex-col gap-1 break-words rounded-md border border-[#b78ad0]/15 bg-[#080b17] p-3 text-body-sm text-text-secondary">
           {steps.map((step, index) => (
             <li key={index}>{step}</li>
           ))}
         </ol>
       )}
-    </div>
+    </article>
   );
 }

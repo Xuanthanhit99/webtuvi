@@ -13,10 +13,10 @@ export function NumerologyReadingDetail({ id, onClose }: { id: string; onClose: 
   return (
     <div className="flex flex-col gap-4">
       <Button variant="ghost" size="sm" onClick={onClose}>
-        ← Back to Numerology
+        ← Quay lại Thần số học
       </Button>
       {isLoading && <Skeleton className="h-64 w-full" />}
-      {isError && <ErrorState description="Couldn't load that reading." onRetry={() => refetch()} />}
+      {isError && <ErrorState description="Chưa thể tải hồ sơ này." onRetry={() => refetch()} />}
       {data && <NumerologyReadingView reading={data} onChanged={() => refetch()} />}
     </div>
   );

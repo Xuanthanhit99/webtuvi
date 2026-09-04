@@ -112,7 +112,7 @@ async function grantPremium(page: Page): Promise<void> {
   });
 
   await page.goto('/premium');
-  await page.getByRole('button', { name: 'Upgrade to Premium' }).click();
+  await page.getByRole('button', { name: 'Nâng cấp Premium' }).click();
   await expect.poll(() => checkoutBody, { timeout: 10000 }).not.toBeNull();
   const orderId = checkoutBody!.data.id;
 
@@ -135,7 +135,7 @@ async function grantPremium(page: Page): Promise<void> {
   expect(webhookResponse.ok()).toBe(true);
 
   await page.goto(`/premium/return?order=${orderId}`);
-  await expect(page.getByText('Premium activated')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Premium đã được kích hoạt')).toBeVisible({ timeout: 15000 });
 }
 
 test('readiness, Premium gate, generation, structured report, history, regeneration, and the Companion bridge', async ({ page }) => {

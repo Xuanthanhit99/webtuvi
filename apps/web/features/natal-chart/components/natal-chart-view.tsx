@@ -115,7 +115,7 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
         </div>
       </div>
 
-      <p className="text-caption text-text-secondary">Được tính toán từ dữ liệu sinh — calculated from your birth data, never chosen by AI.</p>
+      <p className="text-caption text-text-secondary">Được tính từ dữ liệu sinh của bạn. AI không lựa chọn hoặc thay đổi bất kỳ vị trí nào.</p>
 
       <section className="grid items-center gap-5 rounded-md border border-[#d5ad62]/20 bg-[#071827]/75 p-4 desktop:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex justify-center">
@@ -125,7 +125,7 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
           <div>
             <p className="text-caption font-semibold uppercase text-[#8ddbd0]">Tổng quan</p>
             <h2 className="mt-2 font-serif text-heading-lg text-text-primary">Big Three và cấu trúc chính</h2>
-            <p className="mt-2 text-body-sm text-text-secondary">Các lớp dưới đây là dữ liệu đã lưu từ engine: hành tinh, nhà, góc hợp và luận giải AI được tách riêng.</p>
+            <p className="mt-2 text-body-sm text-text-secondary">Khám phá các vị trí hành tinh, nhà và góc hợp đã được tính toán; phần luận giải AI được trình bày riêng.</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-md border border-[#d5ad62]/20 p-3">

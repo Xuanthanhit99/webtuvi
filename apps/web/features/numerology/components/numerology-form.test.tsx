@@ -54,8 +54,8 @@ describe('NumerologyForm', () => {
   it('requires a full birth name before submitting', async () => {
     const user = userEvent.setup();
     renderWithQuery(<NumerologyForm />);
-    await user.click(screen.getByRole('button', { name: /calculate my numbers/i }));
-    expect(await screen.findByText(/full birth name is required/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /khám phá hồ sơ số học/i }));
+    expect(await screen.findByText(/vui lòng nhập đầy đủ họ tên khai sinh/i)).toBeInTheDocument();
     expect(numerologyApi.calculate).not.toHaveBeenCalled();
   });
 
@@ -73,15 +73,15 @@ describe('NumerologyForm', () => {
 
     renderWithQuery(<NumerologyForm />);
 
-    expect(screen.getByLabelText(/date of birth/i)).toHaveValue('1995-08-17');
+    return waitFor(() => expect(screen.getByLabelText(/ngày sinh/i)).toHaveValue('1995-08-17'));
   });
 
   it('requires a birth date before submitting', async () => {
     const user = userEvent.setup();
     renderWithQuery(<NumerologyForm />);
-    await user.type(screen.getByLabelText(/full birth name/i), 'Jane Doe');
-    await user.click(screen.getByRole('button', { name: /calculate my numbers/i }));
-    expect(await screen.findByText(/birth date is required/i)).toBeInTheDocument();
+    await user.type(screen.getByLabelText(/họ tên khai sinh/i), 'Jane Doe');
+    await user.click(screen.getByRole('button', { name: /khám phá hồ sơ số học/i }));
+    expect(await screen.findByText(/vui lòng chọn ngày sinh/i)).toBeInTheDocument();
     expect(numerologyApi.calculate).not.toHaveBeenCalled();
   });
 
@@ -91,17 +91,17 @@ describe('NumerologyForm', () => {
     const user = userEvent.setup();
     renderWithQuery(<NumerologyForm onCalculated={onCalculated} />);
 
-    await user.type(screen.getByLabelText(/full birth name/i), 'Nguyen Van A');
-    await user.type(screen.getByLabelText(/date of birth/i), '1995-08-17');
-    await user.click(screen.getByRole('button', { name: /calculate my numbers/i }));
+    await user.type(screen.getByLabelText(/họ tên khai sinh/i), 'Nguyen Van A');
+    await user.type(screen.getByLabelText(/ngày sinh/i), '1995-08-17');
+    await user.click(screen.getByRole('button', { name: /khám phá hồ sơ số học/i }));
 
     await waitFor(() => expect(screen.getAllByText('22').length).toBeGreaterThan(0));
-    expect(screen.getByText('Master Number')).toBeInTheDocument();
+    expect(screen.getAllByText(/số đặc biệt/i).length).toBeGreaterThan(0);
     expect(numerologyApi.calculate).toHaveBeenCalledWith('Nguyen Van A', '1995-08-17');
     expect(onCalculated).toHaveBeenCalledWith(calculatedReading);
     // Sprint 8.5 remediation: the interpretation is labeled as AI, distinct from the deterministic
     // Life Path number above it.
-    expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
+    expect(screen.getByText('Luận giải bằng AI')).toBeInTheDocument();
   });
 
   it('a PREMIUM_REQUIRED calculate error shows an upgrade banner with a link to /premium', async () => {
@@ -110,12 +110,12 @@ describe('NumerologyForm', () => {
     );
     const user = userEvent.setup();
     renderWithQuery(<NumerologyForm />);
-    await user.type(screen.getByLabelText(/full birth name/i), 'Jane Doe');
-    await user.type(screen.getByLabelText(/date of birth/i), '1990-01-01');
-    await user.click(screen.getByRole('button', { name: /calculate my numbers/i }));
+    await user.type(screen.getByLabelText(/họ tên khai sinh/i), 'Jane Doe');
+    await user.type(screen.getByLabelText(/ngày sinh/i), '1990-01-01');
+    await user.click(screen.getByRole('button', { name: /khám phá hồ sơ số học/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/free calculation limit/i);
-    const upgradeLink = screen.getByRole('link', { name: 'Upgrade to Premium' });
+    const upgradeLink = screen.getByRole('link', { name: 'Nâng cấp Premium' });
     expect(upgradeLink).toHaveAttribute('href', '/premium?reason=required');
   });
 
@@ -125,25 +125,25 @@ describe('NumerologyForm', () => {
     );
     const user = userEvent.setup();
     renderWithQuery(<NumerologyForm />);
-    await user.type(screen.getByLabelText(/full birth name/i), 'Jane Doe');
-    await user.type(screen.getByLabelText(/date of birth/i), '1990-01-01');
-    await user.click(screen.getByRole('button', { name: /calculate my numbers/i }));
+    await user.type(screen.getByLabelText(/họ tên khai sinh/i), 'Jane Doe');
+    await user.type(screen.getByLabelText(/ngày sinh/i), '1990-01-01');
+    await user.click(screen.getByRole('button', { name: /khám phá hồ sơ số học/i }));
 
-    expect(await screen.findByText('That is not a real calendar date.')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Upgrade to Premium' })).not.toBeInTheDocument();
+    expect(await screen.findByText('Ngày sinh chưa hợp lệ.')).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Nâng cấp Premium' })).not.toBeInTheDocument();
   });
 
   it('"Calculate another reading" resets back to the form', async () => {
     (numerologyApi.calculate as jest.Mock).mockResolvedValue(calculatedReading);
     const user = userEvent.setup();
     renderWithQuery(<NumerologyForm />);
-    await user.type(screen.getByLabelText(/full birth name/i), 'Nguyen Van A');
-    await user.type(screen.getByLabelText(/date of birth/i), '1995-08-17');
-    await user.click(screen.getByRole('button', { name: /calculate my numbers/i }));
+    await user.type(screen.getByLabelText(/họ tên khai sinh/i), 'Nguyen Van A');
+    await user.type(screen.getByLabelText(/ngày sinh/i), '1995-08-17');
+    await user.click(screen.getByRole('button', { name: /khám phá hồ sơ số học/i }));
 
     await waitFor(() => expect(screen.getAllByText('22').length).toBeGreaterThan(0));
-    await user.click(screen.getByRole('button', { name: /calculate another reading/i }));
-    expect(screen.getByRole('button', { name: /calculate my numbers/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /tạo hồ sơ khác/i }));
+    expect(screen.getByRole('button', { name: /khám phá hồ sơ số học/i })).toBeInTheDocument();
     expect(screen.queryByText('22')).not.toBeInTheDocument();
   });
 });

@@ -82,7 +82,7 @@ async function completeRealPremiumCheckout(page: Page): Promise<void> {
     await route.fulfill({ response });
   });
 
-  await page.getByRole('button', { name: 'Upgrade to Premium' }).click();
+  await page.getByRole('button', { name: 'Nâng cấp Premium' }).click();
   await expect.poll(() => checkoutBody, { timeout: 10000 }).not.toBeNull();
   const orderId = checkoutBody!.data.id;
 

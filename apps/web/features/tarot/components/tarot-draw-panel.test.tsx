@@ -148,14 +148,13 @@ describe('TarotDrawPanel', () => {
     expect(screen.queryByText('The Fool')).not.toBeInTheDocument();
   });
 
-  it('skipping the shuffle ritual reaches selection quickly without a second draw call', async () => {
+  it('shows selection immediately when the real draw resolves, without an artificial ritual delay', async () => {
     (tarotApi.draw as jest.Mock).mockResolvedValue(drawnReading);
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
     await goToSpreadStep(user);
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
 
-    await user.click(await screen.findByRole('button', { name: 'Bỏ qua' }));
     expect(await screen.findByRole('button', { name: 'Chọn lá 1' }, { timeout: 3000 })).toBeInTheDocument();
     expect(tarotApi.draw).toHaveBeenCalledTimes(1);
   });

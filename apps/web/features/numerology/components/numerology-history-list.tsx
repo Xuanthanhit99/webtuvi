@@ -22,24 +22,24 @@ export function NumerologyHistoryList({ filters, onSelect }: { filters: ListRead
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   if (!data || data.items.length === 0) {
-    return <EmptyState title="No readings yet" description="Calculate your first reading to start your Numerology history." />;
+    return <EmptyState title="Chưa có hồ sơ" description="Tạo hồ sơ đầu tiên để bắt đầu hành trình Thần số học của bạn." />;
   }
 
   const atFreeCap = !premiumStatus?.isPremium && data.total >= FREE_HISTORY_LIMIT;
 
   return (
     <div className="flex flex-col gap-3">
-      <ul className="flex flex-col gap-2" aria-label="Reading history">
+      <ul className="grid gap-3 tablet:grid-cols-2" aria-label="Lịch sử hồ sơ số học">
         {data.items.map((reading) => (
           <li key={reading.id}>
             <button
               type="button"
               onClick={() => onSelect(reading.id)}
-              className="flex w-full flex-wrap items-center justify-between gap-2 rounded-md border border-[#d5ad62]/20 bg-[#071827] px-4 py-3 text-left transition-colors duration-fast hover:border-[#d5ad62]/45 hover:bg-[#0a2133] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
+              className="flex min-h-20 w-full flex-wrap items-center justify-between gap-2 rounded-lg border border-[#b78ad0]/16 bg-[#0b1020] px-4 py-3 text-left transition-colors duration-fast hover:border-[#b78ad0]/40 hover:bg-[#11152a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
             >
               <div className="flex flex-col gap-1">
                 <span className="text-body-sm font-semibold text-text-primary">{reading.normalizedBirthName}</span>
-                <span className="text-caption text-text-secondary">Born {reading.birthDate}</span>
+                <span className="text-caption text-text-secondary">Ngày sinh {reading.birthDate}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={READING_STATUS_BADGE_VARIANT[reading.status]}>{READING_STATUS_LABELS[reading.status]}</Badge>
@@ -51,9 +51,9 @@ export function NumerologyHistoryList({ filters, onSelect }: { filters: ListRead
       </ul>
       {atFreeCap && (
         <p className="text-caption text-text-secondary">
-          Showing your most recent {FREE_HISTORY_LIMIT} readings on the Free plan.{' '}
+          Gói miễn phí đang hiển thị {FREE_HISTORY_LIMIT} hồ sơ gần nhất.{' '}
           <Link href="/premium?reason=required" className="text-insight hover:underline">
-            Upgrade for unlimited history
+            Nâng cấp để xem lịch sử không giới hạn
           </Link>
           .
         </p>

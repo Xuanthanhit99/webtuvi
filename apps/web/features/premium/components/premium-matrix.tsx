@@ -1,35 +1,24 @@
-const ROWS: { capability: string; free: string; premium: string }[] = [
-  { capability: 'Daily Draw', free: '1 / day', premium: '1 / day' },
-  { capability: 'Single Card', free: '3 / day', premium: '15 / day' },
-  { capability: 'Three Card Spread', free: '1 / day', premium: '10 / day' },
-  { capability: 'Interpretation', free: 'Basic', premium: 'Deeper, memory-personalized' },
-  { capability: 'Reading history', free: 'Most recent 20', premium: 'Unlimited' },
-];
+import { Check } from 'lucide-react';
 
-/** The exact Free vs Premium matrix from docs/architecture/premium-entitlements.md, rendered
- * plainly — Three Card Spread stays available to Free (Phase 8: never silently remove
- * already-working free functionality), Premium just raises the ceiling. */
+const ROWS = [
+  { capability: 'Lá bài mỗi ngày', free: '1 / ngày', premium: '1 / ngày' },
+  { capability: 'Trải một lá', free: '3 / ngày', premium: '15 / ngày' },
+  { capability: 'Trải ba lá', free: '1 / ngày', premium: '10 / ngày' },
+  { capability: 'Luận giải', free: 'Cơ bản', premium: 'Sâu hơn, cá nhân hóa bằng ký ức' },
+  { capability: 'Lịch sử đọc', free: '20 lần gần nhất', premium: 'Không giới hạn' },
+] as const;
+
 export function PremiumMatrix() {
   return (
-    <div className="overflow-x-auto rounded-md border border-border-subtle">
-      <table className="w-full min-w-[420px] text-body-sm">
-        <thead>
-          <tr className="border-b border-border-subtle bg-surface text-left text-text-secondary">
-            <th className="px-3 py-2 font-medium">Capability</th>
-            <th className="px-3 py-2 font-medium">Free</th>
-            <th className="px-3 py-2 font-medium">Premium</th>
-          </tr>
-        </thead>
-        <tbody>
-          {ROWS.map((row) => (
-            <tr key={row.capability} className="border-b border-border-subtle last:border-0">
-              <td className="px-3 py-2 text-text-primary">{row.capability}</td>
-              <td className="px-3 py-2 text-text-secondary">{row.free}</td>
-              <td className="px-3 py-2 font-medium text-insight">{row.premium}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <section aria-labelledby="comparison-heading" className="overflow-hidden rounded-xl border border-white/10 bg-[#0a101c]">
+      <div className="border-b border-white/10 px-5 py-5 tablet:px-7"><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Quyền lợi thực tế</p><h2 id="comparison-heading" className="mt-1 font-display text-heading-md text-text-primary">Free và Premium khác nhau thế nào?</h2></div>
+      <div className="hidden grid-cols-[minmax(12rem,1.1fr)_minmax(9rem,.7fr)_minmax(13rem,1fr)] tablet:grid">
+        <div className="border-b border-white/10 px-6 py-3 text-caption font-semibold uppercase tracking-[0.14em] text-text-tertiary">Quyền lợi</div><div className="border-b border-l border-white/10 px-6 py-3 text-caption font-semibold uppercase tracking-[0.14em] text-text-secondary">Free</div><div className="border-b border-l border-[#d5ad62]/20 bg-[#d5ad62]/[0.045] px-6 py-3 text-caption font-semibold uppercase tracking-[0.14em] text-[#e6c980]">Premium</div>
+        {ROWS.map((row) => <div key={row.capability} className="contents"><div className="border-b border-white/[0.07] px-6 py-4 text-body-sm font-medium text-text-primary">{row.capability}</div><div className="border-b border-l border-white/[0.07] px-6 py-4 text-body-sm text-text-secondary">{row.free}</div><div className="flex gap-2 border-b border-l border-[#d5ad62]/15 bg-[#d5ad62]/[0.035] px-6 py-4 text-body-sm font-medium text-text-primary"><Check className="mt-0.5 h-4 w-4 shrink-0 text-[#d5ad62]" aria-hidden="true" />{row.premium}</div></div>)}
+      </div>
+      <div className="divide-y divide-white/[0.07] tablet:hidden">
+        {ROWS.map((row) => <div key={row.capability} className="px-5 py-4"><h3 className="text-body-sm font-semibold text-text-primary">{row.capability}</h3><dl className="mt-3 grid grid-cols-2 gap-3 text-body-sm"><div><dt className="text-caption uppercase tracking-wider text-text-tertiary">Free</dt><dd className="mt-1 text-text-secondary">{row.free}</dd></div><div><dt className="text-caption uppercase tracking-wider text-[#d5ad62]">Premium</dt><dd className="mt-1 text-text-primary">{row.premium}</dd></div></dl></div>)}
+      </div>
+    </section>
   );
 }

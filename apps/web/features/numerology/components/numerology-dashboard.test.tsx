@@ -72,15 +72,15 @@ describe('NumerologyDashboard', () => {
   it('renders the calculation form and real reading history by default', async () => {
     (numerologyApi.listReadings as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<NumerologyDashboard />);
-    expect(screen.getByRole('heading', { name: 'Những con số cốt lõi trong hồ sơ của bạn' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /calculate my numbers/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Những con số kể câu chuyện riêng của bạn' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /khám phá hồ sơ số học/i })).toBeInTheDocument();
     expect(await screen.findByText('JANE DOE')).toBeInTheDocument();
   });
 
   it('shows an empty state when there is no history yet', async () => {
     (numerologyApi.listReadings as jest.Mock).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
     renderWithQuery(<NumerologyDashboard />);
-    expect(await screen.findByText('No readings yet')).toBeInTheDocument();
+    expect(await screen.findByText('Chưa có hồ sơ')).toBeInTheDocument();
   });
 
   it('opening ?item=<id> renders the real reading detail instead of the form/history view', async () => {
@@ -90,8 +90,8 @@ describe('NumerologyDashboard', () => {
 
     expect(await screen.findByText('A grounded reflection.')).toBeInTheDocument();
     expect(numerologyApi.getReading).toHaveBeenCalledWith('r1');
-    expect(screen.queryByRole('button', { name: /calculate my numbers/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '← Back to Numerology' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /khám phá hồ sơ số học/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '← Quay lại Thần số học' })).toBeInTheDocument();
   });
 
   it('closing the detail view navigates back to the plain /discover/numerology route', async () => {
@@ -101,7 +101,7 @@ describe('NumerologyDashboard', () => {
     renderWithQuery(<NumerologyDashboard />);
 
     await screen.findByText('A grounded reflection.');
-    await user.click(screen.getByRole('button', { name: '← Back to Numerology' }));
+    await user.click(screen.getByRole('button', { name: '← Quay lại Thần số học' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/discover/numerology', { scroll: false }));
   });
 });

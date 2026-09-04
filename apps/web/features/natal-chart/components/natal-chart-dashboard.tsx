@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Board04AstroMark } from './board04-astro-mark';
 
 const FEATURE_CARDS = [
-  ['Chính xác', 'Dựa trên dữ liệu sinh và engine thiên văn học.'],
+  ['Chính xác', 'Dựa trên dữ liệu sinh và hệ thống tính toán thiên văn.'],
   ['Cá nhân hóa', 'Vị trí hành tinh, nhà và góc hợp theo hồ sơ của bạn.'],
   ['Dễ hiểu', 'Tầng thông tin rõ ràng từ tổng quan đến chi tiết.'],
   ['Bảo mật', 'Bản đồ được lưu trong tài khoản của bạn.'],
@@ -43,8 +43,7 @@ export function NatalChartDashboard() {
               <p className="text-caption font-semibold uppercase text-[#8ddbd0]">Bản đồ sao</p>
               <h1 className="mt-3 max-w-xl font-serif text-heading-xl text-text-primary tablet:text-display-sm">Bầu trời tại khoảnh khắc bạn sinh ra</h1>
               <p className="mt-4 max-w-2xl text-body-md text-text-secondary">
-                Bản đồ sao được tính từ ngày, giờ và nơi sinh thật. Mặt Trời, Mặt Trăng, ASC, nhà và góc chiếu đều là dữ liệu từ engine,
-                không phải minh họa trang trí.
+                Một lát cắt của bầu trời vào đúng ngày, giờ và nơi bạn sinh ra — với vị trí hành tinh, cung mọc, các nhà và góc hợp được tính từ dữ liệu thật.
               </p>
             </div>
             <a href="#natal-chart-form" className="self-start">

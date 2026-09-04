@@ -48,41 +48,40 @@ test('Calculate, verify exact core numbers, expand steps, history/detail, lifecy
   await registerAndOnboard(page);
 
   await page.goto('/discover/numerology');
-  await expect(page.getByRole('heading', { name: 'Numerology' })).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Những con số kể câu chuyện riêng của bạn' })).toBeVisible({ timeout: 10000 });
 
   // Deterministic test input — golden vector: Nguyen Van A, 1995-08-17 -> Life Path 22 (Master),
   // Personality 33 (Master), Expression 7, Birthday 8 (see numerology-engine.spec.ts).
-  await page.getByLabel(/full birth name/i).fill('Nguyen Van A');
-  await page.getByLabel(/date of birth/i).fill('1995-08-17');
-  await page.getByRole('button', { name: /calculate my numbers/i }).click();
+  await page.getByLabel(/họ tên khai sinh/i).fill('Nguyen Van A');
+  await page.locator('#numerology-birthdate').fill('1995-08-17');
+  await page.getByRole('button', { name: /khám phá hồ sơ số học/i }).click();
 
   // The real, already-computed result reveals — never a placeholder. "Life Path"/"Personality"
   // also appear as substrings inside other cards' descriptions, so match the exact card heading
   // and scope assertions to that card's own container.
-  const lifePathHeading = page.getByText('Life Path', { exact: true });
-  await expect(lifePathHeading).toBeVisible({ timeout: 10000 });
-  const lifePathCard = lifePathHeading.locator('xpath=ancestor::div[contains(@class,"rounded-md")][1]');
+  await expect(page.getByRole('heading', { name: 'Số chủ đạo của bạn' })).toBeVisible({ timeout: 10000 });
+  const lifePathCard = page.getByRole('heading', { name: 'Hiểu số chủ đạo 22' }).locator('xpath=following-sibling::article');
   await expect(lifePathCard.getByText('22', { exact: true })).toBeVisible();
   // Exact match — the traditional-meaning text below also legitimately contains the phrase "Master
   // Number" as part of a longer sentence ("The Master Builder (Master Number)."), which is real
   // content, not a bug; only the badge's own text is exactly "Master Number".
-  await expect(lifePathCard.getByText('Master Number', { exact: true })).toBeVisible();
+  await expect(lifePathCard.getByText('Số đặc biệt', { exact: true })).toBeVisible();
 
-  const personalityHeading = page.getByText('Personality', { exact: true });
-  const personalityCard = personalityHeading.locator('xpath=ancestor::div[contains(@class,"rounded-md")][1]');
+  const personalityHeading = page.getByText('Nhân cách', { exact: true });
+  const personalityCard = personalityHeading.locator('xpath=ancestor::article');
   await expect(personalityCard.getByText('33', { exact: true })).toBeVisible();
 
   // Calculation transparency (Phase 13) — expand Life Path's own steps and verify the real
   // digit-sum trail is shown, not internal code jargon.
-  await page.getByRole('button', { name: /why is my number 22/i }).click();
-  await expect(page.getByText(/Total: 8 \+ 8 \+ 6 = 22/)).toBeVisible();
-  await expect(page.getByText(/Master Number, so it's kept as-is/i)).toBeVisible();
+  await page.getByRole('button', { name: /vì sao là số 22/i }).click();
+  await expect(page.getByText(/Tổng: 8 \+ 8 \+ 6 = 22/)).toBeVisible();
+  await expect(page.getByText(/là số đặc biệt nên được giữ nguyên/i)).toBeVisible();
 
   // AI interpretation (mock provider) — either a real generated interpretation, or a truthful
   // "isn't ready yet" state with a working retry, never a fabricated placeholder.
-  const interpretationPending = page.getByText('Interpretation isn’t ready yet.');
+  const interpretationPending = page.getByText('Phần luận giải chưa sẵn sàng.');
   if (await interpretationPending.isVisible().catch(() => false)) {
-    await page.getByRole('button', { name: 'Generate interpretation' }).click();
+    await page.getByRole('button', { name: 'Tạo luận giải' }).click();
   }
   await expect(interpretationPending).not.toBeVisible({ timeout: 15000 });
 
@@ -91,20 +90,20 @@ test('Calculate, verify exact core numbers, expand steps, history/detail, lifecy
   await expect(page.getByText('NGUYEN VAN A')).toBeVisible({ timeout: 10000 });
 
   // History -> detail.
-  const historyList = page.getByRole('list', { name: 'Reading history' });
+  const historyList = page.getByRole('list', { name: 'Lịch sử hồ sơ số học' });
   await expect(historyList.getByRole('listitem')).toHaveCount(1, { timeout: 10000 });
   await historyList.getByRole('listitem').first().getByRole('button').click();
-  await expect(page.getByRole('button', { name: '← Back to Numerology' })).toBeVisible({ timeout: 10000 });
-  await expect(page.getByText('Life Path', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '← Quay lại Thần số học' })).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('Đường đời', { exact: true })).toBeVisible();
 
   // Lifecycle — archive then restore, reversibly. The Archive/Restore actions live inside the
   // reading view itself (this detail screen), not the list — done here before navigating back.
-  await page.getByRole('button', { name: 'Archive' }).click();
-  await expect(page.getByRole('button', { name: 'Restore' })).toBeVisible({ timeout: 10000 });
-  await page.getByRole('button', { name: 'Restore' }).click();
-  await expect(page.getByRole('button', { name: 'Archive' })).toBeVisible({ timeout: 10000 });
+  await page.getByRole('button', { name: 'Lưu trữ' }).click();
+  await expect(page.getByRole('button', { name: 'Khôi phục' })).toBeVisible({ timeout: 10000 });
+  await page.getByRole('button', { name: 'Khôi phục' }).click();
+  await expect(page.getByRole('button', { name: 'Lưu trữ' })).toBeVisible({ timeout: 10000 });
 
-  await page.getByRole('button', { name: '← Back to Numerology' }).click();
+  await page.getByRole('button', { name: '← Quay lại Thần số học' }).click();
 
   // Companion bridge: a real Numerology reading now exists for this user, marked visible to
   // Companion. Companion must still load and respond normally, referencing the real calculated

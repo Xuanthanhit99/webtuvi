@@ -40,23 +40,24 @@ describe('PremiumUpgradePanel', () => {
   it('Free state: shows the upgrade CTA and the Free vs Premium matrix', async () => {
     (premiumApi.status as jest.Mock).mockResolvedValue(FREE_STATUS);
     renderWithQuery(<PremiumUpgradePanel />);
-    expect(await screen.findByRole('button', { name: 'Upgrade to Premium' })).toBeInTheDocument();
-    expect(screen.getByText('15 / day')).toBeInTheDocument(); // Premium Single Card allowance from the matrix
+    expect(await screen.findByRole('button', { name: 'Nâng cấp Premium' })).toBeInTheDocument();
+    expect(screen.getAllByText('15 / ngày')).toHaveLength(2);
   });
 
   it('Free state: discloses the price and the MVP-test-price caveat before checkout', async () => {
     (premiumApi.status as jest.Mock).mockResolvedValue(FREE_STATUS);
     renderWithQuery(<PremiumUpgradePanel />);
-    expect(await screen.findByText(/79.000 VND/)).toBeInTheDocument();
-    expect(screen.getByText(/MVP test price/)).toBeInTheDocument();
+    expect(await screen.findByText('79.000')).toBeInTheDocument();
+    expect(screen.getByText('VND')).toBeInTheDocument();
+    expect(screen.getByText(/giá thử nghiệm MVP/)).toBeInTheDocument();
   });
 
   it('Premium state: shows the active badge and expiry, no upgrade button', async () => {
     (premiumApi.status as jest.Mock).mockResolvedValue(PREMIUM_STATUS);
     renderWithQuery(<PremiumUpgradePanel />);
-    expect(await screen.findByText(/You.{1,2}re Premium/)).toBeInTheDocument();
-    expect(screen.getByText('Active')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Upgrade to Premium' })).not.toBeInTheDocument();
+    expect(await screen.findByText('Bạn đang dùng Premium')).toBeInTheDocument();
+    expect(screen.getByText('Đang hoạt động')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Nâng cấp Premium' })).not.toBeInTheDocument();
   });
 
   it('checkout loading: the button shows a loading state while the mutation is pending', async () => {
@@ -66,7 +67,7 @@ describe('PremiumUpgradePanel', () => {
     const user = userEvent.setup();
     renderWithQuery(<PremiumUpgradePanel />);
 
-    const button = await screen.findByRole('button', { name: 'Upgrade to Premium' });
+    const button = await screen.findByRole('button', { name: 'Nâng cấp Premium' });
     await user.click(button);
     expect(button).toHaveAttribute('aria-busy', 'true');
     resolveCheckout({ id: 'order-1', checkoutUrl: 'https://pay.payos.vn/web/abc' } as never);
@@ -78,8 +79,8 @@ describe('PremiumUpgradePanel', () => {
     (premiumApi.checkout as jest.Mock).mockRejectedValue(new ApiError('Could not start checkout. Please try again.', 'PAYMENT_PROVIDER_ERROR', 400));
     const user = userEvent.setup();
     renderWithQuery(<PremiumUpgradePanel />);
-    await user.click(await screen.findByRole('button', { name: 'Upgrade to Premium' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Could not start checkout. Please try again.');
+    await user.click(await screen.findByRole('button', { name: 'Nâng cấp Premium' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Chưa thể mở trang thanh toán');
   });
 
   it('provider unavailable: shows a distinct, non-technical message', async () => {
@@ -87,8 +88,8 @@ describe('PremiumUpgradePanel', () => {
     (premiumApi.checkout as jest.Mock).mockRejectedValue(new ApiError('irrelevant backend message', 'PAYMENT_PROVIDER_UNAVAILABLE', 400));
     const user = userEvent.setup();
     renderWithQuery(<PremiumUpgradePanel />);
-    await user.click(await screen.findByRole('button', { name: 'Upgrade to Premium' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Payment is temporarily unavailable');
+    await user.click(await screen.findByRole('button', { name: 'Nâng cấp Premium' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Thanh toán đang tạm thời gián đoạn');
   });
 
   it('payments disabled (kill switch): shows the same non-technical unavailable message', async () => {
@@ -96,22 +97,22 @@ describe('PremiumUpgradePanel', () => {
     (premiumApi.checkout as jest.Mock).mockRejectedValue(new ApiError('irrelevant backend message', 'PAYMENTS_DISABLED', 400));
     const user = userEvent.setup();
     renderWithQuery(<PremiumUpgradePanel />);
-    await user.click(await screen.findByRole('button', { name: 'Upgrade to Premium' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Payment is temporarily unavailable');
+    await user.click(await screen.findByRole('button', { name: 'Nâng cấp Premium' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Thanh toán đang tạm thời gián đoạn');
   });
 
   it('kill-switch off (Sprint 12): hides the upgrade button and shows an honest unavailable message, before any checkout attempt', async () => {
     (premiumApi.status as jest.Mock).mockResolvedValue({ ...FREE_STATUS, paymentsEnabled: false });
     renderWithQuery(<PremiumUpgradePanel />);
-    expect(await screen.findByText(/temporarily unavailable/i)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Upgrade to Premium' })).not.toBeInTheDocument();
+    expect(await screen.findByText(/tạm thời gián đoạn/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Nâng cấp Premium' })).not.toBeInTheDocument();
     expect(premiumApi.checkout).not.toHaveBeenCalled();
   });
 
   it('kill-switch on (default): the upgrade button is shown', async () => {
     (premiumApi.status as jest.Mock).mockResolvedValue(FREE_STATUS);
     renderWithQuery(<PremiumUpgradePanel />);
-    expect(await screen.findByRole('button', { name: 'Upgrade to Premium' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Nâng cấp Premium' })).toBeInTheDocument();
   });
 
   it('never redirects or claims success before the backend actually returns a checkoutUrl', async () => {
@@ -119,7 +120,7 @@ describe('PremiumUpgradePanel', () => {
     (premiumApi.checkout as jest.Mock).mockResolvedValue({ id: 'order-1', checkoutUrl: null });
     const user = userEvent.setup();
     renderWithQuery(<PremiumUpgradePanel />);
-    await user.click(await screen.findByRole('button', { name: 'Upgrade to Premium' }));
+    await user.click(await screen.findByRole('button', { name: 'Nâng cấp Premium' }));
     await waitFor(() => expect(premiumApi.checkout).toHaveBeenCalled());
     expect(window.location.href).toBe('');
   });

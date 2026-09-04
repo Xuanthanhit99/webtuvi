@@ -52,12 +52,12 @@ test('Discover -> calculate a real chart, verify Big Three/wheel/planet/aspect, 
 
   // Discoverable without knowing the URL (Phase 14).
   await page.goto('/discover');
-  await expect(page.getByRole('heading', { name: 'Discover' })).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('heading', { name: 'Một câu hỏi, nhiều cách để hiểu mình' })).toBeVisible({ timeout: 10000 });
   // Sprint 14 (Ambiguity Cleanup): Discover hub label renamed to "Bản Đồ Sao" per
   // docs/product/vietnamese-tu-vi-product-definition.md §1 — destination page/route unchanged.
   const natalCard = page.getByText('Bản Đồ Sao', { exact: true });
   await expect(natalCard).toBeVisible();
-  await page.getByRole('link', { name: /mở bản đồ sao/i }).click();
+  await natalCard.locator('xpath=ancestor::a').click();
   await expect(page).toHaveURL(/\/discover\/natal-chart/);
 
   // Birth data — a real search against the live public Nominatim service (free, no cost),

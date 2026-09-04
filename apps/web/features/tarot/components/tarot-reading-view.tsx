@@ -99,6 +99,7 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
               card={rc.card}
               isReversed={rc.isReversed}
               imageSrc={resolveTarotArtworkSrc(rc.card)}
+              size="lg"
               onClick={() => setDetailCard({ card: rc.card, isReversed: rc.isReversed })}
             />
             <span className="text-caption font-semibold text-insight">{rc.positionLabel ?? `Vị trí ${index + 1}`}</span>

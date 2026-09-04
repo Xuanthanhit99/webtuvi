@@ -104,9 +104,9 @@ test('Free Tarot usage -> Premium boundary -> checkout -> verified webhook -> Pr
   // 2. The Premium page — Free state, boundary banner, matrix, and a real checkout attempt.
   await upgradeLink.click();
   await expect(page).toHaveURL(/\/premium\?reason=required/);
-  await expect(page.getByText(/That.{1,2}s a Premium feature/i)).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Upgrade to Premium' })).toBeVisible();
-  await expect(page.getByText('15 / day')).toBeVisible(); // Premium Single Card allowance, from the real matrix
+  await expect(page.getByText(/thuộc Premium/i)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Nâng cấp Premium' })).toBeVisible();
+  await expect(page.getByText('15 / ngày').first()).toBeVisible();
 
   // The successful mutation does a real `window.location.href` redirect to the mock checkout URL —
   // that's PayOS's own real domain (just a path that doesn't exist there in mock mode), so this
@@ -125,7 +125,7 @@ test('Free Tarot usage -> Premium boundary -> checkout -> verified webhook -> Pr
     await route.fulfill({ response });
   });
 
-  await page.getByRole('button', { name: 'Upgrade to Premium' }).click();
+  await page.getByRole('button', { name: 'Nâng cấp Premium' }).click();
   await expect.poll(() => checkoutBody, { timeout: 10000 }).not.toBeNull();
   expect(checkoutBody!.data.checkoutUrl).toBeTruthy();
   expect(checkoutBody!.data.currency).toBe('VND');
@@ -149,11 +149,11 @@ test('Free Tarot usage -> Premium boundary -> checkout -> verified webhook -> Pr
 
   // 4. The return page reflects real, backend-confirmed state — never the redirect alone.
   await page.goto(`/premium/return?order=${orderId}`);
-  await expect(page.getByText('Premium activated')).toBeVisible({ timeout: 15000 });
+  await expect(page.getByText('Premium đã được kích hoạt')).toBeVisible({ timeout: 15000 });
 
   // 5. Premium status is now visible on the Premium page itself, from the real entitlement.
   await page.goto('/premium');
-  await expect(page.getByText(/You.{1,2}re Premium/i)).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText('Bạn đang dùng Premium')).toBeVisible({ timeout: 10000 });
 
   // 6. The Tarot boundary that blocked draw #4 earlier is now genuinely lifted (Premium's higher
   // ceiling, not a client-side flag) — a 4th Single Card draw the same day succeeds.

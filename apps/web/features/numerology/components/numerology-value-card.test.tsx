@@ -39,15 +39,15 @@ describe('NumerologyValueCard', () => {
   it('shows the real calculated value and label, with calculation steps collapsed by default', () => {
     render(<NumerologyValueCard entry={nameBasedEntry} meaning={undefined} />);
     expect(screen.getByText('7')).toBeInTheDocument();
-    expect(screen.getByText('Expression')).toBeInTheDocument();
-    expect(screen.queryByText(/Sum: 5 \+ 7/)).not.toBeInTheDocument();
+    expect(screen.getByText('Sứ mệnh')).toBeInTheDocument();
+    expect(screen.queryByText(/Tổng: 5 \+ 7/)).not.toBeInTheDocument();
   });
 
   it('expanding reveals the real digit-sum steps — never AI-generated text', async () => {
     const user = userEvent.setup();
     render(<NumerologyValueCard entry={nameBasedEntry} meaning={undefined} />);
-    await user.click(screen.getByRole('button', { name: /why is my number 7/i }));
-    expect(screen.getByText(/Sum: 5 \+ 7 = 43/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /vì sao là số 7/i }));
+    expect(screen.getByText(/Tổng: 5 \+ 7 = 43/)).toBeInTheDocument();
     expect(screen.getByText(/43 → 4 \+ 3 = 7/)).toBeInTheDocument();
   });
 
@@ -55,10 +55,10 @@ describe('NumerologyValueCard', () => {
     const user = userEvent.setup();
     render(<NumerologyValueCard entry={masterEntry} meaning={undefined} />);
     expect(screen.getByText('33')).toBeInTheDocument();
-    expect(screen.getByText('Master Number')).toBeInTheDocument();
+    expect(screen.getByText('Số đặc biệt')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /why is my number 33/i }));
-    expect(screen.getByText(/kept as-is instead of being reduced further/i)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /vì sao là số 33/i }));
+    expect(screen.getByText(/được giữ nguyên, không rút gọn thêm/i)).toBeInTheDocument();
   });
 
   it('shows the real traditional meaning when provided, never invented client-side', () => {

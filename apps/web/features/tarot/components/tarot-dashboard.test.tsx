@@ -78,7 +78,7 @@ describe('TarotDashboard', () => {
   it('renders the draw panel and real reading history by default', async () => {
     (tarotApi.listReadings as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<TarotDashboard />);
-    expect(screen.getByRole('heading', { name: 'Tarot 78 Complete Flow' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Tarot', level: 1 })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Bắt đầu trải bài/ })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText('Mở thư viện 78 lá')).toBeInTheDocument());
   });

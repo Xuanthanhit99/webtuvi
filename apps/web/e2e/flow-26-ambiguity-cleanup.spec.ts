@@ -74,11 +74,8 @@ test('Settings hides frozen Reflection/Insight/Review/Goal modules; Discover nam
   await expect(page.getByText('Bản Đồ Sao', { exact: true })).toBeVisible();
   await expect(page.getByText('Thần Số Học', { exact: true })).toBeVisible();
   await expect(page.getByText('Ngũ Hành Phương Đông', { exact: true })).toBeVisible();
-  // No card is titled/branded "Tử Vi" — that name is reserved for the future, not-yet-built
-  // module and must never appear as an active Discover card. The Eastern Horoscope card is
-  // allowed (expected) to *mention* "Tử Vi" in its own disclaimer prose, precisely to state that
-  // distinction explicitly — so assert the absence of a Tử Vi card, not the absence of the word.
+  // The shipped Tử Vi Lá Số and Ngũ Hành Phương Đông remain explicitly distinct systems.
   await expect(page.getByText('Tử Vi', { exact: true })).toHaveCount(0);
-  await expect(page.getByText('Tử Vi Lá Số', { exact: true })).toHaveCount(0);
-  await expect(page.getByText(/not vietnamese tử vi lá số/i)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tử Vi Lá Số' })).toBeVisible();
+  await expect(page.getByText(/Đây là một hệ riêng, không phải lá số Tử Vi Đẩu Số/i)).toBeVisible();
 });

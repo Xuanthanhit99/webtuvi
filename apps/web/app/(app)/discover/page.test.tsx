@@ -21,7 +21,7 @@ describe('DiscoverPage — Eastern Horoscope vs. Tử Vi Lá Số naming boundar
 
   it('explicitly disclaims Eastern Horoscope is not Vietnamese Tử Vi Lá Số', () => {
     render(<DiscoverPage />);
-    expect(screen.getByText(/Not Vietnamese Tử Vi Lá Số, a separate module/)).toBeInTheDocument();
+    expect(screen.getByText(/Đây là một hệ riêng, không phải lá số Tử Vi Đẩu Số/)).toBeInTheDocument();
   });
 
   it('renders all five live Discovery systems by their correct, distinct names', () => {
@@ -37,7 +37,8 @@ describe('DiscoverPage — Tử Vi Lá Số (live, Sprint 18B)', () => {
     render(<DiscoverPage />);
     expect(screen.getByRole('heading', { name: 'Tử Vi Lá Số' })).toBeInTheDocument();
     expect(screen.queryByText('Coming soon')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Mở Tử Vi Lá Số/i })).toHaveAttribute('href', '/discover/tu-vi');
+    const heading = screen.getByRole('heading', { name: 'Tử Vi Lá Số' });
+    expect(heading.closest('a')).toHaveAttribute('href', '/discover/tu-vi');
   });
 
   it('does not link the Tử Vi Lá Số card to the archived /menh-vi prototype', () => {
@@ -48,11 +49,27 @@ describe('DiscoverPage — Tử Vi Lá Số (live, Sprint 18B)', () => {
 
   it('distinguishes Tử Vi Lá Số from Ngũ Hành Phương Đông in its own description', () => {
     render(<DiscoverPage />);
-    expect(screen.getByText(/Not the same as Ngũ Hành Phương Đông above/)).toBeInTheDocument();
+    expect(screen.getByText(/Lập lá số Tử Vi Đẩu Số/)).toBeInTheDocument();
   });
 
-  it('tells the user in the page subheading that Tử Vi Lá Số is live', () => {
+  it('introduces the five real systems without implementation jargon', () => {
     render(<DiscoverPage />);
-    expect(screen.getByText(/Tử Vi, Tarot, Bản đồ sao, Thần số học và Ngũ Hành Phương Đông/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Một câu hỏi, nhiều cách để hiểu mình/ })).toBeInTheDocument();
+    expect(screen.queryByText(/API|deterministic|flow thật/i)).not.toBeInTheDocument();
+  });
+});
+
+describe('DiscoverPage — editorial information architecture', () => {
+  it('offers real cross-module paths and labels static curation honestly', () => {
+    render(<DiscoverPage />);
+    expect(screen.getByRole('heading', { name: 'Đi theo câu hỏi của bạn' })).toBeInTheDocument();
+    expect(screen.getByText(/không phải đề xuất cá nhân hóa/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Khám phá Thần số học/i })).toHaveAttribute('href', '/discover/numerology');
+  });
+
+  it('keeps the cross-system report separate from the five discovery systems', () => {
+    render(<DiscoverPage />);
+    expect(screen.getByRole('heading', { name: 'Personal Destiny Report' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Xem báo cáo/i })).toHaveAttribute('href', '/reports');
   });
 });

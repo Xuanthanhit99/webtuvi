@@ -81,8 +81,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
         birthTime: birthTimeKnown && birthTime ? birthTime : undefined,
         locationToken: selectedCandidate!.token,
       }),
-    onSuccess: async (chart) => {
-      await new Promise((resolve) => setTimeout(resolve, 700));
+    onSuccess: (chart) => {
       setResult(chart);
       setPhase('revealed');
       queryClient.invalidateQueries({ queryKey: ['natal-chart'] });
@@ -299,7 +298,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
 
       <aside className="rounded-md border border-[#d5ad62]/20 bg-[#071827]/85 p-4 text-body-sm text-text-secondary">
         <p className="font-serif text-heading-sm text-[#efb96c]">Dữ liệu được chuẩn hóa</p>
-        <p className="mt-2">Nơi sinh được xác nhận bằng kết quả tìm kiếm, sau đó server tự tính tọa độ, múi giờ, hành tinh, nhà và góc hợp.</p>
+        <p className="mt-2">Nơi sinh được xác nhận từ kết quả tìm kiếm; tọa độ và múi giờ được xử lý tự động để lập bản đồ chính xác.</p>
         <div className="mt-5 grid grid-cols-2 gap-2 text-caption">
           <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Tropical</span>
           <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Placidus</span>

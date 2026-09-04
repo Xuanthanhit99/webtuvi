@@ -16,7 +16,7 @@ import { TarotReadingView } from './tarot-reading-view';
 import { TarotCardVisual } from './tarot-card-face';
 import { READING_TYPE_DESCRIPTIONS, READING_TYPE_LABELS } from '../labels';
 import { TAROT_CARD_BACK_SRC } from '../artwork';
-import { SHUFFLE_TOTAL_MS, SHUFFLE_TOTAL_MS_REDUCED, useTarotRitual } from '../ritual/use-tarot-ritual';
+import { useTarotRitual } from '../ritual/use-tarot-ritual';
 import { RitualStage } from '../ritual/ritual-stage';
 import { TarotDeckShuffle } from '../ritual/tarot-deck-shuffle';
 import { TarotRevealSequence } from '../ritual/tarot-reveal-sequence';
@@ -75,24 +75,9 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
   const activeIntention = useMemo(() => INTENTIONS.find((item) => item.id === intention) ?? INTENTIONS[0], [intention]);
 
   const ritual = useTarotRitual();
-  const beginFocusAt = useRef(0);
-  // Lets the shuffle's own "Bỏ qua" button cut the ritual's minimum-wait short too — skipping the
-  // animation shouldn't leave the user staring at an already-settled deck for the remainder of it.
-  const ritualWaitResolver = useRef<(() => void) | null>(null);
-
   const draw = useMutation({
     mutationFn: () => tarotApi.draw(type, type === 'DAILY_DRAW' ? undefined : question.trim() || undefined),
-    onSuccess: async (reading) => {
-      const minMs = ritual.reducedMotion ? SHUFFLE_TOTAL_MS_REDUCED : SHUFFLE_TOTAL_MS;
-      const remaining = Math.max(0, minMs - (performance.now() - beginFocusAt.current));
-      await new Promise<void>((resolve) => {
-        const timer = setTimeout(resolve, remaining);
-        ritualWaitResolver.current = () => {
-          clearTimeout(timer);
-          resolve();
-        };
-      });
-      ritualWaitResolver.current = null;
+    onSuccess: (reading) => {
       setPendingReading(reading);
       setSelectedSlots([]);
       setPhase('select');
@@ -116,7 +101,6 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     setResult(null);
     setSelectedSlots([]);
     setPhase('focus');
-    beginFocusAt.current = performance.now();
     ritual.startShuffle();
     trackEvent('tarot_started', { feature: 'tarot', spreadType: ANALYTICS_SPREAD_TYPE[type] });
     draw.mutate();
@@ -124,7 +108,6 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
 
   function skipShuffle() {
     ritual.skipShuffle();
-    ritualWaitResolver.current?.();
   }
 
   // Roving keyboard nav across the fan (Tab/Enter already work via native buttons — this adds
@@ -260,7 +243,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
         <section className="relative grid gap-6 p-4 tablet:grid-cols-[0.85fr_1.15fr] tablet:p-6">
           <div>
             <h2 className="font-display text-heading-lg text-insight">Đặt câu hỏi của bạn</h2>
-            <p className="mt-2 text-body-sm text-text-secondary">Chọn chủ đề để tự đặt khung nhìn, rồi nhập câu hỏi nếu bạn muốn. Chủ đề chưa được backend lưu riêng.</p>
+            <p className="mt-2 text-body-sm text-text-secondary">Chọn một chủ đề để định hướng suy ngẫm, rồi viết câu hỏi nếu bạn muốn. Câu hỏi có thể để trống.</p>
           </div>
           <div className="flex flex-col gap-4">
           <div className="grid gap-3 tablet:grid-cols-2">
@@ -302,7 +285,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
         <section className="relative flex flex-col gap-5 p-4 tablet:p-6">
           <div className="text-center">
             <h2 className="font-display text-heading-lg text-insight">Chọn kiểu trải bài</h2>
-            <p className="mt-2 text-body-sm text-text-secondary">Chỉ hiển thị các spread thật mà backend hiện hỗ trợ.</p>
+            <p className="mt-2 text-body-sm text-text-secondary">Ba cách trải bài, từ một khoảnh khắc ngắn đến góc nhìn theo dòng thời gian.</p>
           </div>
           <div className="grid grid-cols-1 gap-3 tablet:grid-cols-3">
             {READING_TYPES.map((readingType) => (

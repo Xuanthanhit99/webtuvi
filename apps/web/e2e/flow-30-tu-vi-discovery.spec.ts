@@ -60,12 +60,7 @@ test('Calculate VECTOR-B1, verify exact deterministic facts, generate interpreta
   await page.goto('/discover');
   await expect(page.getByRole('heading', { name: 'Tử Vi Lá Số' })).toBeVisible({ timeout: 15000 });
   await expect(page.getByText('Coming soon')).not.toBeVisible();
-  // The Discover hub renders every system card's CTA via a single shared component
-  // (apps/web/app/(app)/discover/page.tsx) as `Mở {system.title}` ("Open X"), not "Try X" —
-  // confirmed against the real rendered DOM during the Time Cycles QA pass. The old `/try .../`
-  // pattern was stale (also found, unfixed, in flow-23-natal-chart-discovery.spec.ts — out of
-  // this pass's scope; see the QA closure report).
-  await page.getByRole('link', { name: /mở tử vi lá số/i }).click();
+  await page.getByRole('heading', { name: 'Tử Vi Lá Số' }).locator('xpath=ancestor::a').click();
   await expect(page).toHaveURL(/\/discover\/tu-vi/, { timeout: 30000 });
   // Board 02 pass: the real page h1 is now "Lá số Tử Vi", rendered by the TuViHero landing
   // component (features/tu-vi/components/tu-vi-hero.tsx) — replaced the old MvPageHeader-based

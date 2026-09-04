@@ -52,7 +52,7 @@ export function TarotLibrary() {
       <div className="relative flex flex-col gap-3 tablet:flex-row tablet:items-end tablet:justify-between">
         <div>
           <h2 className="font-display text-heading-lg text-insight">Thư viện Tarot 78 lá</h2>
-          <p className="mt-1 text-body-sm text-text-secondary">Tra cứu bộ bài canonical đang được backend sử dụng để rút bài. Thư viện chỉ tải khi bạn mở để tránh kéo toàn bộ ảnh vào flow rút bài.</p>
+          <p className="mt-1 text-body-sm text-text-secondary">Khám phá ý nghĩa và hình ảnh của trọn bộ 78 lá. Thư viện chỉ tải khi bạn mở để hành trình rút bài luôn nhẹ nhàng.</p>
         </div>
         {opened ? (
           <div className="w-full tablet:max-w-xs">
