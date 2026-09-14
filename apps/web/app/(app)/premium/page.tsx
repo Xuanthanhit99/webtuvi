@@ -15,7 +15,7 @@ function PremiumBoundaryBanner() {
     return <div role="status" className="flex items-start gap-3 rounded-lg border border-[#d5ad62]/25 bg-[#d5ad62]/[0.07] px-4 py-3 text-body-sm text-text-primary"><Info className="mt-0.5 h-4 w-4 shrink-0 text-[#e6c980]" aria-hidden="true" /><p>Tính năng bạn vừa chọn thuộc Premium. Xem quyền lợi và mức giá hiện tại bên dưới.</p></div>;
   }
   if (cancelled) {
-    return <div role="status" className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-body-sm text-text-secondary"><CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-trust" aria-hidden="true" /><p>Bạn đã rời trang thanh toán. Không có khoản thanh toán nào được xác nhận; bạn có thể thử lại khi sẵn sàng.</p></div>;
+    return <div role="status" className="flex items-start gap-3 rounded-lg border border-white/10 bg-white/[0.03] px-4 py-3 text-body-sm text-text-secondary"><CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-trust" aria-hidden="true" /><p>Bạn đã quay về từ trang thanh toán. Thông tin trên đường dẫn không xác nhận trạng thái thanh toán; hãy kiểm tra trạng thái gói bên dưới.</p></div>;
   }
   return null;
 }

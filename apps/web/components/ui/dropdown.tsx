@@ -13,10 +13,11 @@ export interface DropdownProps {
   options: DropdownOption[];
   onChange: (value: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 /** Native <select>: full keyboard support and screen-reader semantics for free. */
-export function Dropdown({ id, label, value, options, onChange, className }: DropdownProps) {
+export function Dropdown({ id, label, value, options, onChange, className, disabled }: DropdownProps) {
   return (
     <div className={className}>
       <label htmlFor={id} className="mb-2 block text-body-sm font-medium text-text-primary">
@@ -26,9 +27,10 @@ export function Dropdown({ id, label, value, options, onChange, className }: Dro
         <select
           id={id}
           value={value}
+          disabled={disabled}
           onChange={(e) => onChange(e.target.value)}
           className={cn(
-            'h-11 w-full appearance-none rounded-md border border-border-subtle bg-surface px-3 pr-9 text-body-md text-text-primary',
+            'h-11 w-full min-w-0 appearance-none rounded-md border border-border-subtle bg-surface px-3 pr-9 text-body-md text-text-primary disabled:cursor-not-allowed disabled:opacity-60',
             'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight',
           )}
         >

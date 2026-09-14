@@ -3,13 +3,13 @@ import { AuthCard } from '@/features/auth/components/auth-card';
 import { ResendVerificationForm } from '@/features/auth/components/resend-verification-form';
 
 // SEO + Shareability Foundation — thin, transactional, no SEO value.
-export const metadata: Metadata = { title: 'Verify your email', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Xác minh email', robots: { index: false, follow: false } };
 
 export default function VerifyEmailPendingPage() {
   return (
     <AuthCard
-      title="Almost there"
-      description="We sent a verification link when you signed up. Didn't get it, or did it expire?"
+      title="Kiểm tra hộp thư"
+      description="Mở liên kết xác minh trong email. Bạn có thể yêu cầu liên kết mới nếu chưa nhận được hoặc liên kết đã hết hạn."
     >
       <ResendVerificationForm />
     </AuthCard>

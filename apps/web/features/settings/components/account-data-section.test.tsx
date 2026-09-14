@@ -46,11 +46,11 @@ describe('AccountDataSection', () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.click(screen.getByRole('button', { name: 'Export my data' }));
+    await user.click(screen.getByRole('button', { name: 'Xuất dữ liệu tài khoản' }));
 
     await waitFor(() => expect(settingsApi.export.create).toHaveBeenCalled());
     expect(global.URL.createObjectURL).toHaveBeenCalled();
-    expect(await screen.findByText(/data export has downloaded/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Đã tải xuống bản xuất dữ liệu/i)).toBeInTheDocument();
   });
 
   it('shows an error toast when export fails', async () => {
@@ -58,29 +58,29 @@ describe('AccountDataSection', () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.click(screen.getByRole('button', { name: 'Export my data' }));
+    await user.click(screen.getByRole('button', { name: 'Xuất dữ liệu tài khoản' }));
 
-    expect(await screen.findByText(/couldn.t create an export/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Chưa thể xuất dữ liệu/i)).toBeInTheDocument();
   });
 
   it('opens a destructive confirmation dialog requiring the current password before deleting', async () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.click(screen.getByRole('button', { name: 'Delete account' }));
+    await user.click(screen.getByRole('button', { name: 'Xóa tài khoản' }));
 
-    expect(await screen.findByRole('heading', { name: /delete your account/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Xóa tài khoản của bạn/i })).toBeInTheDocument();
     // The confirm button stays disabled until a password is entered — never a bare confirm click.
-    expect(screen.getByRole('button', { name: /permanently delete my account/i })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /Xóa tài khoản vĩnh viễn/i })).toBeDisabled();
   });
 
   it('cancels without calling the API', async () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.click(screen.getByRole('button', { name: 'Delete account' }));
-    await screen.findByRole('heading', { name: /delete your account/i });
-    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    await user.click(screen.getByRole('button', { name: 'Xóa tài khoản' }));
+    await screen.findByRole('heading', { name: /Xóa tài khoản của bạn/i });
+    await user.click(screen.getByRole('button', { name: 'Hủy' }));
 
     expect(settingsApi.deleteAccount).not.toHaveBeenCalled();
   });
@@ -92,10 +92,10 @@ describe('AccountDataSection', () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.click(screen.getByRole('button', { name: 'Delete account' }));
-    await screen.findByRole('heading', { name: /delete your account/i });
-    await user.type(screen.getByLabelText(/confirm your password/i), 'CorrectPassword1!');
-    await user.click(screen.getByRole('button', { name: /permanently delete my account/i }));
+    await user.click(screen.getByRole('button', { name: 'Xóa tài khoản' }));
+    await screen.findByRole('heading', { name: /Xóa tài khoản của bạn/i });
+    await user.type(screen.getByLabelText(/Xác nhận mật khẩu của bạn/i), 'CorrectPassword1!');
+    await user.click(screen.getByRole('button', { name: /Xóa tài khoản vĩnh viễn/i }));
 
     await waitFor(() => expect(settingsApi.deleteAccount).toHaveBeenCalledWith('CorrectPassword1!'));
     await waitFor(() => expect(invalidate).toHaveBeenCalled());
@@ -107,12 +107,12 @@ describe('AccountDataSection', () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.click(screen.getByRole('button', { name: 'Delete account' }));
-    await screen.findByRole('heading', { name: /delete your account/i });
-    await user.type(screen.getByLabelText(/confirm your password/i), 'WrongPassword');
-    await user.click(screen.getByRole('button', { name: /permanently delete my account/i }));
+    await user.click(screen.getByRole('button', { name: 'Xóa tài khoản' }));
+    await screen.findByRole('heading', { name: /Xóa tài khoản của bạn/i });
+    await user.type(screen.getByLabelText(/Xác nhận mật khẩu của bạn/i), 'WrongPassword');
+    await user.click(screen.getByRole('button', { name: /Xóa tài khoản vĩnh viễn/i }));
 
-    expect(await screen.findByText(/your password doesn.t match/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Mật khẩu hiện tại chưa đúng/i)).toBeInTheDocument();
     expect(mockPush).not.toHaveBeenCalled();
   });
 });

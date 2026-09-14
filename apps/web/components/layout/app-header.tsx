@@ -21,12 +21,12 @@ export function AppHeader() {
     try {
       await authApi.logout();
     } catch {
-      // Logout is best-effort client-side too — cookies are cleared server-side
-      // regardless of whether this network call itself succeeds.
+      toast.error('Chưa thể đăng xuất. Vui lòng kiểm tra kết nối và thử lại.');
+      return;
     }
     resetAnonymousId();
-    invalidateAuth();
-    toast.success("You've been logged out.");
+    await invalidateAuth(true);
+    toast.success('Đã đăng xuất.');
     router.push('/login');
   }
 
@@ -90,7 +90,7 @@ function ProfileMenu({ displayName, onLogout }: { displayName: string; onLogout:
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Account menu"
+        aria-label="Menu tài khoản"
         className={cn(
           'flex h-11 items-center gap-2 rounded-full px-2 text-text-secondary',
           'hover:bg-surface hover:text-text-primary transition-colors duration-fast',

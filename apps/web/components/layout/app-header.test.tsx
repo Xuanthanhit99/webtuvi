@@ -1,14 +1,21 @@
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
 import { AppHeader } from './app-header';
 import { useAuth } from '@/providers/auth-provider';
+import { authApi } from '@/features/auth/api/auth-api';
+import { toast } from '@/components/ui/toast';
 
-jest.mock('next/navigation', () => ({ useRouter: () => ({ push: jest.fn() }) }));
+const mockInvalidate = jest.fn();
+const mockPush = jest.fn();
+jest.mock('@/features/auth/api/auth-api', () => ({ authApi: { logout: jest.fn() } }));
+jest.mock('@/components/ui/toast', () => ({ toast: { success: jest.fn(), error: jest.fn() } }));
+
+jest.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }));
 
 jest.mock('@/providers/auth-provider', () => ({
   useAuth: jest.fn(),
-  useInvalidateAuth: () => jest.fn(),
+  useInvalidateAuth: () => mockInvalidate,
 }));
 
 jest.mock('@/features/notifications/api/notifications-api', () => ({
@@ -49,11 +56,31 @@ describe('AppHeader — Operator Tools link visibility', () => {
 
 describe('AppHeader — profile menu', () => {
   beforeEach(() => {
+    jest.clearAllMocks();
     (useAuth as jest.Mock).mockReturnValue({
       user: { id: 'u1', email: 'a@x.com', displayName: 'Thành', role: 'USER', emailVerifiedAt: null, onboardingCompletedAt: null, createdAt: '' },
       isLoading: false,
       refetch: jest.fn(),
     });
+  });
+
+  it.each([true, false])('confirms logout only when the server succeeds (success=%s)', async (success) => {
+    if (success) (authApi.logout as jest.Mock).mockResolvedValue(undefined);
+    else (authApi.logout as jest.Mock).mockRejectedValue(new TypeError('offline'));
+    renderWithQuery(<AppHeader />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'Menu tài khoản' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Log out' }));
+    if (success) {
+      await waitFor(() => expect(mockInvalidate).toHaveBeenCalledWith(true));
+      expect(mockPush).toHaveBeenCalledWith('/login');
+      expect(toast.success).toHaveBeenCalledWith('Đã đăng xuất.');
+    } else {
+      await waitFor(() => expect(toast.error).toHaveBeenCalled());
+      expect(mockInvalidate).not.toHaveBeenCalled();
+      expect(mockPush).not.toHaveBeenCalled();
+      expect(toast.success).not.toHaveBeenCalled();
+    }
   });
 
   it('is closed by default and opens a real-route menu on click, using the initials fallback (no avatarUrl in the DTO)', async () => {
@@ -63,7 +90,7 @@ describe('AppHeader — profile menu', () => {
     expect(screen.queryByRole('menu')).not.toBeInTheDocument();
     expect(screen.getByRole('img', { name: 'Thành' })).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Account menu' }));
+    await user.click(screen.getByRole('button', { name: 'Menu tài khoản' }));
 
     expect(screen.getByRole('menuitem', { name: 'Cài đặt' })).toHaveAttribute('href', '/settings');
     expect(screen.getByRole('menuitem', { name: 'Gói Premium' })).toHaveAttribute('href', '/premium');
@@ -74,7 +101,7 @@ describe('AppHeader — profile menu', () => {
     const user = userEvent.setup();
     renderWithQuery(<AppHeader />);
 
-    await user.click(screen.getByRole('button', { name: 'Account menu' }));
+    await user.click(screen.getByRole('button', { name: 'Menu tài khoản' }));
     expect(screen.getByRole('menu')).toBeInTheDocument();
 
     await user.keyboard('{Escape}');

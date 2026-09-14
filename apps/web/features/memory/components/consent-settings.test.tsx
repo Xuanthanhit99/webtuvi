@@ -20,8 +20,8 @@ describe('ConsentSettings', () => {
 
     renderWithQuery(<ConsentSettings />);
 
-    expect(await screen.findByLabelText(/when tử vi tarot could remember something/i)).toHaveValue('ASK_EVERY_TIME');
-    expect(screen.getByText(/no specific rules yet/i)).toBeInTheDocument();
+    expect(await screen.findByLabelText(/Khi Mệnh Vi muốn ghi nhớ thông tin/i)).toHaveValue('ASK_EVERY_TIME');
+    expect(screen.getByText(/Chưa có quy tắc riêng/i)).toBeInTheDocument();
   });
 
   it('shows existing per-type overrides', async () => {
@@ -32,7 +32,7 @@ describe('ConsentSettings', () => {
 
     renderWithQuery(<ConsentSettings />);
 
-    expect(await screen.findByText(/health \(requires explicit permission\)/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Sức khỏe \(cần đồng ý riêng\)/i)).toBeInTheDocument();
   });
 
   it('changing the global dropdown calls updateGlobal', async () => {
@@ -41,7 +41,7 @@ describe('ConsentSettings', () => {
     const user = userEvent.setup();
 
     renderWithQuery(<ConsentSettings />);
-    const select = await screen.findByLabelText(/when tử vi tarot could remember something/i);
+    const select = await screen.findByLabelText(/Khi Mệnh Vi muốn ghi nhớ thông tin/i);
     await user.selectOptions(select, 'DISABLED');
 
     await waitFor(() => expect(memoryApi.consents.updateGlobal).toHaveBeenCalledWith('DISABLED'));
@@ -52,6 +52,6 @@ describe('ConsentSettings', () => {
 
     renderWithQuery(<ConsentSettings />);
 
-    expect(await screen.findByText(/health memories are never remembered automatically/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Thông tin sức khỏe chỉ được tự động ghi nhớ khi bạn cho phép riêng/i)).toBeInTheDocument();
   });
 });

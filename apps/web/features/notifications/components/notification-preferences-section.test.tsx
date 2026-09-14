@@ -25,15 +25,15 @@ describe('NotificationPreferencesSection', () => {
     (notificationsApi.getPreferences as jest.Mock).mockResolvedValue({ reminderInApp: true, reminderEmail: false });
     renderSection();
 
-    expect(await screen.findByLabelText(/show reminders in notifications/i)).toBeChecked();
-    expect(screen.getByLabelText(/also email me reminders/i)).not.toBeChecked();
+    expect(await screen.findByLabelText(/Nhận nhắc nhở trong ứng dụng/i)).toBeChecked();
+    expect(screen.getByLabelText(/Nhận thêm nhắc nhở qua email/i)).not.toBeChecked();
   });
 
   it('disables the email checkbox when the in-app master switch is off', async () => {
     (notificationsApi.getPreferences as jest.Mock).mockResolvedValue({ reminderInApp: false, reminderEmail: false });
     renderSection();
 
-    expect(await screen.findByLabelText(/also email me reminders/i)).toBeDisabled();
+    expect(await screen.findByLabelText(/Nhận thêm nhắc nhở qua email/i)).toBeDisabled();
   });
 
   it('toggling the in-app switch saves the change and shows a success toast', async () => {
@@ -42,10 +42,10 @@ describe('NotificationPreferencesSection', () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.click(await screen.findByLabelText(/show reminders in notifications/i));
+    await user.click(await screen.findByLabelText(/Nhận nhắc nhở trong ứng dụng/i));
 
     await waitFor(() => expect(notificationsApi.updatePreferences).toHaveBeenCalledWith({ reminderInApp: false }));
-    expect(await screen.findByText(/preference updated/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Đã lưu tùy chọn/i)).toBeInTheDocument();
   });
 
   it('shows an error toast when saving fails', async () => {
@@ -54,15 +54,15 @@ describe('NotificationPreferencesSection', () => {
     const user = userEvent.setup();
     renderSection();
 
-    await user.click(await screen.findByLabelText(/also email me reminders/i));
+    await user.click(await screen.findByLabelText(/Nhận thêm nhắc nhở qua email/i));
 
-    expect(await screen.findByText(/couldn.t save that/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Chưa thể lưu thay đổi/i)).toBeInTheDocument();
   });
 
   it('always describes account/payment notices as non-optional, with no toggle for them', async () => {
     (notificationsApi.getPreferences as jest.Mock).mockResolvedValue({ reminderInApp: true, reminderEmail: false });
     renderSection();
 
-    expect(await screen.findByText(/account and premium payment notices/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Thông báo về tài khoản và thanh toán Premium/i)).toBeInTheDocument();
   });
 });

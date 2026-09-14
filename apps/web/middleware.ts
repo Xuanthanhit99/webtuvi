@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authReturnUrl, safeNextPath } from '@/lib/safe-next-path';
 import { isArchivedRoute, isAdminRoute, resolveLegacyMenhViRedirect, resolveRedirect } from '@/lib/route-guard';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
@@ -47,7 +48,13 @@ export async function middleware(req: NextRequest) {
   const redirectTo = resolveRedirect({ pathname, hasAccessToken, session });
 
   if (redirectTo) {
-    return NextResponse.redirect(new URL(redirectTo, req.url));
+    const destination = pathname === '/login' || pathname === '/register' || pathname === '/onboarding'
+      ? safeNextPath(req.nextUrl.searchParams.get('next'))
+      : safeNextPath(`${pathname}${req.nextUrl.search}`);
+    const target = redirectTo === '/login' || redirectTo === '/onboarding'
+      ? authReturnUrl(redirectTo, destination)
+      : pathname === '/login' || pathname === '/register' || pathname === '/onboarding' ? destination : redirectTo;
+    return NextResponse.redirect(new URL(target, req.url));
   }
 
   // Interim Sprint — Admin Operator Tooling: reached only once the visitor is confirmed

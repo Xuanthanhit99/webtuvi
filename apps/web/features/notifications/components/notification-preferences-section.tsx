@@ -7,18 +7,19 @@ import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
+import { ErrorState } from '@/components/ui/error-state';
 
 /**
  * Sprint 11 — replaces Settings' former "Notifications and theme are coming soon" line
  * (`apps/web/app/(app)/settings/page.tsx`) with real, working controls. Deliberately does not
  * expose internal enum/category terminology (Sprint 11 brief §22) or a "Product updates" toggle
- * with nothing behind it yet (see docs/architecture/notification-retention.md "Preferences" for
+ * with nothing behind it yet (see docs/architecture/notification-retention.md "Sở thích" for
  * why `NotificationPreference` only has two real fields today). Account/payment notices are
  * described here, not toggled — see the doc comment below for why that's not an oversight.
  */
 export function NotificationPreferencesSection() {
   const queryClient = useQueryClient();
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['notifications', 'preferences'],
     queryFn: () => notificationsApi.getPreferences(),
   });
@@ -39,52 +40,51 @@ export function NotificationPreferencesSection() {
     },
     onSuccess: (updated) => {
       queryClient.setQueryData(['notifications', 'preferences'], updated);
-      toast.success('Preference updated.');
+      toast.success('Đã lưu tùy chọn.');
     },
     onError: (_error, _patch, context) => {
       if (context?.previous) queryClient.setQueryData(['notifications', 'preferences'], context.previous);
-      toast.error("Couldn't save that. Please try again.");
+      toast.error('Chưa thể lưu thay đổi. Vui lòng thử lại.');
     },
   });
 
   return (
     <Card className="flex flex-col gap-4">
       <div>
-        <p className="mb-1 text-body-sm font-semibold text-text-secondary">Notifications</p>
+        <p className="mb-1 text-body-sm font-semibold text-text-secondary">Thông báo</p>
         <p className="text-body-sm text-text-secondary">
-          Tử Vi Tarot only notifies you when there&rsquo;s a genuine reason to — silence is the expected default, not a
-          missed opportunity. Theme preferences are still coming soon.
+          Chọn cách nhận nhắc nhở từ Mệnh Vi.
         </p>
       </div>
 
       <div className="flex flex-col gap-3 border-t border-border-subtle pt-4">
-        {isLoading || !data ? (
+        {isError ? <ErrorState title="Chưa thể tải tùy chọn thông báo" onRetry={() => refetch()} /> : isLoading || !data ? (
           <Skeleton className="h-11 w-full" />
         ) : (
           <>
             <Checkbox
               id="reminder-in-app"
               checked={data.reminderInApp}
+              disabled={update.isPending}
               onChange={(e) => update.mutate({ reminderInApp: e.target.checked })}
               label={
                 <span>
-                  <span className="font-medium text-text-primary">Show reminders in Notifications</span>
+                  <span className="font-medium text-text-primary">Nhận nhắc nhở trong ứng dụng</span>
                   <br />
-                  Occasional, specific reminders — like a Daily Tarot card still waiting for you. Turning this off
-                  also turns off reminder emails below.
+                  Nhắc nhở về nội dung dành cho bạn. Tắt tùy chọn này cũng tắt email nhắc nhở bên dưới.
                 </span>
               }
             />
             <Checkbox
               id="reminder-email"
               checked={data.reminderEmail}
-              disabled={!data.reminderInApp}
+              disabled={!data.reminderInApp || update.isPending}
               onChange={(e) => update.mutate({ reminderEmail: e.target.checked })}
               label={
                 <span>
-                  <span className="font-medium text-text-primary">Also email me reminders</span>
+                  <span className="font-medium text-text-primary">Nhận thêm nhắc nhở qua email</span>
                   <br />
-                  Off by default — reminders stay in-app only unless you turn this on.
+                  Mặc định tắt. Chỉ gửi thêm email khi bạn bật tùy chọn này.
                 </span>
               }
             />
@@ -92,8 +92,7 @@ export function NotificationPreferencesSection() {
         )}
 
         <p className="border-t border-border-subtle pt-3 text-body-sm text-text-secondary">
-          Account and Premium payment notices (like a successful activation) are always shown in your Notifications —
-          these aren&rsquo;t optional, since they&rsquo;re how we tell you about your own account.
+          Thông báo về tài khoản và thanh toán Premium luôn xuất hiện trong mục Thông báo để bạn theo dõi hoạt động tài khoản.
         </p>
       </div>
     </Card>

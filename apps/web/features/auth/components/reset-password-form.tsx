@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { useQueryClient } from '@tanstack/react-query';
+import { clearAccountCache } from '@/lib/account-cache';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,11 +14,12 @@ import { Button } from '@/components/ui/button';
 import { FormField, fieldDescribedBy } from '@/components/ui/form-field';
 import { Alert } from '@/components/ui/alert';
 import { toast } from '@/components/ui/toast';
-import { ApiError } from '@/lib/api-error';
+import { accountError } from '../account-error';
 
-const PASSWORD_RULES = 'At least 8 characters, with a number or symbol.';
+const PASSWORD_RULES = 'Từ 8 đến 128 ký tự, có ít nhất một chữ số hoặc ký hiệu.';
 
 export function ResetPasswordForm() {
+  const queryClient = useQueryClient();
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -30,27 +34,29 @@ export function ResetPasswordForm() {
   async function onSubmit(values: ResetPasswordFormValues) {
     setFormError(null);
     if (!token) {
-      setFormError('This link has expired.');
+      setFormError('Liên kết không hợp lệ. Hãy yêu cầu liên kết mới.');
       return;
     }
     try {
       await authApi.resetPassword({ token, ...values });
-      toast.success('Your password has been reset. Please log in.');
+      await clearAccountCache(queryClient);
+      toast.success('Đã đặt lại mật khẩu. Vui lòng đăng nhập lại.');
       router.push('/login');
     } catch (error) {
-      setFormError(error instanceof ApiError ? error.message : 'Something went wrong. Please try again.');
+      setFormError(accountError(error));
     }
   }
 
   if (!token) {
-    return <Alert variant="error">This link has expired. Request a new one from the forgot-password page.</Alert>;
+    return <Alert variant="error">Thiếu liên kết đặt lại mật khẩu. <Link href="/forgot-password" className="underline">Yêu cầu liên kết mới</Link>.</Alert>;
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
       {formError && <Alert variant="error">{formError}</Alert>}
+      {formError && <Link href="/forgot-password" className="text-body-sm text-insight underline">Yêu cầu liên kết mới</Link>}
 
-      <FormField label="New password" htmlFor="password" hint={PASSWORD_RULES} error={errors.password?.message}>
+      <FormField label="Mật khẩu mới" htmlFor="password" hint={PASSWORD_RULES} error={errors.password?.message}>
         <PasswordInput
           id="password"
           autoComplete="new-password"
@@ -60,7 +66,7 @@ export function ResetPasswordForm() {
         />
       </FormField>
 
-      <FormField label="Confirm new password" htmlFor="confirmPassword" error={errors.confirmPassword?.message}>
+      <FormField label="Xác nhận mật khẩu mới" htmlFor="confirmPassword" error={errors.confirmPassword?.message}>
         <PasswordInput
           id="confirmPassword"
           autoComplete="new-password"
@@ -71,7 +77,7 @@ export function ResetPasswordForm() {
       </FormField>
 
       <Button type="submit" fullWidth loading={isSubmitting}>
-        Reset password
+        Đặt lại mật khẩu
       </Button>
     </form>
   );

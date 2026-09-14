@@ -16,11 +16,11 @@ function excerpt(text: string, maxWords = 8): string {
 }
 
 export const OPENING_MESSAGE =
-  "Hi — I'm glad you're here. I don't know much about you yet, but I'd like to. What's been on your mind lately — even something small?";
+  'Chào bạn, rất vui được gặp bạn. Gần đây bạn đang nghĩ về điều gì, dù chỉ là một chuyện nhỏ?';
 
 export function firstFollowUp(userMessage: string): string {
   const quoted = excerpt(userMessage);
-  return `Thanks for telling me that — “${quoted}” sounds like it's been taking up some real space. What's the hardest part about it, do you think?`;
+  return `Cảm ơn bạn đã chia sẻ về “${quoted}”. Với bạn, điều khó nhất trong chuyện này là gì?`;
 }
 
 /**
@@ -29,24 +29,24 @@ export function firstFollowUp(userMessage: string): string {
  * still complete onboarding with nothing saved).
  */
 export function reflectionMessage(): string {
-  return "That makes sense. Want me to remember this, so if it comes up again, we can look back at how it's actually going, not just how it feels right now?";
+  return 'Bạn có muốn lưu điều này thành ký ức để có thể nhìn lại về sau không? Bạn vẫn có thể tiếp tục nếu không muốn lưu.';
 }
 
-export const MEMORY_SAVED_MESSAGE = "Got it — I'll keep that in mind.";
-export const MEMORY_DECLINED_MESSAGE = "That's okay — I won't save that. We can just keep talking.";
+export const MEMORY_SAVED_MESSAGE = 'Đã nhận lựa chọn của bạn. Việc lưu ký ức tuân theo quyền ghi nhớ bạn đã thiết lập.';
+export const MEMORY_DECLINED_MESSAGE = 'Mình sẽ không lưu điều này thành ký ức. Chúng ta vẫn có thể tiếp tục.';
 
 export function memoryNoteContent(firstUserMessage: string): string {
-  return `Remembered: ${excerpt(firstUserMessage, 20)}`;
+  return `Ghi nhớ: ${excerpt(firstUserMessage, 20)}`;
 }
 
 export const DISCOVERY_OFFER_MESSAGE =
-  'Want to see what Discovery has to offer — tarot, your chart, your numbers? Totally optional — we can also just keep talking.';
+  'Bạn muốn khám phá Tarot, bản đồ sao hoặc thần số học không? Bạn cũng có thể để sau.';
 
 export const DISCOVERY_ACCEPTED_MESSAGE =
-  "Discovery is ready for you whenever you want it — a real Tarot draw, your chart, your numbers, all live right now. For now, I'll keep what you've shared in mind.";
+  'Bạn có thể bắt đầu khám phá Tarot, bản đồ sao và thần số học khi sẵn sàng.';
 
 export const DISCOVERY_SKIPPED_MESSAGE =
-  "That's completely fine — we can always come back to it whenever you're curious.";
+  'Không sao cả. Bạn có thể quay lại khám phá bất cứ lúc nào.';
 
 export const ACTIVATION_MESSAGE =
-  "I'll keep this in mind for next time. Whenever you're ready to talk again, I'm here.";
+  'Đã hoàn tất bước làm quen. Chúc bạn tìm thấy điều hữu ích cho mình trên Mệnh Vi.';

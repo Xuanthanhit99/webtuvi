@@ -11,6 +11,7 @@ export interface DialogProps {
   description?: string;
   children?: React.ReactNode;
   variant?: 'default' | 'destructive';
+  closeLabel?: string;
 }
 
 /**
@@ -23,7 +24,7 @@ export interface DialogProps {
  * the document whenever 2+ Dialogs are mounted on the same page (confirmed: Settings mounts 3).
  * `useId()` gives every instance its own ids automatically — no call site needs to pass one.
  */
-export function Dialog({ open, onClose, title, description, children, variant = 'default' }: DialogProps) {
+export function Dialog({ open, onClose, title, description, children, variant = 'default', closeLabel = 'Close dialog' }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -50,7 +51,7 @@ export function Dialog({ open, onClose, title, description, children, variant = 
         <h2 id={titleId} className="text-heading-md font-display">
           {title}
         </h2>
-        <IconButton aria-label="Close dialog" onClick={onClose}>
+        <IconButton aria-label={closeLabel} onClick={onClose}>
           <X className="h-4 w-4" aria-hidden="true" />
         </IconButton>
       </div>

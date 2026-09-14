@@ -7,8 +7,8 @@ import { LegalLinksSection } from './legal-links-section';
 describe('LegalLinksSection', () => {
   it('links to Privacy, Terms, and Contact with real, correct hrefs', () => {
     render(<LegalLinksSection />);
-    expect(screen.getByRole('link', { name: 'Privacy Notice' })).toHaveAttribute('href', '/privacy');
-    expect(screen.getByRole('link', { name: 'Terms' })).toHaveAttribute('href', '/terms');
-    expect(screen.getByRole('link', { name: 'Contact' })).toHaveAttribute('href', '/contact');
+    expect(screen.getByRole('link', { name: 'Chính sách riêng tư' })).toHaveAttribute('href', '/privacy');
+    expect(screen.getByRole('link', { name: 'Điều khoản' })).toHaveAttribute('href', '/terms');
+    expect(screen.getByRole('link', { name: 'Liên hệ' })).toHaveAttribute('href', '/contact');
   });
 });

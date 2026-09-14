@@ -32,7 +32,7 @@ describe('SessionsPanel', () => {
     renderWithQuery(<SessionsPanel />);
 
     expect(await screen.findByText('Chrome on Windows')).toBeInTheDocument();
-    expect(screen.getByText('This device')).toBeInTheDocument();
+    expect(screen.getByText('Thiết bị này')).toBeInTheDocument();
     expect(screen.getByText('Safari on iOS')).toBeInTheDocument();
   });
 
@@ -40,14 +40,14 @@ describe('SessionsPanel', () => {
     (authApi.sessions as jest.Mock).mockResolvedValue([]);
     renderWithQuery(<SessionsPanel />);
 
-    expect(await screen.findByText(/no active sessions/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Không có phiên đăng nhập/i)).toBeInTheDocument();
   });
 
   it('shows an error state with retry on load failure', async () => {
     (authApi.sessions as jest.Mock).mockRejectedValue(new Error('boom'));
     renderWithQuery(<SessionsPanel />);
 
-    expect(await screen.findByText(/couldn.t load your sessions/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Chưa thể tải danh sách thiết bị/i)).toBeInTheDocument();
   });
 
   it('confirms before revoking a non-current session', async () => {
@@ -57,10 +57,10 @@ describe('SessionsPanel', () => {
     renderWithQuery(<SessionsPanel />);
 
     await screen.findByText('Safari on iOS');
-    await user.click(screen.getByRole('button', { name: /sign out safari on ios/i }));
+    await user.click(screen.getByRole('button', { name: /Đăng xuất safari on ios/i }));
 
-    expect(await screen.findByRole('heading', { name: /sign out that device/i })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Sign out' }));
+    expect(await screen.findByRole('heading', { name: /Đăng xuất thiết bị đã chọn/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Đăng xuất' }));
 
     await waitFor(() => expect(authApi.revokeSession).toHaveBeenCalledWith('session-2'));
   });
@@ -74,8 +74,8 @@ describe('SessionsPanel', () => {
     renderWithQuery(<SessionsPanel />);
 
     await screen.findByText('Chrome on Windows');
-    await user.click(screen.getByRole('button', { name: /sign out chrome on windows \(this device\)/i }));
-    await user.click(await screen.findByRole('button', { name: 'Sign out' }));
+    await user.click(screen.getByRole('button', { name: /Đăng xuất chrome on windows \(thiết bị này\)/i }));
+    await user.click(await screen.findByRole('button', { name: 'Đăng xuất' }));
 
     await waitFor(() => expect(invalidate).toHaveBeenCalled());
   });
@@ -87,10 +87,10 @@ describe('SessionsPanel', () => {
     renderWithQuery(<SessionsPanel />);
 
     await screen.findByText('Chrome on Windows');
-    await user.click(screen.getByRole('button', { name: /sign out all/i }));
+    await user.click(screen.getByRole('button', { name: /Đăng xuất tất cả/i }));
 
-    expect(await screen.findByRole('heading', { name: /sign out of every device/i })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /sign out everywhere/i }));
+    expect(await screen.findByRole('heading', { name: /Đăng xuất khỏi mọi thiết bị/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Đăng xuất mọi thiết bị/i }));
 
     await waitFor(() => expect(authApi.logoutAll).toHaveBeenCalled());
   });

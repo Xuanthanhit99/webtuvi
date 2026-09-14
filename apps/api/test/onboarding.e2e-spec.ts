@@ -120,7 +120,7 @@ describe('Onboarding (e2e)', () => {
       .expect(201);
 
     const savedMessage = afterConsent.body.data.messages.find((m: { content: string }) =>
-      m.content.includes("I'll keep that in mind"),
+      m.content.includes('Đã nhận lựa chọn của bạn.'),
     );
     expect(savedMessage).toBeDefined();
   });

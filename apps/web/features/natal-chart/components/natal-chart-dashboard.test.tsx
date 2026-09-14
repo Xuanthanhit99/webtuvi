@@ -113,7 +113,7 @@ describe('NatalChartDashboard', () => {
     renderWithQuery(<NatalChartDashboard />);
 
     await screen.findByText('Hà Nội, Vietnam');
-    expect(screen.getByText(/calculated from your birth data/i)).toBeInTheDocument();
+    expect(screen.getByText(/Được tính từ dữ liệu sinh của bạn\. AI không lựa chọn hoặc thay đổi bất kỳ vị trí nào\./i)).toBeInTheDocument();
     expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
     expect(screen.getByText(/written by ai/i)).toBeInTheDocument();
   });

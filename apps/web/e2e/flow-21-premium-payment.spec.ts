@@ -1,4 +1,5 @@
 import { createHmac } from 'crypto';
+import { requestTarotDraw, revealTarotDraw, tarotDrawSection } from './helpers/tarot-flow';
 import { test, expect, type APIRequestContext, type Page } from '@playwright/test';
 
 // The API server is a separate origin from the Next.js app under test (Playwright's own
@@ -75,18 +76,10 @@ async function registerAndOnboard(page: Page): Promise<void> {
 async function drawSingleCardToFreeLimit(page: Page): Promise<void> {
   await page.goto('/discover/tarot');
   await expect(page.getByRole('heading', { name: 'Tarot' })).toBeVisible({ timeout: 10000 });
-  // Scoped to the Draw section — the account-level "verify your email" banner also carries
-  // role=status, and getByRole('status') would otherwise match both (mirrors flow-20's own pattern).
-  const drawSection = page.getByRole('region', { name: 'Draw' });
-  // Selected once — the reading-type selection persists across "Draw again" resets (it's not part
-  // of the reset state), and re-clicking it inside the loop would be ambiguous once a completed
-  // reading's own history-list entry also carries a "Single Card" accessible name.
-  await drawSection.getByRole('button', { name: /Single Card/ }).click();
-
+  const drawSection = tarotDrawSection(page);
   for (let i = 0; i < 3; i++) {
-    await drawSection.getByRole('button', { name: 'Draw', exact: true }).click();
-    await expect(drawSection.getByRole('status')).not.toBeVisible({ timeout: 10000 });
-    await drawSection.getByRole('button', { name: 'Draw again' }).click();
+    await revealTarotDraw(page, await requestTarotDraw(page, 'SINGLE_CARD'));
+    await drawSection.getByRole('button', { name: 'Rút trải bài khác' }).click();
   }
 }
 
@@ -95,7 +88,9 @@ test('Free Tarot usage -> Premium boundary -> checkout -> verified webhook -> Pr
 
   // 1. Real free usage, then a real Premium boundary — no card fabricated, no limit invented.
   await drawSingleCardToFreeLimit(page);
-  await page.getByRole('region', { name: 'Draw' }).getByRole('button', { name: 'Draw', exact: true }).click();
+  const blocked = await requestTarotDraw(page, 'SINGLE_CARD');
+  expect(blocked.status()).toBe(403);
+  expect((await blocked.json()).error.code).toBe('PREMIUM_REQUIRED');
   const banner = page.getByRole('alert').filter({ hasText: /free single card limit/i });
   await expect(banner).toBeVisible({ timeout: 10000 });
   const upgradeLink = banner.getByRole('link', { name: 'Upgrade to Premium' });
@@ -158,10 +153,7 @@ test('Free Tarot usage -> Premium boundary -> checkout -> verified webhook -> Pr
   // 6. The Tarot boundary that blocked draw #4 earlier is now genuinely lifted (Premium's higher
   // ceiling, not a client-side flag) — a 4th Single Card draw the same day succeeds.
   await page.goto('/discover/tarot');
-  const finalDrawSection = page.getByRole('region', { name: 'Draw' });
-  await finalDrawSection.getByRole('button', { name: /Single Card/ }).click();
-  await finalDrawSection.getByRole('button', { name: 'Draw', exact: true }).click();
-  await expect(finalDrawSection.getByRole('status')).not.toBeVisible({ timeout: 10000 });
+  await revealTarotDraw(page, await requestTarotDraw(page, 'SINGLE_CARD'));
   await expect(page.getByRole('alert').filter({ hasText: /free single card limit/i })).not.toBeVisible();
 });
 

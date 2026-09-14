@@ -18,7 +18,7 @@ interface EnvelopeError {
   requestId: string;
 }
 
-let refreshPromise: Promise<boolean> | null = null;
+let refreshPromise: Promise<boolean | null> | null = null;
 let csrfBootstrapPromise: Promise<void> | null = null;
 
 /**
@@ -27,14 +27,14 @@ let csrfBootstrapPromise: Promise<void> | null = null;
  * `/auth/refresh` attempt (deduplicated across concurrent requests) before the
  * original request is retried once.
  */
-async function refreshSession(): Promise<boolean> {
+async function refreshSession(): Promise<boolean | null> {
   if (!refreshPromise) {
     refreshPromise = fetch(`${API_URL}/auth/refresh`, {
       method: 'POST',
       credentials: 'include',
     })
-      .then((res) => res.ok)
-      .catch(() => false)
+      .then((res) => res.ok ? true : res.status === 401 ? false : null)
+      .catch(() => null)
       .finally(() => {
         refreshPromise = null;
       });
@@ -107,6 +107,11 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
     if (refreshed) {
       return apiFetch<T>(path, { ...options, skipRefreshRetry: true });
     }
+    if (refreshed === null) throw new ApiError('Chưa thể khôi phục phiên đăng nhập. Vui lòng thử lại.', 'SESSION_RESTORE_UNAVAILABLE', 503);
+  }
+
+  if (response.status === 401 && path !== '/auth/login' && path !== '/auth/register' && typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('menhvi:session-expired'));
   }
 
   if (response.status === 403 && !skipCsrfRetry && MUTATING_METHODS.has(upperMethod)) {

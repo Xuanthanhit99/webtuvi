@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash } from 'crypto';
 import * as Sentry from '@sentry/nestjs';
-import type { PaymentWebhookEvent } from '@prisma/client';
+import { Prisma, type PaymentWebhookEvent } from '@prisma/client';
 import type { AppConfiguration } from '../../config/configuration';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EntitlementService } from '../entitlement/entitlement.service';
@@ -20,9 +20,9 @@ const REJECTED = Symbol('rejected');
  * check idempotency -> atomically transition the order + grant entitlement -> persist the result.
  *
  * Two independent idempotency layers guard against duplicate/concurrent webhook delivery:
- *  1. `PaymentWebhookEvent`'s `@@unique([provider, externalEventId])` constraint — a second insert
- *     of the same (orderCode, bank reference) pair fails at the DB level before any grant logic runs,
- *     safe even if two identical deliveries arrive at the same instant.
+ *  1. The unique event key identifies a delivery, but only PROCESSED means completed.
+ *     Unprocessed events (including those left by an earlier failed transaction) may retry.
+ *     The PROCESSED marker commits atomically with the order transition and entitlement.
  *  2. The order transition itself is a conditional `updateMany({ where: { status: 'PENDING' } })`
  *     inside the same transaction as the entitlement grant — so even if two *different* webhook
  *     deliveries somehow both got past layer 1 (e.g. a provider retry with a new bank reference),
@@ -180,16 +180,22 @@ export class PaymentWebhookService {
     });
   }
 
-  /** Returns the created ledger row, or `null` if this (provider, externalEventId) pair already
-   * exists — the unique-constraint violation is the actual duplicate-safety mechanism, not the
-   * lookup-then-insert around it (which would itself race under true concurrency). */
+  /** An existing event is not proof of processing. Only the marker committed in
+   * applyPaymentResult can suppress a retry. Concurrent retries remain safe through
+   * the transaction's PENDING-only order update, even when both read VERIFIED. */
   private async recordEventOrNull(externalEventId: string, orderId: string, payloadHash: string): Promise<PaymentWebhookEvent | null> {
     try {
       return await this.prisma.paymentWebhookEvent.create({
         data: { provider: 'PAYOS', externalEventId, orderId, payloadHash, status: 'VERIFIED' },
       });
-    } catch {
-      return null;
+    } catch (error) {
+      if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002') throw error;
+      const existing = await this.prisma.paymentWebhookEvent.findUnique({
+        where: { provider_externalEventId: { provider: 'PAYOS', externalEventId } },
+      });
+      // A collision on some other unique key, or an unavailable ledger, is not an acknowledgement.
+      if (!existing) throw error;
+      return existing.status === 'PROCESSED' ? null : existing;
     }
   }
 

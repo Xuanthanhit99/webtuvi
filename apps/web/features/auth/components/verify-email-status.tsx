@@ -9,10 +9,11 @@ import { Alert } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { ApiError } from '@/lib/api-error';
 
-type Status = 'loading' | 'success' | 'expired' | 'invalid' | 'network-error' | 'missing-token';
+type Status = 'loading' | 'success' | 'expired' | 'invalid' | 'network-error' | 'missing-token' | 'rate-limited';
 
 function statusFromError(error: unknown): Status {
   if (error instanceof ApiError) {
+    if (error.status === 429) return 'rate-limited';
     if (error.code === 'VERIFICATION_TOKEN_EXPIRED') return 'expired';
     if (error.code === 'VERIFICATION_TOKEN_INVALID') return 'invalid';
   }
@@ -43,21 +44,23 @@ export function VerifyEmailStatus() {
 
   if (status === 'missing-token') {
     return (
-      <Alert variant="error" title="Missing verification link">
-        This page needs a verification link from your email. Check your inbox, or{' '}
+      <Alert variant="error" title="Thiếu liên kết xác minh">
+        Mở liên kết xác minh trong email, hoặc{' '}
         <Link href="/verify-email/pending" className="font-semibold underline">
-          request a new link
+          yêu cầu liên kết mới
         </Link>
         .
       </Alert>
     );
   }
 
+  if (status === 'rate-limited') return <Alert variant="error" title="Vui lòng thử lại sau">Bạn đã thử quá nhiều lần. Hãy đợi một lát rồi mở lại liên kết xác minh trong email.</Alert>;
+
   if (status === 'loading') {
     return (
       <div className="flex items-center gap-3 text-body-md text-text-secondary" role="status">
         <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
-        Verifying your email…
+        Đang xác minh email…
       </div>
     );
   }
@@ -65,14 +68,14 @@ export function VerifyEmailStatus() {
   if (status === 'success') {
     return (
       <div className="flex flex-col gap-4">
-        <Alert variant="success" title="Email verified">
+        <Alert variant="success" title="Đã xác minh email">
           <span className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
-            Your email address is confirmed.
+            Địa chỉ email của bạn đã được xác nhận.
           </span>
         </Alert>
-        <Button onClick={() => router.push('/dashboard')} fullWidth>
-          Continue to your Dashboard
+        <Button onClick={() => router.push('/')} fullWidth>
+          Tiếp tục khám phá
         </Button>
       </div>
     );
@@ -81,11 +84,11 @@ export function VerifyEmailStatus() {
   if (status === 'expired') {
     return (
       <div className="flex flex-col gap-4">
-        <Alert variant="error" title="This link has expired">
-          Verification links expire after a while for your security.
+        <Alert variant="error" title="Liên kết đã hết hạn">
+          Hãy yêu cầu liên kết mới để xác minh email.
         </Alert>
         <Button onClick={() => router.push('/verify-email/pending')} fullWidth>
-          Send a new link
+          Gửi liên kết mới
         </Button>
       </div>
     );
@@ -94,11 +97,11 @@ export function VerifyEmailStatus() {
   if (status === 'invalid') {
     return (
       <div className="flex flex-col gap-4">
-        <Alert variant="error" title="This link isn’t valid">
-          It may have already been used, or the link was copied incorrectly.
+        <Alert variant="error" title="Liên kết không hợp lệ">
+          Liên kết có thể đã được sử dụng hoặc sao chép chưa đầy đủ.
         </Alert>
         <Button onClick={() => router.push('/verify-email/pending')} fullWidth>
-          Send a new link
+          Gửi liên kết mới
         </Button>
       </div>
     );
@@ -108,7 +111,7 @@ export function VerifyEmailStatus() {
     <div className="flex flex-col gap-4">
       <Alert
         variant="error"
-        title="Something went wrong"
+        title="Chưa thể xác minh"
         action={
           <Button
             size="sm"
@@ -124,11 +127,11 @@ export function VerifyEmailStatus() {
               }
             }}
           >
-            Try again
+            Thử lại
           </Button>
         }
       >
-        We couldn’t reach the server. Check your connection and try again.
+        Chưa thể kết nối máy chủ. Hãy kiểm tra mạng và thử lại.
       </Alert>
     </div>
   );

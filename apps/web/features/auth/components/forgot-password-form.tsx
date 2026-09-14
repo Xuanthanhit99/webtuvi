@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FormField, fieldDescribedBy } from '@/components/ui/form-field';
 import { Alert } from '@/components/ui/alert';
-import { ApiError } from '@/lib/api-error';
+import { accountError } from '../account-error';
 
 export function ForgotPasswordForm() {
   const [sent, setSent] = useState(false);
@@ -27,14 +27,14 @@ export function ForgotPasswordForm() {
       await authApi.forgotPassword(values.email);
       setSent(true);
     } catch (error) {
-      setFormError(error instanceof ApiError ? error.message : 'Something went wrong. Please try again.');
+      setFormError(accountError(error));
     }
   }
 
   if (sent) {
     return (
-      <Alert variant="success" title="Check your email">
-        If an account exists for that email, we’ve sent a link to reset your password. It expires in 1 hour.
+      <Alert variant="success" title="Kiểm tra hộp thư">
+        Nếu có tài khoản dùng email này, Mệnh Vi sẽ gửi liên kết đặt lại mật khẩu. Hãy kiểm tra cả thư rác và thời hạn ghi trong email.
       </Alert>
     );
   }
@@ -47,7 +47,7 @@ export function ForgotPasswordForm() {
         label="Email"
         htmlFor="email"
         error={errors.email?.message}
-        hint="We'll send a reset link if we find an account with this email."
+        hint="Nếu có tài khoản dùng email này, bạn sẽ nhận được liên kết đặt lại mật khẩu."
       >
         <Input
           id="email"
@@ -60,7 +60,7 @@ export function ForgotPasswordForm() {
       </FormField>
 
       <Button type="submit" fullWidth loading={isSubmitting}>
-        Send reset link
+        Gửi liên kết đặt lại
       </Button>
     </form>
   );

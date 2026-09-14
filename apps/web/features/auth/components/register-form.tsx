@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { safeNextPath, authReturnUrl } from '@/lib/safe-next-path';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -15,9 +16,10 @@ import { FormField, fieldDescribedBy } from '@/components/ui/form-field';
 import { Alert } from '@/components/ui/alert';
 import { useInvalidateAuth } from '@/providers/auth-provider';
 import { ApiError } from '@/lib/api-error';
+import { accountError } from '../account-error';
 import { trackEvent } from '@/lib/analytics';
 
-const PASSWORD_RULES = 'At least 8 characters, with a number or symbol.';
+const PASSWORD_RULES = 'Từ 8 đến 128 ký tự, có ít nhất một chữ số hoặc ký hiệu.';
 
 export function RegisterForm() {
   const router = useRouter();
@@ -37,27 +39,27 @@ export function RegisterForm() {
     trackEvent('signup_started', { feature: 'auth' });
     try {
       await authApi.register(values);
-      invalidateAuth();
+      await invalidateAuth();
       const next = safeNextPath(searchParams.get('next'));
-      router.push(`/onboarding${next !== '/' ? `?next=${encodeURIComponent(next)}` : ''}`);
+      router.push(authReturnUrl('/onboarding', next));
     } catch (error) {
       if (error instanceof ApiError && error.code === 'EMAIL_ALREADY_EXISTS') {
-        setError('email', { message: error.message });
+        setError('email', { message: accountError(error) });
         return;
       }
-      setFormError(error instanceof ApiError ? error.message : 'Something went wrong. Please try again.');
+      setFormError(accountError(error));
     }
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
       {formError && (
-        <Alert variant="error" title="Couldn’t create your account">
+        <Alert variant="error" title="Chưa thể tạo tài khoản">
           {formError}
         </Alert>
       )}
 
-      <FormField label="Display name" htmlFor="displayName" error={errors.displayName?.message}>
+      <FormField label="Tên hiển thị" htmlFor="displayName" error={errors.displayName?.message}>
         <Input
           id="displayName"
           autoComplete="name"
@@ -78,7 +80,7 @@ export function RegisterForm() {
         />
       </FormField>
 
-      <FormField label="Password" htmlFor="password" hint={PASSWORD_RULES} error={errors.password?.message}>
+      <FormField label="Mật khẩu" htmlFor="password" hint={PASSWORD_RULES} error={errors.password?.message}>
         <PasswordInput
           id="password"
           autoComplete="new-password"
@@ -88,7 +90,7 @@ export function RegisterForm() {
         />
       </FormField>
 
-      <FormField label="Confirm password" htmlFor="confirmPassword" error={errors.confirmPassword?.message}>
+      <FormField label="Xác nhận mật khẩu" htmlFor="confirmPassword" error={errors.confirmPassword?.message}>
         <PasswordInput
           id="confirmPassword"
           autoComplete="new-password"
@@ -100,35 +102,31 @@ export function RegisterForm() {
 
       <Checkbox
         id="acceptedTerms"
+        aria-invalid={!!errors.acceptedTerms}
+        aria-describedby={errors.acceptedTerms ? 'acceptedTerms-error' : undefined}
         {...register('acceptedTerms')}
         label={
           <>
-            I agree to the{' '}
+            Tôi đồng ý với{' '}
             <Link href="/terms" className="text-insight underline">
-              Terms
+              Điều khoản
             </Link>{' '}
-            and{' '}
+            và{' '}
             <Link href="/privacy" className="text-insight underline">
-              Privacy Notice
+              Chính sách riêng tư
             </Link>
           </>
         }
       />
       {errors.acceptedTerms && (
-        <p role="alert" className="-mt-3 text-body-sm text-caution">
+        <p id="acceptedTerms-error" role="alert" className="-mt-3 text-body-sm text-caution">
           {errors.acceptedTerms.message}
         </p>
       )}
 
       <Button type="submit" fullWidth loading={isSubmitting}>
-        Continue
+        Tạo tài khoản
       </Button>
     </form>
   );
-}
-
-function safeNextPath(value: string | null): string {
-  if (!value || !value.startsWith('/') || value.startsWith('//')) return '/';
-  if (value.includes('://')) return '/';
-  return value;
 }

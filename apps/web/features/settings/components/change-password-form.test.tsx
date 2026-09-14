@@ -1,4 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
+import { renderWithQuery as render } from '@/test/render-with-query';
 import userEvent from '@testing-library/user-event';
 import { ChangePasswordForm } from './change-password-form';
 import { authApi } from '@/features/auth/api/auth-api';
@@ -17,9 +18,9 @@ describe('ChangePasswordForm', () => {
     const user = userEvent.setup();
     render(<ChangePasswordForm />);
 
-    await user.click(screen.getByRole('button', { name: /change password/i }));
+    await user.click(screen.getByRole('button', { name: /Đổi mật khẩu/i }));
 
-    expect(await screen.findByText(/enter your current password/i)).toBeInTheDocument();
+    expect(await screen.findByText(/nhập mật khẩu hiện tại/i)).toBeInTheDocument();
     expect(authApi.changePassword).not.toHaveBeenCalled();
   });
 
@@ -28,10 +29,10 @@ describe('ChangePasswordForm', () => {
     const user = userEvent.setup();
     render(<ChangePasswordForm />);
 
-    await user.type(screen.getByLabelText('Current password'), 'OldPass1!');
-    await user.type(screen.getByLabelText('New password'), 'NewPass1!');
-    await user.type(screen.getByLabelText('Confirm new password'), 'NewPass1!');
-    await user.click(screen.getByRole('button', { name: /change password/i }));
+    await user.type(screen.getByLabelText('Mật khẩu hiện tại'), 'OldPass1!');
+    await user.type(screen.getByLabelText('Mật khẩu mới'), 'NewPass1!');
+    await user.type(screen.getByLabelText('Xác nhận mật khẩu mới'), 'NewPass1!');
+    await user.click(screen.getByRole('button', { name: /Đổi mật khẩu/i }));
 
     await waitFor(() =>
       expect(authApi.changePassword).toHaveBeenCalledWith({
@@ -49,11 +50,11 @@ describe('ChangePasswordForm', () => {
     const user = userEvent.setup();
     render(<ChangePasswordForm />);
 
-    await user.type(screen.getByLabelText('Current password'), 'WrongPass1!');
-    await user.type(screen.getByLabelText('New password'), 'NewPass1!');
-    await user.type(screen.getByLabelText('Confirm new password'), 'NewPass1!');
-    await user.click(screen.getByRole('button', { name: /change password/i }));
+    await user.type(screen.getByLabelText('Mật khẩu hiện tại'), 'WrongPass1!');
+    await user.type(screen.getByLabelText('Mật khẩu mới'), 'NewPass1!');
+    await user.type(screen.getByLabelText('Xác nhận mật khẩu mới'), 'NewPass1!');
+    await user.click(screen.getByRole('button', { name: /Đổi mật khẩu/i }));
 
-    expect(await screen.findByText(/doesn.t match/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Mật khẩu hiện tại chưa đúng/i)).toBeInTheDocument();
   });
 });

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { FormField, fieldDescribedBy } from '@/components/ui/form-field';
 import { Alert } from '@/components/ui/alert';
-import { ApiError } from '@/lib/api-error';
+import { accountError } from '../account-error';
 
 // Mirrors the server's default EMAIL_VERIFICATION_RESEND_COOLDOWN (60s). This is
 // a client-side display countdown only — the server enforces the real cooldown
@@ -54,17 +54,17 @@ export function ResendVerificationForm() {
       setSent(true);
       startCooldown();
     } catch (error) {
-      setFormError(error instanceof ApiError ? error.message : 'Something went wrong. Please try again.');
+      setFormError(accountError(error));
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
+    <form onSubmit={(event) => void handleSubmit(onSubmit)(event)} noValidate className="flex flex-col gap-5">
       {formError && <Alert variant="error">{formError}</Alert>}
 
       {sent && (
-        <Alert variant="success" title="Check your email">
-          If that address needs verifying, we’ve sent a new link.
+        <Alert variant="success" title="Kiểm tra hộp thư">
+          Nếu địa chỉ này cần xác minh, Mệnh Vi sẽ gửi liên kết mới. Hãy kiểm tra cả thư rác.
         </Alert>
       )}
 
@@ -72,7 +72,7 @@ export function ResendVerificationForm() {
         label="Email"
         htmlFor="email"
         error={errors.email?.message}
-        hint="We'll send a verification link if the account exists and isn't verified yet."
+        hint="Liên kết sẽ được gửi nếu tài khoản tồn tại và chưa xác minh."
       >
         <Input
           id="email"
@@ -85,7 +85,7 @@ export function ResendVerificationForm() {
       </FormField>
 
       <Button type="submit" fullWidth loading={isSubmitting} disabled={cooldown > 0}>
-        {cooldown > 0 ? `Resend available in ${cooldown}s` : 'Send verification link'}
+        {cooldown > 0 ? `Có thể gửi lại sau ${cooldown} giây` : 'Gửi liên kết xác minh'}
       </Button>
     </form>
   );

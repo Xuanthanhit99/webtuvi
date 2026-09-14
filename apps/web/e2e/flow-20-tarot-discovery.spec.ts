@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { requestTarotDraw, revealTarotDraw, tarotDrawSection } from './helpers/tarot-flow';
 
 // Flow 20: Tarot Discovery Foundation (Sprint 6) — the first real Discovery feature. Draws a real
 // Daily Draw and a real Three Card Spread against the real seeded 78-card deck, confirms the
@@ -49,42 +50,24 @@ test('Daily Draw, Three Card Spread, history, delete, and the Companion bridge',
 
   await page.goto('/discover/tarot');
   await expect(page.getByRole('heading', { name: 'Tarot' })).toBeVisible({ timeout: 10000 });
-  // Scoped to the Draw section — an account status banner can also carry role=status.
-  const drawSection = page.getByRole('region', { name: 'Draw' });
+  const drawSection = tarotDrawSection(page);
+  const daily = await revealTarotDraw(page, await requestTarotDraw(page, 'DAILY_DRAW'));
+  expect(daily.cards).toHaveLength(1);
+  expect(daily.interpretation).toBeTruthy();
+  await expect(drawSection.getByText(daily.interpretation!, { exact: true })).toBeVisible();
+  await expect(drawSection.getByText('Today', { exact: true }).first()).toBeVisible();
 
-  // Daily Draw — the default selected type, no question field.
-  await expect(page.getByLabel(/your question/i)).not.toBeVisible();
-  await page.getByRole('button', { name: 'Draw', exact: true }).click();
-  await expect(drawSection.getByRole('status')).toHaveText('Shuffling…');
-  await expect(drawSection.getByRole('status')).not.toBeVisible({ timeout: 10000 });
+  await drawSection.getByRole('button', { name: 'Rút trải bài khác' }).click();
+  const duplicateDaily = await requestTarotDraw(page, 'DAILY_DRAW');
+  expect(duplicateDaily.ok()).toBe(false);
+  expect((await duplicateDaily.json()).error.code).toBe('TAROT_DAILY_DRAW_ALREADY_TAKEN');
+  await expect(drawSection.getByRole('alert')).toContainText(/already drawn today/i);
 
-  // A real, already-drawn card (the Daily Draw spread's "Today" position) and a generated
-  // interpretation appear — never a placeholder. `exact: true` targets the position-label
-  // caption's own text node specifically (tarot-reading-view.tsx's `rc.positionLabel` span) —
-  // Release Closure finding: a non-exact substring match here can collide with a real (non-mock)
-  // AI provider's generated interpretation prose if it happens to contain the word "today"
-  // (e.g. "...appears reversed today, pointing..."), which is genuinely possible reflective
-  // narration text, not a fabricated edge case. `exact: true` cannot match that longer sentence,
-  // since its own text content is never literally just "Today".
-  await expect(page.getByText('Today', { exact: true })).toBeVisible();
-  await expect(page.getByText('Interpretation isn’t ready yet.')).not.toBeVisible({ timeout: 15000 });
-
-  // A second Daily Draw the same day is blocked — reset to the selector and try again.
-  await page.getByRole('button', { name: 'Draw again' }).click();
-  await page.getByRole('button', { name: 'Draw', exact: true }).click();
-  await expect(page.getByText(/already drawn today/i)).toBeVisible({ timeout: 10000 });
-
-  // Three Card Spread — a fresh reading type, with an optional question and 3 real, distinct cards
-  // in Past/Present/Future order.
-  await page.getByRole('button', { name: /Three Card Spread/ }).click();
-  await page.getByLabel(/your question/i).fill('What should I know about this new chapter?');
-  await page.getByRole('button', { name: 'Draw', exact: true }).click();
-  await expect(drawSection.getByRole('status')).not.toBeVisible({ timeout: 10000 });
-  // `exact: true` for the same reason as the Daily Draw's "Today" assertion above — these are
-  // common English words a real AI provider's reflective narration can plausibly contain verbatim.
-  await expect(page.getByText('Past', { exact: true })).toBeVisible();
-  await expect(page.getByText('Present', { exact: true })).toBeVisible();
-  await expect(page.getByText('Future', { exact: true })).toBeVisible();
+  const three = await revealTarotDraw(page, await requestTarotDraw(page, 'THREE_CARD', 'What should I know about this new chapter?', true));
+  expect(three.cards).toHaveLength(3);
+  for (const position of ['Past', 'Present', 'Future']) {
+    await expect(drawSection.getByText(position, { exact: true }).first()).toBeVisible();
+  }
 
   // Delete this reading, reversibly.
   await page.getByRole('button', { name: 'Delete' }).click();

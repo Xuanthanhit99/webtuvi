@@ -5,11 +5,11 @@ import { ResetPasswordForm } from '@/features/auth/components/reset-password-for
 
 // SEO + Shareability Foundation — carries a one-time password-reset token in the URL; must never
 // be indexed/cached under any circumstance. Defense-in-depth alongside the robots.ts fix.
-export const metadata: Metadata = { title: 'Set a new password', robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: 'Đặt mật khẩu mới', robots: { index: false, follow: false } };
 
 export default function ResetPasswordPage() {
   return (
-    <AuthCard title="Set a new password" description="Choose a new password for your account.">
+    <AuthCard title="Đặt mật khẩu mới" description="Chọn mật khẩu mới cho tài khoản của bạn.">
       <Suspense fallback={null}>
         <ResetPasswordForm />
       </Suspense>

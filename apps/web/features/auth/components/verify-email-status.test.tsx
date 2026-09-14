@@ -22,7 +22,7 @@ describe('VerifyEmailStatus', () => {
 
   it('shows a message when the link has no token', () => {
     render(<VerifyEmailStatus />);
-    expect(screen.getByText(/missing verification link/i)).toBeInTheDocument();
+    expect(screen.getByText(/Thiếu liên kết xác minh/i)).toBeInTheDocument();
     expect(authApi.verifyEmail).not.toHaveBeenCalled();
   });
 
@@ -32,7 +32,7 @@ describe('VerifyEmailStatus', () => {
 
     render(<VerifyEmailStatus />);
 
-    expect(await screen.findByText(/email verified/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Đã xác minh email/i)).toBeInTheDocument();
     expect(authApi.verifyEmail).toHaveBeenCalledWith('valid-token');
   });
 
@@ -44,7 +44,7 @@ describe('VerifyEmailStatus', () => {
 
     render(<VerifyEmailStatus />);
 
-    await waitFor(() => expect(screen.getByText(/this link has expired/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Liên kết đã hết hạn/i)).toBeInTheDocument());
   });
 
   it('shows an invalid-token state', async () => {
@@ -55,7 +55,7 @@ describe('VerifyEmailStatus', () => {
 
     render(<VerifyEmailStatus />);
 
-    await waitFor(() => expect(screen.getByText(/isn.t valid/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Liên kết không hợp lệ/i)).toBeInTheDocument());
   });
 
   it('shows a network-error state with a retry action on an unexpected failure', async () => {
@@ -64,7 +64,7 @@ describe('VerifyEmailStatus', () => {
 
     render(<VerifyEmailStatus />);
 
-    expect(await screen.findByText(/couldn.t reach the server/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+    expect(await screen.findByText(/Chưa thể kết nối máy chủ/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Thử lại/i })).toBeInTheDocument();
   });
 });

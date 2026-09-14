@@ -8,21 +8,21 @@ import { Card } from '@/components/ui/card';
 export function LegalLinksSection() {
   return (
     <Card>
-      <p className="mb-3 text-body-sm font-semibold text-text-secondary">Legal &amp; Support</p>
+      <p className="mb-3 text-body-sm font-semibold text-text-secondary">Pháp lý và hỗ trợ</p>
       <ul className="flex flex-col gap-2 text-body-sm">
         <li>
           <Link href="/privacy" className="text-insight underline">
-            Privacy Notice
+            Chính sách riêng tư
           </Link>
         </li>
         <li>
           <Link href="/terms" className="text-insight underline">
-            Terms
+            Điều khoản
           </Link>
         </li>
         <li>
           <Link href="/contact" className="text-insight underline">
-            Contact
+            Liên hệ
           </Link>
         </li>
       </ul>

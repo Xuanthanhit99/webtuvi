@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, CheckCircle2, Clock3, RefreshCw, XCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,14 +25,27 @@ function StateCard({ icon: Icon, tone = 'neutral', eyebrow, title, description, 
 export function PremiumReturnStatus() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('order');
-  const queryClient = useQueryClient();
   const { data: order, isLoading, isError, refetch, isFetching } = useQuery({ queryKey: ['payment', 'order', orderId], queryFn: () => premiumApi.getOrder(orderId as string), enabled: Boolean(orderId), refetchInterval: (query) => query.state.data?.status === 'PENDING' ? POLL_INTERVAL_MS : false });
-  useEffect(() => { if (order?.status === 'PAID') queryClient.invalidateQueries({ queryKey: PREMIUM_STATUS_QUERY_KEY }); }, [order?.status, queryClient]);
 
   if (!orderId) return <StateCard icon={XCircle} tone="caution" eyebrow="Không tìm thấy đơn hàng" title="Thiếu mã đơn hàng" description="Mệnh Vi chưa xác định được đơn hàng cần kiểm tra. Bạn có thể quay lại trang Premium để bắt đầu lại." ctaHref="/premium" ctaLabel="Về trang Premium" />;
   if (isLoading && !order) return <StateCard icon={Clock3} eyebrow="Đang kiểm tra" title="Đang xác nhận thanh toán…" description="Mệnh Vi đang chờ trạng thái đáng tin cậy từ hệ thống. Quá trình này thường chỉ mất một chút thời gian." />;
   if (isError || !order) return <StateCard icon={XCircle} tone="caution" eyebrow="Kết nối gián đoạn" title="Chưa thể kiểm tra thanh toán" description="Nếu bạn đã hoàn tất thanh toán, Premium vẫn sẽ được kích hoạt sau khi hệ thống xác nhận. Bạn có thể kiểm tra lại an toàn." onRetry={() => { if (!isFetching) refetch(); }} ctaHref="/premium" ctaLabel="Về trang Premium" />;
-  if (order.status === 'PAID') return <StateCard icon={CheckCircle2} tone="success" eyebrow="Đã xác minh" title="Premium đã được kích hoạt" description="Thanh toán đã được xác nhận và quyền lợi Premium hiện đã hoạt động trên tài khoản của bạn." ctaHref="/discover/tarot" ctaLabel="Tiếp tục với Tarot" />;
+  if (order.status === 'PAID') return <PaidOrderStatus key={order.id} />;
   if (order.status === 'PENDING') return <StateCard icon={Clock3} eyebrow="Đang xử lý" title="Đang xác nhận thanh toán…" description="Mệnh Vi đang chờ xác nhận từ đơn vị thanh toán. Trang này sẽ tự động cập nhật; bạn không cần thanh toán lại." onRetry={() => { if (!isFetching) refetch(); }} ctaHref="/premium" ctaLabel="Về trang Premium" />;
   return <StateCard icon={XCircle} tone="caution" eyebrow="Chưa hoàn tất" title="Thanh toán chưa thành công" description="Đơn hàng này chưa được hoàn tất. Mệnh Vi không ghi nhận thanh toán thành công; bạn có thể thử lại khi sẵn sàng." ctaHref="/premium" ctaLabel="Thử lại" />;
+}
+
+/** Mount only after PAID; require a fresh entitlement response, not a cached active value. */
+function PaidOrderStatus() {
+  const status = useQuery({
+    queryKey: PREMIUM_STATUS_QUERY_KEY,
+    queryFn: premiumApi.status,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+  const retry = () => { if (!status.isFetching) void status.refetch(); };
+  if (status.isError) return <StateCard icon={XCircle} tone="caution" eyebrow="Thanh toán đã xác nhận" title="Chưa thể kiểm tra quyền lợi Premium" description="Đơn hàng đã được thanh toán. Hiện chưa thể xác nhận quyền truy cập Premium; vui lòng kiểm tra lại." onRetry={retry} ctaHref="/premium" ctaLabel="Về trang Premium" />;
+  if (!status.isFetchedAfterMount || status.isFetching || !status.data) return <StateCard icon={Clock3} eyebrow="Thanh toán đã xác nhận" title="Đang xác nhận quyền lợi Premium…" description="Mệnh Vi đang kiểm tra trạng thái quyền truy cập hiện tại của tài khoản." />;
+  if (status.data.isPremium) return <StateCard icon={CheckCircle2} tone="success" eyebrow="Đã xác minh" title="Premium đã được kích hoạt" description="Thanh toán đã được xác nhận và quyền lợi Premium hiện đang hoạt động trên tài khoản của bạn." ctaHref="/discover/tarot" ctaLabel="Tiếp tục với Tarot" />;
+  return <StateCard icon={Clock3} eyebrow="Thanh toán đã xác nhận" title="Premium hiện chưa hoạt động" description="Đơn hàng đã được thanh toán, nhưng trạng thái tài khoản hiện chưa có quyền truy cập Premium. Bạn có thể kiểm tra lại hoặc xem trạng thái gói hiện tại." onRetry={retry} ctaHref="/premium" ctaLabel="Về trang Premium" />;
 }

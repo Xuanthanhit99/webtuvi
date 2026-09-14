@@ -16,7 +16,7 @@ import { Dialog } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/toast';
 
 function formatWhen(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
+  return new Date(iso).toLocaleString('vi-VN', {
     dateStyle: 'medium',
     timeStyle: 'short',
   });
@@ -36,41 +36,41 @@ export function SessionsPanel() {
 
   const revokeMutation = useMutation({
     mutationFn: (session: SessionDto) => authApi.revokeSession(session.id),
-    onSuccess: (_data, session) => {
+    onSuccess: async (_data, session) => {
       setPendingRevoke(null);
       if (session.current) {
-        invalidateAuth();
-        toast.success("You've been signed out of this device.");
+        await invalidateAuth(true);
+        toast.success("Đã đăng xuất khỏi thiết bị này.");
         router.push('/login');
         return;
       }
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      toast.success('That session was signed out.');
+      toast.success('Đã đăng xuất thiết bị đã chọn.');
     },
     onError: () => {
       setPendingRevoke(null);
-      toast.error("Couldn't sign out that session. Please try again.");
+      toast.error("Chưa thể đăng xuất thiết bị này. Vui lòng thử lại.");
     },
   });
 
   const logoutAllMutation = useMutation({
     mutationFn: authApi.logoutAll,
-    onSuccess: () => {
+    onSuccess: async () => {
       setConfirmLogoutAll(false);
-      invalidateAuth();
-      toast.success("You've been signed out of every device.");
+      await invalidateAuth(true);
+      toast.success("Đã đăng xuất mọi thiết bị.");
       router.push('/login');
     },
     onError: () => {
       setConfirmLogoutAll(false);
-      toast.error("Couldn't sign out all devices. Please try again.");
+      toast.error("Chưa thể đăng xuất mọi thiết bị. Vui lòng thử lại.");
     },
   });
 
   return (
     <Card>
-      <div className="mb-3 flex items-center justify-between">
-        <p className="text-body-sm font-semibold text-text-secondary">Active sessions</p>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="text-body-sm font-semibold text-text-secondary">Thiết bị đang đăng nhập</p>
         {sessions && sessions.length > 0 && (
           <Button
             variant="danger"
@@ -78,7 +78,7 @@ export function SessionsPanel() {
             onClick={() => setConfirmLogoutAll(true)}
             loading={logoutAllMutation.isPending}
           >
-            Sign out all
+            Đăng xuất tất cả
           </Button>
         )}
       </div>
@@ -88,7 +88,7 @@ export function SessionsPanel() {
         // it shouldn't be read literally); this sr-only status text is the announcement it needs,
         // matching the role="status" pattern already used elsewhere (verify-email-status.tsx etc).
         <div className="flex flex-col gap-2" role="status">
-          <span className="sr-only">Loading sessions…</span>
+          <span className="sr-only">Đang tải danh sách thiết bị…</span>
           <Skeleton className="h-14 w-full" />
           <Skeleton className="h-14 w-full" />
         </div>
@@ -96,14 +96,14 @@ export function SessionsPanel() {
 
       {isError && !isLoading && (
         <ErrorState
-          title="Couldn't load your sessions"
-          description="Please try again."
+          title="Chưa thể tải danh sách thiết bị"
+          description="Vui lòng thử lại."
           onRetry={() => refetch()}
         />
       )}
 
       {!isLoading && !isError && sessions && sessions.length === 0 && (
-        <EmptyState title="No active sessions" description="You're not signed in anywhere right now." />
+        <EmptyState title="Không có phiên đăng nhập" description="Hiện không có thiết bị nào đang đăng nhập." />
       )}
 
       {!isLoading && !isError && sessions && sessions.length > 0 && (
@@ -111,7 +111,7 @@ export function SessionsPanel() {
           {sessions.map((session) => (
             <li
               key={session.id}
-              className="flex items-center justify-between gap-3 rounded-md border border-border-subtle p-3"
+              className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center rounded-md border border-border-subtle p-3"
             >
               <div className="flex items-center gap-3">
                 <Monitor className="h-4 w-4 shrink-0 text-text-secondary" aria-hidden="true" />
@@ -120,21 +120,21 @@ export function SessionsPanel() {
                     {session.userAgentSummary}
                     {session.current && (
                       <span className="ml-2 rounded-full bg-insight/15 px-2 py-0.5 text-caption font-semibold text-insight">
-                        This device
+                        Thiết bị này
                       </span>
                     )}
                   </p>
-                  <p className="text-caption text-text-secondary">Last active {formatWhen(session.lastUsedAt)}</p>
+                  <p className="text-caption text-text-secondary">Hoạt động gần nhất {formatWhen(session.lastUsedAt)}</p>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
-                aria-label={`Sign out ${session.userAgentSummary}${session.current ? ' (this device)' : ''}`}
+                aria-label={`Đăng xuất ${session.userAgentSummary}${session.current ? ' (thiết bị này)' : ''}`}
                 onClick={() => setPendingRevoke(session)}
               >
                 <LogOut className="h-3.5 w-3.5" aria-hidden="true" />
-                Sign out
+                Đăng xuất
               </Button>
             </li>
           ))}
@@ -143,46 +143,48 @@ export function SessionsPanel() {
 
       <Dialog
         open={pendingRevoke !== null}
+        closeLabel="Đóng hộp thoại"
         onClose={() => setPendingRevoke(null)}
-        title={pendingRevoke?.current ? 'Sign out this device?' : 'Sign out that device?'}
+        title={pendingRevoke?.current ? 'Đăng xuất thiết bị này?' : 'Đăng xuất thiết bị đã chọn?'}
         description={
           pendingRevoke?.current
-            ? "You'll be signed out here right away."
-            : 'That session will be signed out immediately.'
+            ? "Bạn sẽ được đăng xuất khỏi thiết bị này ngay lập tức."
+            : 'Phiên đăng nhập trên thiết bị đã chọn sẽ kết thúc ngay lập tức.'
         }
         variant="destructive"
       >
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setPendingRevoke(null)}>
-            Cancel
+            Hủy
           </Button>
           <Button
             variant="danger"
             loading={revokeMutation.isPending}
             onClick={() => pendingRevoke && revokeMutation.mutate(pendingRevoke)}
           >
-            Sign out
+            Đăng xuất
           </Button>
         </div>
       </Dialog>
 
       <Dialog
         open={confirmLogoutAll}
+        closeLabel="Đóng hộp thoại"
         onClose={() => setConfirmLogoutAll(false)}
-        title="Sign out of every device?"
-        description="This immediately ends every active session, including this one. You'll need to log in again."
+        title="Đăng xuất khỏi mọi thiết bị?"
+        description="Tất cả phiên đăng nhập, kể cả thiết bị này, sẽ kết thúc. Bạn sẽ cần đăng nhập lại."
         variant="destructive"
       >
         <div className="flex items-start gap-2 rounded-md border border-caution/30 bg-caution/5 p-3 text-body-sm text-caution">
           <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-          <span>This can’t be undone.</span>
+          <span>Bạn cần đăng nhập lại để sử dụng tài khoản trên các thiết bị đó.</span>
         </div>
         <div className="mt-4 flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setConfirmLogoutAll(false)}>
-            Cancel
+            Hủy
           </Button>
           <Button variant="danger" loading={logoutAllMutation.isPending} onClick={() => logoutAllMutation.mutate()}>
-            Sign out everywhere
+            Đăng xuất mọi thiết bị
           </Button>
         </div>
       </Dialog>

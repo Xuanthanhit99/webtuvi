@@ -17,13 +17,13 @@ describe('ResendVerificationForm', () => {
     jest.useRealTimers();
   });
 
-  it('shows a validation error and never calls the API for an invalid email', async () => {
+  it('shows a validation error and never calls the API for an inemail hợp lệ', async () => {
     const user = userEvent.setup({ delay: null });
     render(<ResendVerificationForm />);
 
-    await user.click(screen.getByRole('button', { name: /send verification link/i }));
+    await user.click(screen.getByRole('button', { name: /Gửi liên kết xác minh/i }));
 
-    expect(await screen.findByText(/valid email/i)).toBeInTheDocument();
+    expect(await screen.findByText(/email hợp lệ/i)).toBeInTheDocument();
     expect(authApi.resendVerification).not.toHaveBeenCalled();
   });
 
@@ -33,12 +33,12 @@ describe('ResendVerificationForm', () => {
     render(<ResendVerificationForm />);
 
     await user.type(screen.getByLabelText('Email'), 'alex@example.com');
-    await user.click(screen.getByRole('button', { name: /send verification link/i }));
+    await user.click(screen.getByRole('button', { name: /Gửi liên kết xác minh/i }));
 
-    expect(await screen.findByText(/check your email/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Kiểm tra hộp thư/i)).toBeInTheDocument();
     expect(authApi.resendVerification).toHaveBeenCalledWith('alex@example.com');
 
-    const button = await screen.findByRole('button', { name: /resend available in/i });
+    const button = await screen.findByRole('button', { name: /Có thể gửi lại sau/i });
     expect(button).toBeDisabled();
   });
 
@@ -48,8 +48,8 @@ describe('ResendVerificationForm', () => {
     render(<ResendVerificationForm />);
 
     await user.type(screen.getByLabelText('Email'), 'alex@example.com');
-    await user.click(screen.getByRole('button', { name: /send verification link/i }));
+    await user.click(screen.getByRole('button', { name: /Gửi liên kết xác minh/i }));
 
-    await waitFor(() => expect(screen.getByText(/something went wrong/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Chưa thể kết nối/i)).toBeInTheDocument());
   });
 });

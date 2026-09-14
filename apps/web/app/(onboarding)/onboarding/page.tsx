@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
 import { OnboardingChat } from '@/features/onboarding/components/onboarding-chat';
 
@@ -10,7 +11,7 @@ export default function OnboardingPage() {
   return (
     <div id="main-content" className="min-h-dvh bg-canvas">
       <AnalyticsPageView event="onboarding_started" properties={{ feature: 'onboarding' }} />
-      <OnboardingChat />
+      <Suspense fallback={null}><OnboardingChat /></Suspense>
     </div>
   );
 }

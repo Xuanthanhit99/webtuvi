@@ -1,4 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { PayOSProvider } from '../providers/payos.provider';
+import { signPayOSData } from '../providers/payos-signature.util';
+import { EntitlementService } from '../entitlement/entitlement.service';
 import { PaymentWebhookService } from './payment-webhook.service';
 import { PaymentProviderSignatureError, type VerifiedWebhookPayment } from '../providers/payment-provider.interface';
 import { dedupeKeyForPremiumActivated } from '../../notifications/eligibility/date-key.util';
@@ -59,9 +63,13 @@ function makeHarness(
   };
 
   const paymentWebhookEvent = {
+    findUnique: jest.fn(async ({ where }: { where: { provider_externalEventId: { provider: string; externalEventId: string } } }) => {
+      const key = where.provider_externalEventId;
+      return webhookEvents.find((event) => event.provider === key.provider && event.externalEventId === key.externalEventId) ?? null;
+    }),
     create: jest.fn(async ({ data }: { data: { provider: string; externalEventId: string; orderId: string | null; status: string; errorCategory?: string } }) => {
       const exists = webhookEvents.find((e) => e.provider === data.provider && e.externalEventId === data.externalEventId);
-      if (exists) throw Object.assign(new Error('Unique constraint failed on the fields: (`provider`,`externalEventId`)'), { code: 'P2002' });
+      if (exists) throw new Prisma.PrismaClientKnownRequestError('Duplicate event', { code: 'P2002', clientVersion: '5.22.0' });
       const event = { id: `evt-${webhookEvents.length + 1}`, processedAt: null, errorCategory: data.errorCategory ?? null, ...data };
       webhookEvents.push(event);
       return event;
@@ -98,6 +106,94 @@ function makeHarness(
   );
   return { service, prisma, orders, webhookEvents, verifyWebhook, entitlementService, notificationsService, user, analyticsService };
 }
+
+describe('PaymentWebhookService — recovery of unprocessed signed deliveries', () => {
+  it('retries a failed transaction, grants one 30-day entitlement, then ignores the third delivery', async () => {
+    const key = 'synthetic-regression-checksum-key';
+    const provider = new PayOSProvider({ clientId: 'test', apiKey: 'test', checksumKey: key, baseUrl: 'https://example.invalid', mockCheckout: false });
+    const data = { orderCode: 123456, amount: 79000, currency: 'VND', reference: 'FT2600001', description: 'BeaconVie Premium' };
+    const payload = { code: '00', success: true, desc: 'success', data, signature: signPayOSData(data, key) };
+    const { service, prisma, orders, webhookEvents, entitlementService } = makeHarness({ verifyImpl: (input) => provider.verifyWebhook(input) });
+    // Model DB rollback after the conditional order update, before the grant. The
+    // durable VERIFIED event is deliberately outside this transaction, as in production.
+    prisma.user.findUnique.mockRejectedValueOnce(new Error('transient database failure'));
+    const apply = prisma.$transaction.getMockImplementation()!;
+    prisma.$transaction.mockImplementationOnce(async (fn) => {
+      const before = { ...orders.get(ORDER_ID)! };
+      try { return await apply(fn); } catch (error) { orders.set(ORDER_ID, before); throw error; }
+    });
+    await expect(service.handlePayOSWebhook(payload)).rejects.toThrow('transient database failure');
+    expect(orders.get(ORDER_ID)!.status).toBe('PENDING');
+    expect(webhookEvents[0]!.status).toBe('VERIFIED');
+    expect(webhookEvents[0]!.processedAt).toBeNull();
+    expect(entitlementService.grantPremium).not.toHaveBeenCalled();
+
+    await service.handlePayOSWebhook(payload);
+    expect(prisma.$transaction).toHaveBeenCalledTimes(2);
+    expect(orders.get(ORDER_ID)!.status).toBe('PAID');
+    expect(webhookEvents).toHaveLength(1);
+    expect(webhookEvents[0]!.status).toBe('PROCESSED');
+    expect(webhookEvents[0]!.processedAt).not.toBeNull();
+    expect(entitlementService.grantPremium).toHaveBeenCalledTimes(1);
+    expect(entitlementService.grantPremium).toHaveBeenCalledWith(prisma, USER_ID, ORDER_ID, 30);
+
+    await service.handlePayOSWebhook(payload);
+    expect(prisma.$transaction).toHaveBeenCalledTimes(2);
+    expect(entitlementService.grantPremium).toHaveBeenCalledTimes(1);
+    expect(orders.get(ORDER_ID)!.status).toBe('PAID');
+  });
+
+  it('propagates unexpected event insertion errors instead of acknowledging duplicates', async () => {
+    const { service, prisma, entitlementService } = makeHarness();
+    prisma.paymentWebhookEvent.create.mockRejectedValueOnce(new Error('database unavailable'));
+    await expect(service.handlePayOSWebhook({})).rejects.toThrow('database unavailable');
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(entitlementService.grantPremium).not.toHaveBeenCalled();
+  });
+
+  it('rolls back a grant when the processed marker fails, then persists exactly one duration on retry', async () => {
+    const { service, prisma, orders, webhookEvents, entitlementService } = makeHarness();
+    const entitlements: { startsAt: Date; expiresAt: Date }[] = [];
+    const tx = Object.assign(prisma, {
+      premiumEntitlement: {
+        findFirst: jest.fn(async () => entitlements.at(-1) ?? null),
+        create: jest.fn(async ({ data }: { data: { startsAt: Date; expiresAt: Date } }) => { entitlements.push(data); return data; }),
+      },
+    });
+    const realEntitlements = new EntitlementService(tx as never);
+    entitlementService.grantPremium.mockImplementation((transaction, userId, orderId, days) => realEntitlements.grantPremium(transaction, userId, orderId, days));
+    prisma.$transaction.mockImplementation(async (fn) => {
+      const beforeOrder = { ...orders.get(ORDER_ID)! };
+      const beforeEvents = webhookEvents.map((event) => ({ ...event }));
+      const beforeCount = entitlements.length;
+      try { return await fn(tx); } catch (error) {
+        orders.set(ORDER_ID, beforeOrder);
+        webhookEvents.splice(0, webhookEvents.length, ...beforeEvents);
+        entitlements.splice(beforeCount);
+        throw error;
+      }
+    });
+    prisma.paymentWebhookEvent.update.mockRejectedValueOnce(new Error('marker write failed'));
+    await expect(service.handlePayOSWebhook({})).rejects.toThrow('marker write failed');
+    expect(entitlements).toHaveLength(0);
+    expect(orders.get(ORDER_ID)!.status).toBe('PENDING');
+    expect(webhookEvents[0]!.status).toBe('VERIFIED');
+    await service.handlePayOSWebhook({});
+    expect(entitlements).toHaveLength(1);
+    const expiry = entitlements[0]!.expiresAt.getTime();
+    expect(expiry - entitlements[0]!.startsAt.getTime()).toBe(30 * 24 * 60 * 60 * 1000);
+    await service.handlePayOSWebhook({});
+    expect(entitlements).toHaveLength(1);
+    expect(entitlements[0]!.expiresAt.getTime()).toBe(expiry);
+  });
+
+  it('does not swallow a unique error unless the matching event actually exists', async () => {
+    const { service, prisma } = makeHarness();
+    const error = new Prisma.PrismaClientKnownRequestError('Other unique key', { code: 'P2002', clientVersion: '5.22.0' });
+    prisma.paymentWebhookEvent.create.mockRejectedValueOnce(error);
+    await expect(service.handlePayOSWebhook({})).rejects.toBe(error);
+  });
+});
 
 describe('PaymentWebhookService.handlePayOSWebhook — happy path', () => {
   it('transitions PENDING -> PAID and grants Premium exactly once', async () => {

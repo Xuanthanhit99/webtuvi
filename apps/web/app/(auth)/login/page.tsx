@@ -1,17 +1,18 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { AuthCard } from '@/features/auth/components/auth-card';
-import { OAuthButtons } from '@/features/auth/components/oauth-buttons';
 import { LoginForm } from '@/features/auth/components/login-form';
 import { buildMetadata } from '@/lib/seo';
+import { safeNextPath } from '@/lib/safe-next-path';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Đăng nhập',
-  description: 'Đăng nhập Tử Vi Tarot để tiếp tục hành trình Tử Vi, Tarot, bản đồ sao và thần số học của bạn.',
+  description: 'Đăng nhập Mệnh Vi để tiếp tục hành trình Tử Vi, Tarot, bản đồ sao và thần số học của bạn.',
   path: '/login',
 });
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const next = safeNextPath((await searchParams).next);
   return (
     <AuthCard
       title="Chào mừng trở lại"
@@ -19,13 +20,12 @@ export default function LoginPage() {
       footer={
         <>
           Chưa có tài khoản?{' '}
-          <Link href="/register" className="text-insight underline">
+          <Link href={next === '/' ? '/register' : `/register?next=${encodeURIComponent(next)}`} className="text-insight underline">
             Tạo tài khoản
           </Link>
         </>
       }
     >
-      <OAuthButtons />
       <LoginForm />
     </AuthCard>
   );
