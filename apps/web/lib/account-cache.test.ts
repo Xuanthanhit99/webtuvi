@@ -3,7 +3,7 @@ import { clearAccountCache } from './account-cache';
 
 it('removes private account and entitlement data while preserving public catalogs', async () => {
   const client = new QueryClient();
-  for (const key of [['auth', 'me'], ['premium', 'status'], ['sessions'], ['preferences'], ['memory-consents'], ['tarot', 'readings'], ['dashboard']]) client.setQueryData(key, { owner: 'previous-user' });
+  for (const key of [['auth', 'me'], ['premium', 'status'], ['sessions'], ['preferences'], ['memory-consents'], ['tarot', 'readings'], ['dashboard'], ['reports', 'list', {}], ['reports', 'report-1'], ['reports', 'readiness']]) client.setQueryData(key, { owner: 'previous-user' });
   client.setQueryData(['tarot', 'deck'], ['public-card']);
   client.setQueryData(['numerology', 'meanings'], ['public-meaning']);
   localStorage.setItem('beaconvie:journal-draft:old-entry', 'private writing');
@@ -12,6 +12,11 @@ it('removes private account and entitlement data while preserving public catalog
   expect(client.getQueryData(['auth', 'me'])).toBeNull();
   expect(client.getQueryData(['premium', 'status'])).toBeUndefined();
   expect(client.getQueryData(['tarot', 'readings'])).toBeUndefined();
+  // A Personal Destiny Report is among the most personal content in the product — none of it may
+  // survive an account boundary and flash into the next account's Reports page.
+  expect(client.getQueryData(['reports', 'list', {}])).toBeUndefined();
+  expect(client.getQueryData(['reports', 'report-1'])).toBeUndefined();
+  expect(client.getQueryData(['reports', 'readiness'])).toBeUndefined();
   expect(client.getQueryCache().getAll()).toHaveLength(3);
   expect(client.getQueryData(['tarot', 'deck'])).toEqual(['public-card']);
   expect(client.getQueryData(['numerology', 'meanings'])).toEqual(['public-meaning']);

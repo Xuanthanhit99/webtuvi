@@ -46,14 +46,16 @@ export function InsightCardList({
   });
 
   useEffect(() => {
-    setPage(1);
-    setItems([]);
+    queueMicrotask(() => {
+      setPage(1);
+      setItems([]);
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(baseFilters), JSON.stringify(filters)]);
 
   useEffect(() => {
     if (!data) return;
-    setItems((prev) => (page === 1 ? data.items : [...prev, ...data.items]));
+    queueMicrotask(() => setItems((prev) => (page === 1 ? data.items : [...prev, ...data.items])));
   }, [data, page]);
 
   const togglePin = useMutation({

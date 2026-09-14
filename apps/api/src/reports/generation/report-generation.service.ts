@@ -116,6 +116,26 @@ export class ReportGenerationService {
       });
       void this.analyticsService.trackServerEvent({ event: 'report_generation_failed', userId, properties: { feature: 'reports' } });
       return toReportDto(failed);
+    } catch (error) {
+      // A row that already exists must never be left stranded in GENERATING. Generation is
+      // synchronous (locked decision #8) — there is no queue or worker that would ever revisit that
+      // row, so it would stay GENERATING permanently: the user's history would read "đang tạo"
+      // forever and the detail view would keep polling it. `runSynthesis` already converts every
+      // *expected* failure into a typed reason; this catch covers the unexpected ones (safety,
+      // cost-control, observability, or the success-path persist throwing) — precisely what the
+      // `INTERNAL_ERROR` failure reason exists for. Failures *before* a row exists (premium,
+      // readiness, budget, lock, snapshot build) still propagate as their own typed HTTP errors.
+      if (!reportId) throw error;
+      // Deliberately the error's class, never its message: a Prisma validation error can embed the
+      // row values it rejected, which for this table includes the report narrative itself (§"no
+      // sensitive prompts/errors" — same rule the DestinyReportFailureReason enum documents).
+      this.logger.error(`Report generation threw unexpectedly for report=${reportId}: ${error instanceof Error ? error.name : 'unknown error'}`);
+      const failed = await this.prisma.destinyReport.update({
+        where: { id: reportId },
+        data: { status: 'FAILED', failureReason: 'INTERNAL_ERROR', completedAt: new Date() },
+      });
+      void this.analyticsService.trackServerEvent({ event: 'report_generation_failed', userId, properties: { feature: 'reports' } });
+      return toReportDto(failed);
     } finally {
       await this.generationLock.releaseDiscovery('reports', userId, 'generate');
     }

@@ -49,6 +49,11 @@ function clearLocalBackup(id: string): void {
   }
 }
 
+function recoverableBackupFor(entry: JournalEntryDto): LocalBackup | null {
+  const backup = readLocalBackup(entry.id);
+  return backup && new Date(backup.savedAt).getTime() > new Date(entry.updatedAt).getTime() ? backup : null;
+}
+
 /**
  * Owns one draft entry's autosave loop (Phase 3). Two layers of "never silently discard user
  * writing":
@@ -71,7 +76,7 @@ export function useJournalDraft(entry: JournalEntryDto) {
   const [tags, setTagsState] = useState<string[]>(entry.tags);
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
-  const [recoverableBackup, setRecoverableBackup] = useState<LocalBackup | null>(null);
+  const [recoverableBackup, setRecoverableBackup] = useState<LocalBackup | null>(() => recoverableBackupFor(entry));
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dirtyRef = useRef(false);
@@ -79,13 +84,57 @@ export function useJournalDraft(entry: JournalEntryDto) {
 
   // A local backup strictly newer than the server's own last save is offered for recovery once,
   // right after mount — this is the "recover unsaved changes" half of Phase 3, distinct from the
-  // autosave loop itself.
+  // autosave loop itself. Recomputed (not just conditionally set) on every run so switching to an
+  // entry with no qualifying backup of its own correctly clears a stale one left over from
+  // whatever entry was previously shown, rather than leaving it dangling.
+  //
+  // Deliberately depends on [entry.id, entry.updatedAt] — the two fields that actually determine
+  // the answer — rather than the whole `entry` object. An unrelated background refetch of this
+  // same entry (e.g. another mutation elsewhere invalidating the shared ['journal'] query prefix)
+  // produces a new `entry` object reference with the same id/updatedAt; depending on `entry`
+  // itself would re-run this on every such refetch and could pop the recovery banner back open
+  // mid-typing purely because of that reference change, even though nothing about recoverability
+  // actually changed.
   useEffect(() => {
-    const backup = readLocalBackup(entry.id);
-    if (backup && new Date(backup.savedAt).getTime() > new Date(entry.updatedAt).getTime()) {
-      setRecoverableBackup(backup);
-    }
+    queueMicrotask(() => setRecoverableBackup(recoverableBackupFor(entry)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on id/updatedAt only; see comment above.
   }, [entry.id, entry.updatedAt]);
+
+  // JournalHome/JournalDetail intentionally reuse the same JournalEditor instance across entries
+  // instead of remounting it (see journal-home.tsx) — so nothing else in this hook resets when
+  // `entry` switches to a different entry. Without this, switching entries left every field
+  // (title/content/mood/tags) and `entryIdRef` frozen on whichever entry was viewed first: typed
+  // text for the new entry would autosave under the *previous* entry's id, silently overwriting
+  // it, while the new entry's real edits never reached its own record. Guarded on entry.id alone
+  // (not the whole `entry` object) so a background refetch of the *same* entry never clobbers
+  // in-progress unsaved local edits.
+  useEffect(() => {
+    if (entryIdRef.current === entry.id) return;
+    const previousId = entryIdRef.current;
+    const pendingSave = dirtyRef.current ? { title, content, mood, tags } : null;
+
+    entryIdRef.current = entry.id;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    dirtyRef.current = false;
+
+    queueMicrotask(() => {
+      setTitleState(entry.title);
+      setContentState(entry.content);
+      setMoodState(entry.mood);
+      setTagsState(entry.tags);
+      setStatus('idle');
+      setLastSavedAt(null);
+    });
+
+    // Best-effort, mirroring the unmount-flush effect below: a debounced save still pending for
+    // the entry being left behind must not simply be cancelled outright. Its local backup (already
+    // written on every keystroke) is the real safety net either way, but flushing here saves an
+    // extra "revisit the old entry, see the recovery banner, apply it" round trip.
+    if (pendingSave) {
+      journalApi.autosave(previousId, pendingSave).catch(() => undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on entry.id only; see comment above.
+  }, [entry.id]);
 
   const flush = useCallback(async (id: string, next: { title: string; content: string; mood: JournalMoodValue | null; tags: string[] }) => {
     if (!dirtyRef.current) return;

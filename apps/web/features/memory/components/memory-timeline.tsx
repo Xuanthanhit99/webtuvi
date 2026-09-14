@@ -60,8 +60,6 @@ export function MemoryTimeline({ onSelect }: MemoryTimelineProps) {
 
   const items = data?.pages.flatMap((page) => page.items) ?? [];
 
-  let lastGroup: string | null = null;
-
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-3">
@@ -97,9 +95,8 @@ export function MemoryTimeline({ onSelect }: MemoryTimelineProps) {
       )}
 
       <ol className="flex flex-col gap-5" aria-label="Memory timeline">
-        {items.map((item) => {
-          const showGroupHeader = item.group !== lastGroup;
-          lastGroup = item.group;
+        {items.map((item, index) => {
+          const showGroupHeader = index === 0 || item.group !== items[index - 1]?.group;
           return (
             <li key={item.id}>
               {showGroupHeader && (

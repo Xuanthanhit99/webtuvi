@@ -26,7 +26,7 @@ export function MvTopNav() {
   const moreActive = moreItems.some((item) => isActive(pathname, item.href));
 
   useEffect(() => {
-    setMoreOpen(false);
+    queueMicrotask(() => setMoreOpen(false));
   }, [pathname]);
 
   useEffect(() => {

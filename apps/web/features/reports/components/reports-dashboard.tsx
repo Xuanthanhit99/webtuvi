@@ -17,14 +17,13 @@ import { MvPage, MvPageHeader, MvSection } from '@/components/ui/mv-page';
 
 function generateErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.code === 'PREMIUM_REQUIRED') return 'Personal Destiny Report is a Premium feature.';
-    if (error.code === 'REPORT_SOURCES_NOT_READY') return 'You’ll need both a Natal Chart and a Numerology reading first.';
-    if (error.code === 'AI_BUDGET_EXCEEDED') return error.message;
-    if (error.code === 'REPORT_GENERATION_IN_PROGRESS') return 'A report is already being generated. Please wait for it to finish.';
-    if (error.code === 'RATE_LIMITED') return "You've tried a few times quickly — please wait a moment and try again.";
-    return error.message;
+    if (error.code === 'PREMIUM_REQUIRED') return 'Báo cáo Định mệnh Cá nhân là tính năng Premium.';
+    if (error.code === 'REPORT_SOURCES_NOT_READY') return 'Bạn cần có cả Bản đồ sao và Thần số học trước khi tạo báo cáo.';
+    if (error.code === 'AI_BUDGET_EXCEEDED') return 'Hệ thống AI đang tạm giới hạn. Vui lòng thử lại sau.';
+    if (error.code === 'REPORT_GENERATION_IN_PROGRESS') return 'Một báo cáo đang được tạo. Hãy chờ báo cáo đó hoàn tất trước.';
+    if (error.code === 'RATE_LIMITED') return 'Bạn vừa thử hơi nhanh. Vui lòng chờ một lát rồi thử lại.';
   }
-  return "Couldn't generate your report. Please try again.";
+  return 'Chưa thể tạo báo cáo lúc này. Vui lòng thử lại.';
 }
 
 /**
@@ -39,16 +38,16 @@ export function ReportsDashboard() {
   const queryClient = useQueryClient();
   const activeId = searchParams.get('item');
 
-  const { data: readiness } = useQuery({ queryKey: ['reports', 'readiness'], queryFn: reportsApi.readiness });
-  const { data: premiumStatus } = usePremiumStatus();
+  const readinessQuery = useQuery({ queryKey: ['reports', 'readiness'], queryFn: reportsApi.readiness });
+  const premiumQuery = usePremiumStatus();
 
   const generate = useMutation({
     mutationFn: () => reportsApi.generate(),
     onSuccess: (report) => {
       void queryClient.invalidateQueries({ queryKey: ['reports', 'list'] });
       selectItem(report.id);
-      if (report.status === 'READY') toast.success('Your Personal Destiny Report is ready.');
-      else toast.error('Your report couldn’t be generated this time — see details below.');
+      if (report.status === 'READY') toast.success('Báo cáo Định mệnh Cá nhân đã sẵn sàng.');
+      else toast.error('Báo cáo chưa tạo được lần này. Bạn có thể xem chi tiết bên dưới.');
     },
     onError: (error) => toast.error(generateErrorMessage(error)),
   });
@@ -58,6 +57,7 @@ export function ReportsDashboard() {
   }
 
   function handleGenerate() {
+    if (generate.isPending) return;
     trackEvent('report_generation_started', { feature: 'reports' });
     generate.mutate();
   }
@@ -66,26 +66,37 @@ export function ReportsDashboard() {
     return <ReportDetail id={activeId} onClose={() => selectItem(null)} onRegenerated={(id) => selectItem(id)} />;
   }
 
-  const isPremium = premiumStatus?.isPremium ?? false;
-  const isReady = readiness?.ready ?? false;
+  const readiness = readinessQuery.data;
+  const premiumStatus = premiumQuery.data;
+  const isPremium = premiumStatus?.isPremium === true;
+  const isReady = readiness?.ready === true;
+  const premiumUnavailable = premiumQuery.isError || (!premiumQuery.isLoading && !premiumStatus);
+  const readinessUnavailable = readinessQuery.isError || (!readinessQuery.isLoading && !readiness);
+  const generateDisabled = !isReady || readinessUnavailable || premiumQuery.isLoading || premiumUnavailable || generate.isPending;
 
   return (
     <MvPage>
       <MvPageHeader
-        eyebrow="Premium report"
-        title="Personal Destiny Report"
-        description="A long-form report bringing your Natal Chart and Numerology together into one narrative — grounded only in your real, already-calculated facts, never invented. Recent Tarot context and your Memory (with consent) can add texture, but the core report always starts from your two birth-derived systems."
+        eyebrow="Báo cáo Premium"
+        title="Báo cáo Định mệnh Cá nhân"
+        description="Một báo cáo dài kết nối Bản đồ sao và Thần số học của bạn thành một mạch kể thống nhất, chỉ dựa trên dữ kiện đã được tính sẵn. Tarot gần đây và Ký ức đã cho phép có thể bổ sung sắc thái, nhưng phần lõi luôn bắt đầu từ hai hệ thống sinh trắc của bạn."
       />
 
       <ReportReadinessPanel />
 
       <Card className="flex flex-col gap-4">
-        {!isPremium && (
+        {premiumUnavailable && (
+          <p className="text-body-sm text-text-secondary">Chưa thể kiểm tra trạng thái Premium. Hãy thử lại sau khi kết nối ổn định.</p>
+        )}
+        {!premiumUnavailable && !premiumQuery.isLoading && !isPremium && (
           <p className="text-body-sm text-text-secondary">
-            Personal Destiny Report is a Premium feature. Your Natal Chart and Numerology results themselves stay free either way.
+            Báo cáo Định mệnh Cá nhân là tính năng Premium. Bản đồ sao và Thần số học riêng lẻ của bạn vẫn miễn phí.
           </p>
         )}
-        <div className="flex items-center gap-3">
+        {/* Wraps like every other action row in this feature: at 375px the Vietnamese button label
+            plus the readiness caption exceed the card's content width, and without wrapping the
+            button shrinks until its text overflows its own fixed h-11 box. */}
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             onClick={() => {
               if (!isPremium) {
@@ -96,16 +107,17 @@ export function ReportsDashboard() {
               handleGenerate();
             }}
             loading={generate.isPending}
-            disabled={!isReady}
+            disabled={generateDisabled}
           >
             <Sparkles className="h-4 w-4" aria-hidden="true" />
-            {isPremium ? 'Generate my report' : 'Upgrade to generate'}
+            {premiumQuery.isLoading ? 'Đang kiểm tra Premium' : isPremium ? 'Tạo báo cáo của tôi' : 'Nâng cấp để tạo báo cáo'}
           </Button>
-          {!isReady && <span className="text-caption text-text-secondary">Complete both required sources above first.</span>}
+          {readinessUnavailable && <span className="text-caption text-text-secondary">Chưa thể kiểm tra điều kiện tạo báo cáo.</span>}
+          {!readinessUnavailable && !isReady && <span className="text-caption text-text-secondary">Hoàn thành hai nguồn bắt buộc ở trên trước.</span>}
         </div>
       </Card>
 
-      <MvSection eyebrow="Reports" title="History">
+      <MvSection eyebrow="Báo cáo" title="Lịch sử">
         <ReportHistoryList filters={{}} onSelect={selectItem} />
       </MvSection>
     </MvPage>

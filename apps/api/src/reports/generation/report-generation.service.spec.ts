@@ -195,6 +195,61 @@ describe('ReportGenerationService', () => {
     expect(result.failureReason).toBe('VALIDATION_FAILED');
   });
 
+  it('marks the report FAILED with INTERNAL_ERROR when an unexpected error escapes synthesis — never leaves the row stuck in GENERATING', async () => {
+    // Generation is synchronous: nothing revisits a row afterwards, so an uncaught throw after the
+    // row exists would strand it in GENERATING permanently (history reads "đang tạo" forever and
+    // the detail view keeps polling it). checkOutput is one of several collaborators outside
+    // runSynthesis's own typed error handling.
+    const deps = makeDeps({
+      safety: {
+        checkInput: jest.fn(() => ({ allowed: true, category: 'none' })),
+        checkOutput: jest.fn(() => {
+          throw new Error('safety classifier blew up');
+        }),
+      },
+    });
+    const service = makeService(deps);
+
+    const result = await service.generate('user-1');
+
+    expect(result.status).toBe('FAILED');
+    expect(result.failureReason).toBe('INTERNAL_ERROR');
+    expect(result.result).toBeNull();
+    expect(deps.prisma.destinyReport.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ status: 'FAILED', failureReason: 'INTERNAL_ERROR' }) }),
+    );
+  });
+
+  it('still releases the generation lock when an unexpected error escapes synthesis', async () => {
+    const deps = makeDeps({
+      safety: {
+        checkInput: jest.fn(() => ({ allowed: true, category: 'none' })),
+        checkOutput: jest.fn(() => {
+          throw new Error('safety classifier blew up');
+        }),
+      },
+    });
+    await makeService(deps).generate('user-1');
+    expect(deps.generationLock.releaseDiscovery).toHaveBeenCalledWith('reports', 'user-1', 'generate');
+  });
+
+  it('propagates a pre-persistence failure instead of inventing a FAILED report row', async () => {
+    // Nothing exists to mark FAILED yet — the snapshot build never got as far as creating a row, so
+    // the caller must see the real error rather than a phantom report in their history.
+    const deps = makeDeps({
+      snapshotService: {
+        build: jest.fn(async () => {
+          throw new Error('natal chart vanished between readiness and snapshot');
+        }),
+      },
+    });
+    const service = makeService(deps);
+
+    await expect(service.generate('user-1')).rejects.toThrow('natal chart vanished between readiness and snapshot');
+    expect(deps.prisma.destinyReport.create).not.toHaveBeenCalled();
+    expect(deps.generationLock.releaseDiscovery).toHaveBeenCalledWith('reports', 'user-1', 'generate');
+  });
+
   it('persists a READY report with the structured result on success, and records AIUsage', async () => {
     const deps = makeDeps();
     const service = makeService(deps);

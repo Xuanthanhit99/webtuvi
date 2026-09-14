@@ -8,9 +8,12 @@ export function MvGreeting() {
   const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    setNow(new Date());
+    const timeout = setTimeout(() => setNow(new Date()), 0);
     const id = setInterval(() => setNow(new Date()), 60_000);
-    return () => clearInterval(id);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(id);
+    };
   }, []);
 
   const timestamp = now ? formatViDateTime(now) : '';

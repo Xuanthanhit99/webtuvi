@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { CheckCircle2, Circle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { ErrorState } from '@/components/ui/error-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { reportsApi } from '../api/reports-api';
 
@@ -11,32 +12,49 @@ import { reportsApi } from '../api/reports-api';
  * source-readiness state with CTA to complete the missing source"). Tarot/Memory are shown as
  * optional context, never blocking, and never presented as if required. */
 export function ReportReadinessPanel() {
-  const { data, isLoading } = useQuery({ queryKey: ['reports', 'readiness'], queryFn: reportsApi.readiness });
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({ queryKey: ['reports', 'readiness'], queryFn: reportsApi.readiness });
 
-  if (isLoading || !data) return <Skeleton className="h-32 w-full" />;
+  if (isLoading) {
+    return (
+      <div role="status" aria-label="Đang kiểm tra nguồn dữ liệu báo cáo">
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
+  if (isError || !data) {
+    return (
+      <ErrorState
+        title="Chưa thể kiểm tra nguồn báo cáo"
+        description="Kết nối tới hệ thống báo cáo đang gián đoạn. Hãy thử lại để biết bạn đã đủ dữ liệu tạo báo cáo hay chưa."
+        onRetry={() => refetch()}
+        retryLabel={isFetching ? 'Đang thử lại...' : 'Thử lại'}
+      />
+    );
+  }
 
   return (
     <Card className="flex flex-col gap-3">
-      <p className="text-body-sm font-semibold text-text-secondary">What your report is built from</p>
-      <ul className="flex flex-col gap-2" aria-label="Required sources">
+      <p className="text-body-sm font-semibold text-text-secondary">Nguồn dữ liệu của báo cáo</p>
+      <ul className="flex flex-col gap-2" aria-label="Nguồn bắt buộc">
         <ReadinessRow
-          label="Natal Chart"
+          label="Bản đồ sao"
           available={data.natalChart.available}
           ctaHref="/discover/natal-chart"
-          ctaLabel="Calculate your Natal Chart"
+          ctaLabel="Tạo Bản đồ sao"
         />
         <ReadinessRow
-          label="Thần Số Học (Numerology)"
+          label="Thần số học"
           available={data.numerology.available}
           ctaHref="/discover/numerology"
-          ctaLabel="Calculate your Numerology"
+          ctaLabel="Tạo Thần số học"
         />
       </ul>
       <div className="border-t border-border-subtle pt-3">
-        <p className="mb-2 text-caption font-medium text-text-secondary">Optional context (not required)</p>
-        <ul className="flex flex-col gap-1.5" aria-label="Optional enrichment sources">
-          <OptionalRow label="Recent Tarot readings" available={data.tarot.available} />
-          <OptionalRow label="Memory (with your consent)" available={data.memory.available} />
+        <p className="mb-2 text-caption font-medium text-text-secondary">Bối cảnh bổ sung, không bắt buộc</p>
+        <ul className="flex flex-col gap-1.5" aria-label="Nguồn bổ sung tùy chọn">
+          <OptionalRow label="Trải bài Tarot gần đây" available={data.tarot.available} />
+          <OptionalRow label="Ký ức đã được bạn cho phép dùng" available={data.memory.available} />
         </ul>
       </div>
     </Card>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Flame, Droplet, Wind, Mountain, Sparkles } from 'lucide-react';
 import type { TarotCardDto } from '@beaconvie/types';
 import { cn } from '@/lib/cn';
@@ -66,23 +66,20 @@ export function TarotCardVisual({
   symbol,
   numberLabel,
 }: TarotCardVisualProps) {
-  const [imageState, setImageState] = useState<'loading' | 'loaded' | 'failed'>(imageSrc ? 'loading' : 'failed');
-  const [backImageState, setBackImageState] = useState<'loading' | 'loaded' | 'failed'>(backImageSrc ? 'loading' : 'failed');
+  const [imageState, setImageState] = useState<{ src: string | null; status: 'loaded' | 'failed' }>({
+    src: null,
+    status: 'failed',
+  });
+  const [backImageState, setBackImageState] = useState<{ src: string | null; status: 'loaded' | 'failed' }>({
+    src: null,
+    status: 'failed',
+  });
 
-  // A card face's DOM/state instance can be reused across different cards when a parent keys by
-  // position rather than card id (e.g. switching between two different saved readings). Without
-  // this, a card that once failed to load would stay stuck on the typographic fallback forever,
-  // even once a later render supplies a perfectly valid `imageSrc` for a different card.
-  useEffect(() => {
-    setImageState(imageSrc ? 'loading' : 'failed');
-  }, [imageSrc]);
+  const currentImageState = imageState.src === (imageSrc ?? null) ? imageState.status : imageSrc ? 'loading' : 'failed';
+  const currentBackImageState = backImageState.src === (backImageSrc ?? null) ? backImageState.status : backImageSrc ? 'loading' : 'failed';
 
-  useEffect(() => {
-    setBackImageState(backImageSrc ? 'loading' : 'failed');
-  }, [backImageSrc]);
-
-  const showBack = revealed === false && Boolean(backImageSrc) && backImageState !== 'failed';
-  const showFront = revealed !== false && Boolean(imageSrc) && imageState !== 'failed';
+  const showBack = revealed === false && Boolean(backImageSrc) && currentBackImageState !== 'failed';
+  const showFront = revealed !== false && Boolean(imageSrc) && currentImageState !== 'failed';
 
   return (
     <span
@@ -94,7 +91,7 @@ export function TarotCardVisual({
     >
       {showBack && (
         <>
-          {backImageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5 motion-reduce:animate-none" aria-hidden="true" />}
+          {currentBackImageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5 motion-reduce:animate-none" aria-hidden="true" />}
           {/* eslint-disable-next-line @next/next/no-img-element -- shared static art asset, no Next image optimizer needed. */}
           <img
             data-testid="tarot-card-back-artwork"
@@ -103,14 +100,14 @@ export function TarotCardVisual({
             loading="lazy"
             decoding="async"
             className="absolute inset-0 h-full w-full object-contain"
-            onLoad={() => setBackImageState('loaded')}
-            onError={() => setBackImageState('failed')}
+            onLoad={() => setBackImageState({ src: backImageSrc ?? null, status: 'loaded' })}
+            onError={() => setBackImageState({ src: backImageSrc ?? null, status: 'failed' })}
           />
         </>
       )}
       {showFront && (
         <>
-          {imageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5 motion-reduce:animate-none" aria-hidden="true" />}
+          {currentImageState === 'loading' && <span className="absolute inset-0 animate-pulse bg-insight/5 motion-reduce:animate-none" aria-hidden="true" />}
           {/* eslint-disable-next-line @next/next/no-img-element -- Future approved Tarot art must fail over without Next image optimizer assumptions. */}
           <img
             data-testid="tarot-card-artwork"
@@ -119,10 +116,10 @@ export function TarotCardVisual({
             loading="lazy"
             decoding="async"
             className={cn('absolute inset-0 h-full w-full object-contain', reversed && 'rotate-180')}
-            onLoad={() => setImageState('loaded')}
-            onError={() => setImageState('failed')}
+            onLoad={() => setImageState({ src: imageSrc ?? null, status: 'loaded' })}
+            onError={() => setImageState({ src: imageSrc ?? null, status: 'failed' })}
           />
-          {imageState === 'loaded' && (
+          {currentImageState === 'loaded' && (
             <span className="absolute inset-x-2 bottom-2 rounded-sm bg-canvas/78 px-2 py-1 text-caption font-semibold text-text-primary backdrop-blur-sm">
               {name}
             </span>

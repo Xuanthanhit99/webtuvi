@@ -91,12 +91,14 @@ export function useCompanionConversation(conversationId: string | null) {
 
   useEffect(() => {
     closeStream();
-    setStreamingText('');
+    queueMicrotask(() => setStreamingText(''));
     if (conversationId) {
-      void loadHistory(conversationId);
+      queueMicrotask(() => void loadHistory(conversationId));
     } else {
-      setMessages([]);
-      setStatus('idle');
+      queueMicrotask(() => {
+        setMessages([]);
+        setStatus('idle');
+      });
     }
   }, [conversationId, loadHistory, closeStream]);
 
