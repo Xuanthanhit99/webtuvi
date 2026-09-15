@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
+import { AuthProvider } from '@/providers/auth-provider';
 import { RegisterForm } from './register-form';
 import { authApi } from '../api/auth-api';
 
@@ -12,8 +13,19 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('../api/auth-api', () => ({
-  authApi: { register: jest.fn() },
+  authApi: { register: jest.fn(), me: jest.fn().mockResolvedValue(null) },
 }));
+
+// RegisterForm reads useAuth().refetch to force a fresh /auth/me read right after a
+// successful registration — real AuthProvider wraps the whole app (see app/layout.tsx),
+// so tests render it here too rather than stubbing that context away.
+function renderRegisterForm() {
+  return renderWithQuery(
+    <AuthProvider>
+      <RegisterForm />
+    </AuthProvider>,
+  );
+}
 
 /** Fills every field with valid values, then lets the caller override one. */
 async function fillValidForm(
@@ -40,7 +52,7 @@ describe('RegisterForm password rules', () => {
 
   it('rejects a password shorter than 8 characters', async () => {
     const user = userEvent.setup();
-    renderWithQuery(<RegisterForm />);
+    renderRegisterForm();
 
     await fillValidForm(user, { password: 'Ab1!', confirmPassword: 'Ab1!' });
     await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
@@ -53,7 +65,7 @@ describe('RegisterForm password rules', () => {
 
   it('rejects a password with no number or symbol', async () => {
     const user = userEvent.setup();
-    renderWithQuery(<RegisterForm />);
+    renderRegisterForm();
 
     await fillValidForm(user, { password: 'alllowercaseletters', confirmPassword: 'alllowercaseletters' });
     await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
@@ -67,7 +79,7 @@ describe('RegisterForm password rules', () => {
 
   it('rejects a confirm-password that does not match', async () => {
     const user = userEvent.setup();
-    renderWithQuery(<RegisterForm />);
+    renderRegisterForm();
 
     await fillValidForm(user, { password: 'Sup3r$ecretPass', confirmPassword: 'Different1!' });
     await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
@@ -78,7 +90,7 @@ describe('RegisterForm password rules', () => {
 
   it('requires accepting the terms checkbox', async () => {
     const user = userEvent.setup();
-    renderWithQuery(<RegisterForm />);
+    renderRegisterForm();
 
     await fillValidForm(user, { skipTerms: true });
     await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
@@ -90,7 +102,7 @@ describe('RegisterForm password rules', () => {
   it('submits successfully with valid data', async () => {
     (authApi.register as jest.Mock).mockResolvedValue({ onboardingCompletedAt: null });
     const user = userEvent.setup();
-    renderWithQuery(<RegisterForm />);
+    renderRegisterForm();
 
     await fillValidForm(user);
     await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
@@ -105,7 +117,7 @@ describe('RegisterForm password rules', () => {
 it.each([['/premium', '/onboarding?next=%2Fpremium'], ['/\\example.invalid', '/onboarding']])('register safely forwards %s', async (next, expected) => {
   mockNext = next;
   (authApi.register as jest.Mock).mockResolvedValue({ onboardingCompletedAt: null });
-  renderWithQuery(<RegisterForm />);
+  renderRegisterForm();
   const user = userEvent.setup();
   await fillValidForm(user);
   await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));

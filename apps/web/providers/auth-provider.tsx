@@ -11,7 +11,7 @@ import { authReturnUrl, safeNextPath } from '@/lib/safe-next-path';
 interface AuthContextValue {
   user: UserDto | null;
   isLoading: boolean;
-  refetch: () => void;
+  refetch: () => Promise<unknown>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);

@@ -13,13 +13,14 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { Button } from '@/components/ui/button';
 import { FormField, fieldDescribedBy } from '@/components/ui/form-field';
 import { Alert } from '@/components/ui/alert';
-import { useInvalidateAuth } from '@/providers/auth-provider';
+import { useAuth, useInvalidateAuth } from '@/providers/auth-provider';
 import { accountError } from '../account-error';
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const invalidateAuth = useInvalidateAuth();
+  const { refetch: refetchAuth } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -33,6 +34,7 @@ export function LoginForm() {
     try {
       const user = await authApi.login(values);
       await invalidateAuth();
+      await refetchAuth();
       const next = safeNextPath(searchParams.get('next'));
       router.push(user.onboardingCompletedAt ? next : authReturnUrl('/onboarding', next));
     } catch (error) {

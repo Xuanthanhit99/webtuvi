@@ -153,6 +153,55 @@ describe('useJournalDraft', () => {
     expect(window.localStorage.getItem('beaconvie:journal-draft:j-1')).toBeNull();
   });
 
+  // The user actually leaves the page (browser back, a nav link, closing the tab) rather than the
+  // editor switching to a sibling entry in place — a true unmount, distinct from the "switching
+  // entries in the same mounted instance" cases below. Regression coverage for the P1: the
+  // unmount-flush effect has empty deps (it must fire its cleanup only on real unmount, not on
+  // every keystroke), so a naive implementation closes over title/content/mood/tags at their
+  // mount-time (initial, often-empty) values forever — see use-journal-draft.ts's latestFieldsRef.
+  describe('unmounting entirely while a debounced save is still pending', () => {
+    it('flushes the LATEST typed values on unmount, not the initial values from mount', async () => {
+      const entryA = makeEntry({ id: 'a', title: '', content: '' });
+      const { result, unmount } = renderHook(() => useJournalDraft(entryA));
+
+      act(() => result.current.setTitle('New title'));
+      act(() => result.current.setContent('New content'));
+      act(() => result.current.setMood('GREAT'));
+      act(() => result.current.setTags(['x', 'y']));
+      // Debounce (2s) deliberately never elapses — this is the exact race the bug shipped in.
+      expect(journalApi.autosave).not.toHaveBeenCalled();
+
+      unmount();
+
+      await waitFor(() =>
+        expect(journalApi.autosave).toHaveBeenCalledWith(
+          'a',
+          expect.objectContaining({ title: 'New title', content: 'New content', mood: 'GREAT', tags: ['x', 'y'] }),
+        ),
+      );
+      // The original bug: an empty title fails the API's title min-length validation, so sending
+      // the stale (mount-time) empty title is exactly what turned this into total data loss.
+      expect(journalApi.autosave).not.toHaveBeenCalledWith('a', expect.objectContaining({ title: '' }));
+    });
+
+    it('does not autosave on unmount when nothing was actually edited', () => {
+      const { unmount } = renderHook(() => useJournalDraft(makeEntry({ id: 'a' })));
+      unmount();
+      expect(journalApi.autosave).not.toHaveBeenCalled();
+    });
+
+    it('flushes only once on unmount — no duplicate/corrupt save from both the debounce and the unmount flush racing', async () => {
+      const entryA = makeEntry({ id: 'a' });
+      const { result, unmount } = renderHook(() => useJournalDraft(entryA));
+
+      act(() => result.current.setContent('typed just before leaving'));
+      unmount();
+
+      await waitFor(() => expect(journalApi.autosave).toHaveBeenCalledTimes(1));
+      expect(journalApi.autosave).toHaveBeenCalledWith('a', expect.objectContaining({ content: 'typed just before leaving' }));
+    });
+  });
+
   // JournalHome/JournalDetail intentionally reuse the same JournalEditor instance (and therefore
   // the same useJournalDraft hook instance) across entries rather than remounting on selection —
   // see journal-home.tsx. These prove the hook itself, not just its callers, gets that right.

@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { FormField, fieldDescribedBy } from '@/components/ui/form-field';
 import { Alert } from '@/components/ui/alert';
-import { useInvalidateAuth } from '@/providers/auth-provider';
+import { useAuth, useInvalidateAuth } from '@/providers/auth-provider';
 import { ApiError } from '@/lib/api-error';
 import { accountError } from '../account-error';
 import { trackEvent } from '@/lib/analytics';
@@ -25,6 +25,7 @@ export function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const invalidateAuth = useInvalidateAuth();
+  const { refetch: refetchAuth } = useAuth();
   const [formError, setFormError] = useState<string | null>(null);
 
   const {
@@ -40,6 +41,7 @@ export function RegisterForm() {
     try {
       await authApi.register(values);
       await invalidateAuth();
+      await refetchAuth();
       const next = safeNextPath(searchParams.get('next'));
       router.push(authReturnUrl('/onboarding', next));
     } catch (error) {

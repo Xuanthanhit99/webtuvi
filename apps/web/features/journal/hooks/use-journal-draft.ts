@@ -82,6 +82,17 @@ export function useJournalDraft(entry: JournalEntryDto) {
   const dirtyRef = useRef(false);
   const entryIdRef = useRef(entry.id);
 
+  // Mirrors title/content/mood/tags after every render so the unmount-only effect below (deps
+  // `[]`, so its closure is fixed at mount) can read the CURRENT values instead of whatever they
+  // were when the component first mounted. Refs are the established fix for this in the hook
+  // already (see dirtyRef/entryIdRef) — this just extends the same pattern to the four field
+  // values. Written from a no-deps effect rather than directly in the render body: refs must not
+  // be mutated during render itself (react-hooks/refs).
+  const latestFieldsRef = useRef({ title, content, mood, tags });
+  useEffect(() => {
+    latestFieldsRef.current = { title, content, mood, tags };
+  });
+
   // A local backup strictly newer than the server's own last save is offered for recovery once,
   // right after mount — this is the "recover unsaved changes" half of Phase 3, distinct from the
   // autosave loop itself. Recomputed (not just conditionally set) on every run so switching to an
@@ -171,13 +182,21 @@ export function useJournalDraft(entry: JournalEntryDto) {
   // time this fires there is no component left to show an error status to, and the local
   // backup (already written on every keystroke) is the real safety net for this case, so a
   // failure here is swallowed rather than becoming an unhandled rejection.
+  //
+  // Reads latestFieldsRef.current rather than closing over title/content/mood/tags directly:
+  // this effect's own deps are `[]` (it must run its cleanup only on true unmount, not on every
+  // field edit), so a direct closure over those state variables would freeze them at their
+  // mount-time values — for a brand-new entry that's the empty initial state, so navigating away
+  // before the debounce fired would autosave an empty title, fail the API's title min-length
+  // validation, and silently discard everything the user just typed. The ref sidesteps that
+  // entirely: it's mutated on every render (see above), so `.current` is always fresh regardless
+  // of when this closure was created.
   useEffect(
     () => () => {
       if (dirtyRef.current) {
-        journalApi.autosave(entryIdRef.current, { title, content, mood, tags }).catch(() => undefined);
+        journalApi.autosave(entryIdRef.current, latestFieldsRef.current).catch(() => undefined);
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only runs the latest values on unmount
     [],
   );
 

@@ -1,6 +1,7 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
+import { AuthProvider } from '@/providers/auth-provider';
 import { LoginForm } from './login-form';
 import { authApi } from '../api/auth-api';
 import { ApiError } from '@/lib/api-error';
@@ -13,8 +14,19 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('../api/auth-api', () => ({
-  authApi: { login: jest.fn() },
+  authApi: { login: jest.fn(), me: jest.fn().mockResolvedValue(null) },
 }));
+
+// LoginForm reads useAuth().refetch to force a fresh /auth/me read right after a
+// successful login — real AuthProvider wraps the whole app (see app/layout.tsx), so
+// tests render it here too rather than stubbing that context away.
+function renderLoginForm() {
+  return renderWithQuery(
+    <AuthProvider>
+      <LoginForm />
+    </AuthProvider>,
+  );
+}
 
 describe('LoginForm', () => {
   beforeEach(() => {
@@ -24,7 +36,7 @@ describe('LoginForm', () => {
 
   it('shows validation errors and never calls the API when the form is empty', async () => {
     const user = userEvent.setup();
-    renderWithQuery(<LoginForm />);
+    renderLoginForm();
 
     await user.click(screen.getByRole('button', { name: 'Đăng nhập' }));
 
@@ -42,7 +54,7 @@ describe('LoginForm', () => {
     );
 
     const user = userEvent.setup();
-    renderWithQuery(<LoginForm />);
+    renderLoginForm();
 
     await user.type(screen.getByLabelText('Email'), 'alex@example.com');
     await user.type(screen.getByLabelText('Mật khẩu', { exact: true }), 'Sup3r$ecretPass');
@@ -62,7 +74,7 @@ describe('LoginForm', () => {
     );
 
     const user = userEvent.setup();
-    renderWithQuery(<LoginForm />);
+    renderLoginForm();
 
     await user.type(screen.getByLabelText('Email'), 'alex@example.com');
     await user.type(screen.getByLabelText('Mật khẩu', { exact: true }), 'WrongPassword1!');
@@ -80,7 +92,7 @@ describe('LoginForm', () => {
   ])('uses safe return intent %s (onboarded %s)', async (next, onboarded, expected) => {
     mockNext = next as string;
     (authApi.login as jest.Mock).mockResolvedValue({ onboardingCompletedAt: onboarded ? '2026-01-01' : null });
-    renderWithQuery(<LoginForm />);
+    renderLoginForm();
     const user = userEvent.setup();
     await user.type(screen.getByLabelText('Email'), 'alex@example.com');
     await user.type(screen.getByLabelText('Mật khẩu', { exact: true }), 'Sup3r$ecretPass');
