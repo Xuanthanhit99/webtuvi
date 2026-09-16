@@ -59,7 +59,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production PORT=3000
 
-COPY --from=build /repo/apps/web/public ./public
+COPY --from=build /repo/apps/web/public ./apps/web/public
 COPY --from=build --chown=beaconvie:beaconvie /repo/apps/web/.next/standalone ./
 COPY --from=build --chown=beaconvie:beaconvie /repo/apps/web/.next/static ./apps/web/.next/static
 
