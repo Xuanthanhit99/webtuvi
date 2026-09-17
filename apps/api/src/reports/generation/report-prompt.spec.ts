@@ -1,4 +1,4 @@
-import { collectValidEvidenceRefs, findGroundingViolations } from './report-prompt';
+import { collectValidEvidenceRefs, findGroundingViolations, REPORT_SYSTEM_PROMPT } from './report-prompt';
 import type { ReportSourceSnapshot, ReportStructuredResult } from '../reports.types';
 
 function makeSnapshot(overrides: Partial<ReportSourceSnapshot> = {}): ReportSourceSnapshot {
@@ -94,5 +94,11 @@ describe('findGroundingViolations', () => {
       personalizedReflection: { narrative: 'Real reflection.', evidenceRefs: ['memory:0'] },
     });
     expect(findGroundingViolations(result, snapshot)).toEqual([]);
+  });
+});
+
+describe('REPORT_SYSTEM_PROMPT — Vietnamese language contract', () => {
+  it('explicitly instructs the model to write narrative values in Vietnamese', () => {
+    expect(REPORT_SYSTEM_PROMPT).toMatch(/Vietnamese/i);
   });
 });

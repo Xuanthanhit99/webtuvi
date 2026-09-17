@@ -56,7 +56,7 @@ export function InsightDetail({ id, onClose }: { id: string; onClose: () => void
         </div>
         <p className="font-display text-heading-md text-text-primary">{candidate.ruleExplanation}</p>
         <p className="text-caption text-text-disabled">
-          Timeline: {new Date(candidate.windowStart).toLocaleDateString()} – {new Date(candidate.windowEnd).toLocaleDateString()}
+          Timeline: {new Date(candidate.windowStart).toLocaleDateString('vi-VN')} – {new Date(candidate.windowEnd).toLocaleDateString('vi-VN')}
         </p>
       </div>
 

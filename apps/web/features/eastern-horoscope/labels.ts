@@ -3,9 +3,9 @@ import type { BadgeVariant } from '@/components/ui/badge';
 
 /** Plain-language labels only — never AI wording. See docs/reference/web-tu-vi/web-tu-vi/14-eastern-horoscope-experience.md. */
 export const PROFILE_STATUS_LABELS: Record<EasternHoroscopeProfileStatusValue, string> = {
-  ACTIVE: 'Active',
-  ARCHIVED: 'Archived',
-  DELETED: 'Deleted',
+  ACTIVE: 'Đang lưu',
+  ARCHIVED: 'Đã lưu trữ',
+  DELETED: 'Đã xóa',
 };
 
 export const PROFILE_STATUS_BADGE_VARIANT: Record<EasternHoroscopeProfileStatusValue, BadgeVariant> = {
@@ -17,11 +17,11 @@ export const PROFILE_STATUS_BADGE_VARIANT: Record<EasternHoroscopeProfileStatusV
 /** Thematic, non-predictive framing only — this product hard-rejects luck-scoring/fortune-telling
  * copy (Bible Module 14 §11). */
 export const YEAR_ENERGY_RELATIONSHIP_LABELS: Record<YearEnergyRelationshipValue, string> = {
-  GENERATES: 'This year’s element nurtures your own — a season that may support steady growth.',
-  IS_GENERATED_BY: 'Your own element feeds this year’s — a season that may ask more of your own reserves.',
-  CONTROLS: 'This year’s element restrains your own — a season that may invite patience.',
-  IS_CONTROLLED_BY: 'Your own element restrains this year’s — a season where your own steadiness may stand out.',
-  SAME: 'This year shares your own element — a season of familiar rhythm.',
+  GENERATES: 'Ngũ hành của năm nay sinh dưỡng cho ngũ hành của bạn — một giai đoạn có thể nâng đỡ sự phát triển bền vững.',
+  IS_GENERATED_BY: 'Ngũ hành của bạn nuôi dưỡng cho ngũ hành của năm nay — một giai đoạn có thể đòi hỏi nhiều hơn ở nội lực của bạn.',
+  CONTROLS: 'Ngũ hành của năm nay chế ngự ngũ hành của bạn — một giai đoạn gợi ý sự kiên nhẫn.',
+  IS_CONTROLLED_BY: 'Ngũ hành của bạn chế ngự ngũ hành của năm nay — một giai đoạn mà sự vững vàng của bạn có thể nổi bật.',
+  SAME: 'Năm nay cùng ngũ hành với bạn — một giai đoạn nhịp điệu quen thuộc.',
 };
 
 export const ELEMENT_LABELS_EN: Record<string, string> = {

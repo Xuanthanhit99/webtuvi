@@ -41,7 +41,7 @@ describe('MemoryTimeline', () => {
 
     renderWithQuery(<MemoryTimeline onSelect={jest.fn()} />);
 
-    expect(await screen.findByText('No memories yet.')).toBeInTheDocument();
+    expect(await screen.findByText('Chưa có ký ức nào.')).toBeInTheDocument();
   });
 
   it('renders memory items with their title, why-this-memory, and group heading', async () => {
@@ -50,7 +50,7 @@ describe('MemoryTimeline', () => {
     renderWithQuery(<MemoryTimeline onSelect={jest.fn()} />);
 
     expect(await screen.findByText('New job')).toBeInTheDocument();
-    expect(screen.getByText('Today')).toBeInTheDocument();
+    expect(screen.getByText('Hôm nay')).toBeInTheDocument();
     expect(screen.getByText(ITEM.whyThisMemory)).toBeInTheDocument();
   });
 
@@ -78,6 +78,6 @@ describe('MemoryTimeline', () => {
 
     renderWithQuery(<MemoryTimeline onSelect={jest.fn()} />);
 
-    expect(await screen.findByRole('button', { name: /try again/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /thử lại/i })).toBeInTheDocument();
   });
 });

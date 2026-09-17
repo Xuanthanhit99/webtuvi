@@ -16,7 +16,7 @@ export function MobileNavigation() {
 
   return (
     <nav
-      aria-label="Main navigation"
+      aria-label="Điều hướng chính"
       className="fixed inset-x-0 bottom-0 z-drawer flex border-t border-border-subtle bg-surface pb-[env(safe-area-inset-bottom)] tablet:hidden"
     >
       {mobileItems.map((item) => {

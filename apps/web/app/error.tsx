@@ -12,8 +12,8 @@ export default function RootError({ error, reset }: { error: Error & { digest?: 
     <div className="flex min-h-dvh items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-sm">
         <ErrorState
-          title="Something went wrong"
-          description="This page hit an unexpected error. You can try again, or head back home."
+          title="Đã có lỗi xảy ra"
+          description="Trang này gặp lỗi ngoài ý muốn. Bạn có thể thử lại, hoặc quay về trang chính."
           onRetry={reset}
         />
       </div>

@@ -5,7 +5,7 @@ export function FaqSection() {
     <section aria-labelledby="faq-heading" className="border-b border-border-subtle py-16 desktop:py-24">
       <div className="mx-auto max-w-reading px-4 desktop:px-8">
         <h2 id="faq-heading" className="mb-8 text-center font-display text-heading-lg text-text-primary">
-          Frequently asked
+          Câu hỏi thường gặp
         </h2>
         <div className="flex flex-col gap-2">
           {landingCopy.faq.map((item) => (

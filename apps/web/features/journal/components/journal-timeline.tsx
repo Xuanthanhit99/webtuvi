@@ -12,12 +12,12 @@ import { Input } from '@/components/ui/input';
 import { Dropdown } from '@/components/ui/dropdown';
 
 const MOOD_OPTIONS = [
-  { value: '', label: 'Any mood' },
-  { value: 'GREAT', label: 'Great' },
-  { value: 'GOOD', label: 'Good' },
-  { value: 'OKAY', label: 'Okay' },
-  { value: 'LOW', label: 'Low' },
-  { value: 'DIFFICULT', label: 'Difficult' },
+  { value: '', label: 'Mọi cảm xúc' },
+  { value: 'GREAT', label: 'Tuyệt vời' },
+  { value: 'GOOD', label: 'Tốt' },
+  { value: 'OKAY', label: 'Bình thường' },
+  { value: 'LOW', label: 'Thấp' },
+  { value: 'DIFFICULT', label: 'Khó khăn' },
 ];
 
 export function JournalTimeline({ onSelect }: { onSelect: (id: string) => void }) {
@@ -52,20 +52,20 @@ export function JournalTimeline({ onSelect }: { onSelect: (id: string) => void }
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap gap-2">
         <label htmlFor="journal-search" className="sr-only">
-          Search your journal
+          Tìm trong nhật ký của bạn
         </label>
-        <Input id="journal-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search title and content…" className="flex-1 min-w-[200px]" />
-        <Dropdown id="journal-mood-filter" label="Mood" value={mood} options={MOOD_OPTIONS} onChange={setMood} className="w-40" />
+        <Input id="journal-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm tiêu đề và nội dung…" className="flex-1 min-w-[200px]" />
+        <Dropdown id="journal-mood-filter" label="Cảm xúc" value={mood} options={MOOD_OPTIONS} onChange={setMood} className="w-40" />
         <label htmlFor="journal-tag-filter" className="sr-only">
-          Filter by tag
+          Lọc theo thẻ
         </label>
-        <Input id="journal-tag-filter" value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Filter by tag…" className="w-40" />
+        <Input id="journal-tag-filter" value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Lọc theo thẻ…" className="w-40" />
       </div>
 
       {isFiltering ? (
         <section aria-labelledby="journal-search-results">
           <h2 id="journal-search-results" className="mb-3 text-body-sm font-semibold text-text-secondary">
-            {searchResults.isLoading ? 'Searching…' : `${searchResults.data?.total ?? 0} result${searchResults.data?.total === 1 ? '' : 's'}`}
+            {searchResults.isLoading ? 'Đang tìm…' : `${searchResults.data?.total ?? 0} kết quả`}
           </h2>
           {searchResults.isLoading && (
             <div className="flex flex-col gap-2">
@@ -74,7 +74,7 @@ export function JournalTimeline({ onSelect }: { onSelect: (id: string) => void }
             </div>
           )}
           {searchResults.data && searchResults.data.items.length === 0 && (
-            <p className="text-body-sm text-text-secondary">Nothing matches that search.</p>
+            <p className="text-body-sm text-text-secondary">Không có kết quả nào khớp với tìm kiếm đó.</p>
           )}
           {searchResults.data && searchResults.data.items.length > 0 && (
             <ul className="flex flex-col gap-2">
@@ -89,7 +89,7 @@ export function JournalTimeline({ onSelect }: { onSelect: (id: string) => void }
           {pinned.data && pinned.data.items.length > 0 && (
             <section aria-labelledby="journal-pinned">
               <h2 id="journal-pinned" className="mb-3 text-body-sm font-semibold text-text-secondary">
-                Pinned
+                Đã ghim
               </h2>
               <ul className="flex flex-col gap-2">
                 {pinned.data.items.map((entry) => (
@@ -101,7 +101,7 @@ export function JournalTimeline({ onSelect }: { onSelect: (id: string) => void }
 
           <section aria-labelledby="journal-timeline-heading">
             <h2 id="journal-timeline-heading" className="mb-3 text-body-sm font-semibold text-text-secondary">
-              Timeline
+              Dòng thời gian
             </h2>
             {timeline.isLoading && (
               <div className="flex flex-col gap-2">
@@ -110,7 +110,7 @@ export function JournalTimeline({ onSelect }: { onSelect: (id: string) => void }
               </div>
             )}
             {timeline.data && timeline.data.pages[0]!.items.length === 0 && (
-              <EmptyState title="Nothing here yet" description="Write your first entry whenever you're ready." />
+              <EmptyState title="Chưa có gì ở đây" description="Viết mục đầu tiên bất cứ khi nào bạn sẵn sàng." />
             )}
             {timeline.data && groupPages(timeline.data.pages).map((group) => (
               <div key={group.groupKey} className="mb-6">
@@ -124,7 +124,7 @@ export function JournalTimeline({ onSelect }: { onSelect: (id: string) => void }
             ))}
             {timeline.hasNextPage && (
               <Button variant="secondary" onClick={() => timeline.fetchNextPage()} loading={timeline.isFetchingNextPage}>
-                Load more
+                Tải thêm
               </Button>
             )}
           </section>

@@ -90,7 +90,7 @@ export function ReflectionDetail({ id, onClose }: { id: string; onClose: () => v
         </div>
         <p className="font-display text-heading-md text-text-primary">{candidate.reason}</p>
         <p className="text-caption text-text-disabled">
-          Observed {new Date(candidate.windowStart).toLocaleDateString()} – {new Date(candidate.windowEnd).toLocaleDateString()}
+          Observed {new Date(candidate.windowStart).toLocaleDateString('vi-VN')} – {new Date(candidate.windowEnd).toLocaleDateString('vi-VN')}
         </p>
       </div>
 

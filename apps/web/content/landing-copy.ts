@@ -12,59 +12,59 @@
 
 export const landingCopy = {
   hero: {
-    headline: 'An AI that actually remembers you.',
-    headlineHighlight: 'remembers you',
+    headline: 'Một AI thực sự ghi nhớ bạn.',
+    headlineHighlight: 'ghi nhớ bạn',
     subheadline:
-      "Tử Vi Tarot starts with a real Tarot draw as a way to get to know you — then carries what it learns forward, conversation after conversation, so you're never starting over.",
-    primaryCta: 'Meet your Companion',
-    secondaryCta: 'See how it works',
+      'Mệnh Vi bắt đầu bằng một lượt rút Tarot thật để làm quen với bạn — rồi mang theo những gì đã học được, qua từng cuộc trò chuyện, để bạn không bao giờ phải bắt đầu lại từ đầu.',
+    primaryCta: 'Gặp Người bạn đồng hành của bạn',
+    secondaryCta: 'Xem cách hoạt động',
   },
   trust: {
-    notTitle: 'We are NOT',
-    not: ['A horoscope app', 'A generic AI chatbot', 'A therapy app', 'A social network'],
-    areTitle: 'We ARE',
+    notTitle: 'Chúng tôi KHÔNG PHẢI là',
+    not: ['Một ứng dụng xem tử vi', 'Một chatbot AI thông thường', 'Một ứng dụng trị liệu tâm lý', 'Một mạng xã hội'],
+    areTitle: 'Chúng tôi LÀ',
     are: [
-      'An AI Companion that remembers what you share',
-      'A reflection practice, starting with a real Tarot draw',
-      'Private by default, yours to export or delete anytime',
+      'Một Người bạn đồng hành AI ghi nhớ những gì bạn chia sẻ',
+      'Một thói quen chiêm nghiệm, bắt đầu bằng một lượt rút Tarot thật',
+      'Riêng tư theo mặc định, bạn có thể xuất hoặc xóa bất cứ lúc nào',
     ],
   },
   problem: {
     lines: [
-      'Horoscope apps forget you the moment you close them.',
-      "Chatbots don't have a reason to ask what really matters.",
+      'Các ứng dụng xem tử vi quên bạn ngay khi bạn đóng ứng dụng.',
+      'Chatbot không có lý do để hỏi điều thực sự quan trọng.',
     ],
   },
   solution: {
-    text: 'Tử Vi Tarot starts with a real Tarot draw and carries what you share forward. Every conversation adds to what your Companion knows. Nothing is lost between visits.',
+    text: 'Mệnh Vi bắt đầu bằng một lượt rút Tarot thật và mang theo những gì bạn chia sẻ. Mỗi cuộc trò chuyện đều bổ sung thêm vào những gì Người bạn đồng hành của bạn biết. Không có gì bị mất giữa các lần ghé thăm.',
   },
   howItWorks: {
     steps: [
       {
         number: 1,
-        text: 'Start with a real Tarot draw, Numerology reading, Natal Chart, or Eastern Horoscope calculation.',
+        text: 'Bắt đầu với một lượt rút Tarot thật, một lượt đọc Thần số học, Bản đồ sao, hoặc tính toán Ngũ Hành Phương Đông.',
       },
-      { number: 2, text: 'Talk it through with your Companion.' },
-      { number: 3, text: 'Come back — it remembers, and the picture gets clearer.' },
+      { number: 2, text: 'Trò chuyện về điều đó với Người bạn đồng hành của bạn.' },
+      { number: 3, text: 'Quay lại — nó vẫn nhớ, và bức tranh trở nên rõ ràng hơn.' },
     ],
   },
   discoverySystems: [
-    { title: 'Tarot', description: 'A real, deterministic 78-card draw — live today.', comingSoon: false, href: '/discover/tarot' },
+    { title: 'Tarot', description: 'Một lượt rút thật, xác định, từ bộ 78 lá bài — đang hoạt động ngay hôm nay.', comingSoon: false, href: '/discover/tarot' },
     {
-      title: 'Natal Chart',
-      description: 'A real, deterministic birth chart calculated from your birth date, time, and place — live today.',
+      title: 'Bản đồ sao',
+      description: 'Một bản đồ sao thật, xác định, được tính từ ngày, giờ và nơi sinh của bạn — đang hoạt động ngay hôm nay.',
       comingSoon: false,
       href: '/discover/natal-chart',
     },
     {
-      title: 'Eastern Horoscope',
-      description: 'A real, deterministic Chinese Zodiac and Five Elements calculation — live today.',
+      title: 'Ngũ Hành Phương Đông',
+      description: 'Một phép tính Con giáp và Ngũ Hành thật, xác định — đang hoạt động ngay hôm nay.',
       comingSoon: false,
       href: '/discover/eastern-horoscope',
     },
     {
-      title: 'Numerology',
-      description: 'The numbers already in your life, given a second look — no number ever chosen or invented by AI.',
+      title: 'Thần số học',
+      description: 'Những con số vốn đã có trong cuộc sống của bạn, được nhìn lại một lần nữa — không con số nào do AI chọn hay bịa ra.',
       comingSoon: false,
       href: '/discover/numerology',
     },
@@ -75,36 +75,36 @@ export const landingCopy = {
   // doc's tone rules and stays thematically consistent with the Memory section's
   // "job change" example just below it.
   companion: {
-    label: 'AI Companion',
-    exampleUser: "I don't know what to do.",
+    label: 'Người bạn đồng hành AI',
+    exampleUser: 'Mình không biết phải làm gì.',
     exampleCompanion:
-      'A year ago, you told me you felt exactly the same before changing jobs. What feels different now?',
-    memoryLabel: 'Memory from Nov 3, 2023',
+      'Một năm trước, bạn từng nói với mình rằng bạn cảm thấy y hệt như vậy trước khi đổi việc. Bây giờ điều gì đang khác đi?',
+    memoryLabel: 'Ký ức từ 3/11/2023',
   },
   memory: {
-    text: 'Three weeks ago, someone told their Companion they were nervous about a job change. This week, without being asked, it brought it up again — because it remembered.',
+    text: 'Ba tuần trước, có người đã nói với Người bạn đồng hành của họ rằng họ lo lắng về việc đổi việc. Tuần này, không cần được hỏi, nó đã nhắc lại điều đó — vì nó đã ghi nhớ.',
   },
   reportsLine:
-    'Once you have a Natal Chart and Numerology reading, your Personal Destiny Report brings them together into one long-form narrative — a Premium feature, ready today.',
-  communityLine: 'As more people reflect, patterns emerge — always anonymized, never a public feed.',
+    'Khi đã có Bản đồ sao và một lượt đọc Thần số học, Báo cáo Vận mệnh Cá nhân của bạn sẽ kết hợp chúng lại thành một bài tường thuật dài — một tính năng Premium, sẵn sàng ngay hôm nay.',
+  communityLine: 'Khi càng nhiều người chiêm nghiệm, các quy luật càng hiện rõ — luôn được ẩn danh, không bao giờ là một bảng tin công khai.',
   security: {
-    privacy: 'your journal is private by default, and you can export or delete everything, anytime',
-    security: 'encrypted, never sold, never used to train on without consent',
+    privacy: 'nhật ký của bạn riêng tư theo mặc định, và bạn có thể xuất hoặc xóa mọi thứ, bất cứ lúc nào',
+    security: 'được mã hóa, không bao giờ bán, không bao giờ dùng để huấn luyện AI nếu không có sự đồng ý',
   },
   testimonials: [
-    { quote: "I didn't expect it to actually bring that up again.", attribution: 'Early user' },
-    { quote: 'It felt less like an app and more like someone who was actually listening.', attribution: 'Early user' },
-    { quote: "The tarot pull was the doorway — the conversations are why I stayed.", attribution: 'Early user' },
+    { quote: 'Mình không ngờ nó lại thực sự nhắc lại điều đó.', attribution: 'Người dùng sớm' },
+    { quote: 'Nó không giống một ứng dụng, mà giống như có ai đó thực sự đang lắng nghe.', attribution: 'Người dùng sớm' },
+    { quote: 'Lượt rút Tarot chỉ là cánh cửa mở đầu — những cuộc trò chuyện mới là lý do mình ở lại.', attribution: 'Người dùng sớm' },
   ],
   pricing: {
     free: {
-      name: 'Free',
-      description: 'Full Discovery access, and a Companion that remembers within each conversation.',
+      name: 'Miễn phí',
+      description: 'Truy cập đầy đủ Khám phá, và một Người bạn đồng hành ghi nhớ trong phạm vi mỗi cuộc trò chuyện.',
     },
     premium: {
       name: 'Premium',
       description:
-        'A one-time, 30-day pass — not a subscription. Memory across every conversation, higher Discovery limits, unlimited reading history, and your Personal Destiny Report.',
+        'Một lượt mua một lần, 30 ngày — không phải gói đăng ký định kỳ. Ghi nhớ xuyên suốt mọi cuộc trò chuyện, giới hạn Khám phá cao hơn, lịch sử lượt đọc không giới hạn, và Báo cáo Vận mệnh Cá nhân của bạn.',
     },
     // Pre-Live Product Experience Completion Audit finding #7: no exact price is shown pre-login.
     // The real price lives only in backend config (`PREMIUM_PRICE_VND`, single source of truth) and
@@ -114,47 +114,47 @@ export const landingCopy = {
     // be transparent about pricing *structure* (one-time, 30-day, no subscription) and exactly where
     // the real number is shown — not to duplicate or fetch a number that isn't final yet. Revisit
     // once the price is signed off (see docs/architecture/premium-entitlements.md).
-    priceNote: 'See the exact current price — free to look, no card required — right after you sign up.',
-    cta: 'Meet your Companion',
+    priceNote: 'Xem mức giá chính xác hiện tại — xem miễn phí, không cần thẻ — ngay sau khi bạn đăng ký.',
+    cta: 'Gặp Người bạn đồng hành của bạn',
   },
   faq: [
     {
-      question: 'Is this a horoscope app?',
+      question: 'Đây có phải là ứng dụng xem tử vi không?',
       answer:
-        "No. A real Tarot draw is how Tử Vi Tarot starts getting to know you — not what it sells you. The Companion and its memory of you are the actual product.",
+        'Không. Một lượt rút Tarot thật là cách Mệnh Vi bắt đầu làm quen với bạn — chứ không phải thứ nó bán cho bạn. Người bạn đồng hành và ký ức của nó về bạn mới chính là sản phẩm thực sự.',
     },
     {
-      question: 'Is my data private?',
+      question: 'Dữ liệu của tôi có riêng tư không?',
       answer:
-        'Yes. Your journal and conversations are private by default. You can export or delete everything, anytime.',
+        'Có. Nhật ký và các cuộc trò chuyện của bạn riêng tư theo mặc định. Bạn có thể xuất hoặc xóa mọi thứ, bất cứ lúc nào.',
     },
     {
-      question: 'Is this therapy?',
+      question: 'Đây có phải là trị liệu tâm lý không?',
       answer:
-        "No. Tử Vi Tarot is a reflection companion, not a clinical or medical service, and it doesn't diagnose or treat anything.",
+        'Không. Mệnh Vi là một người bạn đồng hành chiêm nghiệm, không phải dịch vụ y tế hay lâm sàng, và không chẩn đoán hay điều trị bất cứ điều gì.',
     },
     {
-      question: 'What does Premium actually add?',
+      question: 'Premium thực sự thêm những gì?',
       answer:
-        'Persistent memory across every conversation, not just today’s, higher Discovery limits, and your Personal Destiny Report — a long-form reading built from your Natal Chart and Numerology.',
+        'Ghi nhớ liên tục xuyên suốt mọi cuộc trò chuyện, không chỉ trong ngày hôm nay, giới hạn Khám phá cao hơn, và Báo cáo Vận mệnh Cá nhân của bạn — một bài đọc dài được xây dựng từ Bản đồ sao và Thần số học của bạn.',
     },
   ],
   finalCta: {
-    text: 'An AI that actually remembers you.',
-    cta: 'Meet your Companion',
+    text: 'Một AI thực sự ghi nhớ bạn.',
+    cta: 'Gặp Người bạn đồng hành của bạn',
   },
   footer: {
     productLinks: [
-      { label: 'How it works', href: '#how-it-works' },
-      { label: 'Discovery', href: '#discovery' },
-      { label: 'Pricing', href: '#pricing' },
+      { label: 'Cách hoạt động', href: '#how-it-works' },
+      { label: 'Khám phá', href: '#discovery' },
+      { label: 'Giá', href: '#pricing' },
     ],
-    companyLinks: [{ label: 'About', href: '/about' }],
+    companyLinks: [{ label: 'Giới thiệu', href: '/about' }],
     legalLinks: [
-      { label: 'Privacy', href: '/privacy' },
-      { label: 'Terms', href: '/terms' },
-      { label: 'Contact', href: '/contact' },
+      { label: 'Quyền riêng tư', href: '/privacy' },
+      { label: 'Điều khoản', href: '/terms' },
+      { label: 'Liên hệ', href: '/contact' },
     ],
-    copyright: `© ${new Date().getFullYear()} Tử Vi Tarot. All rights reserved.`,
+    copyright: `© ${new Date().getFullYear()} Mệnh Vi. Bảo lưu mọi quyền.`,
   },
 } as const;

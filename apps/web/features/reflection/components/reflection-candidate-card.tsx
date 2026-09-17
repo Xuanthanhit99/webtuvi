@@ -19,7 +19,7 @@ export function ReflectionCandidateCard({ candidate, onSelect }: { candidate: Re
         </div>
         <p className="text-body-md text-text-primary">{candidate.reason}</p>
         <p className="text-caption text-text-disabled">
-          {candidate.sources.length} source{candidate.sources.length === 1 ? '' : 's'} · {new Date(candidate.createdAt).toLocaleDateString()}
+          {candidate.sources.length} source{candidate.sources.length === 1 ? '' : 's'} · {new Date(candidate.createdAt).toLocaleDateString('vi-VN')}
         </p>
       </button>
     </li>

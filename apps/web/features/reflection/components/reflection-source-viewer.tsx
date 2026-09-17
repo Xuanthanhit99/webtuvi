@@ -17,7 +17,7 @@ export function ReflectionSourceViewer({ sources }: { sources: ReflectionSourceD
       {sources.map((source, index) => {
         const key = `${source.sourceType}:${source.sourceId}:${index}`;
         const label = SOURCE_TYPE_LABELS[source.sourceType];
-        const when = new Date(source.sourceTimestamp).toLocaleDateString();
+        const when = new Date(source.sourceTimestamp).toLocaleDateString('vi-VN');
         const content = (
           <>
             <span className="text-body-sm font-medium text-text-primary">{label}</span>

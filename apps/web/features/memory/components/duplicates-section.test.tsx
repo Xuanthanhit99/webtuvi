@@ -17,7 +17,7 @@ describe('DuplicatesSection', () => {
 
     renderWithQuery(<DuplicatesSection />);
 
-    expect(await screen.findByText('No duplicates found.')).toBeInTheDocument();
+    expect(await screen.findByText('Chưa có bản trùng lặp nào.')).toBeInTheDocument();
   });
 
   it('shows a detected duplicate pair with its match type and similarity', async () => {
@@ -36,7 +36,7 @@ describe('DuplicatesSection', () => {
 
     renderWithQuery(<DuplicatesSection />);
 
-    expect(await screen.findByText('Same wording')).toBeInTheDocument();
+    expect(await screen.findByText('Cùng cách diễn đạt')).toBeInTheDocument();
     expect(screen.getByText('100% match')).toBeInTheDocument();
   });
 });

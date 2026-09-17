@@ -6,7 +6,7 @@ export function Testimonials() {
     <section aria-labelledby="testimonials-heading" className="border-b border-border-subtle py-16 desktop:py-24">
       <div className="mx-auto max-w-content px-4 desktop:px-8">
         <h2 id="testimonials-heading" className="mb-10 text-center font-display text-heading-lg text-text-primary">
-          What people notice
+          Điều mọi người nhận thấy
         </h2>
         <div className="grid gap-6 desktop:grid-cols-3">
           {landingCopy.testimonials.map((t) => (

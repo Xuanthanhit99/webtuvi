@@ -9,12 +9,12 @@ import { cn } from '@/lib/cn';
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diffMs / 60000);
-  if (minutes < 1) return 'just now';
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 1) return 'vừa xong';
+  if (minutes < 60) return `${minutes} phút trước`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return `${hours} giờ trước`;
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return `${days} ngày trước`;
 }
 
 export interface ConversationSidebarProps {
@@ -35,10 +35,10 @@ export function ConversationSidebar({
   creating,
 }: ConversationSidebarProps) {
   return (
-    <nav aria-label="Conversations" className="flex h-full flex-col gap-3">
+    <nav aria-label="Cuộc trò chuyện" className="flex h-full flex-col gap-3">
       <Button onClick={onCreate} loading={creating} fullWidth variant="secondary" size="sm">
         <Plus className="h-4 w-4" aria-hidden="true" />
-        New conversation
+        Cuộc trò chuyện mới
       </Button>
 
       {isLoading && (
@@ -49,7 +49,7 @@ export function ConversationSidebar({
       )}
 
       {!isLoading && conversations.length === 0 && (
-        <p className="px-1 text-body-sm text-text-secondary">No conversations yet. Say hello whenever you&rsquo;re ready.</p>
+        <p className="px-1 text-body-sm text-text-secondary">Chưa có cuộc trò chuyện nào. Nói lời chào bất cứ khi nào bạn sẵn sàng.</p>
       )}
 
       <ul className="flex flex-col gap-1 overflow-y-auto">
@@ -66,7 +66,7 @@ export function ConversationSidebar({
                   : 'text-text-secondary hover:bg-surface hover:text-text-primary',
               )}
             >
-              <span className="truncate text-body-sm font-medium">{conversation.title ?? 'Untitled conversation'}</span>
+              <span className="truncate text-body-sm font-medium">{conversation.title ?? 'Cuộc trò chuyện chưa có tiêu đề'}</span>
               <span className="text-caption text-text-tertiary">{timeAgo(conversation.updatedAt)}</span>
             </button>
           </li>

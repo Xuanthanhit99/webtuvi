@@ -20,7 +20,7 @@ describe('CandidateReview', () => {
 
     renderWithQuery(<CandidateReview />);
 
-    expect(await screen.findByText('Nothing waiting for review.')).toBeInTheDocument();
+    expect(await screen.findByText('Không có gì đang chờ xem xét.')).toBeInTheDocument();
   });
 
   it('shows pending candidates with Remember/Not-this actions', async () => {

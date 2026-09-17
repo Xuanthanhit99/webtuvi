@@ -12,9 +12,9 @@ describe('landing-copy — Reports honesty regression', () => {
   });
 
   it('describes the Personal Destiny Report as a real, present-tense Premium feature', () => {
-    expect(landingCopy.reportsLine).toMatch(/Personal Destiny Report/i);
+    expect(landingCopy.reportsLine).toMatch(/Báo cáo Vận mệnh Cá nhân/i);
     expect(landingCopy.reportsLine).toMatch(/Premium/i);
-    expect(landingCopy.reportsLine).toMatch(/today/i);
+    expect(landingCopy.reportsLine).toMatch(/hôm nay/i);
   });
 });
 
@@ -24,7 +24,7 @@ describe('landing-copy — brand consistency regression', () => {
   });
 
   it('uses the current brand name in the hero subheadline', () => {
-    expect(landingCopy.hero.subheadline).toMatch(/Tử Vi Tarot/);
+    expect(landingCopy.hero.subheadline).toMatch(/Mệnh Vi/);
   });
 });
 
@@ -36,8 +36,8 @@ describe('landing-copy — pricing honesty regression', () => {
   });
 
   it('discloses pricing structure (one-time, 30-day, not a subscription) and where the real price is shown', () => {
-    expect(landingCopy.pricing.premium.description).toMatch(/30-day/i);
-    expect(landingCopy.pricing.premium.description).toMatch(/not a subscription/i);
-    expect(landingCopy.pricing.priceNote).toMatch(/sign up/i);
+    expect(landingCopy.pricing.premium.description).toMatch(/30 ngày/i);
+    expect(landingCopy.pricing.premium.description).toMatch(/không phải gói đăng ký định kỳ/i);
+    expect(landingCopy.pricing.priceNote).toMatch(/đăng ký/i);
   });
 });

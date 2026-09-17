@@ -41,7 +41,7 @@ export function AdminAiSpendPanel() {
           <Skeleton className="h-24 w-full" />
         </div>
       )}
-      {query.isError && <ErrorState title="Couldn’t load AI spend" onRetry={() => query.refetch()} />}
+      {query.isError && <ErrorState title="Couldn’t load AI spend" onRetry={() => query.refetch()} retryLabel="Try again" />}
 
       {query.data && (
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-body-sm tablet:grid-cols-3">

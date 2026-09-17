@@ -7,7 +7,7 @@ export function PrivacySection() {
     <section id="privacy" aria-labelledby="privacy-heading" className="border-b border-border-subtle bg-surface py-16">
       <div className="mx-auto max-w-content px-4 desktop:px-8">
         <h2 id="privacy-heading" className="mb-8 text-center font-display text-heading-lg text-text-primary">
-          Your privacy. Your choice. Always.
+          Quyền riêng tư của bạn. Lựa chọn của bạn. Luôn luôn.
         </h2>
         <div className="mx-auto grid max-w-2xl gap-6 desktop:grid-cols-2">
           <p className="flex items-start gap-3 text-body-md text-text-secondary">

@@ -141,7 +141,7 @@ function ReportView({ report, onRegenerated }: { report: ReportDto; onRegenerate
       <article className="mx-auto flex max-w-[720px] flex-1 flex-col gap-8">
         <header className="flex flex-col gap-1">
           <h1 className="font-display text-heading-lg text-text-primary">Báo cáo Định mệnh Cá nhân</h1>
-          <p className="text-caption text-text-secondary">Tạo ngày {new Date(report.createdAt).toLocaleDateString()}</p>
+          <p className="text-caption text-text-secondary">Tạo ngày {new Date(report.createdAt).toLocaleDateString('vi-VN')}</p>
         </header>
 
         <section id="overview" aria-labelledby="overview-heading" className="flex flex-col gap-2">

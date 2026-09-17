@@ -43,7 +43,7 @@ describe('MemoryDetail', () => {
 
     renderWithQuery(<MemoryDetail memoryId="mem-1" onClose={jest.fn()} />);
 
-    expect(await screen.findByText(/couldn.t be found/i)).toBeInTheDocument();
+    expect(await screen.findByText(/không tìm thấy/i)).toBeInTheDocument();
   });
 
   it('renders the memory’s title and summary', async () => {
@@ -61,11 +61,11 @@ describe('MemoryDetail', () => {
     const user = userEvent.setup();
 
     renderWithQuery(<MemoryDetail memoryId="mem-1" onClose={jest.fn()} />);
-    await user.click(await screen.findByRole('button', { name: /rename memory/i }));
-    const input = screen.getByLabelText(/memory title/i);
+    await user.click(await screen.findByRole('button', { name: /đổi tên ký ức/i }));
+    const input = screen.getByLabelText(/tiêu đề ký ức/i);
     await user.clear(input);
     await user.type(input, 'Renamed');
-    await user.click(screen.getByRole('button', { name: /^save$/i }));
+    await user.click(screen.getByRole('button', { name: /^lưu$/i }));
 
     await waitFor(() => expect(memoryApi.update).toHaveBeenCalledWith('mem-1', { title: 'Renamed' }));
   });
@@ -77,10 +77,10 @@ describe('MemoryDetail', () => {
     const user = userEvent.setup();
 
     renderWithQuery(<MemoryDetail memoryId="mem-1" onClose={onClose} />);
-    await user.click(await screen.findByRole('button', { name: /^delete$/i }));
-    expect(screen.getByText(/permanently deletes it/i)).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: /^xóa$/i }));
+    expect(screen.getByText(/xóa vĩnh viễn/i)).toBeInTheDocument();
 
-    await user.click(screen.getAllByRole('button', { name: /^delete$/i })[1]!);
+    await user.click(screen.getAllByRole('button', { name: /^xóa$/i })[1]!);
 
     await waitFor(() => expect(memoryApi.remove).toHaveBeenCalledWith('mem-1'));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
@@ -92,9 +92,9 @@ describe('MemoryDetail', () => {
     const user = userEvent.setup();
 
     renderWithQuery(<MemoryDetail memoryId="mem-1" onClose={jest.fn()} />);
-    await user.click(await screen.findByRole('button', { name: /^archive$/i }));
+    await user.click(await screen.findByRole('button', { name: /^lưu trữ$/i }));
 
-    expect(await screen.findByRole('button', { name: /restore/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /khôi phục/i })).toBeInTheDocument();
   });
 
   it('toggles version history on demand', async () => {
@@ -105,7 +105,7 @@ describe('MemoryDetail', () => {
     const user = userEvent.setup();
 
     renderWithQuery(<MemoryDetail memoryId="mem-1" onClose={jest.fn()} />);
-    await user.click(await screen.findByRole('button', { name: /show version history/i }));
+    await user.click(await screen.findByRole('button', { name: /xem lịch sử phiên bản/i }));
 
     expect(await screen.findByText(/v1/)).toBeInTheDocument();
   });

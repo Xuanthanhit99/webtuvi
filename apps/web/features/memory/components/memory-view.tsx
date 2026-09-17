@@ -19,10 +19,10 @@ import { MvPage, MvPageHeader } from '@/components/ui/mv-page';
 type Section = 'timeline' | 'candidates' | 'insights' | 'consent';
 
 const SECTIONS: { value: Section; label: string }[] = [
-  { value: 'timeline', label: 'Timeline' },
-  { value: 'candidates', label: 'Pending' },
-  { value: 'insights', label: 'Insights' },
-  { value: 'consent', label: 'Memory settings' },
+  { value: 'timeline', label: 'Dòng thời gian' },
+  { value: 'candidates', label: 'Đang chờ' },
+  { value: 'insights', label: 'Thông tin chi tiết' },
+  { value: 'consent', label: 'Cài đặt ký ức' },
 ];
 
 export function MemoryView() {
@@ -41,9 +41,9 @@ export function MemoryView() {
       link.download = `beaconvie-memory-export-${new Date().toISOString().slice(0, 10)}.json`;
       link.click();
       URL.revokeObjectURL(url);
-      toast.success('Your memory export has downloaded.');
+      toast.success('Đã tải xuống bản xuất ký ức của bạn.');
     },
-    onError: () => toast.error("Couldn't create an export right now. Please try again."),
+    onError: () => toast.error('Không thể tạo bản xuất lúc này. Vui lòng thử lại.'),
   });
 
   function selectItem(id: string | null) {
@@ -54,17 +54,17 @@ export function MemoryView() {
     <MvPage>
       <div className="flex items-center justify-between gap-3">
         <MvPageHeader
-          eyebrow="Memory"
-          title="Những điều Tử Vi Tarot đang giữ lại cho bạn"
-          description="Everything Tử Vi Tarot remembers about you, with the source, the reason, and your consent choice always visible. Nothing here is guessed — every memory traces back to something you actually said or explicitly asked Tử Vi Tarot to remember."
+          eyebrow="Ký ức"
+          title="Những điều Mệnh Vi đang giữ lại cho bạn"
+          description="Mọi điều Mệnh Vi ghi nhớ về bạn, cùng với nguồn, lý do, và lựa chọn đồng ý của bạn luôn hiển thị rõ. Không có gì ở đây là suy đoán — mỗi ký ức đều bắt nguồn từ điều bạn thực sự đã nói hoặc đã yêu cầu Mệnh Vi ghi nhớ."
           className="mb-0"
         />
         <Button variant="secondary" size="sm" onClick={() => createExport.mutate()} loading={createExport.isPending}>
-          Export my memories
+          Xuất ký ức của tôi
         </Button>
       </div>
 
-      <nav aria-label="Memory sections" className="flex gap-2 border-b border-border-subtle pb-2">
+      <nav aria-label="Các mục ký ức" className="flex gap-2 border-b border-border-subtle pb-2">
         {SECTIONS.map((s) => (
           <button
             key={s.value}
@@ -90,25 +90,25 @@ export function MemoryView() {
             <div className="flex flex-col gap-8">
               <section aria-labelledby="insights-recommendations">
                 <h2 id="insights-recommendations" className="mb-3 text-body-sm font-semibold text-text-secondary">
-                  Recommended for you
+                  Đề xuất cho bạn
                 </h2>
                 <RecommendationPanel />
               </section>
               <section aria-labelledby="insights-merge-suggestions">
                 <h2 id="insights-merge-suggestions" className="mb-3 text-body-sm font-semibold text-text-secondary">
-                  Merge suggestions
+                  Đề xuất gộp
                 </h2>
                 <MergeSuggestionsPanel />
               </section>
               <section aria-labelledby="insights-duplicates">
                 <h2 id="insights-duplicates" className="mb-3 text-body-sm font-semibold text-text-secondary">
-                  Duplicates
+                  Trùng lặp
                 </h2>
                 <DuplicatesSection />
               </section>
               <section aria-labelledby="insights-conflicts">
                 <h2 id="insights-conflicts" className="mb-3 text-body-sm font-semibold text-text-secondary">
-                  Conflicts
+                  Xung đột
                 </h2>
                 <ConflictsSection />
               </section>

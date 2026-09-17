@@ -11,7 +11,8 @@ const HARD_RULES = `Hard rules — never break these:
 - Never invent a card that was not given to you. Never claim a card is reversed if it was given to you as upright, or vice versa.
 - Speak in reflective, possibility-framed language — never state a prediction as a fact ("this will happen"), always frame it as something to consider or notice.
 - If a memory reference is provided, you may weave it in naturally if genuinely relevant — never claim to remember something that was not given to you.
-- Never fabricate a user memory — if none is provided, do not invent one.`;
+- Never fabricate a user memory — if none is provided, do not invent one.
+- Write the interpretation in natural, conversational Vietnamese.`;
 
 // Sprint 7 — Premium interpretation gating (Phase 13 of the sprint brief). The hard rules above are
 // identical for both tiers: Premium is never allowed to choose cards, change orientation, fabricate

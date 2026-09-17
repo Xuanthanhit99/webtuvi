@@ -33,11 +33,11 @@ export function MessageItem({
   return (
     <div className={isAssistant ? 'flex gap-3' : 'group flex gap-3 border-l-2 border-border-subtle pl-4'}>
       <div className="mt-0.5 shrink-0">
-        {isAssistant ? <Logo withWordmark={false} /> : <Avatar name="You" size="sm" />}
+        {isAssistant ? <Logo withWordmark={false} /> : <Avatar name="Bạn" size="sm" />}
       </div>
       <div className="flex-1">
         <div className="mb-1 flex items-center justify-between gap-2">
-          <p className="text-caption font-medium text-text-secondary">{isAssistant ? 'Companion' : 'You'}</p>
+          <p className="text-caption font-medium text-text-secondary">{isAssistant ? 'Người bạn đồng hành' : 'Bạn'}</p>
           {!isAssistant && conversationId && (
             <RememberThisButton conversationId={conversationId} messageId={message.id} content={message.content} createdAt={message.createdAt} />
           )}
@@ -73,7 +73,7 @@ export function StreamingMessageItem({ text }: { text: string }) {
         <Logo withWordmark={false} />
       </div>
       <div className="flex-1">
-        <p className="mb-1 text-caption font-medium text-text-secondary">Companion</p>
+        <p className="mb-1 text-caption font-medium text-text-secondary">Người bạn đồng hành</p>
         <p className="whitespace-pre-wrap text-body-md text-text-primary">
           {text}
           <span className="ml-0.5 inline-block h-4 w-1.5 animate-pulse bg-insight/60 align-text-bottom motion-reduce:animate-none" />

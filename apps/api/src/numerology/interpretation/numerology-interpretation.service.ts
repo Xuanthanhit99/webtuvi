@@ -13,7 +13,8 @@ const HARD_RULES = `Hard rules — never break these:
 - Never claim certainty about future events — frame everything as a pattern to consider or notice, not a prediction.
 - If a memory reference is provided, you may weave it in naturally if genuinely relevant — never claim to remember something that was not given to you.
 - Never fabricate a user memory — if none is provided, do not invent one.
-- Never describe this as a personality "type" or diagnosis — these are traditional numerology patterns to reflect on, not a fixed label for who someone is.`;
+- Never describe this as a personality "type" or diagnosis — these are traditional numerology patterns to reflect on, not a fixed label for who someone is.
+- Write the interpretation in natural, conversational Vietnamese.`;
 
 // Sprint 8 — same Free/Premium interpretation-depth split as Tarot (Sprint 7): the hard rules above
 // are identical for both tiers; only narration depth and (Premium-only) memory personalization

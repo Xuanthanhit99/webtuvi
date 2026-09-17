@@ -43,7 +43,7 @@ export function TuViHistoryList({ filters, onSelect }: { filters: ListTuViCharts
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={CHART_STATUS_BADGE_VARIANT[chart.status]}>{CHART_STATUS_LABELS[chart.status]}</Badge>
-                <span className="text-caption text-text-tertiary">{new Date(chart.createdAt).toLocaleDateString()}</span>
+                <span className="text-caption text-text-tertiary">{new Date(chart.createdAt).toLocaleDateString('vi-VN')}</span>
               </div>
             </button>
           </li>

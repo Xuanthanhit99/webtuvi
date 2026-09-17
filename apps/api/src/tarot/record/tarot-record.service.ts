@@ -86,7 +86,7 @@ export class TarotRecordService {
 
     const spread = await this.prisma.tarotSpread.findUnique({ where: { slug: SPREAD_SLUG_BY_TYPE[dto.type] } });
     if (!spread) {
-      throw new BadRequestException({ code: 'TAROT_SPREAD_NOT_SEEDED', message: 'That spread is not available yet.' });
+      throw new BadRequestException({ code: 'TAROT_SPREAD_NOT_SEEDED', message: 'Kiểu trải bài này hiện chưa khả dụng.' });
     }
     const positions = spread.positions as { order: number; label: string }[];
 

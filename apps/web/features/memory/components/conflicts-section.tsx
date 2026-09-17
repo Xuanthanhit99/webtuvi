@@ -26,11 +26,11 @@ export function ConflictsSection() {
   });
 
   if (isLoading) return <Skeleton className="h-20 w-full" />;
-  if (isError) return <ErrorState description="Couldn't check for conflicting memories." onRetry={() => refetch()} />;
+  if (isError) return <ErrorState description="Không thể kiểm tra các ký ức xung đột." onRetry={() => refetch()} />;
 
   const conflicts = data ?? [];
   if (conflicts.length === 0) {
-    return <EmptyState title="No conflicts found." description="Tử Vi Tarot flags memories that seem to contradict each other, like an old address next to a new one." />;
+    return <EmptyState title="Chưa có xung đột nào." description="Mệnh Vi đánh dấu những ký ức có vẻ mâu thuẫn với nhau, chẳng hạn như địa chỉ cũ bên cạnh địa chỉ mới." />;
   }
 
   return (

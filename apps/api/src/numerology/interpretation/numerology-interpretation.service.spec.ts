@@ -199,3 +199,11 @@ describe('NumerologyInterpretationService — real SafetyService (no mock), prov
     expect(result).toBeNull();
   });
 });
+
+describe('NumerologyInterpretationService — Vietnamese language contract', () => {
+  it('instructs the model to write the interpretation in Vietnamese', async () => {
+    const { service, streamCalls } = makeHarness();
+    await service.interpret(baseInput(), ATTRIBUTION);
+    expect(streamCalls[0]!.messages[0]!.content).toMatch(/Vietnamese/i);
+  });
+});

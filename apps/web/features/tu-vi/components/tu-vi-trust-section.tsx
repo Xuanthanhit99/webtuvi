@@ -83,7 +83,7 @@ export function TuViTrustSection({ defaultOpen = false, context }: { defaultOpen
           </dl>
 
           <p className="border-t border-border-subtle pt-3 text-caption text-text-tertiary">
-            Trường phái / nguồn V1: Vân Đằng Thái Thứ Lang — Tử Vi Đẩu Số Tân Biên (1956). Đây là phương pháp luận Tử Vi Tarot dùng để lập lá
+            Trường phái / nguồn V1: Vân Đằng Thái Thứ Lang — Tử Vi Đẩu Số Tân Biên (1956). Đây là phương pháp luận Mệnh Vi dùng để lập lá
             số, không phải một tuyên bố về chân lý tuyệt đối.
           </p>
         </div>

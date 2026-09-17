@@ -62,7 +62,7 @@ describe('Sidebar', () => {
 
   it('renders at the tablet breakpoint (768px), not only desktop — regression for the tablet/phone nav-sharing bug', () => {
     renderWithQuery(<Sidebar />);
-    const nav = screen.getByRole('navigation', { name: 'Main navigation' });
+    const nav = screen.getByRole('navigation', { name: 'Điều hướng chính' });
     expect(nav.className).toContain('tablet:flex');
     expect(nav.className).not.toContain('desktop:flex');
   });

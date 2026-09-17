@@ -49,7 +49,7 @@ export function TarotHistoryList({ filters, onSelect }: { filters: ListReadingsF
                 >
                   {READING_STATUS_LABELS[reading.status]}
                 </Badge>
-                <span className="text-caption text-text-secondary">{new Date(reading.createdAt).toLocaleString()}</span>
+                <span className="text-caption text-text-secondary">{new Date(reading.createdAt).toLocaleString('vi-VN')}</span>
               </div>
             </button>
           </li>

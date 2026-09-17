@@ -16,7 +16,7 @@ async function getLatestResetToken(email: string): Promise<string> {
   const resetMessage = list.messages
     .filter(
       (m) =>
-        m.Subject.includes('Reset your BeaconVie password') &&
+        m.Subject.includes('Đặt lại mật khẩu Mệnh Vi của bạn') &&
         m.To.some((recipient) => recipient.Address === email),
     )
     .sort((a, b) => new Date(b.Created).getTime() - new Date(a.Created).getTime())[0];

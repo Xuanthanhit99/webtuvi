@@ -125,7 +125,7 @@ export function NotificationCenter({ onNavigate }: { onNavigate: () => void }) {
                 </Badge>
               </div>
               <p className="text-body-sm text-text-secondary">{notification.body}</p>
-              <span className="text-caption text-text-tertiary">{new Date(notification.createdAt).toLocaleDateString()}</span>
+              <span className="text-caption text-text-tertiary">{new Date(notification.createdAt).toLocaleDateString('vi-VN')}</span>
             </button>
           </li>
         ))}

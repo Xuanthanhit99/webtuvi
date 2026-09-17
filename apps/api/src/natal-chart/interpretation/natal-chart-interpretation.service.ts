@@ -16,7 +16,8 @@ const HARD_RULES = `Hard rules — never break these:
 - Never frame a "difficult" aspect or placement as a diagnosis, flaw, or something to fix — frame it as a tension worth being aware of.
 - End every section with exactly one genuine, open question inviting the person's own account — never more than one, never zero.
 - If a memory reference is provided, you may weave it in naturally if genuinely relevant — never claim to remember something that was not given to you. Never fabricate a user memory.
-- Respond with strict JSON only — no markdown code fences, no commentary before or after the JSON object.`;
+- Respond with strict JSON only — no markdown code fences, no commentary before or after the JSON object.
+- Write every section's string value in natural, conversational Vietnamese — only the JSON keys stay as given.`;
 
 const SECTION_LIST = NATAL_CHART_INTERPRETATION_SECTIONS.join(', ');
 

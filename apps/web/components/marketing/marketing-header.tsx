@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { Logo } from '@/components/ui/logo';
 
 const NAV_LINKS = [
-  { label: 'Product', href: '#how-it-works' },
-  { label: 'Discover', href: '#discovery' },
-  { label: 'Privacy', href: '#privacy' },
-  { label: 'About', href: '/about' },
+  { label: 'Sản phẩm', href: '#how-it-works' },
+  { label: 'Khám phá', href: '#discovery' },
+  { label: 'Quyền riêng tư', href: '#privacy' },
+  { label: 'Giới thiệu', href: '/about' },
 ];
 
 // Accessibility + Product Polish (2026-08-19): native <details>/<summary> gives no Escape-to-close
@@ -66,13 +66,13 @@ export function MarketingHeader() {
 
         <div className="hidden items-center gap-4 desktop:flex">
           <Link href="/login" className="text-body-sm text-text-secondary hover:text-text-primary">
-            Login
+            Đăng nhập
           </Link>
           <Link
             href="/register"
             className="inline-flex h-11 items-center justify-center rounded-md bg-insight px-4 text-body-sm font-semibold text-canvas hover:bg-[#E2C27C] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
           >
-            Meet your Companion
+            Gặp Người bạn đồng hành của bạn
           </Link>
         </div>
 
@@ -82,7 +82,7 @@ export function MarketingHeader() {
           onToggle={(e) => setMenuOpen(e.currentTarget.open)}
         >
           <summary
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={menuOpen ? 'Đóng menu' : 'Mở menu'}
             aria-expanded={menuOpen}
             className="flex h-11 w-11 cursor-pointer list-none items-center justify-center rounded-md text-text-primary [&::-webkit-details-marker]:hidden"
           >
@@ -103,13 +103,13 @@ export function MarketingHeader() {
             ))}
             <hr className="my-1 border-border-subtle" />
             <Link href="/login" className="min-h-11 rounded-md px-3 py-2 text-body-sm text-text-secondary hover:bg-surface hover:text-text-primary">
-              Login
+              Đăng nhập
             </Link>
             <Link
               href="/register"
               className="mt-1 flex min-h-11 items-center justify-center rounded-md bg-insight px-3 text-body-sm font-semibold text-canvas"
             >
-              Meet your Companion
+              Gặp Người bạn đồng hành của bạn
             </Link>
           </div>
         </details>

@@ -233,3 +233,11 @@ describe('NatalChartInterpretationService — real SafetyService (no mock), prov
     expect(result).toEqual(SECTIONS);
   });
 });
+
+describe('NatalChartInterpretationService — Vietnamese language contract', () => {
+  it('instructs the model to write section values in Vietnamese', async () => {
+    const { service, streamCalls } = makeHarness();
+    await service.interpret(baseInput(), ATTRIBUTION);
+    expect(streamCalls[0]!.messages[0]!.content).toMatch(/Vietnamese/i);
+  });
+});

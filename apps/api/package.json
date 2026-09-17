@@ -17,6 +17,7 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:seed": "ts-node prisma/seed.ts",
+    "prisma:seed:reference": "ts-node prisma/seed-reference.ts",
     "admin:promote": "ts-node prisma/promote-admin.ts"
   },
   "prisma": {
