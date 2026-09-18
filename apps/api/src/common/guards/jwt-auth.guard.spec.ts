@@ -18,7 +18,7 @@ function makeContext(cookies: Record<string, string>, headers: Record<string, st
 describe('JwtAuthGuard', () => {
   const jwtService = new JwtService({});
 
-  function signToken(payload: { sub: string; email: string }): string {
+  function signToken(payload: { sub: string; email: string; sid?: string }): string {
     return jwtService.sign(payload, { secret: ACCESS_SECRET });
   }
 
@@ -72,6 +72,40 @@ describe('JwtAuthGuard', () => {
     const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
 
     await expect(guard.canActivate(makeContext({ beaconvie_access_token: token }))).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('rejects a still-valid, unexpired token whose own session was revoked (e.g. by a password change on another device)', async () => {
+    const token = signToken({ sub: 'user-1', email: 'user@example.com', sid: 'session-1' });
+    const prisma = {
+      user: { findUnique: jest.fn(async () => ({ status: 'ACTIVE', role: 'USER' })) },
+      userSession: { findUnique: jest.fn(async () => ({ revokedAt: new Date() })) },
+    };
+    const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
+
+    await expect(guard.canActivate(makeContext({ beaconvie_access_token: token }))).rejects.toThrow(UnauthorizedException);
+    expect(prisma.userSession.findUnique).toHaveBeenCalledWith({ where: { id: 'session-1' }, select: { revokedAt: true } });
+  });
+
+  it('rejects a token whose session no longer exists at all', async () => {
+    const token = signToken({ sub: 'user-1', email: 'user@example.com', sid: 'session-1' });
+    const prisma = {
+      user: { findUnique: jest.fn(async () => ({ status: 'ACTIVE', role: 'USER' })) },
+      userSession: { findUnique: jest.fn(async () => null) },
+    };
+    const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
+
+    await expect(guard.canActivate(makeContext({ beaconvie_access_token: token }))).rejects.toThrow(UnauthorizedException);
+  });
+
+  it('allows a still-valid token whose session is not revoked', async () => {
+    const token = signToken({ sub: 'user-1', email: 'user@example.com', sid: 'session-1' });
+    const prisma = {
+      user: { findUnique: jest.fn(async () => ({ status: 'ACTIVE', role: 'USER' })) },
+      userSession: { findUnique: jest.fn(async () => ({ revokedAt: null })) },
+    };
+    const guard = new JwtAuthGuard(jwtService, makeConfigMock() as never, prisma as never);
+
+    await expect(guard.canActivate(makeContext({ beaconvie_access_token: token }))).resolves.toBe(true);
   });
 
   it('rejects a token whose user no longer exists at all', async () => {

@@ -56,6 +56,6 @@ describe('DashboardService — discoverySuggestion honesty', () => {
     const viewModel = await service.getViewModel(USER_ID);
 
     expect(viewModel.discoverySuggestion).not.toBeNull();
-    expect(viewModel.discoverySuggestion!.description).toMatch(/live now/i);
+    expect(viewModel.discoverySuggestion!.description).toMatch(/sẵn sàng ngay bây giờ/i);
   });
 });
