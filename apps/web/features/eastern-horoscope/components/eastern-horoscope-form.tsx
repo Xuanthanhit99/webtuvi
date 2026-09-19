@@ -58,7 +58,7 @@ export function EasternHoroscopeForm({ onCalculated }: { onCalculated?: (profile
         setFieldError(fieldErrorFor(error).message);
         return;
       }
-      setFieldError('Couldn’t calculate your sign right now. Please try again.');
+      setFieldError('Chưa thể tính bản mệnh lúc này. Vui lòng thử lại.');
     },
   });
 
@@ -68,7 +68,7 @@ export function EasternHoroscopeForm({ onCalculated }: { onCalculated?: (profile
     setLimitBanner(null);
 
     if (!birthDate) {
-      setFieldError('Birth date is required.');
+      setFieldError('Vui lòng chọn ngày sinh.');
       return;
     }
 
@@ -96,7 +96,7 @@ export function EasternHoroscopeForm({ onCalculated }: { onCalculated?: (profile
             setBirthDate('');
           }}
         >
-          Check another birth date
+          Xem ngày sinh khác
         </Button>
       </div>
     );
@@ -104,7 +104,7 @@ export function EasternHoroscopeForm({ onCalculated }: { onCalculated?: (profile
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-4 rounded-md border border-border-subtle bg-surface p-4" noValidate>
-      <FormField label="Date of birth" htmlFor="eastern-horoscope-birthdate" required error={fieldError ?? undefined}>
+      <FormField label="Ngày sinh" htmlFor="eastern-horoscope-birthdate" required error={fieldError ?? undefined}>
         <Input
           id="eastern-horoscope-birthdate"
           type="date"
@@ -115,8 +115,7 @@ export function EasternHoroscopeForm({ onCalculated }: { onCalculated?: (profile
         />
       </FormField>
       <p className="text-body-xs text-text-tertiary">
-        A birth date close to Lunar New Year may belong to the previous zodiac year rather than the Gregorian calendar year it
-        falls in — this is expected and calculated correctly using the real lunisolar calendar.
+        Nếu ngày sinh ở gần Tết Nguyên đán, năm con giáp có thể thuộc năm âm lịch trước thay vì trùng với năm dương lịch. Mệnh Vi xử lý trường hợp này theo lịch âm dương.
       </p>
 
       {limitBanner && (
@@ -125,7 +124,7 @@ export function EasternHoroscopeForm({ onCalculated }: { onCalculated?: (profile
           {limitBanner.showUpgrade && (
             <Link href="/premium?reason=required" className="self-start">
               <Button variant="secondary" size="sm">
-                Upgrade to Premium
+                Nâng cấp Premium
               </Button>
             </Link>
           )}
@@ -133,7 +132,7 @@ export function EasternHoroscopeForm({ onCalculated }: { onCalculated?: (profile
       )}
 
       <Button type="submit" variant="primary" loading={phase === 'calculating'}>
-        {phase === 'calculating' ? 'Calculating…' : 'Reveal my sign'}
+        {phase === 'calculating' ? 'Đang tính…' : 'Khám phá bản mệnh'}
       </Button>
     </form>
   );

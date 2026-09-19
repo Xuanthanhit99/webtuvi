@@ -18,14 +18,14 @@ export function EasternHoroscopeHistoryList({ filters, onSelect }: { filters: Li
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   if (!data || data.items.length === 0) {
-    return <EmptyState title="No profiles yet" description="Calculate your sign to start your Eastern Horoscope history." />;
+    return <EmptyState title="Chưa có hồ sơ" description="Khám phá bản mệnh để bắt đầu lưu lịch sử Ngũ Hành Phương Đông." />;
   }
 
   const atFreeCap = !premiumStatus?.isPremium && data.total >= FREE_HISTORY_LIMIT;
 
   return (
     <div className="flex flex-col gap-3">
-      <ul className="flex flex-col gap-2" aria-label="Profile history">
+      <ul className="flex flex-col gap-2" aria-label="Lịch sử hồ sơ">
         {data.items.map((profile) => (
           <li key={profile.id}>
             <button
@@ -35,9 +35,9 @@ export function EasternHoroscopeHistoryList({ filters, onSelect }: { filters: Li
             >
               <div className="flex flex-col gap-1">
                 <span className="text-body-sm font-semibold text-text-primary">
-                  {profile.zodiacAnimal.vi} ({profile.zodiacAnimal.en}) — {profile.element}
+                  {profile.zodiacAnimal.vi} — {profile.element}
                 </span>
-                <span className="text-caption text-text-secondary">Born {profile.birthDate}</span>
+                <span className="text-caption text-text-secondary">Ngày sinh {profile.birthDate}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge variant={PROFILE_STATUS_BADGE_VARIANT[profile.status]}>{PROFILE_STATUS_LABELS[profile.status]}</Badge>
@@ -49,9 +49,9 @@ export function EasternHoroscopeHistoryList({ filters, onSelect }: { filters: Li
       </ul>
       {atFreeCap && (
         <p className="text-caption text-text-secondary">
-          Showing your most recent {FREE_HISTORY_LIMIT} profiles on the Free plan.{' '}
+          Gói Miễn phí hiển thị {FREE_HISTORY_LIMIT} hồ sơ gần nhất.{' '}
           <Link href="/premium?reason=required" className="text-insight hover:underline">
-            Upgrade for unlimited history
+            Nâng cấp để lưu lịch sử không giới hạn
           </Link>
           .
         </p>

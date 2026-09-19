@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ApiError } from '@/lib/api-error';
 import { easternHoroscopeApi } from '../api/eastern-horoscope-api';
-import { ELEMENT_LABELS_EN, YIN_YANG_LABELS_EN, YEAR_ENERGY_RELATIONSHIP_LABELS } from '../labels';
+import { YEAR_ENERGY_RELATIONSHIP_LABELS } from '../labels';
 
 /**
  * The canonical, deterministic facts (Stem/Branch/Element/Yin-Yang/zodiac animal, Year Energy)
@@ -40,9 +40,9 @@ export function EasternHoroscopeProfileView({ profile, onChanged }: { profile: E
           <Badge variant="new">Dữ kiện cố định, không do AI tạo</Badge>
         </div>
         <div className="grid gap-3 desktop:grid-cols-2">
-          <Fact label="Con giáp" value={`${profile.zodiacAnimal.vi} (${profile.zodiacAnimal.en})`} />
-          <Fact label="Ngũ hành" value={`${profile.element} (${ELEMENT_LABELS_EN[profile.element] ?? profile.element})`} />
-          <Fact label="Âm / Dương" value={`${profile.yinYang} (${YIN_YANG_LABELS_EN[profile.yinYang] ?? profile.yinYang})`} />
+          <Fact label="Con giáp" value={profile.zodiacAnimal.vi} />
+          <Fact label="Ngũ hành" value={profile.element} />
+          <Fact label="Âm / Dương" value={profile.yinYang} />
           <Fact label="Thiên Can / Địa Chi" value={`${profile.stem} ${profile.branch}`} />
         </div>
         <p className="mt-3 text-body-sm text-text-tertiary">Được tính từ ngày sinh của bạn ({profile.birthDate}) bằng lịch âm dương thực tế — không do AI ước lượng.</p>
@@ -54,8 +54,8 @@ export function EasternHoroscopeProfileView({ profile, onChanged }: { profile: E
           <Badge variant="new">Dữ kiện cố định, không do AI tạo</Badge>
         </div>
         <div className="grid gap-3 desktop:grid-cols-2">
-          <Fact label="Con giáp năm nay" value={`${profile.yearEnergy.yearZodiacAnimal.vi} (${profile.yearEnergy.yearZodiacAnimal.en})`} />
-          <Fact label="Ngũ hành năm nay" value={`${profile.yearEnergy.yearElement} (${ELEMENT_LABELS_EN[profile.yearEnergy.yearElement] ?? profile.yearEnergy.yearElement})`} />
+          <Fact label="Con giáp năm nay" value={profile.yearEnergy.yearZodiacAnimal.vi} />
+          <Fact label="Ngũ hành năm nay" value={profile.yearEnergy.yearElement} />
         </div>
         <p className="mt-3 text-body-sm text-text-secondary">{YEAR_ENERGY_RELATIONSHIP_LABELS[profile.yearEnergy.relationship]}</p>
       </Card>

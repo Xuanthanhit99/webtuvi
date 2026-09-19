@@ -13,10 +13,10 @@ export function EasternHoroscopeDetail({ id, onClose }: { id: string; onClose: (
   return (
     <div className="flex flex-col gap-4">
       <Button variant="ghost" size="sm" onClick={onClose}>
-        ← Back to Ngũ Hành Phương Đông
+        ← Quay lại Ngũ Hành Phương Đông
       </Button>
       {isLoading && <Skeleton className="h-64 w-full" />}
-      {isError && <ErrorState description="Couldn't load that profile." onRetry={() => refetch()} />}
+      {isError && <ErrorState description="Chưa thể tải hồ sơ này." onRetry={() => refetch()} />}
       {data && (
         <EasternHoroscopeProfileView
           profile={data}
