@@ -17,7 +17,7 @@ describe('ConflictsSection', () => {
 
     renderWithQuery(<ConflictsSection />);
 
-    expect(await screen.findByText('No conflicts found.')).toBeInTheDocument();
+    expect(await screen.findByText('Chưa có xung đột nào.')).toBeInTheDocument();
   });
 
   it('shows a detected conflict with its plain-language reason', async () => {

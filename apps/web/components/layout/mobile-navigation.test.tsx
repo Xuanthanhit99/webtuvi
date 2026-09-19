@@ -26,7 +26,7 @@ describe('MobileNavigation', () => {
 
   it('is phone-only (hidden from tablet width up) — regression for the tablet/phone nav-sharing bug', () => {
     render(<MobileNavigation />);
-    const nav = screen.getByRole('navigation', { name: 'Main navigation' });
+    const nav = screen.getByRole('navigation', { name: 'Điều hướng chính' });
     expect(nav.className).toContain('tablet:hidden');
     expect(nav.className).not.toContain('desktop:hidden');
   });

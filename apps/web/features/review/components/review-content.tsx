@@ -109,7 +109,7 @@ export function ReviewContent({
         </div>
         <p className="font-display text-heading-md text-text-primary">{review.overview}</p>
         <p className="text-caption text-text-disabled">
-          {new Date(review.windowStart).toLocaleDateString()} – {new Date(review.windowEnd).toLocaleDateString()}
+          {new Date(review.windowStart).toLocaleDateString('vi-VN')} – {new Date(review.windowEnd).toLocaleDateString('vi-VN')}
         </p>
       </div>
 

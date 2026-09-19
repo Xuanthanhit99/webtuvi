@@ -48,7 +48,7 @@ export function ReportHistoryList({ filters, onSelect }: { filters: ListReportsF
             <span className="text-body-sm font-semibold text-text-primary">Báo cáo Định mệnh Cá nhân</span>
             <div className="flex items-center gap-2">
               <Badge variant={REPORT_STATUS_BADGE_VARIANT[report.status]}>{REPORT_STATUS_LABELS[report.status]}</Badge>
-              <span className="text-caption text-text-tertiary">{new Date(report.createdAt).toLocaleDateString()}</span>
+              <span className="text-caption text-text-tertiary">{new Date(report.createdAt).toLocaleDateString('vi-VN')}</span>
             </div>
           </button>
         </li>

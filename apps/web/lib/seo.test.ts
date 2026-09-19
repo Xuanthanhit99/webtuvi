@@ -86,13 +86,13 @@ describe('structured data', () => {
 });
 
 // Domain + Brand Production Lock (founder decision, see
-// docs/progress/domain-brand-production-lock-final-report.md): brand renamed BeaconVie -> Tử Vi Tarot,
-// production domain locked to tuvitarot.vn.
+// docs/progress/domain-brand-production-lock-final-report.md): brand renamed BeaconVie -> Tử Vi Tarot
+// -> Mệnh Vi (pre-launch UX remediation), production domain unchanged at tuvitarot.vn.
 describe('Domain + Brand Production Lock', () => {
   it('SITE_NAME is the locked brand, never a retired one', () => {
-    expect(SITE_NAME).toBe('Tử Vi Tarot');
+    expect(SITE_NAME).toBe('Mệnh Vi');
     expect(SITE_NAME).not.toBe('BeaconVie');
-    expect(SITE_NAME).not.toBe('Mệnh Vi');
+    expect(SITE_NAME).not.toBe('Tử Vi Tarot');
   });
 
   it('SITE_URL resolves to the locked production domain once NEXT_PUBLIC_APP_URL is set', () => {

@@ -23,7 +23,7 @@ export interface TimelineResult {
 
 const DEFAULT_LIMIT = 20;
 const MAX_LIMIT = 100;
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_NAMES = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
 
 /** Reverse-chronological, cursor-paginated — the same simple "cursor is the previous page's last
  * `createdAt`" scheme Memory's timeline uses (sufficient at this sprint's scale, no opaque-cursor
@@ -70,7 +70,7 @@ function groupFor(date: Date, groupBy: TimelineGrouping): { key: string; label: 
   const day = date.getDate();
 
   if (groupBy === 'month') {
-    return { key: `${year}-${String(month + 1).padStart(2, '0')}`, label: `${MONTH_NAMES[month]} ${year}` };
+    return { key: `${year}-${String(month + 1).padStart(2, '0')}`, label: `${MONTH_NAMES[month]}, ${year}` };
   }
 
   if (groupBy === 'week') {
@@ -78,7 +78,7 @@ function groupFor(date: Date, groupBy: TimelineGrouping): { key: string; label: 
     const key = startOfWeek.toISOString().slice(0, 10);
     const endOfWeek = new Date(startOfWeek);
     endOfWeek.setDate(endOfWeek.getDate() + 6);
-    const label = `Week of ${MONTH_NAMES[startOfWeek.getMonth()]!.slice(0, 3)} ${startOfWeek.getDate()}`;
+    const label = `Tuần từ ngày ${startOfWeek.getDate()}/${startOfWeek.getMonth() + 1}`;
     return { key, label };
   }
 
@@ -89,6 +89,6 @@ function groupFor(date: Date, groupBy: TimelineGrouping): { key: string; label: 
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
   const isYesterday = date.getFullYear() === yesterday.getFullYear() && date.getMonth() === yesterday.getMonth() && date.getDate() === yesterday.getDate();
-  const label = isToday ? 'Today' : isYesterday ? 'Yesterday' : `${MONTH_NAMES[month]!.slice(0, 3)} ${day}, ${year}`;
+  const label = isToday ? 'Hôm nay' : isYesterday ? 'Hôm qua' : `${day}/${month + 1}/${year}`;
   return { key, label };
 }

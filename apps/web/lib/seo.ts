@@ -15,19 +15,21 @@ import type { Metadata } from 'next';
 // Domain + Brand Production Lock (superseding founder decision — see
 // docs/progress/domain-brand-production-lock-final-report.md and product-completion-roadmap-v2.md's
 // appended superseding-decision note): brand renamed from BeaconVie to Tử Vi Tarot, production
-// domain tuvitarot.vn. This is the single point every other metadata/copy/JSON-LD/share call in
-// this app derives from — no other file should hardcode either name.
-export const SITE_NAME = 'Tử Vi Tarot';
+// domain tuvitarot.vn. Pre-launch UX remediation superseded the consumer-facing name a second time,
+// Tử Vi Tarot -> Mệnh Vi; the production domain is unchanged (infrastructure, not consumer copy).
+// This is the single point every other metadata/copy/JSON-LD/share call in this app derives from —
+// no other file should hardcode any of these names.
+export const SITE_NAME = 'Mệnh Vi';
 
 /** Matches the env var every other metadata/canonical call in this app already reads
  * (`app/layout.tsx`, `robots.ts`, `sitemap.ts`) — reusing it here, not introducing a second name. */
 export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
 
 export const DEFAULT_DESCRIPTION =
-  'Tử Vi Tarot giúp bạn khám phá Tử Vi, Tarot, bản đồ sao và thần số học trong một trải nghiệm hiện đại, riêng tư và dễ bắt đầu.';
+  'Mệnh Vi giúp bạn khám phá Tử Vi, Tarot, bản đồ sao và thần số học trong một trải nghiệm hiện đại, riêng tư và dễ bắt đầu.';
 
 export interface BuildMetadataOptions {
-  /** Page-specific title. Combined with the root layout's `%s — Tử Vi Tarot` template
+  /** Page-specific title. Combined with the root layout's `%s — Mệnh Vi` template
    * automatically by Next.js — do not append the site name here yourself. */
   title?: string;
   description?: string;

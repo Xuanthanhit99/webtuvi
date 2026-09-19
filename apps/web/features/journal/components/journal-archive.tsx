@@ -27,20 +27,20 @@ export function JournalArchive() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-heading-lg text-text-primary">Journal archive</h1>
+        <h1 className="font-display text-heading-lg text-text-primary">Lưu trữ nhật ký</h1>
         <Button variant="ghost" size="sm" onClick={() => router.push('/journal')}>
-          Back to Journal
+          Về Nhật ký
         </Button>
       </div>
 
-      <nav aria-label="Archive sections" className="flex gap-2 border-b border-border-subtle pb-2">
+      <nav aria-label="Các mục lưu trữ" className="flex gap-2 border-b border-border-subtle pb-2">
         <button
           type="button"
           onClick={() => setTab('archived')}
           aria-current={tab === 'archived' ? 'page' : undefined}
           className={`rounded-md px-3 py-1.5 text-body-sm font-medium ${tab === 'archived' ? 'bg-surface text-text-primary' : 'text-text-secondary hover:bg-surface hover:text-text-primary'}`}
         >
-          Archived
+          Đã lưu trữ
         </button>
         <button
           type="button"
@@ -48,7 +48,7 @@ export function JournalArchive() {
           aria-current={tab === 'deleted' ? 'page' : undefined}
           className={`rounded-md px-3 py-1.5 text-body-sm font-medium ${tab === 'deleted' ? 'bg-surface text-text-primary' : 'text-text-secondary hover:bg-surface hover:text-text-primary'}`}
         >
-          Recently deleted
+          Vừa xóa gần đây
         </button>
       </nav>
 
@@ -61,8 +61,8 @@ export function JournalArchive() {
 
       {data && data.items.length === 0 && (
         <EmptyState
-          title={tab === 'archived' ? 'Nothing archived' : 'Nothing recently deleted'}
-          description={tab === 'archived' ? 'Entries you archive will show up here.' : 'Deleted entries stay here until you restore them.'}
+          title={tab === 'archived' ? 'Chưa có mục nào được lưu trữ' : 'Chưa có mục nào bị xóa gần đây'}
+          description={tab === 'archived' ? 'Các mục bạn lưu trữ sẽ hiện ở đây.' : 'Các mục đã xóa sẽ ở đây cho đến khi bạn khôi phục.'}
         />
       )}
 

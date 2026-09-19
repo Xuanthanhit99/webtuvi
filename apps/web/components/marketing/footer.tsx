@@ -9,9 +9,9 @@ export function Footer() {
       <div className="mx-auto flex max-w-content flex-col gap-8 px-4 desktop:flex-row desktop:justify-between desktop:px-8">
         <Logo />
         <div className="grid grid-cols-2 gap-8 desktop:grid-cols-3">
-          <FooterColumn title="Product" links={footer.productLinks} />
-          <FooterColumn title="Company" links={footer.companyLinks} />
-          <FooterColumn title="Legal" links={footer.legalLinks} />
+          <FooterColumn title="Sản phẩm" links={footer.productLinks} />
+          <FooterColumn title="Công ty" links={footer.companyLinks} />
+          <FooterColumn title="Pháp lý" links={footer.legalLinks} />
         </div>
       </div>
       <p className="mt-8 text-center text-caption text-text-tertiary">{footer.copyright}</p>

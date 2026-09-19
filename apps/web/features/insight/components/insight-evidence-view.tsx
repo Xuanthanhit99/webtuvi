@@ -44,7 +44,7 @@ export function InsightEvidenceView({ insightId }: { insightId: string }) {
             <ul className="mt-2 flex flex-col gap-1.5 border-l-2 border-border-subtle pl-3" aria-label="Underlying sources">
               {item.sources.map((source, index) => {
                 const key = `${source.sourceType}:${source.sourceId}:${index}`;
-                const when = new Date(source.sourceTimestamp).toLocaleDateString();
+                const when = new Date(source.sourceTimestamp).toLocaleDateString('vi-VN');
                 const label = source.available ? source.sourceTypeLabel : `${source.sourceTypeLabel} (no longer available)`;
 
                 if (source.href) {

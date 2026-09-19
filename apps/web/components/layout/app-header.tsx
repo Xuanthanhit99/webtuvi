@@ -132,7 +132,7 @@ function ProfileMenu({ displayName, onLogout }: { displayName: string; onLogout:
           <button
             type="button"
             role="menuitem"
-            aria-label="Log out"
+            aria-label="Đăng xuất"
             onClick={() => {
               setOpen(false);
               onLogout();

@@ -57,8 +57,8 @@ export function CandidateReview() {
   if (pending.length === 0) {
     return (
       <EmptyState
-        title="Nothing waiting for review."
-        description="When you ask Tử Vi Tarot to remember something, it shows up here first so you can confirm it before it's saved."
+        title="Không có gì đang chờ xem xét."
+        description="Khi bạn nhờ Mệnh Vi ghi nhớ điều gì đó, nó sẽ hiện ở đây trước để bạn xác nhận trước khi lưu."
       />
     );
   }

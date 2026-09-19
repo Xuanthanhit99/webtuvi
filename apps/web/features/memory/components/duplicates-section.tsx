@@ -9,10 +9,10 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 
 const MATCH_TYPE_LABELS: Record<string, string> = {
-  EXACT: 'Identical text',
-  NORMALIZED: 'Same wording',
-  STRUCTURED: 'Same detail',
-  TYPE_SPECIFIC: 'Very similar',
+  EXACT: 'Trùng khớp hoàn toàn',
+  NORMALIZED: 'Cùng cách diễn đạt',
+  STRUCTURED: 'Cùng chi tiết',
+  TYPE_SPECIFIC: 'Rất giống nhau',
 };
 
 /**
@@ -27,11 +27,11 @@ export function DuplicatesSection() {
   });
 
   if (isLoading) return <Skeleton className="h-20 w-full" />;
-  if (isError) return <ErrorState description="Couldn't check for duplicate memories." onRetry={() => refetch()} />;
+  if (isError) return <ErrorState description="Không thể kiểm tra các ký ức trùng lặp." onRetry={() => refetch()} />;
 
   const duplicates = data ?? [];
   if (duplicates.length === 0) {
-    return <EmptyState title="No duplicates found." description="Tử Vi Tarot checks for repeated or near-identical memories automatically." />;
+    return <EmptyState title="Chưa có bản trùng lặp nào." description="Mệnh Vi tự động kiểm tra các ký ức lặp lại hoặc gần giống nhau." />;
   }
 
   return (

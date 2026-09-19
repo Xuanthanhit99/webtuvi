@@ -29,23 +29,23 @@ export function ShareButton() {
         // AbortError fires when the user closes the native share sheet without choosing a
         // target — not a failure, nothing to announce.
         if (error instanceof Error && error.name === 'AbortError') return;
-        toast.error("Couldn't share right now. Please try again.");
+        toast.error('Không thể chia sẻ lúc này. Vui lòng thử lại.');
       }
       return;
     }
 
     try {
       await navigator.clipboard.writeText(SITE_URL);
-      toast.success('Link copied to clipboard.');
+      toast.success('Đã sao chép đường liên kết.');
     } catch {
-      toast.error("Couldn't copy the link. Please try again.");
+      toast.error('Không thể sao chép đường liên kết. Vui lòng thử lại.');
     }
   }
 
   return (
-    <Button variant="secondary" size="sm" onClick={handleShare} aria-label={`Share ${SITE_NAME}`}>
+    <Button variant="secondary" size="sm" onClick={handleShare} aria-label={`Chia sẻ ${SITE_NAME}`}>
       <Share2 className="h-4 w-4" aria-hidden="true" />
-      Share
+      Chia sẻ
     </Button>
   );
 }

@@ -54,74 +54,74 @@ export function Composer({ status, errorMessage, draft, onDraftChange, onSend, o
     <div className="flex flex-col gap-3 border-t border-border-subtle pt-4">
       {status === 'streaming' && (
         <div className="flex items-center justify-between">
-          <ProgressCircular label="Companion is responding…" />
+          <ProgressCircular label="Người bạn đồng hành đang trả lời…" />
           <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
             <X className="h-3.5 w-3.5" aria-hidden="true" />
-            Cancel
+            Hủy
           </Button>
         </div>
       )}
 
       {status === 'cancelled' && (
-        <Alert variant="info" action={<Button size="sm" variant="secondary" onClick={onDismiss}>Dismiss</Button>}>
-          You cancelled that reply.
+        <Alert variant="info" action={<Button size="sm" variant="secondary" onClick={onDismiss}>Đóng</Button>}>
+          Bạn đã hủy phản hồi đó.
         </Alert>
       )}
 
       {status === 'safety_refused' && (
         <Alert variant="info" action={<Button size="sm" variant="secondary" onClick={onDismiss}>OK</Button>}>
-          {errorMessage ?? "I wasn't able to respond to that the usual way."}
+          {errorMessage ?? 'Mình không thể phản hồi điều đó theo cách thông thường.'}
         </Alert>
       )}
 
       {status === 'rate_limited' && (
         <Alert
           variant="error"
-          title="Slow down a little"
+          title="Chậm lại một chút"
           action={<Button size="sm" variant="secondary" onClick={onDismiss}>OK</Button>}
         >
-          {errorMessage ?? "You've sent a lot of messages quickly — please wait a moment before trying again."}
+          {errorMessage ?? 'Bạn đã gửi khá nhiều tin nhắn liên tiếp — vui lòng đợi một chút rồi thử lại.'}
         </Alert>
       )}
 
       {status === 'offline' && (
         <Alert
           variant="error"
-          title="You're offline"
-          action={canRetry ? <Button size="sm" variant="secondary" onClick={onRetry}>Retry</Button> : undefined}
+          title="Bạn đang ngoại tuyến"
+          action={canRetry ? <Button size="sm" variant="secondary" onClick={onRetry}>Thử lại</Button> : undefined}
         >
-          Check your connection and try again.
+          Kiểm tra kết nối mạng và thử lại.
         </Alert>
       )}
 
       {status === 'error' && (
         <Alert
           variant="error"
-          title="Something went wrong"
-          action={canRetry ? <Button size="sm" variant="secondary" onClick={onRetry}>Retry</Button> : undefined}
+          title="Đã có lỗi xảy ra"
+          action={canRetry ? <Button size="sm" variant="secondary" onClick={onRetry}>Thử lại</Button> : undefined}
         >
-          {errorMessage ?? "Your Companion couldn't respond right now."}
+          {errorMessage ?? 'Người bạn đồng hành của bạn hiện không thể phản hồi.'}
         </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="flex items-end gap-2">
         <label htmlFor="companion-composer" className="sr-only">
-          Message your Companion
+          Nhắn tin cho người bạn đồng hành của bạn
         </label>
         <textarea
           id="companion-composer"
           value={draft}
           onChange={(e) => onDraftChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="What's on your mind?"
+          placeholder="Bạn đang nghĩ gì?"
           disabled={busy}
           maxLength={MAX_LENGTH}
           rows={2}
           className="h-11 max-h-40 min-h-11 w-full flex-1 resize-y rounded-md border border-border-subtle bg-surface px-3 py-2.5 text-body-md text-text-primary placeholder:text-text-tertiary focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight disabled:cursor-not-allowed disabled:opacity-60"
         />
-        <Button type="submit" loading={status === 'sending'} disabled={busy || !draft.trim()} aria-label="Send message">
+        <Button type="submit" loading={status === 'sending'} disabled={busy || !draft.trim()} aria-label="Gửi tin nhắn">
           <Send className="h-4 w-4" aria-hidden="true" />
-          Send
+          Gửi
         </Button>
       </form>
     </div>

@@ -54,7 +54,7 @@ export function CompanionView() {
       selectConversation(conversation.id);
       setShowListOnMobile(false);
     },
-    onError: () => toast.error("Couldn't start a new conversation. Please try again."),
+    onError: () => toast.error('Không thể bắt đầu cuộc trò chuyện mới. Vui lòng thử lại.'),
   });
 
   const deleteConversation = useMutation({
@@ -64,11 +64,11 @@ export function CompanionView() {
       selectConversation(null);
       setShowListOnMobile(true);
       setConfirmDelete(false);
-      toast.success('Conversation deleted.');
+      toast.success('Đã xóa cuộc trò chuyện.');
     },
     onError: () => {
       setConfirmDelete(false);
-      toast.error("Couldn't delete that conversation. Please try again.");
+      toast.error('Không thể xóa cuộc trò chuyện đó. Vui lòng thử lại.');
     },
   });
 
@@ -117,7 +117,7 @@ export function CompanionView() {
         className={`w-full shrink-0 tablet:w-72 ${showListOnMobile ? 'block' : 'hidden'} tablet:block`}
       >
         {conversationsError ? (
-          <ErrorState description="Couldn't load your conversations." onRetry={() => refetchConversations()} />
+          <ErrorState description="Không thể tải các cuộc trò chuyện của bạn." onRetry={() => refetchConversations()} />
         ) : (
           <ConversationSidebar
             conversations={conversations ?? []}
@@ -134,10 +134,10 @@ export function CompanionView() {
         {!activeId && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
             <p className="text-body-md text-text-secondary">
-              I&rsquo;m here whenever you&rsquo;re ready. We can start with something small.
+              Mình luôn sẵn sàng khi bạn cần. Chúng ta có thể bắt đầu từ một điều nhỏ thôi.
             </p>
             <Button onClick={handleCreate} loading={createConversation.isPending}>
-              Start a conversation
+              Bắt đầu trò chuyện
             </Button>
           </div>
         )}
@@ -147,20 +147,20 @@ export function CompanionView() {
             <div className="mb-4 flex items-center justify-between border-b border-border-subtle pb-4">
               <div className="flex items-center gap-2">
                 <IconButton
-                  aria-label="Back to conversations"
+                  aria-label="Quay lại danh sách trò chuyện"
                   onClick={() => setShowListOnMobile(true)}
                   className="tablet:hidden"
                 >
                   <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                 </IconButton>
                 <h1 className="font-display text-heading-md text-text-primary">
-                  {activeConversation?.title ?? 'Companion'}
+                  {activeConversation?.title ?? 'Người bạn đồng hành'}
                 </h1>
                 {/* Sprint 8.5 remediation — once per conversation header, not per message, so the
                     conversation is clearly AI-powered without turning every reply into AI marketing. */}
                 <Badge variant="insight">AI</Badge>
               </div>
-              <IconButton aria-label="Delete this conversation" onClick={() => setConfirmDelete(true)}>
+              <IconButton aria-label="Xóa cuộc trò chuyện này" onClick={() => setConfirmDelete(true)}>
                 <Trash2 className="h-4 w-4" aria-hidden="true" />
               </IconButton>
             </div>
@@ -172,7 +172,7 @@ export function CompanionView() {
                 ref={listRef}
                 onScroll={handleScroll}
                 role="log"
-                aria-label="Conversation"
+                aria-label="Cuộc trò chuyện"
                 className="h-full space-y-5 overflow-y-auto pb-4"
               >
                 {isLoadingHistory && (
@@ -183,7 +183,7 @@ export function CompanionView() {
                 )}
                 {!isLoadingHistory && messages.length === 0 && status === 'idle' && (
                   <p className="text-body-md text-text-secondary">
-                    I&rsquo;m here whenever you&rsquo;re ready. We can start with something small.
+                    Mình luôn sẵn sàng khi bạn cần. Chúng ta có thể bắt đầu từ một điều nhỏ thôi.
                   </p>
                 )}
                 {messages.map((message) => (
@@ -238,7 +238,7 @@ export function CompanionView() {
                     onClick={() => scrollToBottom()}
                   >
                     <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
-                    New message
+                    Tin nhắn mới
                   </Button>
                 </div>
               )}
@@ -261,20 +261,20 @@ export function CompanionView() {
       <Dialog
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
-        title="Delete this conversation?"
-        description="This permanently removes it and everything in it."
+        title="Xóa cuộc trò chuyện này?"
+        description="Thao tác này sẽ xóa vĩnh viễn cuộc trò chuyện và toàn bộ nội dung bên trong."
         variant="destructive"
       >
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setConfirmDelete(false)}>
-            Cancel
+            Hủy
           </Button>
           <Button
             variant="danger"
             loading={deleteConversation.isPending}
             onClick={() => activeId && deleteConversation.mutate(activeId)}
           >
-            Delete
+            Xóa
           </Button>
         </div>
       </Dialog>

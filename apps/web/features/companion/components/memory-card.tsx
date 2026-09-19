@@ -41,11 +41,11 @@ export function MemoryCard({ reference, explanationText, onViewed }: MemoryCardP
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['memory-timeline'] });
       setConfirmForget(false);
-      toast.success('Memory permanently deleted.');
+      toast.success('Đã xóa vĩnh viễn ký ức.');
     },
     onError: () => {
       setConfirmForget(false);
-      toast.error("Couldn't delete that. Please try again.");
+      toast.error('Không thể xóa. Vui lòng thử lại.');
     },
   });
 
@@ -55,9 +55,9 @@ export function MemoryCard({ reference, explanationText, onViewed }: MemoryCardP
       queryClient.setQueryData(['memory', reference.memoryId], updated);
       queryClient.invalidateQueries({ queryKey: ['memory-timeline'] });
       setEditingTitle(null);
-      toast.success('Memory updated.');
+      toast.success('Đã cập nhật ký ức.');
     },
-    onError: () => toast.error("Couldn't update that. Please try again."),
+    onError: () => toast.error('Không thể cập nhật. Vui lòng thử lại.'),
   });
 
   if (isLoading) {
@@ -72,13 +72,13 @@ export function MemoryCard({ reference, explanationText, onViewed }: MemoryCardP
   if (isError || !memory) {
     return (
       <Card className="flex flex-col gap-1">
-        <p className="text-body-sm text-text-secondary">This memory is no longer available — it may have been deleted.</p>
+        <p className="text-body-sm text-text-secondary">Ký ức này không còn khả dụng — có thể nó đã bị xóa.</p>
       </Card>
     );
   }
 
   return (
-    <Card className="flex flex-col gap-2" aria-label="Memory card">
+    <Card className="flex flex-col gap-2" aria-label="Thẻ ký ức">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Badge variant="insight">{memory.type.replace(/_/g, ' ').toLowerCase()}</Badge>
         <ImportanceBadge score={reference.importance.score} explanations={reference.importance.explanations} pinned={reference.retrievalType === 'PINNED'} />
@@ -93,7 +93,7 @@ export function MemoryCard({ reference, explanationText, onViewed }: MemoryCardP
           }}
         >
           <label htmlFor={`memory-card-title-${reference.memoryId}`} className="sr-only">
-            Memory title
+            Tiêu đề ký ức
           </label>
           <input
             id={`memory-card-title-${reference.memoryId}`}
@@ -103,10 +103,10 @@ export function MemoryCard({ reference, explanationText, onViewed }: MemoryCardP
             className="h-9 flex-1 rounded-md border border-border-subtle bg-surface px-3 text-body-md text-text-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-insight"
           />
           <Button type="submit" size="sm" loading={rename.isPending}>
-            Save
+            Lưu
           </Button>
           <Button type="button" size="sm" variant="secondary" onClick={() => setEditingTitle(null)}>
-            Cancel
+            Hủy
           </Button>
         </form>
       ) : (
@@ -117,7 +117,7 @@ export function MemoryCard({ reference, explanationText, onViewed }: MemoryCardP
 
       {explanationText && <p className="text-caption text-text-tertiary">{explanationText}</p>}
 
-      <p className="text-caption text-text-tertiary">Created {new Date(memory.createdAt).toLocaleDateString()}</p>
+      <p className="text-caption text-text-tertiary">Đã tạo {new Date(memory.createdAt).toLocaleDateString('vi-VN')}</p>
 
       <div className="flex flex-wrap gap-2 pt-1">
         <Button
@@ -128,29 +128,29 @@ export function MemoryCard({ reference, explanationText, onViewed }: MemoryCardP
             window.location.assign(`/memory?item=${reference.memoryId}`);
           }}
         >
-          View
+          Xem
         </Button>
         <Button size="sm" variant="ghost" onClick={() => setEditingTitle(memory.title)}>
-          Edit
+          Sửa
         </Button>
         <Button size="sm" variant="danger" onClick={() => setConfirmForget(true)}>
-          Forget
+          Quên
         </Button>
       </div>
 
       <Dialog
         open={confirmForget}
         onClose={() => setConfirmForget(false)}
-        title="Forget this memory?"
-        description="This permanently deletes it. This can't be undone."
+        title="Quên ký ức này?"
+        description="Thao tác này sẽ xóa vĩnh viễn. Không thể hoàn tác."
         variant="destructive"
       >
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={() => setConfirmForget(false)}>
-            Cancel
+            Hủy
           </Button>
           <Button variant="danger" loading={forget.isPending} onClick={() => forget.mutate()}>
-            Forget
+            Quên
           </Button>
         </div>
       </Dialog>

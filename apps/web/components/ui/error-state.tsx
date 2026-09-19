@@ -9,10 +9,10 @@ export interface ErrorStateProps {
 }
 
 export function ErrorState({
-  title = 'Something went wrong',
-  description = "That didn't work. Please try again.",
+  title = 'Đã có lỗi xảy ra',
+  description = 'Thao tác không thành công. Vui lòng thử lại.',
   onRetry,
-  retryLabel = 'Try again',
+  retryLabel = 'Thử lại',
 }: ErrorStateProps) {
   return (
     <div

@@ -12,7 +12,7 @@ describe('ConversationSidebar', () => {
     render(
       <ConversationSidebar conversations={[]} isLoading={false} activeId={null} onSelect={jest.fn()} onCreate={jest.fn()} creating={false} />,
     );
-    expect(screen.getByText(/no conversations yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/chưa có cuộc trò chuyện/i)).toBeInTheDocument();
   });
 
   it('lists conversations, falling back to a placeholder title when untitled', () => {
@@ -20,7 +20,7 @@ describe('ConversationSidebar', () => {
       <ConversationSidebar conversations={conversations} isLoading={false} activeId="c1" onSelect={jest.fn()} onCreate={jest.fn()} creating={false} />,
     );
     expect(screen.getByText('New job')).toBeInTheDocument();
-    expect(screen.getByText('Untitled conversation')).toBeInTheDocument();
+    expect(screen.getByText('Cuộc trò chuyện chưa có tiêu đề')).toBeInTheDocument();
   });
 
   it('marks the active conversation with aria-current', () => {
@@ -28,7 +28,7 @@ describe('ConversationSidebar', () => {
       <ConversationSidebar conversations={conversations} isLoading={false} activeId="c1" onSelect={jest.fn()} onCreate={jest.fn()} creating={false} />,
     );
     expect(screen.getByText('New job').closest('button')).toHaveAttribute('aria-current', 'true');
-    expect(screen.getByText('Untitled conversation').closest('button')).not.toHaveAttribute('aria-current');
+    expect(screen.getByText('Cuộc trò chuyện chưa có tiêu đề').closest('button')).not.toHaveAttribute('aria-current');
   });
 
   it('calls onSelect when a conversation is clicked, and onCreate for the new-conversation button', async () => {
@@ -42,7 +42,7 @@ describe('ConversationSidebar', () => {
     await user.click(screen.getByText('New job'));
     expect(onSelect).toHaveBeenCalledWith('c1');
 
-    await user.click(screen.getByRole('button', { name: /new conversation/i }));
+    await user.click(screen.getByRole('button', { name: /cuộc trò chuyện mới/i }));
     expect(onCreate).toHaveBeenCalled();
   });
 });

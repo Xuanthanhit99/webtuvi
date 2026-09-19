@@ -170,3 +170,11 @@ describe('TarotInterpretationService — Sprint 12 AI cost-control/attribution p
     expect(costControl.record).not.toHaveBeenCalled();
   });
 });
+
+describe('TarotInterpretationService — Vietnamese language contract', () => {
+  it('instructs the model to write the interpretation in Vietnamese', async () => {
+    const { service, streamCalls, attribution } = makeHarness();
+    await service.interpret(baseInput(), attribution);
+    expect(streamCalls[0]!.messages[0]!.content).toMatch(/Vietnamese/i);
+  });
+});

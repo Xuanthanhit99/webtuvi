@@ -24,8 +24,8 @@ describe('RememberThisButton', () => {
     const user = userEvent.setup();
 
     renderWithQuery(<RememberThisButton conversationId="conv-1" messageId="msg-1" content="Starting a new job next week." createdAt="2026-08-19T09:00:00.000Z" />);
-    await user.click(screen.getByRole('button', { name: /remember this/i }));
-    const confirmButtons = screen.getAllByRole('button', { name: /remember this/i });
+    await user.click(screen.getByRole('button', { name: /ghi nhớ/i }));
+    const confirmButtons = screen.getAllByRole('button', { name: /ghi nhớ/i });
     await user.click(confirmButtons[confirmButtons.length - 1]!);
 
     await waitFor(() =>
@@ -41,8 +41,8 @@ describe('RememberThisButton', () => {
     const user = userEvent.setup();
 
     renderWithQuery(<RememberThisButton conversationId="conv-1" messageId="msg-1" content="Something health-related." createdAt="2026-08-19T09:00:00.000Z" />);
-    await user.click(screen.getByRole('button', { name: /remember this/i }));
-    const confirmButtons = screen.getAllByRole('button', { name: /remember this/i });
+    await user.click(screen.getByRole('button', { name: /ghi nhớ/i }));
+    const confirmButtons = screen.getAllByRole('button', { name: /ghi nhớ/i });
     await user.click(confirmButtons[confirmButtons.length - 1]!);
 
     await waitFor(() => expect(memoryApi.candidates.propose).toHaveBeenCalled());
@@ -52,12 +52,12 @@ describe('RememberThisButton', () => {
   it('disables the confirm action when the summary is emptied out', async () => {
     const user = userEvent.setup();
     renderWithQuery(<RememberThisButton conversationId="conv-1" messageId="msg-1" content="Some content" createdAt="2026-08-19T09:00:00.000Z" />);
-    await user.click(screen.getByRole('button', { name: /remember this/i }));
+    await user.click(screen.getByRole('button', { name: /ghi nhớ/i }));
 
-    const summaryField = screen.getByLabelText(/what should tử vi tarot remember/i);
+    const summaryField = screen.getByLabelText(/what should mệnh vi remember/i);
     await user.clear(summaryField);
 
-    const confirmButtons = screen.getAllByRole('button', { name: /remember this/i });
+    const confirmButtons = screen.getAllByRole('button', { name: /ghi nhớ/i });
     expect(confirmButtons[confirmButtons.length - 1]).toBeDisabled();
   });
 });

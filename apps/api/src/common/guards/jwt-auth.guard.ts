@@ -54,6 +54,18 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Your session has expired. Please log in again.');
     }
 
+    // A still-valid, unexpired access token must stop authenticating the moment its own session is
+    // revoked (password change, logout-all, per-session revoke) — otherwise "logged out other
+    // devices" is only true once that device's access token happens to expire on its own (up to
+    // JWT_ACCESS_EXPIRES_IN later), not immediately as the UI promises. One indexed point-lookup by
+    // primary key, same tradeoff as the user-status check above.
+    if (payload.sid) {
+      const session = await this.prisma.userSession.findUnique({ where: { id: payload.sid }, select: { revokedAt: true } });
+      if (!session || session.revokedAt) {
+        throw new UnauthorizedException('Your session has expired. Please log in again.');
+      }
+    }
+
     request.user = { id: payload.sub, email: payload.email, sessionId: payload.sid, role: user.role };
     return true;
   }

@@ -139,7 +139,7 @@ export class DashboardService {
       // flags, so fixed the same way: describe the real, current set.
       discoverySuggestion: {
         title: 'Discovery',
-        description: 'A real Tarot draw, Numerology reading, birth chart, Eastern Horoscope, and Tử Vi Lá Số — all live now.',
+        description: 'Rút một lá Tarot, tính Thần số học, lập bản đồ sao, xem Ngũ Hành Phương Đông, hoặc lập lá số Tử Vi — tất cả đều là kết quả thật, sẵn sàng ngay bây giờ.',
         href: '/discover',
         comingSoon: false,
       },

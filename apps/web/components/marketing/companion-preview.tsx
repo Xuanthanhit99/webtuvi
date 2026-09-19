@@ -21,7 +21,7 @@ export function CompanionPreview() {
           </div>
         </div>
         <p className="mt-4 text-center text-caption text-text-tertiary">
-          Example conversation. Your Companion remembers what you share and brings it back when it&rsquo;s relevant.
+          Ví dụ về cuộc trò chuyện. Người bạn đồng hành của bạn ghi nhớ những gì bạn chia sẻ và nhắc lại khi phù hợp.
         </p>
       </div>
     </section>

@@ -15,7 +15,7 @@ jest.mock('@/features/memory/api/memory-api', () => ({
 describe('MessageItem', () => {
   it('labels a user message "You"', () => {
     render(<MessageItem message={{ id: '1', role: 'user', content: 'Hello', createdAt: '2026-01-01T00:00:00.000Z', memoryUsed: null }} />);
-    expect(screen.getByText('You')).toBeInTheDocument();
+    expect(screen.getByText('Bạn')).toBeInTheDocument();
     expect(screen.getByText('Hello')).toBeInTheDocument();
   });
 
@@ -23,7 +23,7 @@ describe('MessageItem', () => {
     render(
       <MessageItem message={{ id: '2', role: 'assistant', content: 'Hi there', createdAt: '2026-01-01T00:00:00.000Z', memoryUsed: null }} />,
     );
-    expect(screen.getByText('Companion')).toBeInTheDocument();
+    expect(screen.getByText('Người bạn đồng hành')).toBeInTheDocument();
     expect(screen.getByText('Hi there')).toBeInTheDocument();
   });
 
@@ -117,7 +117,7 @@ describe('MessageItem', () => {
 describe('StreamingMessageItem', () => {
   it('shows the partial text under the Companion label', () => {
     render(<StreamingMessageItem text="Thinking about that" />);
-    expect(screen.getByText('Companion')).toBeInTheDocument();
+    expect(screen.getByText('Người bạn đồng hành')).toBeInTheDocument();
     expect(screen.getByText(/Thinking about that/)).toBeInTheDocument();
   });
 
@@ -144,7 +144,7 @@ describe('MessageItem — "Remember this" accessible names', () => {
       </>,
     );
 
-    const buttons = screen.getAllByRole('button', { name: /remember this message from/i });
+    const buttons = screen.getAllByRole('button', { name: /ghi nhớ tin nhắn này lúc/i });
     expect(buttons).toHaveLength(2);
 
     const names = buttons.map((b) => b.getAttribute('aria-label'));
@@ -164,6 +164,6 @@ describe('MessageItem — "Remember this" accessible names', () => {
         conversationId="c1"
       />,
     );
-    expect(screen.queryByRole('button', { name: /remember this/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /ghi nhớ/i })).not.toBeInTheDocument();
   });
 });

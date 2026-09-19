@@ -27,9 +27,9 @@ export function JournalHome() {
       link.download = `beaconvie-journal-export-${new Date().toISOString().slice(0, 10)}.json`;
       link.click();
       URL.revokeObjectURL(url);
-      toast.success('Your journal export has downloaded.');
+      toast.success('Đã tải xuống bản xuất nhật ký của bạn.');
     },
-    onError: () => toast.error("Couldn't create an export right now. Please try again."),
+    onError: () => toast.error('Không thể tạo bản xuất lúc này. Vui lòng thử lại.'),
   });
 
   function selectEntry(id: string | null) {
@@ -39,19 +39,19 @@ export function JournalHome() {
   return (
     <MvPage>
       <MvPageHeader
-        eyebrow="Journal"
+        eyebrow="Nhật ký"
         title="Nhật ký để nhìn lại chính mình"
-        description="Ghi lại điều đã xảy ra, điều bạn cảm thấy, và những dữ kiện Tử Vi Tarot có thể dùng làm bằng chứng thật cho Memory, Reflections, Goals và Reviews."
+        description="Ghi lại điều đã xảy ra, điều bạn cảm thấy, và những dữ kiện Mệnh Vi có thể dùng làm bằng chứng thật cho Memory, Reflections, Goals và Reviews."
       >
         <div className="flex flex-wrap gap-2">
           <Button variant="secondary" size="sm" onClick={() => router.push('/journal/archive')}>
-            Archive
+            Lưu trữ
           </Button>
           <Button variant="secondary" size="sm" onClick={() => createExport.mutate()} loading={createExport.isPending}>
-            Export all
+            Xuất tất cả
           </Button>
           <Button size="sm" onClick={() => router.push('/journal/new')}>
-            New entry
+            Mục mới
           </Button>
         </div>
       </MvPageHeader>

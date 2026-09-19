@@ -82,7 +82,7 @@ export function InsightCardDetail({ id, onClose }: { id: string; onClose: () => 
         <p className="font-display text-heading-md text-text-primary">{card.reason.headline}</p>
         <p className="text-body-sm text-text-secondary">{card.reason.evidenceSummary}</p>
         <p className="text-caption text-text-disabled">
-          Timeline: {new Date(card.windowStart).toLocaleDateString()} – {new Date(card.windowEnd).toLocaleDateString()}
+          Timeline: {new Date(card.windowStart).toLocaleDateString('vi-VN')} – {new Date(card.windowEnd).toLocaleDateString('vi-VN')}
         </p>
       </div>
 

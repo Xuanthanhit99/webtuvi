@@ -20,7 +20,7 @@ export function InsightCandidateCard({ candidate, onSelect }: { candidate: Insig
         <p className="text-body-md text-text-primary">{candidate.ruleExplanation}</p>
         <p className="text-caption text-text-disabled">
           {candidate.evidence.length} evidence · {candidate.relationships.length} relationship{candidate.relationships.length === 1 ? '' : 's'} ·{' '}
-          {new Date(candidate.windowStart).toLocaleDateString()} – {new Date(candidate.windowEnd).toLocaleDateString()}
+          {new Date(candidate.windowStart).toLocaleDateString('vi-VN')} – {new Date(candidate.windowEnd).toLocaleDateString('vi-VN')}
         </p>
       </button>
     </li>

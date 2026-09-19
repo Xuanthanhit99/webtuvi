@@ -14,31 +14,31 @@ import { ErrorState } from '@/components/ui/error-state';
 import { ImportanceBadge } from './importance-badge';
 
 const TYPE_OPTIONS: { value: string; label: string }[] = [
-  { value: '', label: 'All types' },
-  { value: 'IDENTITY', label: 'Identity' },
-  { value: 'PREFERENCE', label: 'Preference' },
-  { value: 'GOAL', label: 'Goal' },
-  { value: 'RELATIONSHIP', label: 'Relationship' },
-  { value: 'HABIT', label: 'Habit' },
-  { value: 'ROUTINE', label: 'Routine' },
-  { value: 'ACHIEVEMENT', label: 'Achievement' },
-  { value: 'CHALLENGE', label: 'Challenge' },
-  { value: 'EMOTION', label: 'Emotion' },
-  { value: 'IMPORTANT_EVENT', label: 'Important event' },
-  { value: 'DECISION', label: 'Decision' },
-  { value: 'INTEREST', label: 'Interest' },
-  { value: 'WORK', label: 'Work' },
-  { value: 'STUDY', label: 'Study' },
-  { value: 'PET', label: 'Pet' },
-  { value: 'LOCATION_PREFERENCE', label: 'Place preference' },
-  { value: 'HEALTH', label: 'Health' },
-  { value: 'CUSTOM', label: 'Other' },
+  { value: '', label: 'Tất cả loại' },
+  { value: 'IDENTITY', label: 'Danh tính' },
+  { value: 'PREFERENCE', label: 'Sở thích' },
+  { value: 'GOAL', label: 'Mục tiêu' },
+  { value: 'RELATIONSHIP', label: 'Mối quan hệ' },
+  { value: 'HABIT', label: 'Thói quen' },
+  { value: 'ROUTINE', label: 'Lịch trình' },
+  { value: 'ACHIEVEMENT', label: 'Thành tựu' },
+  { value: 'CHALLENGE', label: 'Thử thách' },
+  { value: 'EMOTION', label: 'Cảm xúc' },
+  { value: 'IMPORTANT_EVENT', label: 'Sự kiện quan trọng' },
+  { value: 'DECISION', label: 'Quyết định' },
+  { value: 'INTEREST', label: 'Mối quan tâm' },
+  { value: 'WORK', label: 'Công việc' },
+  { value: 'STUDY', label: 'Học tập' },
+  { value: 'PET', label: 'Thú cưng' },
+  { value: 'LOCATION_PREFERENCE', label: 'Sở thích địa điểm' },
+  { value: 'HEALTH', label: 'Sức khỏe' },
+  { value: 'CUSTOM', label: 'Khác' },
 ];
 
 const GROUP_LABELS: Record<MemoryTimelineItemDto['group'], string> = {
-  today: 'Today',
-  this_week: 'This week',
-  earlier: 'Earlier',
+  today: 'Hôm nay',
+  this_week: 'Tuần này',
+  earlier: 'Trước đó',
 };
 
 export interface MemoryTimelineProps {
@@ -63,14 +63,14 @@ export function MemoryTimeline({ onSelect }: MemoryTimelineProps) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end gap-3">
-        <Dropdown id="memory-type-filter" label="Filter by type" value={type} options={TYPE_OPTIONS} onChange={setType} className="w-56" />
+        <Dropdown id="memory-type-filter" label="Lọc theo loại" value={type} options={TYPE_OPTIONS} onChange={setType} className="w-56" />
         <Button
           type="button"
           variant={showArchived ? 'primary' : 'secondary'}
           size="sm"
           onClick={() => setShowArchived((v) => !v)}
         >
-          {showArchived ? 'Showing archived' : 'Show archived'}
+          {showArchived ? 'Đang hiện lưu trữ' : 'Hiện lưu trữ'}
         </Button>
       </div>
 
@@ -81,20 +81,20 @@ export function MemoryTimeline({ onSelect }: MemoryTimelineProps) {
         </div>
       )}
 
-      {isError && <ErrorState description="Couldn't load your memory timeline." onRetry={() => refetch()} />}
+      {isError && <ErrorState description="Không thể tải dòng thời gian ký ức của bạn." onRetry={() => refetch()} />}
 
       {!isLoading && !isError && items.length === 0 && (
         <EmptyState
-          title={showArchived ? 'No archived memories.' : 'No memories yet.'}
+          title={showArchived ? 'Chưa có ký ức lưu trữ nào.' : 'Chưa có ký ức nào.'}
           description={
             showArchived
               ? undefined
-              : 'When you ask Tử Vi Tarot to remember something from a conversation, it will show up here — with the source, the reason, and your consent choice always visible.'
+              : 'Khi bạn nhờ Mệnh Vi ghi nhớ điều gì đó từ một cuộc trò chuyện, nó sẽ hiện ở đây — cùng với nguồn, lý do, và lựa chọn đồng ý của bạn luôn hiển thị rõ.'
           }
         />
       )}
 
-      <ol className="flex flex-col gap-5" aria-label="Memory timeline">
+      <ol className="flex flex-col gap-5" aria-label="Dòng thời gian ký ức">
         {items.map((item, index) => {
           const showGroupHeader = index === 0 || item.group !== items[index - 1]?.group;
           return (
@@ -117,7 +117,7 @@ export function MemoryTimeline({ onSelect }: MemoryTimelineProps) {
                     <ImportanceBadge score={item.importanceScore} explanations={item.importanceExplanations} pinned={item.pinned} />
                   </div>
                   <time className="text-caption text-text-tertiary" dateTime={item.createdAt}>
-                    {new Date(item.createdAt).toLocaleDateString()}
+                    {new Date(item.createdAt).toLocaleDateString('vi-VN')}
                   </time>
                 </div>
                 <p className="font-medium text-text-primary">{item.title}</p>

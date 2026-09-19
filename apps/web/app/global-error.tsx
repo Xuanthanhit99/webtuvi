@@ -29,10 +29,10 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
         <div className="flex min-h-dvh items-center justify-center bg-canvas px-4">
           <div className="w-full max-w-sm">
             <ErrorState
-              title="Something went wrong"
-              description="Tử Vi Tarot gặp lỗi ngoài ý muốn. Bạn có thể thử lại hoặc tải lại trang."
+              title="Đã có lỗi xảy ra"
+              description="Mệnh Vi gặp lỗi ngoài ý muốn. Bạn có thể thử lại hoặc tải lại trang."
               onRetry={reset}
-              retryLabel="Try again"
+              retryLabel="Thử lại"
             />
           </div>
         </div>

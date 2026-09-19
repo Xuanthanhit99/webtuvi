@@ -38,7 +38,7 @@ export function InsightCard({
         </div>
         <p className="text-body-md text-text-primary">{card.reason.headline}</p>
         <p className="text-caption text-text-disabled">
-          {card.reason.evidenceSummary} · {new Date(card.windowStart).toLocaleDateString()} – {new Date(card.windowEnd).toLocaleDateString()}
+          {card.reason.evidenceSummary} · {new Date(card.windowStart).toLocaleDateString('vi-VN')} – {new Date(card.windowEnd).toLocaleDateString('vi-VN')}
         </p>
       </button>
       {onTogglePin && (

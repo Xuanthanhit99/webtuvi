@@ -8,7 +8,7 @@ export function GoalHistoryList({ history }: { history: GoalHistoryDto[] }) {
       {history.map((entry) => (
         <li key={entry.id} className="flex flex-col gap-0.5 rounded-md border border-border-subtle bg-surface px-3 py-2">
           <p className="text-body-sm text-text-primary">{entry.detail}</p>
-          <p className="text-caption text-text-disabled">{new Date(entry.createdAt).toLocaleString()}</p>
+          <p className="text-caption text-text-disabled">{new Date(entry.createdAt).toLocaleString('vi-VN')}</p>
         </li>
       ))}
     </ul>

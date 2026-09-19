@@ -24,12 +24,12 @@ describe('MarketingHeader — mobile menu dismiss', () => {
   it('reflects open state via aria-expanded/aria-label when toggled', () => {
     const { container } = render(<MarketingHeader />);
     expect(getSummary()).toHaveAttribute('aria-expanded', 'false');
-    expect(getSummary()).toHaveAttribute('aria-label', 'Open menu');
+    expect(getSummary()).toHaveAttribute('aria-label', 'Mở menu');
 
     openMenu(container);
 
     expect(getSummary()).toHaveAttribute('aria-expanded', 'true');
-    expect(getSummary()).toHaveAttribute('aria-label', 'Close menu');
+    expect(getSummary()).toHaveAttribute('aria-label', 'Đóng menu');
   });
 
   it('closes on Escape — regression for the confirmed no-Escape-dismiss bug', () => {

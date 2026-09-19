@@ -15,7 +15,7 @@ describe('GlobalError (Sprint 12 root-level boundary)', () => {
   it('shows a user-understandable message, never a stack trace or technical detail', () => {
     const error = Object.assign(new Error('TypeError: cannot read property x of undefined'), {});
     render(<GlobalError error={error} reset={jest.fn()} />);
-    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+    expect(screen.getByText(/đã có lỗi xảy ra/i)).toBeInTheDocument();
     expect(screen.queryByText(/TypeError/)).not.toBeInTheDocument();
     expect(screen.queryByText(/cannot read property/i)).not.toBeInTheDocument();
   });
@@ -26,7 +26,7 @@ describe('GlobalError (Sprint 12 root-level boundary)', () => {
     const error = Object.assign(new Error('boom'), {});
     render(<GlobalError error={error} reset={reset} />);
 
-    await user.click(screen.getByRole('button', { name: /try again/i }));
+    await user.click(screen.getByRole('button', { name: /thử lại/i }));
 
     expect(reset).toHaveBeenCalledTimes(1);
   });

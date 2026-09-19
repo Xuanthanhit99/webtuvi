@@ -17,12 +17,12 @@ describe('ShareButton', () => {
 
   it('is a real, keyboard-accessible button with a visible name (not icon-only)', () => {
     render(<ShareButton />);
-    const button = screen.getByRole('button', { name: `Share ${SITE_NAME}` });
+    const button = screen.getByRole('button', { name: `Chia sẻ ${SITE_NAME}` });
     expect(button).toBeInTheDocument();
     expect(button.tagName).toBe('BUTTON');
     // Visible text label, not just an aria-label on an icon — the h2 rule against icon-only
     // unlabeled controls (final report §14).
-    expect(button).toHaveTextContent('Share');
+    expect(button).toHaveTextContent('Chia sẻ');
   });
 
   it('calls the Web Share API with only public, non-sensitive product data when available', async () => {
@@ -31,7 +31,7 @@ describe('ShareButton', () => {
     const user = userEvent.setup();
 
     render(<ShareButton />);
-    await user.click(screen.getByRole('button', { name: `Share ${SITE_NAME}` }));
+    await user.click(screen.getByRole('button', { name: `Chia sẻ ${SITE_NAME}` }));
 
     expect(share).toHaveBeenCalledWith({
       title: SITE_NAME,
@@ -53,7 +53,7 @@ describe('ShareButton', () => {
     const user = userEvent.setup();
 
     render(<ShareButton />);
-    await user.click(screen.getByRole('button', { name: `Share ${SITE_NAME}` }));
+    await user.click(screen.getByRole('button', { name: `Chia sẻ ${SITE_NAME}` }));
 
     await waitFor(() => expect(share).toHaveBeenCalled());
     expect(toast.error).not.toHaveBeenCalled();
@@ -71,10 +71,10 @@ describe('ShareButton', () => {
     const user = userEvent.setup();
 
     render(<ShareButton />);
-    await user.click(screen.getByRole('button', { name: `Share ${SITE_NAME}` }));
+    await user.click(screen.getByRole('button', { name: `Chia sẻ ${SITE_NAME}` }));
 
     await waitFor(() => expect(writeText).toHaveBeenCalledWith(SITE_URL));
-    expect(toast.success).toHaveBeenCalledWith('Link copied to clipboard.');
+    expect(toast.success).toHaveBeenCalledWith('Đã sao chép đường liên kết.');
   });
 
   it('communicates clipboard failure accessibly, not silently', async () => {
@@ -83,8 +83,8 @@ describe('ShareButton', () => {
     const user = userEvent.setup();
 
     render(<ShareButton />);
-    await user.click(screen.getByRole('button', { name: `Share ${SITE_NAME}` }));
+    await user.click(screen.getByRole('button', { name: `Chia sẻ ${SITE_NAME}` }));
 
-    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Couldn't copy the link. Please try again."));
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith('Không thể sao chép đường liên kết. Vui lòng thử lại.'));
   });
 });

@@ -76,6 +76,7 @@ export function AdminUserLookupPanel() {
           title={lookup.error instanceof ApiError && lookup.error.status === 404 ? 'No user found' : 'Lookup failed'}
           description={lookup.error instanceof ApiError ? lookup.error.message : 'Something went wrong. Please try again.'}
           onRetry={lookup.error instanceof ApiError && lookup.error.status === 404 ? undefined : () => lookup.refetch()}
+          retryLabel="Try again"
         />
       )}
 

@@ -70,7 +70,7 @@ describe('AppHeader — profile menu', () => {
     renderWithQuery(<AppHeader />);
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'Menu tài khoản' }));
-    await user.click(screen.getByRole('menuitem', { name: 'Log out' }));
+    await user.click(screen.getByRole('menuitem', { name: 'Đăng xuất' }));
     if (success) {
       await waitFor(() => expect(mockInvalidate).toHaveBeenCalledWith(true));
       expect(mockPush).toHaveBeenCalledWith('/login');
@@ -94,7 +94,7 @@ describe('AppHeader — profile menu', () => {
 
     expect(screen.getByRole('menuitem', { name: 'Cài đặt' })).toHaveAttribute('href', '/settings');
     expect(screen.getByRole('menuitem', { name: 'Gói Premium' })).toHaveAttribute('href', '/premium');
-    expect(screen.getByRole('menuitem', { name: 'Log out' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Đăng xuất' })).toBeInTheDocument();
   });
 
   it('closes when Escape is pressed', async () => {

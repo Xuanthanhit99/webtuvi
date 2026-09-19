@@ -26,7 +26,7 @@ export function EasternHoroscopeProfileView({ profile, onChanged }: { profile: E
       await easternHoroscopeApi.retryInterpretation(profile.id);
       await onChanged?.();
     } catch (error) {
-      setInterpretError(error instanceof ApiError ? error.message : 'Couldn’t generate an interpretation right now. Please try again.');
+      setInterpretError(error instanceof ApiError ? error.message : 'Không thể tạo diễn giải lúc này. Vui lòng thử lại.');
     } finally {
       setInterpretLoading(false);
     }
@@ -36,34 +36,34 @@ export function EasternHoroscopeProfileView({ profile, onChanged }: { profile: E
     <div className="flex flex-col gap-6">
       <Card>
         <div className="mb-3 flex items-center justify-between">
-          <p className="font-display text-body-lg text-text-primary">Your sign</p>
-          <Badge variant="new">Deterministic — never AI-generated</Badge>
+          <p className="font-display text-body-lg text-text-primary">Bản mệnh của bạn</p>
+          <Badge variant="new">Dữ kiện cố định, không do AI tạo</Badge>
         </div>
         <div className="grid gap-3 desktop:grid-cols-2">
-          <Fact label="Zodiac animal" value={`${profile.zodiacAnimal.vi} (${profile.zodiacAnimal.en})`} />
-          <Fact label="Element" value={`${profile.element} (${ELEMENT_LABELS_EN[profile.element] ?? profile.element})`} />
-          <Fact label="Yin / Yang" value={`${profile.yinYang} (${YIN_YANG_LABELS_EN[profile.yinYang] ?? profile.yinYang})`} />
-          <Fact label="Heavenly Stem / Earthly Branch" value={`${profile.stem} ${profile.branch}`} />
+          <Fact label="Con giáp" value={`${profile.zodiacAnimal.vi} (${profile.zodiacAnimal.en})`} />
+          <Fact label="Ngũ hành" value={`${profile.element} (${ELEMENT_LABELS_EN[profile.element] ?? profile.element})`} />
+          <Fact label="Âm / Dương" value={`${profile.yinYang} (${YIN_YANG_LABELS_EN[profile.yinYang] ?? profile.yinYang})`} />
+          <Fact label="Thiên Can / Địa Chi" value={`${profile.stem} ${profile.branch}`} />
         </div>
-        <p className="mt-3 text-body-sm text-text-tertiary">Calculated from your birth date ({profile.birthDate}) using a real lunisolar calendar — never approximated by AI.</p>
+        <p className="mt-3 text-body-sm text-text-tertiary">Được tính từ ngày sinh của bạn ({profile.birthDate}) bằng lịch âm dương thực tế — không do AI ước lượng.</p>
       </Card>
 
       <Card>
         <div className="mb-3 flex items-center justify-between">
-          <p className="font-display text-body-lg text-text-primary">This year’s energy — {profile.yearEnergy.calendarYear}</p>
-          <Badge variant="new">Deterministic — never AI-generated</Badge>
+          <p className="font-display text-body-lg text-text-primary">Vận khí năm nay — {profile.yearEnergy.calendarYear}</p>
+          <Badge variant="new">Dữ kiện cố định, không do AI tạo</Badge>
         </div>
         <div className="grid gap-3 desktop:grid-cols-2">
-          <Fact label="This year’s sign" value={`${profile.yearEnergy.yearZodiacAnimal.vi} (${profile.yearEnergy.yearZodiacAnimal.en})`} />
-          <Fact label="This year’s element" value={`${profile.yearEnergy.yearElement} (${ELEMENT_LABELS_EN[profile.yearEnergy.yearElement] ?? profile.yearEnergy.yearElement})`} />
+          <Fact label="Con giáp năm nay" value={`${profile.yearEnergy.yearZodiacAnimal.vi} (${profile.yearEnergy.yearZodiacAnimal.en})`} />
+          <Fact label="Ngũ hành năm nay" value={`${profile.yearEnergy.yearElement} (${ELEMENT_LABELS_EN[profile.yearEnergy.yearElement] ?? profile.yearEnergy.yearElement})`} />
         </div>
         <p className="mt-3 text-body-sm text-text-secondary">{YEAR_ENERGY_RELATIONSHIP_LABELS[profile.yearEnergy.relationship]}</p>
       </Card>
 
       <Card>
         <div className="mb-3 flex items-center justify-between">
-          <p className="font-display text-body-lg text-text-primary">Reflection</p>
-          <Badge variant="insight">AI interpretation</Badge>
+          <p className="font-display text-body-lg text-text-primary">Chiêm nghiệm</p>
+          <Badge variant="insight">Diễn giải AI</Badge>
         </div>
         {profile.interpretation && !profile.interpretationStale ? (
           <p className="whitespace-pre-wrap text-body-md text-text-primary">{profile.interpretation}</p>
@@ -71,8 +71,8 @@ export function EasternHoroscopeProfileView({ profile, onChanged }: { profile: E
           <div className="flex flex-col gap-3">
             <p className="text-body-sm text-text-secondary">
               {profile.interpretationStale
-                ? 'Your last reflection was written for a previous calendar year — generate a fresh one for this year.'
-                : 'No reflection generated yet for this year.'}
+                ? 'Chiêm nghiệm gần nhất của bạn được viết cho năm dương lịch trước — hãy tạo một bản mới cho năm nay.'
+                : 'Chưa có chiêm nghiệm nào được tạo cho năm nay.'}
             </p>
             {interpretError && (
               <p role="alert" className="text-body-sm text-caution">
@@ -80,7 +80,7 @@ export function EasternHoroscopeProfileView({ profile, onChanged }: { profile: E
               </p>
             )}
             <Button variant="secondary" size="sm" loading={interpretLoading} onClick={handleInterpret} className="self-start">
-              {interpretLoading ? 'Reflecting…' : 'Generate reflection'}
+              {interpretLoading ? 'Đang chiêm nghiệm…' : 'Tạo chiêm nghiệm'}
             </Button>
           </div>
         )}

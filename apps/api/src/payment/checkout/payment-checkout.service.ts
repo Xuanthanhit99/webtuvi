@@ -15,7 +15,7 @@ const MAX_ORDER_CODE_ATTEMPTS = 3;
 const CHECKOUT_LINK_TTL_MS = 30 * 60 * 1000;
 // PayOS caps `description` length — keep this short and unambiguous rather than truncating
 // mid-sentence at request time.
-const CHECKOUT_DESCRIPTION = 'BeaconVie Premium';
+const CHECKOUT_DESCRIPTION = 'Mệnh Vi Premium';
 
 /**
  * Backend-controlled checkout (Phase 5 of the sprint brief). The browser only ever asks to

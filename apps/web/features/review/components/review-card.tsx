@@ -20,7 +20,7 @@ export function ReviewCard({ review, onSelect }: { review: ReviewSummaryDto; onS
         </div>
         <p className="text-body-md text-text-primary">{review.overview}</p>
         <p className="text-caption text-text-disabled">
-          {new Date(review.windowStart).toLocaleDateString()} – {new Date(review.windowEnd).toLocaleDateString()}
+          {new Date(review.windowStart).toLocaleDateString('vi-VN')} – {new Date(review.windowEnd).toLocaleDateString('vi-VN')}
         </p>
       </button>
     </li>

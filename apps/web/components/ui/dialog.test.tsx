@@ -53,6 +53,6 @@ describe('Dialog', () => {
 
   it('gives the close button a real accessible name', () => {
     render(<Dialog open onClose={() => {}} title="Delete this entry?" />);
-    expect(screen.getByRole('button', { name: 'Close dialog' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Đóng hộp thoại' })).toBeInTheDocument();
   });
 });

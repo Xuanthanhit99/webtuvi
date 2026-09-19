@@ -12,24 +12,24 @@ import { IconButton } from '@/components/ui/icon-button';
 import { toast } from '@/components/ui/toast';
 
 const TYPE_OPTIONS: { value: MemoryTypeValue; label: string }[] = [
-  { value: 'GOAL', label: 'Goal' },
-  { value: 'IDENTITY', label: 'Identity' },
-  { value: 'PREFERENCE', label: 'Preference' },
-  { value: 'RELATIONSHIP', label: 'Relationship' },
-  { value: 'HABIT', label: 'Habit' },
-  { value: 'ROUTINE', label: 'Routine' },
-  { value: 'ACHIEVEMENT', label: 'Achievement' },
-  { value: 'CHALLENGE', label: 'Challenge' },
-  { value: 'EMOTION', label: 'Emotion' },
-  { value: 'IMPORTANT_EVENT', label: 'Important event' },
-  { value: 'DECISION', label: 'Decision' },
-  { value: 'INTEREST', label: 'Interest' },
-  { value: 'WORK', label: 'Work' },
-  { value: 'STUDY', label: 'Study' },
-  { value: 'PET', label: 'Pet' },
-  { value: 'LOCATION_PREFERENCE', label: 'Place preference' },
-  { value: 'HEALTH', label: 'Health' },
-  { value: 'CUSTOM', label: 'Other' },
+  { value: 'GOAL', label: 'Mục tiêu' },
+  { value: 'IDENTITY', label: 'Danh tính' },
+  { value: 'PREFERENCE', label: 'Sở thích' },
+  { value: 'RELATIONSHIP', label: 'Mối quan hệ' },
+  { value: 'HABIT', label: 'Thói quen' },
+  { value: 'ROUTINE', label: 'Lịch trình' },
+  { value: 'ACHIEVEMENT', label: 'Thành tựu' },
+  { value: 'CHALLENGE', label: 'Thử thách' },
+  { value: 'EMOTION', label: 'Cảm xúc' },
+  { value: 'IMPORTANT_EVENT', label: 'Sự kiện quan trọng' },
+  { value: 'DECISION', label: 'Quyết định' },
+  { value: 'INTEREST', label: 'Mối quan tâm' },
+  { value: 'WORK', label: 'Công việc' },
+  { value: 'STUDY', label: 'Học tập' },
+  { value: 'PET', label: 'Thú cưng' },
+  { value: 'LOCATION_PREFERENCE', label: 'Sở thích địa điểm' },
+  { value: 'HEALTH', label: 'Sức khỏe' },
+  { value: 'CUSTOM', label: 'Khác' },
 ];
 
 export interface RememberThisButtonProps {
@@ -66,7 +66,7 @@ export function RememberThisButton({ conversationId, messageId, content, created
         proposedSummary: summary.trim(),
         sourceConversationId: conversationId,
         sourceMessageId: messageId,
-        reason: 'Remembered from a Companion conversation.',
+        reason: 'Được ghi nhớ từ một cuộc trò chuyện với Người bạn đồng hành.',
       });
       if (candidate.status === 'PENDING_CONSENT') {
         return { pending: true };
@@ -80,11 +80,11 @@ export function RememberThisButton({ conversationId, messageId, content, created
       setOpen(false);
       toast.success(
         result.pending
-          ? "Your memory settings currently block this — it's waiting in Settings → Memory → Pending."
-          : 'Remembered.',
+          ? 'Cài đặt ký ức của bạn hiện đang chặn điều này — nó đang chờ tại Cài đặt → Ký ức → Đang chờ.'
+          : 'Đã ghi nhớ.',
       );
     },
-    onError: () => toast.error("Couldn't remember that right now. Please try again."),
+    onError: () => toast.error('Không thể ghi nhớ điều đó lúc này. Vui lòng thử lại.'),
   });
 
   // Accessibility + Product Polish (2026-08-19): every "Remember this" button in a conversation
@@ -96,16 +96,16 @@ export function RememberThisButton({ conversationId, messageId, content, created
 
   return (
     <>
-      <IconButton aria-label={`Remember this message from ${formattedTime}`} onClick={() => setOpen(true)}>
+      <IconButton aria-label={`Ghi nhớ tin nhắn này lúc ${formattedTime}`} onClick={() => setOpen(true)}>
         <BookmarkPlus className="h-3.5 w-3.5" aria-hidden="true" />
       </IconButton>
 
-      <Dialog open={open} onClose={() => setOpen(false)} title="Remember this?" description="Tử Vi Tarot will save this as a memory you can view, edit the title of, or delete anytime.">
+      <Dialog open={open} onClose={() => setOpen(false)} title="Ghi nhớ điều này?" description="Mệnh Vi sẽ lưu điều này thành một ký ức mà bạn có thể xem, đổi tên, hoặc xóa bất cứ lúc nào.">
         <div className="flex flex-col gap-3">
-          <Dropdown id="remember-type" label="What kind of memory is this?" value={type} options={TYPE_OPTIONS} onChange={(v) => setType(v as MemoryTypeValue)} />
+          <Dropdown id="remember-type" label="Đây là loại ký ức gì?" value={type} options={TYPE_OPTIONS} onChange={(v) => setType(v as MemoryTypeValue)} />
           <div>
             <label htmlFor="remember-title" className="mb-2 block text-body-sm font-medium text-text-primary">
-              Title
+              Tiêu đề
             </label>
             <input
               id="remember-title"
@@ -118,7 +118,7 @@ export function RememberThisButton({ conversationId, messageId, content, created
           </div>
           <div>
             <label htmlFor="remember-summary" className="mb-2 block text-body-sm font-medium text-text-primary">
-              What should Tử Vi Tarot remember?
+              What should Mệnh Vi remember?
             </label>
             <textarea
               id="remember-summary"
@@ -131,10 +131,10 @@ export function RememberThisButton({ conversationId, messageId, content, created
           </div>
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="secondary" onClick={() => setOpen(false)}>
-              Cancel
+              Hủy
             </Button>
             <Button loading={remember.isPending} disabled={!summary.trim()} onClick={() => remember.mutate()}>
-              Remember this
+              Ghi nhớ điều này
             </Button>
           </div>
         </div>

@@ -1,10 +1,14 @@
 import { test, expect } from '@playwright/test';
 
-// Flow 26: Sprint 14 (Ambiguity Cleanup) — verifies the locked production brand (Tử Vi Tarot, per
-// docs/progress/domain-brand-production-lock-final-report.md) is the sole coherent product shell:
-// no public Mệnh Vi shell, frozen modules absent from primary UX, and Discover naming matches
+// Flow 26: Sprint 14 (Ambiguity Cleanup) — verifies the production product shell is coherent:
+// frozen modules absent from primary UX, and Discover naming matches
 // docs/product/vietnamese-tu-vi-product-definition.md §1 without implying Eastern Horoscope is
 // Tử Vi. See docs/product/product-completion-roadmap-v2.md Sprint 14.
+//
+// The brand assertion below was updated by the pre-launch UX remediation: the production brand is
+// now Mệnh Vi (superseding the Sprint 14-era Tử Vi Tarot name). The archived /menh-vi prototype
+// route below is an unrelated fact — its 404 status is independent of which name the live product
+// now uses (see the next test).
 
 async function registerAndOnboard(page: import('@playwright/test').Page, label: string): Promise<void> {
   const email = `flow26-${label}-${Date.now()}@example.com`;
@@ -37,10 +41,10 @@ async function registerAndOnboard(page: import('@playwright/test').Page, label: 
   await expect(page).toHaveURL('http://localhost:3000/');
 }
 
-test('production landing shows Tử Vi Tarot, not a competing brand', async ({ page }) => {
+test('production landing shows Mệnh Vi, not a legacy brand', async ({ page }) => {
   await page.goto('/');
-  await expect(page).toHaveTitle(/Tử Vi Tarot/);
-  await expect(page.getByText('Mệnh Vi')).toHaveCount(0);
+  await expect(page).toHaveTitle(/Mệnh Vi/);
+  await expect(page.getByText('Tử Vi Tarot')).toHaveCount(0);
   await expect(page.getByText('BeaconVie')).toHaveCount(0);
 });
 

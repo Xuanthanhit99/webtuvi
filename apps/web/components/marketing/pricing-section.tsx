@@ -8,7 +8,7 @@ export function PricingSection() {
     <section id="pricing" aria-labelledby="pricing-heading" className="border-b border-border-subtle bg-surface py-16 desktop:py-24">
       <div className="mx-auto max-w-content px-4 desktop:px-8">
         <h2 id="pricing-heading" className="mb-10 text-center font-display text-heading-lg text-text-primary">
-          Simple, honest pricing
+          Mức giá đơn giản, minh bạch
         </h2>
         <div className="mx-auto grid max-w-2xl gap-6 desktop:grid-cols-2">
           <Card>

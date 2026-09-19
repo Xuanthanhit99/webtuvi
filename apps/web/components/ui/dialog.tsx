@@ -24,7 +24,7 @@ export interface DialogProps {
  * the document whenever 2+ Dialogs are mounted on the same page (confirmed: Settings mounts 3).
  * `useId()` gives every instance its own ids automatically — no call site needs to pass one.
  */
-export function Dialog({ open, onClose, title, description, children, variant = 'default', closeLabel = 'Close dialog' }: DialogProps) {
+export function Dialog({ open, onClose, title, description, children, variant = 'default', closeLabel = 'Đóng hộp thoại' }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
