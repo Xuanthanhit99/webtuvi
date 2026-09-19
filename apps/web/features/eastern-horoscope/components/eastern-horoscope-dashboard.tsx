@@ -28,14 +28,14 @@ export function EasternHoroscopeDashboard() {
       <MvPageHeader
         eyebrow="Ngũ Hành Phương Đông"
         title="Một lát cắt phương Đông khác với Tử Vi"
-        description="A real, deterministic Chinese Zodiac and Five Elements calculation from your birth date — no sign, element, or year relationship is ever chosen or invented by AI. Not Vietnamese Tử Vi Lá Số, a separate module."
+        description="Tính con giáp, ngũ hành và mối quan hệ vận khí năm từ ngày sinh bằng quy tắc xác định. Đây là một hệ phương Đông riêng, không phải lá số Tử Vi và không dùng AI để tạo ra các dữ kiện nền tảng."
       />
 
-      <MvSection eyebrow="Input" title="Reveal">
+      <MvSection eyebrow="Ngày sinh" title="Khám phá bản mệnh">
         <EasternHoroscopeForm />
       </MvSection>
 
-      <MvSection eyebrow="Saved" title="History">
+      <MvSection eyebrow="Đã lưu" title="Lịch sử">
         <EasternHoroscopeHistoryList filters={{}} onSelect={selectItem} />
       </MvSection>
     </MvPage>
