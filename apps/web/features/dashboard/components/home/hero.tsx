@@ -3,21 +3,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useMemo } from 'react';
-import { Calendar, Moon, Play } from 'lucide-react';
+import { Calendar, Play } from 'lucide-react';
 import type { TuViChartDto } from '@beaconvie/types';
 import { useHeroParallax } from './use-hero-parallax';
 import { HOME_BACKGROUND } from './production-assets';
 import { DailyFlowPanel, DailyFlowPanelLocked } from './daily-flow-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 
-/**
- * Static fallback — the lunar date and "mệnh khí" score are real almanac/personal-energy data
- * that a lunar-calendar / Eastern Horoscope engine would compute; that engine is backend-only
- * today and not exposed to the web app (see CLAUDE.md — Eastern Horoscope is spec'd but not
- * built). The weekday/date next to them IS real, computed client-side below. Swap the two
- * fallback values for real data once a Home data contract exists — do not compute them here.
- */
-function HeroStatusBar({ isGuest }: { isGuest: boolean }) {
+function HeroStatusBar() {
   const todayLabel = useMemo(() => {
     const formatted = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
@@ -29,22 +22,6 @@ function HeroStatusBar({ isGuest }: { isGuest: boolean }) {
         <Calendar className="h-3.5 w-3.5 text-[#e6c980]" aria-hidden="true" />
         {todayLabel}
       </span>
-      {/* Lunar date / "mệnh khí" are personal-energy data — shown as static fallback for a
-          signed-in user (see the comment above), skipped entirely for a guest who has no account
-          for either to describe. */}
-      {!isGuest && (
-        <>
-          <span className="h-3.5 w-px bg-white/15" aria-hidden="true" />
-          <span className="inline-flex items-center gap-2">
-            <Moon className="h-3.5 w-3.5 text-[#e6c980]" aria-hidden="true" />
-            Âm lịch: đang cập nhật
-          </span>
-          <span className="h-3.5 w-px bg-white/15" aria-hidden="true" />
-          <span>
-            Mệnh khí của bạn: <span className="font-semibold text-[#e6c980]">đang cập nhật</span>
-          </span>
-        </>
-      )}
     </div>
   );
 }
@@ -185,7 +162,7 @@ export function HomeHero({
         </div>
 
         <div className="hidden tablet:block">
-          <HeroStatusBar isGuest={isGuest} />
+          <HeroStatusBar />
         </div>
       </div>
     </section>
