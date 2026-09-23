@@ -28,7 +28,7 @@ export function EasternHoroscopeDashboard() {
   return (
     <MvPage>
       <header className="relative isolate overflow-hidden rounded-xl border border-[#d5ad62]/20 bg-[#0b1118] px-5 py-8 tablet:px-9 tablet:py-10">
-        <Image src={HOME_BACKGROUND.journeyBanner} alt="" fill priority sizes="(min-width: 1280px) 1200px, 100vw" className="-z-10 object-cover object-center opacity-28" />
+        <Image src={HOME_BACKGROUND.journeyBanner} alt="" fill priority sizes="(min-width: 1536px) 1248px, (min-width: 1280px) calc(100vw - 288px), 100vw" className="-z-10 object-cover object-center opacity-24 tablet:opacity-28" />
         <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-[#0b1118] via-[#0b1118]/88 to-[#0b1118]/45" />
         <Image src={HOME_DECOR.moonPlanets} alt="" width={260} height={260} className="pointer-events-none absolute -right-8 -top-10 hidden h-64 w-64 object-contain opacity-45 tablet:block" />
         <div className="relative max-w-2xl">
