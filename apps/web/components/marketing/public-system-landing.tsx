@@ -19,7 +19,10 @@ export function createPublicSystemMetadata(slug: Slug): Metadata {
 }
 export function PublicSystemLanding({ slug }: { slug: Slug }) {
   const page = PAGES[slug];
-  return <main className="mx-auto w-full max-w-[1280px] px-4 py-8 tablet:px-8 tablet:py-12">
+  const jsonLd = { '@context': 'https://schema.org', '@type': 'WebPage', name: page.title, description: page.description, url: `/${slug}`, isPartOf: { '@type': 'WebSite', name: 'Mệnh Vi', url: '/' } };
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+    <main className="mx-auto w-full max-w-[1280px] px-4 py-8 tablet:px-8 tablet:py-12">
     <section className="relative isolate min-h-[430px] overflow-hidden rounded-[22px] border border-[#d5ad62]/20 bg-[#080d16] px-5 py-9 tablet:px-10 tablet:py-12 desktop:px-14">
       <Image src={FEATURE_ART_ASSET[page.asset]} alt="" fill priority sizes="(min-width: 1280px) 1280px, 100vw" className="-z-10 object-cover object-center opacity-45" />
       <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-[#080d16] via-[#080d16]/92 to-[#080d16]/35" />
@@ -36,5 +39,6 @@ export function PublicSystemLanding({ slug }: { slug: Slug }) {
     <section className="mx-auto grid max-w-4xl gap-5 py-12 tablet:grid-cols-3">
       {['Dữ liệu rõ ràng', 'Kết quả có thể xem lại', 'Không thay thế tư vấn chuyên môn'].map((x) => <div key={x} className="rounded-xl border border-white/10 bg-surface p-5"><ShieldCheck className="h-5 w-5 text-[#d5ad62]" aria-hidden="true" /><h2 className="mt-3 font-serif text-heading-sm text-text-primary">{x}</h2></div>)}
     </section>
-  </main>;
+    </main>
+  </>;
 }
