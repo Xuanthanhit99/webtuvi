@@ -68,12 +68,21 @@ FROM node:22-slim AS runtime
 # at runtime, which is where this was originally caught (a container that builds successfully but
 # crashes immediately on boot).
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/* \
-  && corepack enable && groupadd --system beaconvie && useradd --system --gid beaconvie beaconvie
+  && npm install --global pnpm@11.18.0 \
+  && groupadd --system beaconvie \
+  && useradd --system --create-home --gid beaconvie beaconvie
 WORKDIR /repo
 
 ENV NODE_ENV=production
 COPY --from=prod-deps /repo/node_modules ./node_modules
 COPY --from=prod-deps /repo/apps/api/node_modules ./apps/api/node_modules
+# Railway runs Prisma migrations as a separate pre-deploy step. Prisma CLI is a
+# devDependency, so the production-only install above intentionally omits it.
+# Copy only the CLI link/package from the full build stage; its pnpm store
+# dependencies are copied below. This keeps the runtime production-focused while
+# making `pnpm --filter @beaconvie/api prisma:migrate:deploy` available.
+COPY --from=build /repo/apps/api/node_modules/prisma ./apps/api/node_modules/prisma
+COPY --from=build /repo/apps/api/node_modules/.bin/prisma ./apps/api/node_modules/.bin/prisma
 COPY --from=build /repo/packages/types ./packages/types
 COPY --from=build /repo/apps/api/dist ./apps/api/dist
 COPY --from=build /repo/apps/api/prisma ./apps/api/prisma
