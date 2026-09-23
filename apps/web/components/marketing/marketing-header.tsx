@@ -5,9 +5,10 @@ import Link from 'next/link';
 import { Logo } from '@/components/ui/logo';
 
 const NAV_LINKS = [
-  { label: 'Sản phẩm', href: '#how-it-works' },
-  { label: 'Khám phá', href: '#discovery' },
-  { label: 'Quyền riêng tư', href: '#privacy' },
+  { label: 'Tử Vi', href: '/tu-vi' },
+  { label: 'Tarot', href: '/tarot' },
+  { label: 'Bản đồ sao', href: '/ban-do-sao' },
+  { label: 'Thần số học', href: '/than-so-hoc' },
   { label: 'Giới thiệu', href: '/about' },
 ];
 
@@ -58,9 +59,9 @@ export function MarketingHeader() {
 
         <nav aria-label="Primary" className="hidden items-center gap-8 desktop:flex">
           {NAV_LINKS.map((link) => (
-            <a key={link.href} href={link.href} className="text-body-sm text-text-secondary hover:text-text-primary">
+            <Link key={link.href} href={link.href} className="text-body-sm text-text-secondary hover:text-text-primary">
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -93,13 +94,13 @@ export function MarketingHeader() {
           </summary>
           <div className="absolute right-0 top-12 flex w-56 flex-col gap-1 rounded-md border border-border-subtle bg-surface-raised p-3 shadow-sm">
             {NAV_LINKS.map((link) => (
-              <a
+              <Link
                 key={link.href}
                 href={link.href}
                 className="min-h-11 rounded-md px-3 py-2 text-body-sm text-text-secondary hover:bg-surface hover:text-text-primary"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
             <hr className="my-1 border-border-subtle" />
             <Link href="/login" className="min-h-11 rounded-md px-3 py-2 text-body-sm text-text-secondary hover:bg-surface hover:text-text-primary">
