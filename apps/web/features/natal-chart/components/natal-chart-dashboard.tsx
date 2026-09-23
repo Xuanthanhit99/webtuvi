@@ -53,7 +53,7 @@ export function NatalChartDashboard() {
             </a>
           </div>
           <div className="relative mx-auto aspect-[4/3] w-full max-w-[520px] overflow-hidden rounded-xl border border-[#d5ad62]/20 bg-[#07111d]">
-            <Image src={FEATURE_ART_ASSET.natal_chart} alt="Minh họa Bản đồ sao" fill priority sizes="(min-width: 768px) 45vw, 100vw" className="object-cover object-center" />
+            <Image src={FEATURE_ART_ASSET.natal_chart} alt="Minh họa Bản đồ sao" fill priority sizes="(min-width: 1536px) 560px, (min-width: 768px) 45vw, calc(100vw - 40px)" className="object-cover object-center" />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#06111d]/70 via-transparent to-transparent" />
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-55"><Board04AstroMark compact /></div>
           </div>
