@@ -110,7 +110,7 @@ function FeatureCard({
           src={FEATURE_ART_ASSET[asset]}
           alt=""
           fill
-          sizes="(min-width: 1280px) 300px, 45vw"
+          sizes="(min-width: 1536px) 292px, (min-width: 1280px) 22vw, (min-width: 768px) 45vw, 50vw"
           className="object-cover transition-transform duration-standard group-hover:scale-[1.04]"
         />
         {/* Module-identity color wash — the raw crop alone doesn't carry each module's intended
