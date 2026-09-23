@@ -46,7 +46,7 @@ export default function DiscoverPage() {
         <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-[1.15fr_1fr_1fr]">
           {SYSTEMS.map((system, index) => (
             <Link key={system.title} href={system.href} className={`group relative isolate min-h-[18rem] overflow-hidden rounded-xl border border-white/10 bg-[#0a101c] p-5 transition-colors hover:border-[#d5ad62]/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] tablet:p-7 ${index === 0 ? 'desktop:row-span-2 desktop:min-h-[37rem]' : ''} ${index === 3 ? 'desktop:col-span-2' : ''}`}>
-              <Image src={FEATURE_ART_ASSET[system.key]} alt="" fill sizes={index === 0 ? '(min-width: 1280px) 46vw, (min-width: 768px) 50vw, 100vw' : '(min-width: 1280px) 34vw, (min-width: 768px) 50vw, 100vw'} className="-z-10 object-cover opacity-55 transition duration-700 ease-organic group-hover:scale-[1.025] group-hover:opacity-65" />
+              <Image src={FEATURE_ART_ASSET[system.key]} alt="" fill sizes={index === 0 ? '(min-width: 1536px) 390px, (min-width: 1280px) 31vw, (min-width: 768px) 50vw, 100vw' : '(min-width: 1536px) 420px, (min-width: 1280px) 31vw, (min-width: 768px) 50vw, 100vw'} className="-z-10 object-cover opacity-55 transition duration-700 ease-organic group-hover:scale-[1.025] group-hover:opacity-65" />
               <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-t from-[#080d18] via-[#080d18]/72 to-transparent" />
               <div className="flex h-full flex-col justify-end">
                 <p className={`text-caption font-semibold uppercase tracking-[0.18em] ${system.accent}`}>{String(index + 1).padStart(2, '0')}</p>
