@@ -75,14 +75,14 @@ describe('NatalChartDashboard', () => {
     (natalChartApi.listCharts as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<NatalChartDashboard />);
     expect(screen.getByRole('heading', { name: 'Bầu trời tại khoảnh khắc bạn sinh ra' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /calculate my chart/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /lập bản đồ sao/i })).toBeInTheDocument();
     expect(await screen.findByText('Hà Nội, Vietnam')).toBeInTheDocument();
   });
 
   it('shows an empty state when there is no history yet', async () => {
     (natalChartApi.listCharts as jest.Mock).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
     renderWithQuery(<NatalChartDashboard />);
-    expect(await screen.findByText('No charts yet')).toBeInTheDocument();
+    expect(await screen.findByText('Chưa có bản đồ sao')).toBeInTheDocument();
   });
 
   it('opening ?item=<id> renders the real chart detail instead of the form/history view', async () => {
@@ -92,8 +92,8 @@ describe('NatalChartDashboard', () => {
 
     expect(await screen.findByText('Hà Nội, Vietnam')).toBeInTheDocument();
     expect(natalChartApi.getChart).toHaveBeenCalledWith('c1');
-    expect(screen.queryByRole('button', { name: /calculate my chart/i })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '← Back to Natal Chart' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /lập bản đồ sao/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '← Quay lại Bản đồ sao' })).toBeInTheDocument();
   });
 
   it('closing the detail view navigates back to the plain /discover/natal-chart route', async () => {
@@ -103,7 +103,7 @@ describe('NatalChartDashboard', () => {
     renderWithQuery(<NatalChartDashboard />);
 
     await screen.findByText('Hà Nội, Vietnam');
-    await user.click(screen.getByRole('button', { name: '← Back to Natal Chart' }));
+    await user.click(screen.getByRole('button', { name: '← Quay lại Bản đồ sao' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/discover/natal-chart', { scroll: false }));
   });
 
@@ -114,7 +114,7 @@ describe('NatalChartDashboard', () => {
 
     await screen.findByText('Hà Nội, Vietnam');
     expect(screen.getByText(/Được tính từ dữ liệu sinh của bạn\. AI không lựa chọn hoặc thay đổi bất kỳ vị trí nào\./i)).toBeInTheDocument();
-    expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
-    expect(screen.getByText(/written by ai/i)).toBeInTheDocument();
+    expect(screen.getByText('Diễn giải AI')).toBeInTheDocument();
+    expect(screen.getByText(/được AI viết/i)).toBeInTheDocument();
   });
 });
