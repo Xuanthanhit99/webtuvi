@@ -6,7 +6,7 @@ describe('sitemap', () => {
   const urls = routes.map((r) => new URL(r.url).pathname);
 
   it('includes the real public routes', () => {
-    for (const publicPath of ['/', '/about', '/contact', '/privacy', '/terms', '/login', '/register']) {
+    for (const publicPath of ['/', '/tu-vi', '/tarot', '/ban-do-sao', '/than-so-hoc', '/about', '/contact', '/privacy', '/terms']) {
       expect(urls).toContain(publicPath);
     }
   });
