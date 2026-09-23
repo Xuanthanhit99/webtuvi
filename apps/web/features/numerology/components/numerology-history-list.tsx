@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorState } from '@/components/ui/error-state';
 import { usePremiumStatus } from '@/features/premium/hooks/use-premium-status';
 import { numerologyApi, type ListReadingsFilters } from '../api/numerology-api';
 import { READING_STATUS_BADGE_VARIANT, READING_STATUS_LABELS } from '../labels';
@@ -17,10 +18,11 @@ const FREE_HISTORY_LIMIT = 20;
  * at the server-enforced cap sees a plain explanation, not a silently-truncated list with no
  * context (mirrors TarotHistoryList's own Sprint 7 precedent). */
 export function NumerologyHistoryList({ filters, onSelect }: { filters: ListReadingsFilters; onSelect: (id: string) => void }) {
-  const { data, isLoading } = useQuery({ queryKey: ['numerology', 'readings', filters], queryFn: () => numerologyApi.listReadings(filters) });
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['numerology', 'readings', filters], queryFn: () => numerologyApi.listReadings(filters) });
   const { data: premiumStatus } = usePremiumStatus();
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
+  if (isError) return <ErrorState description="Chưa thể tải lịch sử Thần số học." onRetry={() => refetch()} />;
   if (!data || data.items.length === 0) {
     return <EmptyState title="Chưa có hồ sơ" description="Tạo hồ sơ đầu tiên để bắt đầu hành trình Thần số học của bạn." />;
   }
