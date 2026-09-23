@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { seedTarotDeck } from './seed-tarot';
+import { seedTarotDeck } from './seed-tarot.ts';
 
 /**
  * Production-safe reference-data seed. Idempotent (upsert by slug) and content-scoped to Tarot's
