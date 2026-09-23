@@ -28,7 +28,7 @@ export function NumerologyDashboard() {
             <a href="#numerology-form" className="mt-6"><Button variant="primary">Khám phá con số của bạn</Button></a>
           </div>
           <div className="relative mx-auto aspect-[4/3] w-full max-w-[520px] overflow-hidden rounded-xl border border-[#b78ad0]/20 bg-[#080b19]">
-            <Image src={FEATURE_ART_ASSET.numerology} alt="Minh họa Thần số học" fill priority sizes="(min-width: 768px) 42vw, 100vw" className="object-cover object-center" />
+            <Image src={FEATURE_ART_ASSET.numerology} alt="Minh họa Thần số học" fill priority sizes="(min-width: 1536px) 520px, (min-width: 768px) 42vw, calc(100vw - 40px)" className="object-cover object-center" />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080b19]/70 via-transparent to-transparent" />
             <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-45"><Board04NumberMark compact /></div>
           </div>
