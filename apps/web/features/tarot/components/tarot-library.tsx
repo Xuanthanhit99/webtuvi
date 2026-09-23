@@ -17,12 +17,12 @@ import { resolveTarotArtworkSrc } from '../artwork';
 type LibraryFilter = 'ALL' | 'MAJOR' | TarotSuitValue;
 
 const FILTERS: Array<{ id: LibraryFilter; label: string; count: number }> = [
-  { id: 'ALL', label: 'All', count: 78 },
-  { id: 'MAJOR', label: 'Major Arcana', count: 22 },
-  { id: 'WANDS', label: 'Wands', count: 14 },
-  { id: 'CUPS', label: 'Cups', count: 14 },
-  { id: 'SWORDS', label: 'Swords', count: 14 },
-  { id: 'PENTACLES', label: 'Pentacles', count: 14 },
+  { id: 'ALL', label: 'Tất cả', count: 78 },
+  { id: 'MAJOR', label: 'Ẩn chính', count: 22 },
+  { id: 'WANDS', label: 'Gậy', count: 14 },
+  { id: 'CUPS', label: 'Cốc', count: 14 },
+  { id: 'SWORDS', label: 'Kiếm', count: 14 },
+  { id: 'PENTACLES', label: 'Tiền', count: 14 },
 ];
 
 function matchesFilter(card: TarotCardDto, filter: LibraryFilter): boolean {
@@ -56,7 +56,7 @@ export function TarotLibrary() {
         </div>
         {opened ? (
           <div className="w-full tablet:max-w-xs">
-            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search card name" aria-label="Search Tarot cards" />
+            <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Tìm tên lá bài" aria-label="Tìm lá bài Tarot" />
           </div>
         ) : (
           <Button onClick={() => setOpened(true)} className="self-start tablet:self-auto">Mở thư viện 78 lá</Button>
@@ -65,16 +65,16 @@ export function TarotLibrary() {
 
       {!opened && (
         <div className="relative rounded-md border border-[rgba(213,173,98,0.18)] bg-[#0A1622]/85 p-4 text-body-sm text-text-secondary">
-          Bộ bài gồm 22 Major Arcana và 14 lá cho từng chất Wands, Cups, Swords, Pentacles.
+          Bộ bài gồm 22 lá Ẩn chính và 56 lá Ẩn phụ thuộc bốn chất Gậy, Cốc, Kiếm và Tiền.
         </div>
       )}
 
       {isLoading && <Skeleton className="h-72 w-full" />}
-      {isError && <ErrorState description="Couldn't load the Tarot library." onRetry={() => refetch()} />}
+      {isError && <ErrorState description="Chưa thể tải thư viện Tarot." onRetry={() => refetch()} />}
       {opened && data && (
         <>
 
-      <div className="relative flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Tarot library filters">
+      <div className="relative flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Bộ lọc thư viện Tarot">
         {FILTERS.map((item) => (
           <button
             key={item.id}
@@ -105,7 +105,7 @@ export function TarotLibrary() {
               <span className="block text-caption text-text-secondary">{card.nameVi}</span>
             </span>
             <span className="flex flex-wrap justify-center gap-1">
-              <Badge variant="neutral">{card.arcana === 'MAJOR' ? 'Major' : 'Minor'}</Badge>
+              <Badge variant="neutral">{card.arcana === 'MAJOR' ? 'Ẩn chính' : 'Ẩn phụ'}</Badge>
               {card.suit && <Badge variant="neutral">{SUIT_LABELS[card.suit]}</Badge>}
             </span>
           </button>
@@ -113,7 +113,7 @@ export function TarotLibrary() {
       </div>
 
       <p className="relative text-caption text-text-tertiary" aria-live="polite">
-        Showing {cards.length} / {data.length} cards.
+        Đang hiển thị {cards.length} / {data.length} lá bài.
       </p>
 
       <TarotCardDetailDialog card={detailCard} isReversed={false} open={detailCard !== null} onClose={() => setDetailCard(null)} />
