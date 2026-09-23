@@ -49,12 +49,16 @@ export const metadata: Metadata = {
     title: TAGLINE,
     description: DEFAULT_DESCRIPTION,
     type: 'website',
+    url: '/',
+    siteName: SITE_NAME,
+    images: [{ url: '/assets/menh-vi-home-production-webp/backgrounds/hero-home.webp', width: 1896, height: 830, alt: 'Mệnh Vi — Tử Vi, Tarot, Bản đồ sao và Thần số học' }],
     locale: 'vi_VN',
   },
   twitter: {
     card: 'summary_large_image',
     title: TAGLINE,
     description: DEFAULT_DESCRIPTION,
+    images: ['/assets/menh-vi-home-production-webp/backgrounds/hero-home.webp'],
   },
 };
 
@@ -63,7 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="vi" className={`${displayFont.variable} ${bodyFont.variable} ${mono.variable}`}>
       <body>
         <a href="#main-content" className="skip-link">
-          Skip to main content
+          Bỏ qua điều hướng và đến nội dung chính
         </a>
         <QueryProvider>
           <AuthProvider>
