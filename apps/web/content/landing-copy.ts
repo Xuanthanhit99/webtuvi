@@ -145,9 +145,10 @@ export const landingCopy = {
   },
   footer: {
     productLinks: [
-      { label: 'Cách hoạt động', href: '#how-it-works' },
-      { label: 'Khám phá', href: '#discovery' },
-      { label: 'Giá', href: '#pricing' },
+      { label: 'Tử Vi', href: '/tu-vi' },
+      { label: 'Tarot', href: '/tarot' },
+      { label: 'Bản đồ sao', href: '/ban-do-sao' },
+      { label: 'Thần số học', href: '/than-so-hoc' },
     ],
     companyLinks: [{ label: 'Giới thiệu', href: '/about' }],
     legalLinks: [
