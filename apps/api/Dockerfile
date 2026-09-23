@@ -74,6 +74,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -
 WORKDIR /repo
 
 ENV NODE_ENV=production
+# Keep the minimal pnpm workspace manifests in the runtime image. Railway's
+# pre-deploy command runs a package script, so pnpm must be able to discover
+# both the workspace root and @beaconvie/api package from /repo/apps/api.
+COPY --from=prod-deps /repo/package.json ./package.json
+COPY --from=prod-deps /repo/pnpm-workspace.yaml ./pnpm-workspace.yaml
+COPY --from=prod-deps /repo/apps/api/package.json ./apps/api/package.json
+COPY --from=prod-deps /repo/packages/types/package.json ./packages/types/package.json
 COPY --from=prod-deps /repo/node_modules ./node_modules
 COPY --from=prod-deps /repo/apps/api/node_modules ./apps/api/node_modules
 # Railway runs Prisma migrations as a separate pre-deploy step. Prisma CLI is a
