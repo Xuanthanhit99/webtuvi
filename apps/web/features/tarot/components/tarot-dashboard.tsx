@@ -30,7 +30,7 @@ export function TarotDashboard() {
   return (
     <MvPage>
       <header className="relative isolate overflow-hidden rounded-xl border border-[#8d78b6]/20 bg-[#090b18] px-5 py-7 tablet:px-8 tablet:py-9">
-        <Image src={FEATURE_ART_ASSET.tarot} alt="Bộ bài Tarot Mệnh Vi" fill priority sizes="(min-width: 1280px) 1200px, 100vw" className="-z-10 object-cover object-[72%_45%] opacity-55" />
+        <Image src={FEATURE_ART_ASSET.tarot} alt="Bộ bài Tarot Mệnh Vi" fill priority sizes="(min-width: 1536px) 1248px, (min-width: 1280px) calc(100vw - 288px), 100vw" className="-z-10 object-cover object-[76%_45%] opacity-50 tablet:opacity-55" />
         <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-[#090b18] via-[#090b18]/90 to-[#090b18]/25" />
         <div className="max-w-2xl">
           <p className="relative text-caption font-semibold uppercase tracking-[0.24em] text-[#c6a9df]">Bộ bài 78 lá · Một khoảng lặng để soi chiếu</p>
