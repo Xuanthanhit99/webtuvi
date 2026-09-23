@@ -69,7 +69,7 @@ describe('DiscoverPage — editorial information architecture', () => {
 
   it('keeps the cross-system report separate from the five discovery systems', () => {
     render(<DiscoverPage />);
-    expect(screen.getByRole('heading', { name: 'Personal Destiny Report' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Báo Cáo Vận Mệnh' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Xem báo cáo/i })).toHaveAttribute('href', '/reports');
   });
 });
