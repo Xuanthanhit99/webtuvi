@@ -23,6 +23,8 @@ export default function robots(): MetadataRoute.Robots {
         // Reachable without auth but privacy-sensitive: forgot-password/verify-email carry a
         // one-time token in the URL and must never be indexed/cached; each also carries its own
         // page-level `robots: noindex` as defense-in-depth (see the final report's §6).
+        '/login',
+        '/register',
         '/forgot-password',
         '/reset-password',
         '/verify-email',
