@@ -1,5 +1,7 @@
+import Image from 'next/image';
 import { ArrowDown, BookOpen, CalendarClock, ShieldCheck } from 'lucide-react';
 import { TuViAstrolabe } from './tu-vi-astrolabe';
+import { FEATURE_ART_ASSET } from '@/features/dashboard/components/home/production-assets';
 
 const METHOD_POINTS = [
   { icon: CalendarClock, label: 'Ngày · giờ sinh', description: 'Dữ liệu đầu vào quyết định lá số' },
@@ -37,9 +39,10 @@ export function TuViHero() {
             ))}
           </dl>
         </div>
-        <div className="relative mx-auto hidden aspect-square w-full max-w-[390px] desktop:block">
-          <div className="absolute inset-[13%] rounded-full bg-[#d5ad62]/[0.06] blur-3xl" />
-          <TuViAstrolabe className="h-full w-full drop-shadow-[0_18px_35px_rgba(0,0,0,0.5)] motion-safe:animate-[mv-orbit-spin_90s_linear_infinite] motion-reduce:animate-none" />
+        <div className="relative mx-auto hidden aspect-[4/5] w-full max-w-[390px] overflow-hidden rounded-[20px] border border-[#d5ad62]/20 bg-[#07111d] desktop:block">
+          <Image src={FEATURE_ART_ASSET.tu_vi} alt="Minh họa Tử Vi Đẩu Số" fill priority sizes="390px" className="object-cover object-center" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#080d16]/65 via-transparent to-transparent" />
+          <TuViAstrolabe className="pointer-events-none absolute inset-[18%] h-[64%] w-[64%] opacity-40 drop-shadow-[0_18px_35px_rgba(0,0,0,0.5)] motion-safe:animate-[mv-orbit-spin_90s_linear_infinite] motion-reduce:animate-none" />
         </div>
       </div>
     </section>
