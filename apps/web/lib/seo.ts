@@ -6,10 +6,8 @@ import type { Metadata } from 'next';
  * canonical-URL-building logic — call `buildMetadata()` instead. See
  * docs/progress/seo-shareability-foundation-final-report.md for the audit this came out of.
  *
- * There is deliberately no `images`/OG-image entry here: no dedicated social-preview asset exists
- * anywhere in this repo (no favicon, no logo, no OG artwork — verified, not assumed). Fabricating
- * one is explicitly out of scope for this pass; social platforms fall back to a plain link card
- * without one. Documented as a design follow-up, not silently worked around.
+ * Social previews use the approved Mệnh Vi production hero until a dedicated 1200×630 social
+ * artwork is supplied. This avoids blank link cards without inventing a separate visual identity.
  */
 
 // Domain + Brand Production Lock (superseding founder decision — see
@@ -27,6 +25,8 @@ export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:300
 
 export const DEFAULT_DESCRIPTION =
   'Mệnh Vi giúp bạn khám phá Tử Vi, Tarot, bản đồ sao và thần số học trong một trải nghiệm hiện đại, riêng tư và dễ bắt đầu.';
+
+export const DEFAULT_SOCIAL_IMAGE = '/assets/menh-vi-home-production-webp/backgrounds/hero-home.webp';
 
 export interface BuildMetadataOptions {
   /** Page-specific title. Combined with the root layout's `%s — Mệnh Vi` template
@@ -77,11 +77,14 @@ export function buildMetadata({ title, description = DEFAULT_DESCRIPTION, path, 
       description,
       url: canonical,
       type: 'website',
+      siteName: SITE_NAME,
+      images: [{ url: DEFAULT_SOCIAL_IMAGE, width: 1896, height: 830, alt: `${SITE_NAME} — Tử Vi, Tarot, Bản đồ sao và Thần số học` }],
     },
     twitter: {
       card: 'summary_large_image',
       title: resolvedTitle,
       description,
+      images: [DEFAULT_SOCIAL_IMAGE],
     },
   };
 }
