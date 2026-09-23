@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorState } from '@/components/ui/error-state';
 import { usePremiumStatus } from '@/features/premium/hooks/use-premium-status';
 import { easternHoroscopeApi, type ListProfilesFilters } from '../api/eastern-horoscope-api';
 import { PROFILE_STATUS_BADGE_VARIANT, PROFILE_STATUS_LABELS } from '../labels';
@@ -13,10 +14,11 @@ import { PROFILE_STATUS_BADGE_VARIANT, PROFILE_STATUS_LABELS } from '../labels';
 const FREE_HISTORY_LIMIT = 20;
 
 export function EasternHoroscopeHistoryList({ filters, onSelect }: { filters: ListProfilesFilters; onSelect: (id: string) => void }) {
-  const { data, isLoading } = useQuery({ queryKey: ['eastern-horoscope', 'profiles', filters], queryFn: () => easternHoroscopeApi.listProfiles(filters) });
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['eastern-horoscope', 'profiles', filters], queryFn: () => easternHoroscopeApi.listProfiles(filters) });
   const { data: premiumStatus } = usePremiumStatus();
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
+  if (isError) return <ErrorState description="Chưa thể tải lịch sử Ngũ Hành Phương Đông." onRetry={() => refetch()} />;
   if (!data || data.items.length === 0) {
     return <EmptyState title="Chưa có hồ sơ" description="Khám phá bản mệnh để bắt đầu lưu lịch sử Ngũ Hành Phương Đông." />;
   }
