@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/ui/empty-state';
+import { ErrorState } from '@/components/ui/error-state';
 import { usePremiumStatus } from '@/features/premium/hooks/use-premium-status';
 import { tuViApi, type ListTuViChartsFilters } from '../api/tu-vi-api';
 import { CHART_STATUS_BADGE_VARIANT, CHART_STATUS_LABELS } from '../labels';
@@ -13,10 +14,11 @@ import { CHART_STATUS_BADGE_VARIANT, CHART_STATUS_LABELS } from '../labels';
 const FREE_HISTORY_LIMIT = 20;
 
 export function TuViHistoryList({ filters, onSelect }: { filters: ListTuViChartsFilters; onSelect: (id: string) => void }) {
-  const { data, isLoading } = useQuery({ queryKey: ['tu-vi', 'charts', filters], queryFn: () => tuViApi.listCharts(filters) });
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['tu-vi', 'charts', filters], queryFn: () => tuViApi.listCharts(filters) });
   const { data: premiumStatus } = usePremiumStatus();
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
+  if (isError) return <ErrorState description="Chưa thể tải lịch sử lá số Tử Vi." onRetry={() => refetch()} />;
   if (!data || data.items.length === 0) {
     return <EmptyState title="Chưa có lá số" description="Lập lá số đầu tiên để bắt đầu hành trình khám phá của bạn." />;
   }
@@ -25,7 +27,7 @@ export function TuViHistoryList({ filters, onSelect }: { filters: ListTuViCharts
 
   return (
     <div className="flex flex-col gap-3">
-      <ul className="flex flex-col gap-2" aria-label="Lá số history">
+      <ul className="flex flex-col gap-2" aria-label="Lịch sử lá số Tử Vi">
         {data.items.map((chart) => (
           <li key={chart.id}>
             <button
