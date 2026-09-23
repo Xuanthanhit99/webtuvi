@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function NumerologyPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<div className="min-h-[28rem] animate-pulse rounded-xl border border-white/10 bg-white/[0.03]" aria-label="Đang tải Thần số học" />}>
       <NumerologyDashboard />
     </Suspense>
   );
