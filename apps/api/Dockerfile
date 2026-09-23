@@ -90,6 +90,14 @@ COPY --from=prod-deps /repo/apps/api/node_modules ./apps/api/node_modules
 # making `pnpm --filter @beaconvie/api prisma:migrate:deploy` available.
 COPY --from=build /repo/apps/api/node_modules/prisma ./apps/api/node_modules/prisma
 COPY --from=build /repo/apps/api/node_modules/.bin/prisma ./apps/api/node_modules/.bin/prisma
+# Production reference seeding is TypeScript and intentionally separate from the
+# general seed (which creates a demo user). Include ts-node/typescript tooling so
+# Railway can run prisma:deploy: migrate first, then idempotently seed only the
+# canonical Tarot cards/spreads.
+COPY --from=build /repo/apps/api/node_modules/ts-node ./apps/api/node_modules/ts-node
+COPY --from=build /repo/apps/api/node_modules/typescript ./apps/api/node_modules/typescript
+COPY --from=build /repo/apps/api/node_modules/.bin/ts-node ./apps/api/node_modules/.bin/ts-node
+COPY --from=build /repo/apps/api/node_modules/.bin/tsc ./apps/api/node_modules/.bin/tsc
 COPY --from=build /repo/packages/types ./packages/types
 COPY --from=build /repo/apps/api/dist ./apps/api/dist
 COPY --from=build /repo/apps/api/prisma ./apps/api/prisma
