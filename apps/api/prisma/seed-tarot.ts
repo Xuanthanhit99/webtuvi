@@ -4,16 +4,16 @@ import { TAROT_DECK } from './data/tarot-deck';
 /** Real, fixed spread templates — never generated per-reading. Matches the three reading types
  * this sprint supports (see docs/architecture/tarot-discovery.md "Reading types"). */
 const TAROT_SPREADS = [
-  { slug: 'daily-draw', name: 'Daily Draw', cardCount: 1, positions: [{ order: 0, label: 'Today' }] },
-  { slug: 'single-card', name: 'Single Card', cardCount: 1, positions: [{ order: 0, label: 'Focus' }] },
+  { slug: 'daily-draw', name: 'Lá bài hôm nay', cardCount: 1, positions: [{ order: 0, label: 'Hôm nay' }] },
+  { slug: 'single-card', name: 'Một lá bài', cardCount: 1, positions: [{ order: 0, label: 'Trọng tâm' }] },
   {
     slug: 'three-card-ppf',
-    name: 'Three Card Spread',
+    name: 'Trải bài ba lá',
     cardCount: 3,
     positions: [
-      { order: 0, label: 'Past' },
-      { order: 1, label: 'Present' },
-      { order: 2, label: 'Future' },
+      { order: 0, label: 'Quá khứ' },
+      { order: 1, label: 'Hiện tại' },
+      { order: 2, label: 'Tương lai' },
     ],
   },
 ];
