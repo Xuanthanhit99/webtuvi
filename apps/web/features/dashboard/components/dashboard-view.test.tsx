@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
 import { DashboardView } from './dashboard-view';
@@ -132,8 +132,6 @@ describe('Mệnh Vi Home page', () => {
 
   it('maps authenticated Home CTAs to real routes and fires specific analytics', async () => {
     renderWithQuery(<DashboardView />);
-    const user = userEvent.setup();
-
     await screen.findByText(/Cần ngày, giờ và nơi sinh/);
     const tuVi = screen.getAllByRole('link', { name: /Lá số Tử Vi/i }).find((link) => link.getAttribute('href') === '/discover/tu-vi')!;
     const tarot = screen.getAllByRole('link', { name: /Tarot/i }).find((link) => link.getAttribute('href') === '/discover/tarot')!;
@@ -146,10 +144,10 @@ describe('Mệnh Vi Home page', () => {
     expect(numerology).toHaveAttribute('href', '/discover/numerology');
 
     [tuVi, tarot, natal, numerology].forEach((link) => link.addEventListener('click', (event) => event.preventDefault()));
-    await user.click(tuVi);
-    await user.click(tarot);
-    await user.click(natal);
-    await user.click(numerology);
+    fireEvent.click(tuVi);
+    fireEvent.click(tarot);
+    fireEvent.click(natal);
+    fireEvent.click(numerology);
 
     expect(trackEvent).toHaveBeenCalledWith('home_tuvi_clicked', { feature: 'tu_vi', source: 'home' });
     expect(trackEvent).toHaveBeenCalledWith('home_tarot_clicked', { feature: 'tarot', source: 'home' });
