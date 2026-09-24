@@ -123,7 +123,7 @@ export function MemoryTimeline({ onSelect }: MemoryTimelineProps) {
                 <p className="font-medium text-text-primary">{item.title}</p>
                 <p className="mt-1 line-clamp-2 text-body-sm text-text-secondary">{item.summary}</p>
                 <p className="mt-2 text-caption text-text-tertiary">
-                  {item.whyThisMemory} {item.sourceAvailable ? '' : '(source no longer available)'}
+                  {item.whyThisMemory} {item.sourceAvailable ? '' : '(nguồn không còn khả dụng)'}
                 </p>
               </Card>
             </li>

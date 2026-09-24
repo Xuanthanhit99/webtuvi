@@ -1,0 +1,297 @@
+[
+  {
+    "id": "color-contrast",
+    "impact": "serious",
+    "tags": [
+      "cat.color",
+      "wcag2aa",
+      "wcag143",
+      "TTv5",
+      "TT13.c",
+      "EN-301-549",
+      "EN-9.1.4.3",
+      "ACT",
+      "RGAAv4",
+      "RGAA-3.2.1"
+    ],
+    "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    "help": "Elements must meet minimum color contrast ratio thresholds",
+    "helpUrl": "https://dequeuniversity.com/rules/axe/4.13/color-contrast?application=playwright",
+    "nodes": [
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#6a6d71",
+              "bgColor": "#070b12",
+              "contrastRatio": 3.78,
+              "fontSize": "12.0pt (16px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1"
+            },
+            "relatedNodes": [
+              {
+                "html": "<nav aria-label=\"Điều hướng chính\" class=\"hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-[rgba(213,173,98,0.16)] bg-canvas/95 px-2 py-6 tablet:flex desktop:w-56 desktop:items-stretch desktop:px-4\">",
+                "target": [
+                  ".border-r"
+                ]
+              },
+              {
+                "html": "<div class=\"min-h-dvh bg-canvas\">",
+                "target": [
+                  ".bg-canvas"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"sr-only flex-1 desktop:not-sr-only\">Lá số Tử Vi</span>",
+        "target": [
+          ".text-white\\/40.hover\\:bg-white\\/\\[0\\.04\\][href$=\"tu-vi\"] > .desktop\\:not-sr-only.sr-only.flex-1"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#6a6d71",
+              "bgColor": "#070b12",
+              "contrastRatio": 3.78,
+              "fontSize": "12.0pt (16px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1"
+            },
+            "relatedNodes": [
+              {
+                "html": "<nav aria-label=\"Điều hướng chính\" class=\"hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-[rgba(213,173,98,0.16)] bg-canvas/95 px-2 py-6 tablet:flex desktop:w-56 desktop:items-stretch desktop:px-4\">",
+                "target": [
+                  ".border-r"
+                ]
+              },
+              {
+                "html": "<div class=\"min-h-dvh bg-canvas\">",
+                "target": [
+                  ".bg-canvas"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"sr-only flex-1 desktop:not-sr-only\">Tarot</span>",
+        "target": [
+          ".text-white\\/40.hover\\:bg-white\\/\\[0\\.04\\][href$=\"tarot\"] > .desktop\\:not-sr-only.sr-only.flex-1"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#6a6d71",
+              "bgColor": "#070b12",
+              "contrastRatio": 3.78,
+              "fontSize": "12.0pt (16px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1"
+            },
+            "relatedNodes": [
+              {
+                "html": "<nav aria-label=\"Điều hướng chính\" class=\"hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-[rgba(213,173,98,0.16)] bg-canvas/95 px-2 py-6 tablet:flex desktop:w-56 desktop:items-stretch desktop:px-4\">",
+                "target": [
+                  ".border-r"
+                ]
+              },
+              {
+                "html": "<div class=\"min-h-dvh bg-canvas\">",
+                "target": [
+                  ".bg-canvas"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"sr-only flex-1 desktop:not-sr-only\">Bản đồ sao</span>",
+        "target": [
+          ".text-white\\/40.hover\\:bg-white\\/\\[0\\.04\\][href$=\"natal-chart\"] > .desktop\\:not-sr-only.sr-only.flex-1"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#6a6d71",
+              "bgColor": "#070b12",
+              "contrastRatio": 3.78,
+              "fontSize": "12.0pt (16px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1"
+            },
+            "relatedNodes": [
+              {
+                "html": "<nav aria-label=\"Điều hướng chính\" class=\"hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-[rgba(213,173,98,0.16)] bg-canvas/95 px-2 py-6 tablet:flex desktop:w-56 desktop:items-stretch desktop:px-4\">",
+                "target": [
+                  ".border-r"
+                ]
+              },
+              {
+                "html": "<div class=\"min-h-dvh bg-canvas\">",
+                "target": [
+                  ".bg-canvas"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"sr-only flex-1 desktop:not-sr-only\">Thần số học</span>",
+        "target": [
+          ".text-white\\/40.hover\\:bg-white\\/\\[0\\.04\\][href$=\"numerology\"] > .desktop\\:not-sr-only.sr-only.flex-1"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#6a6d71",
+              "bgColor": "#070b12",
+              "contrastRatio": 3.78,
+              "fontSize": "12.0pt (16px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1"
+            },
+            "relatedNodes": [
+              {
+                "html": "<nav aria-label=\"Điều hướng chính\" class=\"hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-[rgba(213,173,98,0.16)] bg-canvas/95 px-2 py-6 tablet:flex desktop:w-56 desktop:items-stretch desktop:px-4\">",
+                "target": [
+                  ".border-r"
+                ]
+              },
+              {
+                "html": "<div class=\"min-h-dvh bg-canvas\">",
+                "target": [
+                  ".bg-canvas"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"sr-only flex-1 desktop:not-sr-only\">Khám phá</span>",
+        "target": [
+          ".text-white\\/40.hover\\:bg-white\\/\\[0\\.04\\][href$=\"discover\"] > .desktop\\:not-sr-only.sr-only.flex-1"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#6a6d71",
+              "bgColor": "#070b12",
+              "contrastRatio": 3.78,
+              "fontSize": "12.0pt (16px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1"
+            },
+            "relatedNodes": [
+              {
+                "html": "<nav aria-label=\"Điều hướng chính\" class=\"hidden w-16 shrink-0 flex-col items-center gap-6 border-r border-[rgba(213,173,98,0.16)] bg-canvas/95 px-2 py-6 tablet:flex desktop:w-56 desktop:items-stretch desktop:px-4\">",
+                "target": [
+                  ".border-r"
+                ]
+              },
+              {
+                "html": "<div class=\"min-h-dvh bg-canvas\">",
+                "target": [
+                  ".bg-canvas"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"sr-only flex-1 desktop:not-sr-only\">Cài đặt</span>",
+        "target": [
+          ".text-white\\/40.hover\\:bg-white\\/\\[0\\.04\\][href$=\"settings\"] > .desktop\\:not-sr-only.sr-only.flex-1"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.78 (foreground color: #6a6d71, background color: #070b12, font size: 12.0pt (16px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#6f7075",
+              "bgColor": "#070b12",
+              "contrastRatio": 3.98,
+              "fontSize": "9.0pt (12px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1"
+            },
+            "relatedNodes": [
+              {
+                "html": "<div class=\"min-h-dvh bg-canvas\">",
+                "target": [
+                  ".bg-canvas"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.98 (foreground color: #6f7075, background color: #070b12, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<p class=\"mt-8 border-t border-white/[0.06] py-6 text-center text-caption text-[#6f7075]\">© 2026 Mệnh Vi. Bảo lưu mọi quyền.</p>",
+        "target": [
+          ".text-\\[\\#6f7075\\]"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.98 (foreground color: #6f7075, background color: #070b12, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+      }
+    ]
+  }
+]

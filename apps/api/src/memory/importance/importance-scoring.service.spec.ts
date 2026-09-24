@@ -116,6 +116,6 @@ describe('ImportanceScoringService', () => {
     const service = new ImportanceScoringService(prisma as never);
 
     const result = await service.recompute(OWNER, 'mem-1');
-    expect(result.explanations.some((text) => text.toLowerCase().includes('pinned'))).toBe(true);
+    expect(result.explanations.some((text) => text.toLowerCase().includes('ghim'))).toBe(true);
   });
 });

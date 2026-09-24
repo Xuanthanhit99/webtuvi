@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Compass, Layers3 } from 'lucide-react';
@@ -6,10 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
 import { FEATURE_ART_ASSET } from '@/features/dashboard/components/home/production-assets';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
+  path: '/discover',
   title: 'Khám Phá',
   description: 'Chọn một hệ quy chiếu phù hợp để khám phá bản thân qua Tử Vi, Tarot, Bản đồ sao, Thần số học và Ngũ Hành Phương Đông.',
-};
+});
 
 const SYSTEMS = [
   { key: 'tu_vi', title: 'Tử Vi Lá Số', question: 'Bức tranh vận trình của mình được cấu thành như thế nào?', description: 'Lập lá số Tử Vi Đẩu Số từ ngày, giờ sinh và giới tính theo hệ quy tắc truyền thống đã được kiểm chứng.', href: '/discover/tu-vi', accent: 'text-[#d9b06c]' },
@@ -26,7 +28,7 @@ const PATHS = [
 
 export default function DiscoverPage() {
   return (
-    <main className="flex flex-col gap-12 pb-12">
+    <div className="flex flex-col gap-12 pb-12">
       <AnalyticsPageView event="discover_viewed" properties={{ feature: 'discover' }} />
 
       <header className="relative isolate overflow-hidden rounded-xl border border-[rgba(213,173,98,0.18)] bg-[#080d18] px-5 py-8 tablet:px-9 tablet:py-11 desktop:px-12">
@@ -77,6 +79,6 @@ export default function DiscoverPage() {
       <section aria-labelledby="report-heading" className="rounded-xl border border-[#8f78b5]/20 bg-[radial-gradient(circle_at_85%_30%,rgba(99,74,139,0.18),transparent_26%),#0b101d] p-5 tablet:p-8">
         <div className="grid items-center gap-5 tablet:grid-cols-[auto_minmax(0,1fr)_auto]"><Layers3 className="h-10 w-10 text-[#bca1d5]" aria-hidden="true" /><div><div className="flex flex-wrap items-center gap-2"><h2 id="report-heading" className="font-serif text-heading-md text-text-primary">Báo Cáo Vận Mệnh</h2><Badge variant="insight">Premium</Badge></div><p className="mt-2 max-w-2xl text-body-sm leading-relaxed text-text-secondary">Khi đã có Bản đồ sao và hồ sơ Thần số học, bạn có thể kết nối hai nguồn dữ liệu thành một bản luận giải dài.</p></div><Link href="/reports" className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]">Xem báo cáo <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
       </section>
-    </main>
+    </div>
   );
 }

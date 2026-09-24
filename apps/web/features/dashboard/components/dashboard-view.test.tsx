@@ -110,7 +110,7 @@ describe('Mệnh Vi Home page', () => {
     renderWithQuery(<DashboardView />);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
-    expect(screen.getByText(/Đăng nhập để xem Dòng chảy hôm nay/i)).toBeInTheDocument();
+    expect(screen.getByText(/Khám phá bản thân qua Tử Vi, Tarot/i)).toBeInTheDocument();
     // The old onboarding/trust sections are gone entirely, not replaced by something similar.
     expect(screen.queryByText('Bắt đầu hành trình của bạn')).not.toBeInTheDocument();
     expect(screen.queryByText('Bắt đầu từ đâu?')).not.toBeInTheDocument();
@@ -123,7 +123,7 @@ describe('Mệnh Vi Home page', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
     const tuViLinks = screen.getAllByRole('link', { name: /Lá số Tử Vi/i });
-    expect(tuViLinks.some((link) => link.getAttribute('href')?.startsWith('/register?next='))).toBe(true);
+    expect(tuViLinks.some((link) => link.getAttribute('href') === '/discover/tu-vi')).toBe(true);
     expect(dashboardApi.get).not.toHaveBeenCalled();
     expect(tarotApi.listReadings).not.toHaveBeenCalled();
     expect(premiumApi.status).not.toHaveBeenCalled();
@@ -209,4 +209,14 @@ describe('Mệnh Vi Home page', () => {
 
     expect(await screen.findByText('Bản đồ sao gần nhất')).toBeInTheDocument();
   });
+});
+
+
+it('renders public content while authentication is unresolved without fetching private data', () => {
+  jest.clearAllMocks();
+  (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: true });
+  renderWithQuery(<DashboardView />);
+  expect(screen.getByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
+  expect(dashboardApi.get).not.toHaveBeenCalled();
+  expect(tarotApi.listReadings).not.toHaveBeenCalled();
 });

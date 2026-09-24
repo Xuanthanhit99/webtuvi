@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL, isIndexingEnabled } from '@/lib/seo';
 import { APP_ROUTES, ONBOARDING_ROUTE } from '@/lib/route-guard';
 
 // SEO + Shareability Foundation — audit found this list had silently drifted out of sync with
@@ -7,7 +8,7 @@ import { APP_ROUTES, ONBOARDING_ROUTE } from '@/lib/route-guard';
 // would apply). Deriving from the same source `middleware.ts` already uses for the real auth gate
 // means this list can never drift again — see the final report's §11.
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  if (!isIndexingEnabled()) return { rules: { userAgent: '*', disallow: '/' } };
 
   return {
     rules: {
@@ -23,13 +24,11 @@ export default function robots(): MetadataRoute.Robots {
         // Reachable without auth but privacy-sensitive: forgot-password/verify-email carry a
         // one-time token in the URL and must never be indexed/cached; each also carries its own
         // page-level `robots: noindex` as defense-in-depth (see the final report's §6).
-        '/login',
-        '/register',
         '/forgot-password',
         '/reset-password',
         '/verify-email',
       ],
     },
-    sitemap: `${baseUrl}/sitemap.xml`,
+    sitemap: `${SITE_URL}/sitemap.xml`,
   };
 }

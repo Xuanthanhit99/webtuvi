@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { Logo } from '@/components/ui/logo';
 
 const NAV_LINKS = [
-  { label: 'Tử Vi', href: '/tu-vi' },
-  { label: 'Tarot', href: '/tarot' },
-  { label: 'Bản đồ sao', href: '/ban-do-sao' },
-  { label: 'Thần số học', href: '/than-so-hoc' },
+  { label: 'Tử Vi', href: '/discover/tu-vi' },
+  { label: 'Tarot', href: '/discover/tarot' },
+  { label: 'Bản đồ sao', href: '/discover/natal-chart' },
+  { label: 'Thần số học', href: '/discover/numerology' },
   { label: 'Giới thiệu', href: '/about' },
 ];
 

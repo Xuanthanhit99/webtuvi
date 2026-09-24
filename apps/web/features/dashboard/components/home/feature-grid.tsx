@@ -139,10 +139,6 @@ function FeatureCard({
   );
 }
 
-function guestHref(discoverPath: string): string {
-  return `/register?next=${encodeURIComponent(discoverPath)}`;
-}
-
 export function FeatureGrid({
   isGuest,
   tuViChart,
@@ -194,7 +190,7 @@ export function FeatureGrid({
           asset="tu_vi"
           description={tuViChart ? `Mệnh an tại ${tuViChart.palaces.menh}.` : 'Bản đồ vận mệnh theo Tử Vi Đẩu Số.'}
           cta={isGuest ? 'Bắt đầu' : tuViChart ? 'Xem lá số' : 'Lập lá số'}
-          href={isGuest ? guestHref('/discover/tu-vi') : '/discover/tu-vi'}
+          href={'/discover/tu-vi'}
           loading={!isGuest && tuViLoading}
           error={tuViError ? 'Không thể tải lá số.' : undefined}
           onRetry={onRetryTuVi}
@@ -203,7 +199,7 @@ export function FeatureGrid({
           asset="tarot"
           description={tarotReading ? `Gần nhất: ${tarotReading.spreadName}${tarotReading.cards[0]?.card.name ? ` · ${tarotReading.cards[0].card.name}` : ''}.` : 'Một lá bài cho câu hỏi của bạn.'}
           cta={isGuest ? 'Bắt đầu' : tarotReading ? 'Xem trải bài' : 'Rút bài'}
-          href={isGuest ? guestHref('/discover/tarot') : '/discover/tarot'}
+          href={'/discover/tarot'}
           loading={!isGuest && tarotLoading}
           error={tarotError ? 'Không thể tải lịch sử Tarot.' : undefined}
           onRetry={onRetryTarot}
@@ -212,7 +208,7 @@ export function FeatureGrid({
           asset="natal_chart"
           description={natalChart ? `Mặt Trời ${sunSign ?? 'đã tính'} · Mặt Trăng ${moonSign ?? 'đã tính'}.` : 'Cần ngày, giờ và nơi sinh để lập bản đồ.'}
           cta={isGuest ? 'Bắt đầu' : natalChart ? 'Xem bản đồ' : 'Tạo bản đồ'}
-          href={isGuest ? guestHref('/discover/natal-chart') : '/discover/natal-chart'}
+          href={'/discover/natal-chart'}
           loading={!isGuest && natalLoading}
           error={natalError ? 'Không thể tải bản đồ sao.' : undefined}
           onRetry={onRetryNatal}
@@ -221,7 +217,7 @@ export function FeatureGrid({
           asset="numerology"
           description={lifePath ? `Con số chủ đạo: ${lifePath}.` : 'Các con số cốt lõi từ tên và ngày sinh.'}
           cta={isGuest ? 'Bắt đầu' : lifePath ? 'Xem luận giải' : 'Tính ngay'}
-          href={isGuest ? guestHref('/discover/numerology') : '/discover/numerology'}
+          href={'/discover/numerology'}
           loading={!isGuest && numerologyLoading}
           error={numerologyError ? 'Không thể tải thần số học.' : undefined}
           onRetry={onRetryNumerology}

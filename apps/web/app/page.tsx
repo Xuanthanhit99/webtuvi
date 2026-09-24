@@ -4,7 +4,7 @@ import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
 import { buildMetadata, buildOrganizationJsonLd, buildWebsiteJsonLd } from '@/lib/seo';
 
 export const metadata: Metadata = buildMetadata({
-  title: 'Mệnh Vi — Tử Vi, Tarot, Bản Đồ Sao & Thần Số Học',
+  title: 'Tử Vi, Tarot, Bản Đồ Sao & Thần Số Học',
   description: 'Mệnh Vi giúp bạn khám phá Tử Vi, Tarot, bản đồ sao và thần số học trong một trải nghiệm hiện đại, riêng tư và dễ bắt đầu.',
   path: '/',
 });

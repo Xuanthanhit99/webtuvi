@@ -19,9 +19,15 @@ import type { Metadata } from 'next';
 // no other file should hardcode any of these names.
 export const SITE_NAME = 'Mệnh Vi';
 
-/** Matches the env var every other metadata/canonical call in this app already reads
- * (`app/layout.tsx`, `robots.ts`, `sitemap.ts`) — reusing it here, not introducing a second name. */
-export const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+/** The canonical production origin is independent of preview and local app hosts. */
+export const SITE_URL = 'https://tuvitarot.vn';
+
+/** Preview/local hosts must never advertise themselves as a second indexable site. */
+export function isIndexingEnabled(): boolean {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  return process.env.NEXT_PUBLIC_SITE_INDEXABLE !== 'false'
+    && (!appUrl || appUrl.replace(/\/$/, '') === SITE_URL);
+}
 
 export const DEFAULT_DESCRIPTION =
   'Mệnh Vi giúp bạn khám phá Tử Vi, Tarot, bản đồ sao và thần số học trong một trải nghiệm hiện đại, riêng tư và dễ bắt đầu.';
@@ -38,7 +44,7 @@ export interface BuildMetadataOptions {
    * rather than left for Next.js to infer from the request URL (which would let query strings or
    * trailing-slash variants create duplicate-content canonicals). */
   path: string;
-  /** `false` (default) for genuinely public, indexable pages. `true` marks a page noindex,follow
+  /** `false` (default) for genuinely public, indexable pages. `true` marks a page noindex,nofollow
    * at the metadata level — the defense-in-depth layer described in the final report's §6
    * (never rely on robots.txt alone for a private/sensitive page). */
   noindex?: boolean;
@@ -65,12 +71,16 @@ export function buildMetadata({ title, description = DEFAULT_DESCRIPTION, path, 
     return {
       ...titleField,
       robots: { index: false, follow: false },
+      alternates: { canonical: null },
+      openGraph: null,
+      twitter: null,
     };
   }
 
   return {
     ...titleField,
     description,
+    robots: { index: isIndexingEnabled(), follow: true },
     alternates: { canonical },
     openGraph: {
       title: resolvedTitle,
@@ -78,6 +88,7 @@ export function buildMetadata({ title, description = DEFAULT_DESCRIPTION, path, 
       url: canonical,
       type: 'website',
       siteName: SITE_NAME,
+      locale: 'vi_VN',
       images: [{ url: DEFAULT_SOCIAL_IMAGE, width: 1896, height: 830, alt: `${SITE_NAME} — Tử Vi, Tarot, Bản đồ sao và Thần số học` }],
     },
     twitter: {

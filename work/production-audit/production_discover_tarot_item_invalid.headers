@@ -1,0 +1,10 @@
+HTTP/1.1 307 Temporary Redirect
+Date: Thu, 24 Sep 2026 02:26:39 GMT
+location: /login?next=%2Fdiscover%2Ftarot%3Fitem%3Dinvalid
+Server: railway-hikari
+x-railway-request-id: pU7ou0zGT9acqpKQjq4OvQ
+Transfer-Encoding: chunked
+x-hikari-trace: hkg1.aebn
+x-railway-edge: hkg1
+Connection: keep-alive
+

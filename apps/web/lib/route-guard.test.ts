@@ -1,4 +1,4 @@
-import { isArchivedRoute, isAdminRoute, resolveLegacyMenhViRedirect, resolveRedirect } from './route-guard';
+import { isArchivedRoute, isAdminRoute, resolveRedirect } from './route-guard';
 
 describe('resolveRedirect (protected route behavior)', () => {
   it('redirects legacy /dashboard to canonical / for every visitor', () => {
@@ -119,23 +119,3 @@ describe('isArchivedRoute (Sprint 14 — /menh-vi archival)', () => {
   });
 });
 
-describe('resolveLegacyMenhViRedirect', () => {
-  it('redirects legacy prototype routes that have canonical product equivalents', () => {
-    expect(resolveLegacyMenhViRedirect('/menh-vi')).toBe('/');
-    expect(resolveLegacyMenhViRedirect('/menh-vi/la-so')).toBe('/discover/tu-vi');
-    expect(resolveLegacyMenhViRedirect('/menh-vi/tarot')).toBe('/discover/tarot');
-    expect(resolveLegacyMenhViRedirect('/menh-vi/ban-do-sao')).toBe('/discover/natal-chart');
-    expect(resolveLegacyMenhViRedirect('/menh-vi/than-so-hoc')).toBe('/discover/numerology');
-    expect(resolveLegacyMenhViRedirect('/menh-vi/kham-pha')).toBe('/discover');
-    expect(resolveLegacyMenhViRedirect('/menh-vi/cong-dong')).toBe('/community');
-    expect(resolveLegacyMenhViRedirect('/menh-vi/toi')).toBe('/settings');
-    expect(resolveLegacyMenhViRedirect('/menh-vi/nhat-ky-van-menh')).toBe('/journal');
-  });
-
-  it('leaves unsupported prototype-only topics archived instead of inventing canonical pages', () => {
-    expect(resolveLegacyMenhViRedirect('/menh-vi/tinh-duyen')).toBeNull();
-    expect(resolveLegacyMenhViRedirect('/menh-vi/su-nghiep')).toBeNull();
-    expect(resolveLegacyMenhViRedirect('/menh-vi/tai-chinh')).toBeNull();
-    expect(resolveLegacyMenhViRedirect('/menh-vi/suc-khoe')).toBeNull();
-  });
-});

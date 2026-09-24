@@ -1,4 +1,4 @@
-import { MemoryImportanceCalculator, IMPORTANCE_PINNED_FLOOR } from './memory-importance.calculator';
+import { MemoryImportanceCalculator, IMPORTANCE_PINNED_FLOOR, explainImportanceFactors } from './memory-importance.calculator';
 
 const NOW = new Date('2026-08-04T00:00:00.000Z');
 
@@ -141,4 +141,13 @@ describe('MemoryImportanceCalculator', () => {
     );
     expect(result.score).toBeGreaterThanOrEqual(0);
   });
+});
+
+
+it('explains importance factors in Vietnamese without the retired brand', () => {
+  const explanations = explainImportanceFactors({ manualPin: 40, explicitEmphasis: 15, recurrence: 8 });
+  expect(explanations[0]).toBe('Bạn đã ghim ký ức này.');
+  expect(explanations[1]).toBe('Bạn đã chủ động yêu cầu Mệnh Vi ghi nhớ điều này.');
+  expect(explanations[2]).toMatch(/Bạn đã nhắc lại điều này/);
+  expect(explanations.join(' ')).not.toMatch(/BeaconVie|You |memory/i);
 });

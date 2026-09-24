@@ -3,7 +3,7 @@ import { Playfair_Display, Be_Vietnam_Pro, IBM_Plex_Mono } from 'next/font/googl
 import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
 import { Toaster } from '@/components/ui/toast';
-import { SITE_NAME, DEFAULT_DESCRIPTION } from '@/lib/seo';
+import { SITE_NAME, SITE_URL, DEFAULT_DESCRIPTION, isIndexingEnabled } from '@/lib/seo';
 import '@/styles/globals.css';
 
 // Module 4 §16 specifies Fraunces/Karla, but neither ships a Vietnamese subset on
@@ -34,12 +34,14 @@ const mono = IBM_Plex_Mono({
   weight: ['400', '500'],
   variable: '--font-mono',
   display: 'swap',
+  preload: false,
 });
 
 const TAGLINE = `${SITE_NAME} — Tử Vi, Tarot, Bản đồ sao và Thần số học`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'),
+  metadataBase: new URL(SITE_URL),
+  robots: { index: isIndexingEnabled(), follow: true },
   title: {
     default: TAGLINE,
     template: `%s — ${SITE_NAME}`,

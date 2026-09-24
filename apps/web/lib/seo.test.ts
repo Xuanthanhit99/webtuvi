@@ -12,7 +12,7 @@ describe('buildMetadata', () => {
     // `Twitter` is a union of card-specific shapes; `card` only exists on some of them.
     // buildMetadata always sets 'summary_large_image', asserted via a targeted cast.
     expect((meta.twitter as { card?: string } | undefined)?.card).toBe('summary_large_image');
-    expect(meta.robots).toBeUndefined();
+    expect(meta.robots).toEqual({ index: true, follow: true });
   });
 
   it('falls back to the default description when none is given', () => {
@@ -29,9 +29,9 @@ describe('buildMetadata', () => {
   it('produces a noindex block with no canonical/OG/Twitter for private pages', () => {
     const meta = buildMetadata({ title: 'Dashboard', path: '/dashboard', noindex: true });
     expect(meta.robots).toEqual({ index: false, follow: false });
-    expect(meta.alternates).toBeUndefined();
-    expect(meta.openGraph).toBeUndefined();
-    expect(meta.twitter).toBeUndefined();
+    expect(meta.alternates?.canonical).toBeNull();
+    expect(meta.openGraph).toBeNull();
+    expect(meta.twitter).toBeNull();
   });
 
   it('treats the homepage path as canonical "/"', () => {

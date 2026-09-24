@@ -1,0 +1,10 @@
+HTTP/1.1 307 Temporary Redirect
+Date: Thu, 24 Sep 2026 02:26:17 GMT
+location: /login?next=%2Fdiscover%2Feastern-horoscope
+Server: railway-hikari
+x-railway-request-id: a1qkEM71QdK3t3CSnpoFkQ
+Transfer-Encoding: chunked
+x-hikari-trace: hkg1.aebn
+x-railway-edge: hkg1
+Connection: keep-alive
+

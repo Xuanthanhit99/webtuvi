@@ -1,4 +1,4 @@
-import { APP_ROUTES } from './route-guard';
+import { APP_ROUTES, isPublicDiscoveryRoute } from './route-guard';
 
 const INTERNAL_ORIGIN = 'https://internal.invalid';
 
@@ -17,7 +17,7 @@ export function safeNextPath(value: unknown): string {
     }
     const url = new URL(value, INTERNAL_ORIGIN);
     const normalized = new URL(decoded, INTERNAL_ORIGIN);
-    const isAppPath = (path: string) => path === '/' || APP_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
+    const isAppPath = (path: string) => path === '/' || isPublicDiscoveryRoute(path) || APP_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
     if (url.origin !== INTERNAL_ORIGIN || normalized.origin !== INTERNAL_ORIGIN || !isAppPath(url.pathname) || !isAppPath(normalized.pathname)) return '/';
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {

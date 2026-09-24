@@ -91,7 +91,7 @@ describe('Tarot (e2e)', () => {
       expect(reading.cards).toHaveLength(3);
       const cardIds = reading.cards.map((c) => c.card.id);
       expect(new Set(cardIds).size).toBe(3);
-      expect(reading.cards.map((c) => c.positionLabel)).toEqual(['Past', 'Present', 'Future']);
+      expect(reading.cards.map((c) => c.positionLabel)).toEqual(['Quá khứ', 'Hiện tại', 'Tương lai']);
     });
 
     it('a second Daily Draw the same day is rejected — even after deleting the first one', async () => {

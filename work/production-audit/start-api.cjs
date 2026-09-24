@@ -1,0 +1,10 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const root = path.resolve(__dirname, '../..');
+const dotenv = require(path.join(root, 'apps/api/node_modules/dotenv'));
+const env = dotenv.parse(fs.readFileSync(path.join(root, 'apps/api/.env.test')));
+const db = new URL(env.DATABASE_URL);
+if (!['localhost','127.0.0.1'].includes(db.hostname) || db.pathname !== '/beaconvie_test') throw new Error('Refusing non-test database');
+Object.assign(process.env, env, { NODE_ENV:'test', API_PORT:'4000', API_BASE_URL:'http://localhost:4000', FRONTEND_URL:'http://localhost:3000', CORS_ORIGINS:'http://localhost:3000', RATE_LIMIT_REDIS_PREFIX:'beaconvie:audit-browser', DEFAULT_AI_PROVIDER:'mock', FALLBACK_PROVIDER:'mock' });
+process.chdir(path.join(root,'apps/api'));
+require(path.join(root,'apps/api/dist/src/main.js'));

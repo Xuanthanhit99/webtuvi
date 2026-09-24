@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Briefcase, ChevronRight, Coins, Heart, Lock } from 'lucide-react';
+import { ChevronRight, Lock } from 'lucide-react';
 import type { TuViChartDto } from '@beaconvie/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -7,18 +7,6 @@ function formatDaiVan(cycle: TuViChartDto['currentDaiVan']): string | null {
   if (!cycle) return null;
   return `${cycle.ageStart}–${cycle.ageEnd} tuổi · Cung ${cycle.role} tại ${cycle.position}`;
 }
-
-/**
- * Static fallback — there is no personalized "daily flow" scoring engine yet (Eastern Horoscope,
- * which would compute this from the user's real chart, is spec'd but not built — see CLAUDE.md).
- * These illustrate the locked hero composition until that data exists; do not wire a fabricated
- * API for this, and do not present it as chart-derived.
- */
-const FLOW_METRICS = [
-  { key: 'career', label: 'Công việc', value: 78, insight: 'Thuận lợi để bắt đầu dự án mới.', icon: Briefcase, color: '#5b8def' },
-  { key: 'love', label: 'Tình cảm', value: 65, insight: 'Dành thời gian cho người thân yêu.', icon: Heart, color: '#e0668b' },
-  { key: 'finance', label: 'Tài chính', value: 82, insight: 'Có cơ hội nhận thêm nguồn thu.', icon: Coins, color: '#d5ad62' },
-] as const;
 
 // Reads as part of the hero scene, not a card pasted on top of it: a very faint edge, mostly-
 // transparent tint, and a heavier blur so the mountains/lake behind it stay visible through the
@@ -49,8 +37,7 @@ export function DailyFlowPanelLocked() {
 
 /**
  * Hero right-column panel — a translucent glass card living directly inside the Hero (not a
- * separate dashboard section) per the locked visual master: "Dòng chảy hôm nay", 3 illustrative
- * flow signals, with the real Tu Vi cycle / daily-insight status underneath.
+ * separate dashboard section) per the locked visual master: "Dòng chảy hôm nay", real Tu Vi cycle and daily-insight status.
  */
 export function DailyFlowPanel({
   loading,
@@ -93,26 +80,6 @@ export function DailyFlowPanel({
   return (
     <div className={PANEL_SHELL}>
       <p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#e6c980]">Dòng chảy hôm nay</p>
-      <div className="mt-4 space-y-4">
-        {FLOW_METRICS.map((metric) => (
-          <div key={metric.key} className="flex items-start gap-3">
-            <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[#0b1220]/40 text-[#e6c980]">
-              <metric.icon className="h-3.5 w-3.5" aria-hidden="true" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-baseline justify-between gap-2">
-                <p className="text-body-sm font-medium text-[#f2eee5]">{metric.label}</p>
-                <p className="text-body-sm font-semibold text-[#e6c980]">{metric.value}%</p>
-              </div>
-              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-                <div className="h-full rounded-full" style={{ width: `${metric.value}%`, background: metric.color }} />
-              </div>
-              <p className="mt-1 text-caption leading-relaxed text-[#a6a7ac]">{metric.insight}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
       {!tuViChart && (
         <div className="mt-4 border-t border-white/10 pt-3">
           <p className="text-body-sm text-[#a6a7ac]">Bạn chưa lập lá số Tử Vi.</p>

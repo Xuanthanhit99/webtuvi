@@ -138,19 +138,17 @@ export function isGoalRelatedType(type: MemoryType): boolean {
 }
 
 const FACTOR_EXPLANATIONS: Record<string, (value: number) => string> = {
-  manualPin: () => 'You pinned this memory.',
-  explicitEmphasis: () => 'You explicitly asked BeaconVie to remember this.',
-  futureRelevance: () => 'This relates to a goal or a decision you made.',
+  manualPin: () => 'Bạn đã ghim ký ức này.',
+  explicitEmphasis: () => 'Bạn đã chủ động yêu cầu Mệnh Vi ghi nhớ điều này.',
+  futureRelevance: () => 'Điều này liên quan đến một mục tiêu hoặc quyết định của bạn.',
   recurrence: (value) =>
-    `You've mentioned this again (${Math.round(value / WEIGHTS.RECURRENCE_PER_OCCURRENCE)} related ${
-      value / WEIGHTS.RECURRENCE_PER_OCCURRENCE === 1 ? 'memory' : 'memories'
-    }).`,
-  goalRelation: () => 'This relates to a goal, achievement, or challenge.',
-  preferenceRelation: () => 'This reflects a preference or interest of yours.',
-  lifeEvent: () => 'This marks an important event in your life.',
-  longTermUsefulness: () => 'This is the kind of fact that stays useful over time.',
-  recency: () => "It's from recently.",
-  userCreatedSource: () => 'You created this directly, rather than it being carried over.',
+    `Bạn đã nhắc lại điều này (${Math.round(value / WEIGHTS.RECURRENCE_PER_OCCURRENCE)} ký ức liên quan).`,
+  goalRelation: () => 'Điều này liên quan đến mục tiêu, thành tựu hoặc thử thách của bạn.',
+  preferenceRelation: () => 'Điều này phản ánh sở thích hoặc mối quan tâm của bạn.',
+  lifeEvent: () => 'Điều này đánh dấu một sự kiện quan trọng trong cuộc sống của bạn.',
+  longTermUsefulness: () => 'Thông tin này có thể tiếp tục hữu ích theo thời gian.',
+  recency: () => "Đây là ký ức gần đây.",
+  userCreatedSource: () => 'Bạn đã trực tiếp tạo ký ức này.',
 };
 
 /** Plain-language sentences, one per non-zero factor, ordered by weighted contribution

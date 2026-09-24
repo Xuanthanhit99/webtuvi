@@ -33,9 +33,9 @@ describe('robots', () => {
     }
   });
 
-  it('keeps authentication entry points out of crawl', () => {
-    expect(disallow).toContain('/login');
-    expect(disallow).toContain('/register');
+  it('allows crawlers to read noindex on authentication entry points', () => {
+    expect(disallow).not.toContain('/login');
+    expect(disallow).not.toContain('/register');
   });
 
   it('allows the site root', () => {

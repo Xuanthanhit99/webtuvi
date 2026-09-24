@@ -2,27 +2,21 @@ import Image from 'next/image';
 import { Compass, Hourglass, MoonStar, Sparkles } from 'lucide-react';
 import { HOME_BACKGROUND, HOME_DECOR } from './production-assets';
 
-/**
- * Static fallback — "giờ hoàng đạo / hướng cát lợi / nhật nguyệt" is real almanac content that
- * Eastern Horoscope (Ngũ Hành Phương Đông) would compute; that module is spec'd but not built yet
- * (see CLAUDE.md). This is illustrative copy for the locked Home composition only — do not wire a
- * fabricated API or start computing these client-side.
- */
 const SUGGESTIONS = [
   {
     icon: Hourglass,
-    label: 'Giờ hoàng đạo',
-    lines: ['Dần (03:00–05:00)', 'Mão (05:00–07:00)', 'Tỵ (09:00–11:00)', 'Thân (15:00–17:00)'],
+    label: 'Dành một khoảng lặng',
+    lines: ['Chọn một thời điểm thuận tiện.', 'Dành vài phút cho câu hỏi của bạn.'],
   },
   {
     icon: Compass,
-    label: 'Hướng cát lợi',
-    lines: ['Hướng tốt: Đông Nam', 'Hướng tài lộc: Chính Nam'],
+    label: 'Chọn điều muốn hiểu',
+    lines: ['Một câu hỏi cụ thể giúp bạn bắt đầu.', 'Khám phá theo nhịp riêng của mình.'],
   },
   {
     icon: MoonStar,
-    label: 'Nhật nguyệt',
-    lines: ['Ngày: Bính Thân', 'Tháng: Ất Dậu'],
+    label: 'Ghi lại suy ngẫm',
+    lines: ['Ghi lại điều khiến bạn chú ý.', 'Quay lại xem góc nhìn thay đổi ra sao.'],
   },
 ] as const;
 
@@ -109,7 +103,7 @@ export function TodaySuggestions({ energyText }: { energyText?: string }) {
             <p className="text-caption font-semibold uppercase tracking-[0.14em]">Năng lượng</p>
           </div>
           <p className="mt-2 text-caption leading-relaxed text-[#d8d1c2] tablet:mt-2.5 tablet:text-body-sm">
-            {energyText ?? 'Năng lượng hôm nay ở mức tốt, hãy duy trì tinh thần tích cực.'}
+            {energyText ?? 'Đây là gợi ý suy ngẫm chung, không phải dự báo vận hạn hay năng lượng cá nhân.'}
           </p>
         </div>
       </div>
