@@ -32,6 +32,9 @@ env:
   # limits unchanged; this test-only ceiling prevents cross-spec throttling.
   AUTH_RATE_LIMIT_MAX: 2000
   AUTH_RATE_LIMIT_WINDOW_MS: 900000
+  # Dedicated account/memory/journal export bucket; test runner shares one IP.
+  EXPORT_RATE_LIMIT_MAX: 100
+  EXPORT_RATE_LIMIT_WINDOW_MS: 60000
   RATE_LIMIT_REDIS_PREFIX: 'beaconvie:throttle:ci'
   TRUST_PROXY: 'false'
   DEFAULT_AI_PROVIDER: mock
