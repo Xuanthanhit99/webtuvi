@@ -19,7 +19,7 @@ const LAST_UPDATED = '2026-08-22';
 
 export default function PrivacyPage() {
   return (
-    <main className="mx-auto max-w-content px-4 py-16 desktop:px-8">
+    <div className="mx-auto max-w-content px-4 py-16 desktop:px-8">
       <MvPage>
         <MvPageHeader
           eyebrow="Quyền riêng tư"
@@ -247,6 +247,6 @@ export default function PrivacyPage() {
           </p>
         </MvSection>
       </MvPage>
-    </main>
+    </div>
   );
 }

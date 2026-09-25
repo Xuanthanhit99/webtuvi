@@ -75,7 +75,7 @@ describe('NatalChartDashboard', () => {
     (natalChartApi.listCharts as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<NatalChartDashboard />);
     expect(screen.getByRole('heading', { name: 'Bầu trời tại khoảnh khắc bạn sinh ra' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /lập bản đồ sao/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Lập bản đồ sao của bạn' })).toBeInTheDocument();
     expect(await screen.findByText('Hà Nội, Vietnam')).toBeInTheDocument();
   });
 
@@ -92,7 +92,7 @@ describe('NatalChartDashboard', () => {
 
     expect(await screen.findByText('Hà Nội, Vietnam')).toBeInTheDocument();
     expect(natalChartApi.getChart).toHaveBeenCalledWith('c1');
-    expect(screen.queryByRole('button', { name: /lập bản đồ sao/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Lập bản đồ sao của bạn' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '← Quay lại Bản đồ sao' })).toBeInTheDocument();
   });
 
@@ -114,7 +114,7 @@ describe('NatalChartDashboard', () => {
 
     await screen.findByText('Hà Nội, Vietnam');
     expect(screen.getByText(/Được tính từ dữ liệu sinh của bạn\. AI không lựa chọn hoặc thay đổi bất kỳ vị trí nào\./i)).toBeInTheDocument();
-    expect(screen.getByText('Diễn giải AI')).toBeInTheDocument();
-    expect(screen.getByText(/được AI viết/i)).toBeInTheDocument();
+    expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
+    expect(screen.getByText(/Written by AI to narrate the chart above — it never changes a calculated placement\./i)).toBeInTheDocument();
   });
 });

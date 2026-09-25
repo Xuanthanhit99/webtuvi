@@ -10,7 +10,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default function AboutPage() {
   return (
-    <main className="mx-auto max-w-content px-4 py-16 desktop:px-8">
+    <div className="mx-auto max-w-content px-4 py-16 desktop:px-8">
       <MvPage>
         <MvPageHeader
           eyebrow="Về Mệnh Vi"
@@ -23,6 +23,6 @@ export default function AboutPage() {
           kết quả đã được tính trước đó.
         </p>
       </MvPage>
-    </main>
+    </div>
   );
 }

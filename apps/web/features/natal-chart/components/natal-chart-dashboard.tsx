@@ -6,7 +6,6 @@ import { BirthInputForm } from './birth-input-form';
 import { NatalChartHistoryList } from './natal-chart-history-list';
 import { NatalChartDetail } from './natal-chart-detail';
 import { MvPage, MvSection } from '@/components/ui/mv-page';
-import { Button } from '@/components/ui/button';
 import { Board04AstroMark } from './board04-astro-mark';
 import { FEATURE_ART_ASSET } from '@/features/dashboard/components/home/production-assets';
 
@@ -48,8 +47,8 @@ export function NatalChartDashboard() {
                 Một lát cắt của bầu trời vào đúng ngày, giờ và nơi bạn sinh ra — với vị trí hành tinh, cung mọc, các nhà và góc hợp được tính từ dữ liệu thật.
               </p>
             </div>
-            <a href="#natal-chart-form" className="self-start">
-              <Button variant="primary">Lập bản đồ sao của bạn</Button>
+            <a href="#natal-chart-form" className="self-start inline-flex h-11 items-center justify-center gap-2 rounded-md bg-insight px-4 text-body-md font-semibold text-canvas transition duration-fast hover:-translate-y-0.5 hover:bg-[#E6C980] active:translate-y-0 active:bg-[#C59B4F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight motion-reduce:transform-none">
+              Lập bản đồ sao của bạn
             </a>
           </div>
           <div className="relative mx-auto aspect-[4/3] w-full max-w-[520px] overflow-hidden rounded-xl border border-[#d5ad62]/20 bg-[#07111d]">

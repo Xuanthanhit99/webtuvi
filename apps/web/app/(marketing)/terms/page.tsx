@@ -19,7 +19,7 @@ const LAST_UPDATED = '2026-08-22';
 
 export default function TermsPage() {
   return (
-    <main className="mx-auto max-w-content px-4 py-16 desktop:px-8">
+    <div className="mx-auto max-w-content px-4 py-16 desktop:px-8">
       <MvPage>
         <MvPageHeader eyebrow="Điều khoản" title="Điều khoản dịch vụ" description="Các điều khoản chi phối việc bạn sử dụng Mệnh Vi." />
         <p className="text-body-sm text-text-tertiary">Cập nhật lần cuối: {LAST_UPDATED}.</p>
@@ -153,6 +153,6 @@ export default function TermsPage() {
           </p>
         </MvSection>
       </MvPage>
-    </main>
+    </div>
   );
 }

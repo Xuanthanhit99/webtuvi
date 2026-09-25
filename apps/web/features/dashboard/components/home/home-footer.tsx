@@ -60,7 +60,7 @@ export function HomeFooter() {
           </div>
         ))}
       </div>
-      <p className="mt-8 border-t border-white/[0.06] py-6 text-center text-caption text-[#6f7075]">
+      <p className="mt-8 border-t border-white/[0.06] py-6 text-center text-caption text-text-secondary">
         © {new Date().getFullYear()} Mệnh Vi. Bảo lưu mọi quyền.
       </p>
     </footer>

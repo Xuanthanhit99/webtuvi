@@ -145,10 +145,12 @@ export const landingCopy = {
   },
   footer: {
     productLinks: [
-      { label: 'Tử Vi', href: '/tu-vi' },
-      { label: 'Tarot', href: '/tarot' },
-      { label: 'Bản đồ sao', href: '/ban-do-sao' },
-      { label: 'Thần số học', href: '/than-so-hoc' },
+      { label: 'Khám phá', href: '/discover' },
+      { label: 'Tử Vi', href: '/discover/tu-vi' },
+      { label: 'Tarot', href: '/discover/tarot' },
+      { label: 'Bản đồ sao', href: '/discover/natal-chart' },
+      { label: 'Thần số học', href: '/discover/numerology' },
+      { label: 'Ngũ hành phương Đông', href: '/discover/eastern-horoscope' },
     ],
     companyLinks: [{ label: 'Giới thiệu', href: '/about' }],
     legalLinks: [
