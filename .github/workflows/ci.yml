@@ -28,7 +28,9 @@ env:
   EMAIL_FROM: 'BeaconVie CI <no-reply@beaconvie.local>'
   MAILPIT_HOST: localhost
   MAILPIT_PORT: 1025
-  AUTH_RATE_LIMIT_MAX: 200
+  # CI/E2E shares one runner IP across hundreds of auth requests. Keep production
+  # limits unchanged; this test-only ceiling prevents cross-spec throttling.
+  AUTH_RATE_LIMIT_MAX: 2000
   AUTH_RATE_LIMIT_WINDOW_MS: 900000
   RATE_LIMIT_REDIS_PREFIX: 'beaconvie:throttle:ci'
   TRUST_PROXY: 'false'
