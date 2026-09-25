@@ -9,18 +9,18 @@ export function HouseList({ chart }: { chart: NatalChartDto }) {
   if (!chart.housesAvailable) {
     return (
       <EmptyState
-        title="Houses aren’t available for this chart"
+        title="Bản đồ này chưa có các nhà"
         description={
           chart.birthTimeKnown
-            ? 'Houses depend on precise birth time and can’t be calculated reliably at this birth latitude.'
-            : 'Houses depend on knowing your exact birth time. Your planets and signs are still fully calculated above.'
+            ? 'Các nhà phụ thuộc vào giờ sinh chính xác và không thể tính đáng tin cậy ở vĩ độ nơi sinh này.'
+            : 'Các nhà cần giờ sinh chính xác. Vị trí hành tinh và cung hoàng đạo của bạn vẫn được tính đầy đủ ở trên.'
         }
       />
     );
   }
 
   return (
-    <ul className="grid gap-2 tablet:grid-cols-2" aria-label="Houses">
+    <ul className="grid gap-2 tablet:grid-cols-2" aria-label="Các nhà">
       {chart.houses.map((house) => (
         <li key={house.number} className="flex items-center justify-between gap-2 rounded-md border border-[#d5ad62]/20 bg-[#071827] px-3 py-2">
           <span className="text-body-sm font-semibold text-text-primary">{houseLabel(house.number)}</span>

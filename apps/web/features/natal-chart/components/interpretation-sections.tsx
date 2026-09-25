@@ -37,7 +37,7 @@ export function InterpretationSections({
     <div className="rounded-md border border-[#d5ad62]/25 bg-[#071827] p-3">
       <div className="mb-2 flex items-center gap-1.5 text-caption font-medium uppercase text-[#efb96c]">
         <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-        AI Interpretation
+        Diễn giải AI
       </div>
 
       {interpretation ? (
@@ -68,14 +68,14 @@ export function InterpretationSections({
         </div>
       ) : (
         <div className="flex items-center justify-between gap-3">
-          <p className="text-body-sm text-text-secondary">{isGenerating ? 'Writing your interpretation…' : 'Interpretation isn’t ready yet.'}</p>
+          <p className="text-body-sm text-text-secondary">{isGenerating ? 'Đang viết phần diễn giải…' : 'Phần diễn giải chưa sẵn sàng.'}</p>
           <Button variant="secondary" size="sm" onClick={onGenerate} loading={isGenerating}>
-            Generate interpretation
+            Tạo diễn giải
           </Button>
         </div>
       )}
 
-      <p className="mt-2 text-caption text-text-secondary">Written by AI to narrate the chart above — it never changes a calculated placement.</p>
+      <p className="mt-2 text-caption text-text-secondary">Do AI viết để diễn giải bản đồ phía trên — AI không bao giờ thay đổi vị trí đã được tính.</p>
     </div>
   );
 }

@@ -113,18 +113,18 @@ test('a real premium.activated notification appears in the Notification Center, 
 
   // No unread notifications yet for a brand-new account.
   await page.goto('/dashboard');
-  await expect(page.getByRole('button', { name: 'Notifications' })).toBeVisible({ timeout: 10000 });
-  await expect(page.getByRole('button', { name: /Notifications, \d+ unread/ })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Thông báo' })).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('button', { name: /Thông báo, \d+ chưa đọc/ })).not.toBeVisible();
 
   await completeRealPremiumCheckout(page);
 
   // The badge reflects a real, backend-created notification — poll since delivery is async
   // relative to the webhook HTTP response returning.
   await page.goto('/dashboard');
-  await expect(page.getByRole('button', { name: 'Notifications, 1 unread' })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole('button', { name: 'Thông báo, 1 chưa đọc' })).toBeVisible({ timeout: 15000 });
 
-  await page.getByRole('button', { name: 'Notifications, 1 unread' }).click();
-  await expect(page.getByRole('heading', { name: 'Notifications' })).toBeVisible();
+  await page.getByRole('button', { name: 'Thông báo, 1 chưa đọc' }).click();
+  await expect(page.getByRole('heading', { name: 'Thông báo' })).toBeVisible();
   const notificationRow = page.getByRole('button').filter({ hasText: 'Premium is active' });
   await expect(notificationRow).toBeVisible({ timeout: 10000 });
   // Scoped to the row itself — the bare page also has an unrelated "Premium" heading from the
@@ -141,8 +141,8 @@ test('a real premium.activated notification appears in the Notification Center, 
   await expect(page).toHaveURL(/\/settings/);
 
   // The badge is now clear — the notification was really marked read, not just visually dismissed.
-  await expect(page.getByRole('button', { name: 'Notifications' })).toBeVisible({ timeout: 10000 });
-  await expect(page.getByRole('button', { name: /unread/ })).not.toBeVisible();
+  await expect(page.getByRole('button', { name: 'Thông báo' })).toBeVisible({ timeout: 10000 });
+  await expect(page.getByRole('button', { name: /chưa đọc/ })).not.toBeVisible();
 });
 
 test('notification preferences persist across reload and the email toggle is disabled while reminders are off', async ({ page }) => {

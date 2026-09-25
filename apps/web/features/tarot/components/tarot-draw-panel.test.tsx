@@ -110,7 +110,7 @@ describe('TarotDrawPanel', () => {
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/free single card limit/i);
-    const upgradeLink = screen.getByRole('link', { name: 'Upgrade to Premium' });
+    const upgradeLink = screen.getByRole('link', { name: 'Nâng cấp Premium' });
     expect(upgradeLink).toHaveAttribute('href', '/premium?reason=required');
   });
 
@@ -126,7 +126,7 @@ describe('TarotDrawPanel', () => {
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/single card limit \(15\)/i);
-    expect(screen.queryByRole('link', { name: 'Upgrade to Premium' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Nâng cấp Premium' })).not.toBeInTheDocument();
   });
 
   it('"Rút trải bài khác" resets back to the landing', async () => {

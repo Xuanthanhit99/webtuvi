@@ -76,45 +76,45 @@ describe('TarotReadingView', () => {
 
   it('labels the interpretation as AI, distinct from the deterministic card above it', () => {
     renderWithQuery(<TarotReadingView reading={baseReading} />);
-    expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
+    expect(screen.getByText('Diễn giải AI')).toBeInTheDocument();
   });
 
   it('shows a "Generate interpretation" retry action when interpretation is still null', async () => {
     (tarotApi.retryInterpretation as jest.Mock).mockResolvedValue({ ...baseReading, interpretation: 'Now generated.' });
     const user = userEvent.setup();
     renderWithQuery(<TarotReadingView reading={{ ...baseReading, interpretation: null }} />);
-    expect(screen.getByText('Interpretation isn’t ready yet.')).toBeInTheDocument();
+    expect(screen.getByText('Phần diễn giải chưa sẵn sàng.')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Generate interpretation' }));
+    await user.click(screen.getByRole('button', { name: 'Tạo diễn giải' }));
     await waitFor(() => expect(tarotApi.retryInterpretation).toHaveBeenCalledWith('r1'));
   });
 
   it('an ACTIVE reading only offers Archive and Delete', () => {
     renderWithQuery(<TarotReadingView reading={baseReading} />);
-    expect(screen.getByRole('button', { name: 'Archive' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Restore' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Lưu trữ' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Xóa' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Khôi phục' })).not.toBeInTheDocument();
   });
 
   it('an ARCHIVED reading offers Restore and Delete, not Archive', () => {
     renderWithQuery(<TarotReadingView reading={{ ...baseReading, status: 'ARCHIVED' }} />);
-    expect(screen.getByRole('button', { name: 'Restore' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Archive' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Khôi phục' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Xóa' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Lưu trữ' })).not.toBeInTheDocument();
   });
 
   it('a DELETED reading only offers Restore', () => {
     renderWithQuery(<TarotReadingView reading={{ ...baseReading, status: 'DELETED' }} />);
-    expect(screen.getByRole('button', { name: 'Restore' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Archive' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Khôi phục' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Xóa' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Lưu trữ' })).not.toBeInTheDocument();
   });
 
   it('clicking Archive calls the real archive endpoint with this reading’s id', async () => {
     (tarotApi.archiveReading as jest.Mock).mockResolvedValue({ ...baseReading, status: 'ARCHIVED' });
     const user = userEvent.setup();
     renderWithQuery(<TarotReadingView reading={baseReading} />);
-    await user.click(screen.getByRole('button', { name: 'Archive' }));
+    await user.click(screen.getByRole('button', { name: 'Lưu trữ' }));
     await waitFor(() => expect(tarotApi.archiveReading).toHaveBeenCalledWith('r1'));
   });
 });

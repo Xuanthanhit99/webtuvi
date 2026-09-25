@@ -54,7 +54,8 @@ export function AppHeader() {
             <Shield className="h-4 w-4" aria-hidden="true" />
           </Link>
         )}
-        <NotificationBell />
+        {/* Notifications only exist for an account; guests (and crawlers) get no bell or dialog. */}
+        {user && <NotificationBell />}
         {user && <ProfileMenu displayName={user.displayName} onLogout={handleLogout} />}
       </div>
     </header>

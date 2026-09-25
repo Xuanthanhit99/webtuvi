@@ -23,9 +23,9 @@ function isSafeDeepLink(link: string): boolean {
 }
 
 const CATEGORY_BADGE_LABEL: Record<NotificationDto['category'], string> = {
-  SECURITY: 'Security',
+  SECURITY: 'Bảo mật',
   PREMIUM: 'Premium',
-  DISCOVERY: 'Discovery',
+  DISCOVERY: 'Khám phá',
 };
 
 /**
@@ -57,9 +57,9 @@ export function NotificationCenter({ onNavigate }: { onNavigate: () => void }) {
     mutationFn: () => notificationsApi.markAllRead(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      toast.success('All caught up.');
+      toast.success('Bạn đã đọc hết thông báo.');
     },
-    onError: () => toast.error("Couldn't mark everything read. Please try again."),
+    onError: () => toast.error('Chưa thể đánh dấu tất cả là đã đọc. Vui lòng thử lại.'),
   });
 
   function handleOpen(notification: NotificationDto) {
@@ -80,13 +80,13 @@ export function NotificationCenter({ onNavigate }: { onNavigate: () => void }) {
   }
 
   if (isError) {
-    return <ErrorState description="Couldn't load your notifications." onRetry={() => refetch()} />;
+    return <ErrorState description="Chưa thể tải thông báo của bạn." onRetry={() => refetch()} />;
   }
 
   const items = data?.items ?? [];
 
   if (items.length === 0) {
-    return <EmptyState title="Nothing new" description="You're all caught up — this is the expected, healthy state." />;
+    return <EmptyState title="Chưa có gì mới" description="Bạn đã xem hết thông báo." />;
   }
 
   const hasUnread = items.some((n) => !n.read);
@@ -96,7 +96,7 @@ export function NotificationCenter({ onNavigate }: { onNavigate: () => void }) {
       {hasUnread && (
         <div className="flex justify-end">
           <Button variant="secondary" size="sm" onClick={() => markAllRead.mutate()} loading={markAllRead.isPending}>
-            Mark all read
+            Đánh dấu tất cả đã đọc
           </Button>
         </div>
       )}
@@ -116,7 +116,7 @@ export function NotificationCenter({ onNavigate }: { onNavigate: () => void }) {
                         so unread state previously had no screen-reader-facing signal at all inside
                         the list (the bell's own aggregate "N unread" count is separate and already
                         correct). Read items get no extra text — only unread ones announce it. */}
-                    <span className="sr-only">Unread</span>
+                    <span className="sr-only">Chưa đọc</span>
                   </>
                 )}
                 <span className="text-body-sm font-medium text-text-primary">{notification.title}</span>

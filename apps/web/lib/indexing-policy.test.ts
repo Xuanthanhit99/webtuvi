@@ -30,3 +30,16 @@ it('publishes only canonical, public URLs with stable modification metadata', ()
   expect(entries.every((entry) => !entry.lastModified && !entry.url.includes('?'))).toBe(true);
   expect(JSON.stringify(robots().rules)).not.toContain('"/discover"');
 });
+it('keeps auth forms out of the index and gives Home a branded absolute title', async () => {
+  const [{ metadata: login }, { metadata: register }, { metadata: home }] = await Promise.all([
+    import('@/app/(auth)/login/page'),
+    import('@/app/(auth)/register/page'),
+    import('@/app/page'),
+  ]);
+  for (const meta of [login, register]) {
+    expect(meta.robots).toEqual({ index: false, follow: false });
+    expect(meta.alternates?.canonical).toBeNull();
+  }
+  expect(home.title).toEqual({ absolute: expect.stringMatching(/^Mệnh Vi — /) });
+  expect(home.openGraph?.title).toBe((home.title as { absolute: string }).absolute);
+});

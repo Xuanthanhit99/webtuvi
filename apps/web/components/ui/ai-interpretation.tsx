@@ -25,11 +25,11 @@ export function AiInterpretation({
   };
 }) {
   const copy = labels ?? {
-    heading: 'AI Interpretation',
-    generating: 'Writing your interpretation…',
-    empty: 'Interpretation isn’t ready yet.',
-    action: 'Generate interpretation',
-    disclosure: 'Written by AI to narrate the result above — it never chooses or changes it.',
+    heading: 'Diễn giải AI',
+    generating: 'Đang viết phần diễn giải…',
+    empty: 'Phần diễn giải chưa sẵn sàng.',
+    action: 'Tạo diễn giải',
+    disclosure: 'Do AI viết để diễn giải kết quả phía trên — AI không chọn hay thay đổi kết quả.',
   };
 
   return (

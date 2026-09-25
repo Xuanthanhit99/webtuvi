@@ -30,8 +30,8 @@ describe('NotificationBell', () => {
     renderWithQuery(<NotificationBell />);
 
     await waitFor(() => expect(notificationsApi.unreadCount).toHaveBeenCalled());
-    expect(screen.getByRole('button', { name: 'Notifications' })).toBeInTheDocument();
-    expect(screen.queryByText(/unread/)).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Thông báo' })).toBeInTheDocument();
+    expect(screen.queryByText(/chưa đọc/)).not.toBeInTheDocument();
   });
 
   it('shows the real unread count in the badge and the accessible label', async () => {
@@ -39,7 +39,7 @@ describe('NotificationBell', () => {
     renderWithQuery(<NotificationBell />);
 
     expect(await screen.findByText('3')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Notifications, 3 unread' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Thông báo, 3 chưa đọc' })).toBeInTheDocument();
   });
 
   it('caps the displayed badge at "9+" without hiding the real count from the accessible label', async () => {
@@ -47,7 +47,7 @@ describe('NotificationBell', () => {
     renderWithQuery(<NotificationBell />);
 
     expect(await screen.findByText('9+')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Notifications, 42 unread' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Thông báo, 42 chưa đọc' })).toBeInTheDocument();
   });
 
   it('opens the Notification Center dialog on click', async () => {
@@ -55,16 +55,16 @@ describe('NotificationBell', () => {
     const user = userEvent.setup();
     renderWithQuery(<NotificationBell />);
 
-    await user.click(await screen.findByRole('button', { name: 'Notifications' }));
+    await user.click(await screen.findByRole('button', { name: 'Thông báo' }));
 
-    expect(await screen.findByRole('heading', { name: 'Notifications' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Thông báo' })).toBeInTheDocument();
   });
 
   it('renders for a guest without calling the unread-count API (no auth cookie to check against)', async () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false });
     renderWithQuery(<NotificationBell />);
 
-    expect(await screen.findByRole('button', { name: 'Notifications' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Thông báo' })).toBeInTheDocument();
     expect(notificationsApi.unreadCount).not.toHaveBeenCalled();
   });
 });

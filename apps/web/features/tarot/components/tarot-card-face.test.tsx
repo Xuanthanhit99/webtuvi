@@ -36,7 +36,7 @@ describe('TarotCardFace', () => {
 
   it('rotates the artwork when reversed without rotating the readable button label', () => {
     render(<TarotCardFace card={card} isReversed imageSrc="/assets/tarot-card/00-the-fool.webp" />);
-    const button = screen.getByRole('button', { name: 'The Fool, reversed' });
+    const button = screen.getByRole('button', { name: 'The Fool, ngược' });
     expect(button.className).not.toContain('rotate-180');
     expect(screen.getByTestId('tarot-card-artwork').className).toContain('rotate-180');
   });

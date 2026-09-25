@@ -8,9 +8,9 @@ export function BigThreeSummary({ chart }: { chart: NatalChartDto }) {
   const moon = chart.placements.find((p) => p.body === 'moon');
 
   const items = [
-    { label: 'Sun', glyph: PLANET_GLYPHS.sun, sign: sun ? SIGN_LABELS[sun.sign] : null },
-    { label: 'Moon', glyph: PLANET_GLYPHS.moon, sign: moon ? SIGN_LABELS[moon.sign] : null },
-    { label: 'Rising', glyph: '↑', sign: chart.ascendant ? SIGN_LABELS[chart.ascendant.sign] : null },
+    { label: 'Mặt Trời', glyph: PLANET_GLYPHS.sun, sign: sun ? SIGN_LABELS[sun.sign] : null },
+    { label: 'Mặt Trăng', glyph: PLANET_GLYPHS.moon, sign: moon ? SIGN_LABELS[moon.sign] : null },
+    { label: 'Cung Mọc', glyph: '↑', sign: chart.ascendant ? SIGN_LABELS[chart.ascendant.sign] : null },
   ];
 
   return (
@@ -24,7 +24,7 @@ export function BigThreeSummary({ chart }: { chart: NatalChartDto }) {
           {item.sign ? (
             <span className="text-body-md font-semibold text-text-primary">{item.sign}</span>
           ) : (
-            <span className="text-body-sm text-text-secondary">Unavailable</span>
+            <span className="text-body-sm text-text-secondary">Chưa xác định</span>
           )}
         </div>
       ))}

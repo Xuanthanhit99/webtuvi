@@ -9,6 +9,8 @@ export const metadata: Metadata = buildMetadata({
   title: 'Tạo tài khoản',
   description: 'Tạo tài khoản Mệnh Vi miễn phí để lưu Tarot, lá số Tử Vi, bản đồ sao và thần số học.',
   path: '/register',
+  // Auth forms stay out of the index; the (auth) layout's noindex would otherwise be overridden here.
+  noindex: true,
 });
 
 export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {

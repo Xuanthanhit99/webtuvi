@@ -29,31 +29,31 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
   const retryInterpretation = useMutation({
     mutationFn: () => tarotApi.retryInterpretation(reading.id),
     onSuccess: invalidate,
-    onError: () => toast.error("Couldn't generate an interpretation. Please try again."),
+    onError: () => toast.error('Chưa thể tạo phần diễn giải. Vui lòng thử lại.'),
   });
   const archive = useMutation({
     mutationFn: () => tarotApi.archiveReading(reading.id),
     onSuccess: () => {
       invalidate();
-      toast.success('Reading archived.');
+      toast.success('Đã lưu trữ lượt trải bài.');
     },
-    onError: () => toast.error("Couldn't archive that reading."),
+    onError: () => toast.error('Chưa thể lưu trữ lượt trải bài này.'),
   });
   const restore = useMutation({
     mutationFn: () => tarotApi.restoreReading(reading.id),
     onSuccess: () => {
       invalidate();
-      toast.success('Reading restored.');
+      toast.success('Đã khôi phục lượt trải bài.');
     },
-    onError: () => toast.error("Couldn't restore that reading."),
+    onError: () => toast.error('Chưa thể khôi phục lượt trải bài này.'),
   });
   const remove = useMutation({
     mutationFn: () => tarotApi.deleteReading(reading.id),
     onSuccess: () => {
       invalidate();
-      toast.success('Reading deleted.');
+      toast.success('Đã xóa lượt trải bài.');
     },
-    onError: () => toast.error("Couldn't delete that reading."),
+    onError: () => toast.error('Chưa thể xóa lượt trải bài này.'),
   });
 
   const orderedCards = [...reading.cards].sort((a, b) => a.position - b.position);
@@ -69,17 +69,17 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
         <div className="flex flex-wrap gap-2">
           {reading.status === 'ACTIVE' && (
             <Button variant="ghost" size="sm" onClick={() => archive.mutate()} loading={archive.isPending}>
-              Archive
+              Lưu trữ
             </Button>
           )}
           {reading.status !== 'ACTIVE' && (
             <Button variant="secondary" size="sm" onClick={() => restore.mutate()} loading={restore.isPending}>
-              Restore
+              Khôi phục
             </Button>
           )}
           {reading.status !== 'DELETED' && (
             <Button variant="ghost" size="sm" onClick={() => remove.mutate()} loading={remove.isPending}>
-              Delete
+              Xóa
             </Button>
           )}
         </div>

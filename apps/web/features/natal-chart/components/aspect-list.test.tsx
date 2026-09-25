@@ -11,19 +11,19 @@ describe('AspectList', () => {
   it('renders every real aspect, tightest orb first, with its fixed meaning', () => {
     render(<AspectList aspects={aspects} />);
     const items = screen.getAllByRole('listitem');
-    expect(items[0]).toHaveTextContent('Sun');
-    expect(items[0]).toHaveTextContent('Conjunction');
-    expect(items[0]).toHaveTextContent('Venus');
+    expect(items[0]).toHaveTextContent('Mặt Trời');
+    expect(items[0]).toHaveTextContent('Trùng tụ');
+    expect(items[0]).toHaveTextContent('Sao Kim');
     expect(screen.getByText('Sun Conjunction Venus — fused warmth')).toBeInTheDocument();
   });
 
   it('labels an Ascendant/Midheaven aspect point with its full name, not the raw key', () => {
     render(<AspectList aspects={aspects} />);
-    expect(screen.getByText('Ascendant')).toBeInTheDocument();
+    expect(screen.getByText('Cung Mọc (ASC)')).toBeInTheDocument();
   });
 
   it('shows an honest empty state when there are no major aspects, never a fabricated one', () => {
     render(<AspectList aspects={[]} />);
-    expect(screen.getByText('No major aspects')).toBeInTheDocument();
+    expect(screen.getByText('Không có góc hợp chính')).toBeInTheDocument();
   });
 });

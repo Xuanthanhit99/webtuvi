@@ -39,7 +39,7 @@ export function NotificationBell() {
   return (
     <>
       <div className="relative">
-        <IconButton aria-label={count > 0 ? `Notifications, ${count} unread` : 'Notifications'} onClick={() => setOpen(true)}>
+        <IconButton aria-label={count > 0 ? `Thông báo, ${count} chưa đọc` : 'Thông báo'} onClick={() => setOpen(true)}>
           <Bell className="h-4 w-4" aria-hidden="true" />
         </IconButton>
         {count > 0 && (
@@ -51,7 +51,7 @@ export function NotificationBell() {
           </span>
         )}
       </div>
-      <Dialog open={open} onClose={() => setOpen(false)} title="Notifications">
+      <Dialog open={open} onClose={() => setOpen(false)} title="Thông báo">
         <NotificationCenter onNavigate={() => setOpen(false)} />
       </Dialog>
     </>

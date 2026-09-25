@@ -14,19 +14,19 @@ const baseChart = {
 describe('HouseList', () => {
   it('renders real house cusps and signs when available', () => {
     render(<HouseList chart={baseChart} />);
-    expect(screen.getByText('1st house')).toBeInTheDocument();
-    expect(screen.getByText(/Libra · 29\.9°/)).toBeInTheDocument();
+    expect(screen.getByText('Nhà 1')).toBeInTheDocument();
+    expect(screen.getByText(/Thiên Bình · 29\.9°/)).toBeInTheDocument();
   });
 
   it('shows an honest "unavailable" state (never fabricated houses) when birth time is unknown', () => {
     render(<HouseList chart={{ ...baseChart, housesAvailable: false, birthTimeKnown: false, houses: [] }} />);
-    expect(screen.getByText(/houses aren.t available/i)).toBeInTheDocument();
-    expect(screen.getByText(/knowing your exact birth time/i)).toBeInTheDocument();
-    expect(screen.queryByText('1st house')).not.toBeInTheDocument();
+    expect(screen.getByText(/bản đồ này chưa có các nhà/i)).toBeInTheDocument();
+    expect(screen.getByText(/cần giờ sinh chính xác/i)).toBeInTheDocument();
+    expect(screen.queryByText('Nhà 1')).not.toBeInTheDocument();
   });
 
   it('shows a different honest reason (extreme latitude) when birth time IS known but houses are still unavailable', () => {
     render(<HouseList chart={{ ...baseChart, housesAvailable: false, birthTimeKnown: true, houses: [] }} />);
-    expect(screen.getByText(/birth latitude/i)).toBeInTheDocument();
+    expect(screen.getByText(/vĩ độ nơi sinh/i)).toBeInTheDocument();
   });
 });

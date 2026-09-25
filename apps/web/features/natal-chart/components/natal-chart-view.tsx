@@ -17,9 +17,10 @@ import { HouseList } from './house-list';
 import { AspectList } from './aspect-list';
 import { InterpretationSections } from './interpretation-sections';
 
-function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+function Section({ id, title, defaultOpen = false, children }: { id: string; title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
-  const sectionId = `natal-chart-section-${title.toLowerCase().replace(/\s+/g, '-')}`;
+  // A stable ASCII id, independent of the (localized) visible title.
+  const sectionId = `natal-chart-section-${id}`;
   return (
     <section aria-labelledby={`${sectionId}-heading`}>
       <button
@@ -59,31 +60,31 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
   const retryInterpretation = useMutation({
     mutationFn: () => natalChartApi.retryInterpretation(chart.id),
     onSuccess: invalidate,
-    onError: () => toast.error("Couldn't generate an interpretation. Please try again."),
+    onError: () => toast.error('Chưa thể tạo phần diễn giải. Vui lòng thử lại.'),
   });
   const archive = useMutation({
     mutationFn: () => natalChartApi.archiveChart(chart.id),
     onSuccess: () => {
       invalidate();
-      toast.success('Chart archived.');
+      toast.success('Đã lưu trữ bản đồ.');
     },
-    onError: () => toast.error("Couldn't archive that chart."),
+    onError: () => toast.error('Chưa thể lưu trữ bản đồ này.'),
   });
   const restore = useMutation({
     mutationFn: () => natalChartApi.restoreChart(chart.id),
     onSuccess: () => {
       invalidate();
-      toast.success('Chart restored.');
+      toast.success('Đã khôi phục bản đồ.');
     },
-    onError: () => toast.error("Couldn't restore that chart."),
+    onError: () => toast.error('Chưa thể khôi phục bản đồ này.'),
   });
   const remove = useMutation({
     mutationFn: () => natalChartApi.deleteChart(chart.id),
     onSuccess: () => {
       invalidate();
-      toast.success('Chart deleted.');
+      toast.success('Đã xóa bản đồ.');
     },
-    onError: () => toast.error("Couldn't delete that chart."),
+    onError: () => toast.error('Chưa thể xóa bản đồ này.'),
   });
 
   return (
@@ -92,24 +93,24 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
         <div className="flex flex-wrap items-center gap-2">
           <Badge variant={CHART_STATUS_BADGE_VARIANT[chart.status]}>{CHART_STATUS_LABELS[chart.status]}</Badge>
           <span className="text-caption text-text-secondary">
-            Born {chart.birthDate}
-            {chart.birthTime ? ` at ${chart.birthTime}` : ' (time unknown)'} · <span className="text-text-primary">{chart.birthPlaceLabel}</span>
+            Sinh ngày {chart.birthDate}
+            {chart.birthTime ? ` lúc ${chart.birthTime}` : ' (chưa rõ giờ sinh)'} · <span className="text-text-primary">{chart.birthPlaceLabel}</span>
           </span>
         </div>
         <div className="flex flex-wrap gap-2">
           {chart.status === 'ACTIVE' && (
             <Button variant="ghost" size="sm" onClick={() => archive.mutate()} loading={archive.isPending}>
-              Archive
+              Lưu trữ
             </Button>
           )}
           {chart.status !== 'ACTIVE' && (
             <Button variant="secondary" size="sm" onClick={() => restore.mutate()} loading={restore.isPending}>
-              Restore
+              Khôi phục
             </Button>
           )}
           {chart.status !== 'DELETED' && (
             <Button variant="ghost" size="sm" onClick={() => remove.mutate()} loading={remove.isPending}>
-              Delete
+              Xóa
             </Button>
           )}
         </div>
@@ -130,34 +131,34 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-md border border-[#d5ad62]/20 p-3">
               <p className="font-mono text-heading-md text-[#efb96c]">{chart.placements.length}</p>
-              <p className="text-caption text-text-secondary">Planets</p>
+              <p className="text-caption text-text-secondary">Hành tinh</p>
             </div>
             <div className="rounded-md border border-[#d5ad62]/20 p-3">
               <p className="font-mono text-heading-md text-[#efb96c]">{chart.houses.length}</p>
-              <p className="text-caption text-text-secondary">Houses</p>
+              <p className="text-caption text-text-secondary">Nhà</p>
             </div>
             <div className="rounded-md border border-[#d5ad62]/20 p-3">
               <p className="font-mono text-heading-md text-[#efb96c]">{chart.aspects.length}</p>
-              <p className="text-caption text-text-secondary">Aspects</p>
+              <p className="text-caption text-text-secondary">Góc hợp</p>
             </div>
             <div className="rounded-md border border-[#d5ad62]/20 p-3">
               <p className="font-mono text-heading-md text-[#efb96c]">{calculatedAngles}</p>
-              <p className="text-caption text-text-secondary">Angles</p>
+              <p className="text-caption text-text-secondary">Góc trục</p>
             </div>
           </div>
         </div>
       </section>
       <BigThreeSummary chart={chart} />
 
-      <Section title="Planets" defaultOpen>
+      <Section id="planets" title="Các hành tinh" defaultOpen>
         <PlanetList placements={chart.placements} />
       </Section>
 
-      <Section title="Houses">
+      <Section id="houses" title="Các nhà">
         <HouseList chart={chart} />
       </Section>
 
-      <Section title="Major Aspects">
+      <Section id="major-aspects" title="Các góc hợp chính">
         <AspectList aspects={chart.aspects} />
       </Section>
 
@@ -170,15 +171,15 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
         }}
       />
 
-      <Section title="Calculation details">
+      <Section id="calculation-details" title="Chi tiết cách tính">
         <dl className="grid grid-cols-2 gap-2 text-body-sm">
-          <dt className="text-text-secondary">Zodiac</dt>
+          <dt className="text-text-secondary">Hoàng đạo</dt>
           <dd className="text-text-primary">{chart.zodiacMode}</dd>
-          <dt className="text-text-secondary">House system</dt>
+          <dt className="text-text-secondary">Hệ thống nhà</dt>
           <dd className="text-text-primary">{chart.houseSystem}</dd>
-          <dt className="text-text-secondary">Timezone</dt>
+          <dt className="text-text-secondary">Múi giờ</dt>
           <dd className="text-text-primary">{chart.timezone}</dd>
-          <dt className="text-text-secondary">Calculation version</dt>
+          <dt className="text-text-secondary">Phiên bản tính toán</dt>
           <dd className="text-text-primary">{chart.calculationVersion}</dd>
         </dl>
       </Section>

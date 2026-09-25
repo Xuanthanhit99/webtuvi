@@ -114,7 +114,7 @@ describe('NatalChartDashboard', () => {
 
     await screen.findByText('Hà Nội, Vietnam');
     expect(screen.getByText(/Được tính từ dữ liệu sinh của bạn\. AI không lựa chọn hoặc thay đổi bất kỳ vị trí nào\./i)).toBeInTheDocument();
-    expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
-    expect(screen.getByText(/Written by AI to narrate the chart above — it never changes a calculated placement\./i)).toBeInTheDocument();
+    expect(screen.getByText('Diễn giải AI')).toBeInTheDocument();
+    expect(screen.getByText(/Do AI viết để diễn giải bản đồ phía trên — AI không bao giờ thay đổi vị trí đã được tính\./i)).toBeInTheDocument();
   });
 });

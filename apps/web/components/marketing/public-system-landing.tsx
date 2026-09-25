@@ -28,8 +28,15 @@ export function createPublicSystemMetadata(slug: Slug): Metadata {
 export function PublicSystemLanding({ slug }: { slug: Slug }) {
   const page = PAGES[slug];
   const jsonLd = { '@context': 'https://schema.org', '@type': 'WebPage', name: page.title, description: page.description, url: `${SITE_URL}${page.target}`, isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL } };
+  // Mirrors the visible breadcrumb below item for item.
+  const breadcrumbJsonLd = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Trang chủ', item: SITE_URL },
+    { '@type': 'ListItem', position: 2, name: 'Khám phá', item: `${SITE_URL}/discover` },
+    { '@type': 'ListItem', position: 3, name: page.title, item: `${SITE_URL}${page.target}` },
+  ] };
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd).replace(/</g, '\\u003c') }} />
     <div className="mx-auto w-full max-w-[1280px]">
     <nav aria-label="Đường dẫn" className="mb-5 flex flex-wrap gap-2 text-body-sm text-text-secondary"><Link href="/" className="hover:underline">Trang chủ</Link><span aria-hidden="true">/</span><Link href="/discover" className="hover:underline">Khám phá</Link><span aria-hidden="true">/</span><span aria-current="page">{page.title}</span></nav>
     <section className="relative isolate min-h-[430px] overflow-hidden rounded-[22px] border border-[#d5ad62]/20 bg-[#080d16] px-5 py-9 tablet:px-10 tablet:py-12 desktop:px-14">

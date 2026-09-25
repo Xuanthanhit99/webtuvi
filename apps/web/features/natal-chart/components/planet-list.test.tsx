@@ -10,15 +10,15 @@ const placements: NatalPlacementDto[] = [
 describe('PlanetList', () => {
   it('renders every real placement with its sign, degree, house, and fixed meaning', () => {
     render(<PlanetList placements={placements} />);
-    expect(screen.getByText('Sun')).toBeInTheDocument();
-    expect(screen.getByText(/in Gemini · 24.5°/)).toBeInTheDocument();
-    expect(screen.getByText('8th house')).toBeInTheDocument();
+    expect(screen.getByText('Mặt Trời')).toBeInTheDocument();
+    expect(screen.getByText(/tại Song Tử · 24.5°/)).toBeInTheDocument();
+    expect(screen.getByText('Nhà 8')).toBeInTheDocument();
     expect(screen.getByText('Sun (core identity) in Gemini — the 8th house')).toBeInTheDocument();
   });
 
   it('shows a Retrograde badge only for retrograde placements, and omits a house badge when house is null', () => {
     render(<PlanetList placements={placements} />);
-    expect(screen.getByText('Retrograde')).toBeInTheDocument();
-    expect(screen.getByText('Mercury')).toBeInTheDocument();
+    expect(screen.getByText('Nghịch hành')).toBeInTheDocument();
+    expect(screen.getByText('Sao Thủy')).toBeInTheDocument();
   });
 });

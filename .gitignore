@@ -24,6 +24,8 @@ pnpm-debug.log*
 coverage/
 playwright-report/
 test-results/
+# ad-hoc captured test console output at the repo root (e.g. `pnpm test > test-fail.txt`)
+/test-fail.txt
 
 # local database dumps/volumes (Postgres itself runs in Docker, not on disk here)
 *.sqlite

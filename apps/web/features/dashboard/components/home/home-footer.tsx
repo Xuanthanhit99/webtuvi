@@ -15,6 +15,7 @@ const FOOTER_COLUMNS = [
       { label: 'Lá số Tử Vi', href: '/discover/tu-vi' },
       { label: 'Bản đồ sao', href: '/discover/natal-chart' },
       { label: 'Thần số học', href: '/discover/numerology' },
+      { label: 'Ngũ hành phương Đông', href: '/discover/eastern-horoscope' },
       { label: 'Khám phá', href: '/discover' },
     ],
   },

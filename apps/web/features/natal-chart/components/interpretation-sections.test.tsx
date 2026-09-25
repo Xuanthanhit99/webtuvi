@@ -20,13 +20,13 @@ describe('InterpretationSections', () => {
   it('shows a "not ready yet" state with a Generate button when there is no interpretation', () => {
     const onGenerate = jest.fn();
     render(<InterpretationSections interpretation={null} isGenerating={false} onGenerate={onGenerate} />);
-    expect(screen.getByText(/interpretation isn.t ready yet/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /generate interpretation/i })).toBeInTheDocument();
+    expect(screen.getByText(/phần diễn giải chưa sẵn sàng/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /tạo diễn giải/i })).toBeInTheDocument();
   });
 
   it('shows a generating state', () => {
     render(<InterpretationSections interpretation={null} isGenerating onGenerate={jest.fn()} />);
-    expect(screen.getByText(/writing your interpretation/i)).toBeInTheDocument();
+    expect(screen.getByText(/đang viết phần diễn giải/i)).toBeInTheDocument();
   });
 
   it('the Overview section is expanded by default; the other nine start collapsed', () => {
@@ -38,13 +38,13 @@ describe('InterpretationSections', () => {
   it('expanding a section reveals its real generated text, never invented client-side', async () => {
     const user = userEvent.setup();
     render(<InterpretationSections interpretation={sections} isGenerating={false} onGenerate={jest.fn()} />);
-    await user.click(screen.getByRole('button', { name: 'Core Personality' }));
+    await user.click(screen.getByRole('button', { name: 'Tính cách cốt lõi' }));
     expect(screen.getByText(sections.corePersonality)).toBeInTheDocument();
   });
 
   it('always labels the block as AI-written, distinct from calculated chart data', () => {
     render(<InterpretationSections interpretation={sections} isGenerating={false} onGenerate={jest.fn()} />);
-    expect(screen.getByText('AI Interpretation')).toBeInTheDocument();
-    expect(screen.getByText(/written by ai/i)).toBeInTheDocument();
+    expect(screen.getByText('Diễn giải AI')).toBeInTheDocument();
+    expect(screen.getByText(/do AI viết/i)).toBeInTheDocument();
   });
 });

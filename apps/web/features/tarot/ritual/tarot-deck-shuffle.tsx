@@ -61,7 +61,7 @@ export function TarotDeckShuffle({
               transition={reducedMotion ? { duration: 0.15 } : { duration: 0.42, ease: EASE_ORGANIC }}
               style={{ zIndex: VISUAL_CARDS - Math.abs(index - CENTER) }}
             >
-              <TarotCardVisual id={`shuffle-${index}`} name="Tarot card back" size="sm" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
+              <TarotCardVisual id={`shuffle-${index}`} name="Mặt sau lá Tarot" size="sm" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
             </motion.span>
           );
         })}

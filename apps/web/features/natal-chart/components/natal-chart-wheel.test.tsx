@@ -43,9 +43,9 @@ describe('NatalChartWheel', () => {
   it('renders as an accessible image with a Big Three summary in its label', () => {
     render(<NatalChartWheel chart={baseChart} />);
     const svg = screen.getByRole('img');
-    expect(svg).toHaveAccessibleName(/sun in gemini/i);
-    expect(svg).toHaveAccessibleName(/moon in gemini/i);
-    expect(svg).toHaveAccessibleName(/ascendant in libra/i);
+    expect(svg).toHaveAccessibleName(/Mặt Trời tại Song Tử/i);
+    expect(svg).toHaveAccessibleName(/Mặt Trăng tại Song Tử/i);
+    expect(svg).toHaveAccessibleName(/Cung Mọc tại Thiên Bình/i);
   });
 
   it('renders every internal element as decorative (aria-hidden) — the real accessible data lives in the sibling list components', () => {
@@ -58,7 +58,7 @@ describe('NatalChartWheel', () => {
     const chartWithoutHouses: NatalChartDto = { ...baseChart, housesAvailable: false, ascendant: null, midheaven: null, houses: [] };
     render(<NatalChartWheel chart={chartWithoutHouses} />);
     const svg = screen.getByRole('img');
-    expect(svg).toHaveAccessibleName(/ascendant unavailable/i);
+    expect(svg).toHaveAccessibleName(/chưa xác định Cung Mọc/i);
   });
 
   it('does not crash when a chart has no aspects at all', () => {
