@@ -166,7 +166,7 @@ jobs:
       - name: Seed demo account (flows 2 and 3 log in as demo@beaconvie.local)
         run: pnpm --filter @beaconvie/api prisma:seed
 
-      - name: Run Playwright e2e (production build)
+      - name: Run production-readiness Playwright gate
         run: |
           node apps/api/dist/src/main.js &
           API_PID=$!
@@ -176,7 +176,7 @@ jobs:
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web test:e2e
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
