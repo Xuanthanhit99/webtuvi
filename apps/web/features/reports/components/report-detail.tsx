@@ -15,7 +15,7 @@ import { ApiError } from '@/lib/api-error';
 import { reportsApi } from '../api/reports-api';
 import { REPORT_FAILURE_REASON_MESSAGES } from '../labels';
 import { PLANET_LABELS, SIGN_LABELS } from '@/features/natal-chart/labels';
-import { NUMEROLOGY_TYPE_LABELS } from '@/features/numerology/labels';
+import { VALUE_TYPE_LABELS } from '@/features/numerology/labels';
 
 // Accessibility + Product Polish (2026-08-19): matches the existing polling convention already
 // used for another async-generation status (premium-return-status.tsx's PENDING order polling).
@@ -323,7 +323,7 @@ function CalculatedFactsAppendix({ snapshot }: { snapshot: ReportDto['sourceSnap
         <ul className="flex flex-col gap-1">
           {snapshot.numerology.values.map((value, i) => (
             <li key={i} className="text-caption text-text-secondary">
-              {NUMEROLOGY_TYPE_LABELS[value.type] ?? value.type}: {value.value}
+              {VALUE_TYPE_LABELS[value.type] ?? value.type}: {value.value}
               {value.isMasterNumber ? ' (Số đặc biệt)' : ''}
             </li>
           ))}
