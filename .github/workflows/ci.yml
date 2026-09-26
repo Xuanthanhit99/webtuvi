@@ -170,11 +170,13 @@ jobs:
         run: |
           node apps/api/dist/src/main.js &
           API_PID=$!
-          pnpm --filter @beaconvie/web start &
+          # NEXT_PUBLIC_APP_URL is intentionally the production canonical at build time for
+          # metadata/robots/sitemap. The browser itself must still talk to the local CI server.
+          NEXT_PUBLIC_APP_URL=http://localhost:3000 pnpm --filter @beaconvie/web start &
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          pnpm --filter @beaconvie/web test:e2e
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web test:e2e
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
