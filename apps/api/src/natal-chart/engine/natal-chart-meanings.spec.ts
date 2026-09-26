@@ -31,44 +31,44 @@ describe('natal-chart-meanings', () => {
 
   it('composes a placement meaning from planet + sign + house', () => {
     const meaning = composePlacementMeaning('mercury', 'gemini', 3);
-    expect(meaning).toContain('Mercury');
-    expect(meaning).toContain('Gemini');
-    expect(meaning).toContain('3rd house');
+    expect(meaning).toContain('Sao Thủy');
+    expect(meaning).toContain('Song Tử');
+    expect(meaning).toContain('Nhà 3');
   });
 
   it('omits the house clause entirely when house is null — never fabricates a house', () => {
     const meaning = composePlacementMeaning('mercury', 'gemini', null);
-    expect(meaning).toContain('Mercury');
-    expect(meaning).toContain('Gemini');
-    expect(meaning).not.toContain('house');
+    expect(meaning).toContain('Sao Thủy');
+    expect(meaning).toContain('Song Tử');
+    expect(meaning).not.toContain('Nhà');
   });
 
   it('composes an angle (Ascendant/Midheaven) meaning', () => {
-    expect(composeAngleMeaning('ascendant', 'libra')).toContain('Ascendant');
-    expect(composeAngleMeaning('ascendant', 'libra')).toContain('Libra');
-    expect(composeAngleMeaning('midheaven', 'capricorn')).toContain('Midheaven');
+    expect(composeAngleMeaning('ascendant', 'libra')).toContain('Cung Mọc');
+    expect(composeAngleMeaning('ascendant', 'libra')).toContain('Thiên Bình');
+    expect(composeAngleMeaning('midheaven', 'capricorn')).toContain('Thiên Đỉnh');
   });
 
   it('composes an aspect meaning between two named points', () => {
     const meaning = composeAspectMeaning('sun', 'moon', 'trine');
-    expect(meaning).toContain('Sun');
-    expect(meaning).toContain('Moon');
-    expect(meaning).toContain('Trine');
+    expect(meaning).toContain('Mặt Trời');
+    expect(meaning).toContain('Mặt Trăng');
+    expect(meaning).toContain('Tam hợp');
   });
 
   it('composes an aspect meaning involving an angle point using its full label', () => {
     const meaning = composeAspectMeaning('venus', 'ascendant', 'conjunction');
-    expect(meaning).toContain('Venus');
-    expect(meaning).toContain('Ascendant');
+    expect(meaning).toContain('Sao Kim');
+    expect(meaning).toContain('Cung Mọc');
   });
 
   it('houseOrdinal formats standard and teen-exception cases correctly', () => {
-    expect(houseOrdinal(1)).toBe('1st');
-    expect(houseOrdinal(2)).toBe('2nd');
-    expect(houseOrdinal(3)).toBe('3rd');
-    expect(houseOrdinal(4)).toBe('4th');
-    expect(houseOrdinal(11)).toBe('11th');
-    expect(houseOrdinal(12)).toBe('12th');
-    expect(houseOrdinal(13)).toBe('13th');
+    expect(houseOrdinal(1)).toBe('Nhà 1');
+    expect(houseOrdinal(2)).toBe('Nhà 2');
+    expect(houseOrdinal(3)).toBe('Nhà 3');
+    expect(houseOrdinal(4)).toBe('Nhà 4');
+    expect(houseOrdinal(11)).toBe('Nhà 11');
+    expect(houseOrdinal(12)).toBe('Nhà 12');
+    expect(houseOrdinal(13)).toBe('Nhà 13');
   });
 });
