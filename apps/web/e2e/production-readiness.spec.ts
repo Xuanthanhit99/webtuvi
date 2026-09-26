@@ -20,6 +20,12 @@ const knowledgeRoutes = [
   '/kien-thuc/ban-do-sao/ban-do-sao-la-gi',
   '/kien-thuc/ban-do-sao/cung-moc-la-gi',
   '/kien-thuc/ngu-hanh/ngu-hanh-la-gi',
+  // Representative programmatic Tarot pages: Major + each Minor suit. The sitemap unit test enforces all 78 canonical URLs.
+  '/kien-thuc/tarot/la-bai/major-00-the-fool',
+  '/kien-thuc/tarot/la-bai/wands-01-ace-of-wands',
+  '/kien-thuc/tarot/la-bai/cups-01-ace-of-cups',
+  '/kien-thuc/tarot/la-bai/swords-01-ace-of-swords',
+  '/kien-thuc/tarot/la-bai/pentacles-14-king-of-pentacles',
 ];
 const indexableRoutes = [...publicRoutes, ...supportingRoutes, ...knowledgeRoutes];
 const origin = 'https://tuvitarot.vn';
@@ -64,7 +70,7 @@ test('crawler receives complete public HTML, unique metadata, canonical URLs and
   expect(robots).toContain(`Sitemap: ${origin}/sitemap.xml`);
   expect(robots).not.toContain('Disallow: /discover');
   const sitemap = await (await request.get('/sitemap.xml')).text();
-  expect((sitemap.match(/<loc>/g) ?? []).length).toBe(indexableRoutes.length);
+  expect((sitemap.match(/<loc>/g) ?? []).length).toBe(indexableRoutes.length + 73);
   for (const route of indexableRoutes) expect(sitemap).toContain(`<loc>${route === '/' ? origin : origin + route}</loc>`);
   for (const privatePath of ['/login', '/register', '/settings', '/reports', '/premium']) expect(sitemap).not.toContain(`<loc>${origin}${privatePath}</loc>`);
   expect(sitemap).not.toContain('<lastmod>');
