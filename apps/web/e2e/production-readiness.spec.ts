@@ -51,8 +51,12 @@ test('crawler receives complete public HTML, unique metadata, canonical URLs and
       expect(schema['@context']).toBe('https://schema.org');
       const urls: unknown[] = schema['@type'] === 'BreadcrumbList'
         ? schema.itemListElement.map((entry: { item: unknown }) => entry.item)
-        : [schema.url];
-      for (const url of urls) expect(url).toMatch(/^https:\/\/tuvitarot\.vn/);
+        : [schema.url ?? schema.mainEntityOfPage];
+      expect(urls.length).toBeGreaterThan(0);
+      for (const url of urls) {
+        expect(typeof url).toBe('string');
+        expect(url).toMatch(/^https:\/\/tuvitarot\.vn/);
+      }
     }
     expect((await page.locator('a[href="/discover"]').count())).toBeGreaterThan(0);
   }
