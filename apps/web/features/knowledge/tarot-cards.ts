@@ -33,5 +33,6 @@ export function tarotRelatedCards(card: TarotCardSeed): TarotCardSeed[] {
   if (index < 0) return [];
   const previous = TAROT_DECK[(index - 1 + TAROT_DECK.length) % TAROT_DECK.length];
   const next = TAROT_DECK[(index + 1) % TAROT_DECK.length];
-  return [previous, next].filter((item, itemIndex, items) => items.findIndex((candidate) => candidate.slug === item.slug) === itemIndex);
+  if (!previous || !next) return [];
+  return previous.slug === next.slug ? [previous] : [previous, next];
 }
