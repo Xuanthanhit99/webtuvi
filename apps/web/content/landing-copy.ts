@@ -146,6 +146,7 @@ export const landingCopy = {
   footer: {
     productLinks: [
       { label: 'Khám phá', href: '/discover' },
+      { label: 'Kiến thức', href: '/kien-thuc' },
       { label: 'Tử Vi', href: '/discover/tu-vi' },
       { label: 'Tarot', href: '/discover/tarot' },
       { label: 'Bản đồ sao', href: '/discover/natal-chart' },
