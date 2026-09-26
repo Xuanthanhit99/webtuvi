@@ -162,7 +162,7 @@ describe('BirthInputForm', () => {
     await user.click(await screen.findByText('Hà Nội, Vietnam'));
     await user.click(screen.getByRole('button', { name: /^lập bản đồ sao$/i }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/free chart creation limit/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Bạn đã dùng hết lượt miễn phí/i);
     expect(screen.getByRole('link', { name: 'Nâng cấp Premium' })).toHaveAttribute('href', '/premium?reason=required');
   });
 

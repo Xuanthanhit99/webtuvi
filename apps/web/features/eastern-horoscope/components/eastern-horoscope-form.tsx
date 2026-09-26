@@ -14,13 +14,12 @@ import { EasternHoroscopeProfileView } from './eastern-horoscope-profile-view';
 
 function fieldErrorFor(error: ApiError): { message: string } {
   switch (error.code) {
-    case 'EASTERN_HOROSCOPE_INVALID_DATE_FORMAT':
-    case 'EASTERN_HOROSCOPE_INVALID_DATE':
-    case 'EASTERN_HOROSCOPE_DATE_OUT_OF_RANGE':
-    case 'EASTERN_HOROSCOPE_FUTURE_DATE':
-      return { message: error.message };
+    case 'EASTERN_HOROSCOPE_INVALID_DATE_FORMAT': return { message: 'Ngày sinh chưa đúng định dạng.' };
+    case 'EASTERN_HOROSCOPE_INVALID_DATE': return { message: 'Ngày sinh không hợp lệ.' };
+    case 'EASTERN_HOROSCOPE_DATE_OUT_OF_RANGE': return { message: 'Ngày sinh nằm ngoài phạm vi hệ thống hỗ trợ.' };
+    case 'EASTERN_HOROSCOPE_FUTURE_DATE': return { message: 'Ngày sinh không thể ở tương lai.' };
     default:
-      return { message: error.message };
+      return { message: 'Chưa thể tính bản mệnh lúc này. Vui lòng thử lại.' };
   }
 }
 
@@ -37,8 +36,7 @@ export function EasternHoroscopeForm({ onCalculated }: { onCalculated?: (profile
 
   const calculate = useMutation({
     mutationFn: () => easternHoroscopeApi.calculate(birthDate),
-    onSuccess: async (profile) => {
-      await new Promise((resolve) => setTimeout(resolve, 400));
+    onSuccess: (profile) => {
       setResult(profile);
       setPhase('revealed');
       queryClient.invalidateQueries({ queryKey: ['eastern-horoscope'] });
@@ -48,11 +46,11 @@ export function EasternHoroscopeForm({ onCalculated }: { onCalculated?: (profile
       setPhase('idle');
       if (error instanceof ApiError) {
         if (error.code === 'PREMIUM_REQUIRED') {
-          setLimitBanner({ message: error.message, showUpgrade: true });
+          setLimitBanner({ message: 'Bạn đã dùng hết lượt miễn phí. Nâng cấp Premium để tiếp tục.', showUpgrade: true });
           return;
         }
         if (error.code === 'EASTERN_HOROSCOPE_DAILY_LIMIT_REACHED') {
-          setLimitBanner({ message: error.message, showUpgrade: false });
+          setLimitBanner({ message: 'Bạn đã đạt giới hạn tính hôm nay. Vui lòng quay lại sau.', showUpgrade: false });
           return;
         }
         setFieldError(fieldErrorFor(error).message);

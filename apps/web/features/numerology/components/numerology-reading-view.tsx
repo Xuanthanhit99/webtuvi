@@ -35,8 +35,8 @@ export function NumerologyReadingView({ reading, onChanged }: { reading: Numerol
 
       {lifePath && <section aria-labelledby="core-number-title" className="relative isolate overflow-hidden rounded-xl border border-[#b78ad0]/20 bg-[#090c1c] p-5 tablet:p-8">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_76%_45%,rgba(124,73,163,0.24),transparent_34%),linear-gradient(130deg,rgba(8,13,29,0.96),rgba(23,12,35,0.86))]" />
-        <div className="grid items-center gap-4 tablet:grid-cols-[minmax(0,1fr)_17rem]">
-          <div><p className="text-caption font-semibold uppercase tracking-[0.22em] text-[#c39cdb]">Con số trung tâm</p><h2 id="core-number-title" className="mt-2 font-serif text-heading-lg text-text-primary">Số chủ đạo của bạn</h2>{primaryMeaning && <div className="mt-4 max-w-xl"><p className="font-serif text-heading-sm text-[#f1d69d]">{primaryMeaning.title}</p><p className="mt-2 text-body-md leading-relaxed text-text-secondary">{primaryMeaning.meaning}</p></div>}{lifePath.isMasterNumber && <Badge variant="insight" className="mt-4">Số đặc biệt · giữ nguyên {lifePath.value}</Badge>}</div>
+        <div className="grid min-w-0 items-center gap-6 tablet:grid-cols-[minmax(0,1fr)_17rem]">
+          <div className="min-w-0"><p className="text-caption font-semibold uppercase tracking-[0.22em] text-[#c39cdb]">Con số trung tâm</p><h2 id="core-number-title" className="mt-2 font-serif text-heading-lg text-text-primary">Số chủ đạo của bạn</h2>{primaryMeaning && <div className="mt-4 max-w-xl"><p className="font-serif text-heading-sm text-[#f1d69d]">{primaryMeaning.title}</p><p className="mt-2 break-words text-body-md leading-relaxed text-text-secondary">{primaryMeaning.meaning}</p></div>}{lifePath.isMasterNumber && <Badge variant="insight" className="mt-4">Số đặc biệt · giữ nguyên {lifePath.value}</Badge>}</div>
           <Board04NumberMark value={String(lifePath.value)} compact />
         </div>
       </section>}

@@ -114,7 +114,7 @@ describe('NumerologyForm', () => {
     await user.type(screen.getByLabelText(/ngày sinh/i), '1990-01-01');
     await user.click(screen.getByRole('button', { name: /khám phá hồ sơ số học/i }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/free calculation limit/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Bạn đã dùng hết lượt miễn phí/i);
     const upgradeLink = screen.getByRole('link', { name: 'Nâng cấp Premium' });
     expect(upgradeLink).toHaveAttribute('href', '/premium?reason=required');
   });
