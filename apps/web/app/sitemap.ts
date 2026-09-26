@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { SITE_URL, isIndexingEnabled } from '@/lib/seo';
 import { PUBLIC_DISCOVERY_ROUTES } from '@/lib/route-guard';
 import { ARTICLES, CLUSTERS } from '@/features/knowledge/content';
+import { TAROT_CARD_SEO_PATH, tarotSeoCards } from '@/features/knowledge/tarot-cards';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   if (!isIndexingEnabled()) return [];
@@ -11,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: '/kien-thuc', priority: 0.8, changeFrequency: 'weekly' as const },
     ...Object.keys(CLUSTERS).map((cluster) => ({ path: `/kien-thuc/${cluster}`, priority: 0.75, changeFrequency: 'weekly' as const })),
     ...ARTICLES.map((article) => ({ path: `/kien-thuc/${article.cluster}/${article.slug}`, priority: 0.7, changeFrequency: 'monthly' as const })),
+    ...tarotSeoCards.map((card) => ({ path: `${TAROT_CARD_SEO_PATH}/${card.slug}`, priority: 0.65, changeFrequency: 'monthly' as const })),
     { path: '/about', priority: 0.5, changeFrequency: 'monthly' as const },
     { path: '/contact', priority: 0.4, changeFrequency: 'yearly' as const },
     { path: '/privacy', priority: 0.3, changeFrequency: 'yearly' as const },
