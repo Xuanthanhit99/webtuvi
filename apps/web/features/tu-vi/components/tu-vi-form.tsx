@@ -25,7 +25,7 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 function fieldErrorFor(error: ApiError): { field: FieldName; message: string } {
-  const message = ERROR_MESSAGES[error.code] ?? error.message;
+  const message = ERROR_MESSAGES[error.code] ?? 'Chưa thể lập lá số lúc này. Vui lòng thử lại.';
   if (['TUVI_INVALID_DATE_FORMAT', 'TUVI_INVALID_DATE', 'TUVI_DATE_OUT_OF_RANGE', 'TUVI_DATE_IN_FUTURE'].includes(error.code)) return { field: 'birthDate', message };
   if (['TUVI_INVALID_TIME_FORMAT', 'TUVI_INVALID_TIME'].includes(error.code)) return { field: 'birthTime', message };
   return { field: null, message };
@@ -51,7 +51,7 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
     onError: (error: unknown) => {
       if (error instanceof ApiError) {
         if (error.code === 'PREMIUM_REQUIRED' || error.code === 'TU_VI_DAILY_LIMIT_REACHED') {
-          setLimitBanner({ message: error.message, showUpgrade: error.code === 'PREMIUM_REQUIRED' });
+          setLimitBanner({ message: error.code === 'PREMIUM_REQUIRED' ? 'Bạn đã dùng hết lượt miễn phí. Nâng cấp Premium để tiếp tục.' : 'Bạn đã đạt giới hạn lập lá số hôm nay. Vui lòng quay lại sau.', showUpgrade: error.code === 'PREMIUM_REQUIRED' });
           return;
         }
         setFieldError(fieldErrorFor(error));
