@@ -109,7 +109,7 @@ describe('TarotDrawPanel', () => {
     await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/free single card limit/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Bạn đã dùng hết lượt miễn phí/i);
     const upgradeLink = screen.getByRole('link', { name: 'Nâng cấp Premium' });
     expect(upgradeLink).toHaveAttribute('href', '/premium?reason=required');
   });
@@ -125,7 +125,7 @@ describe('TarotDrawPanel', () => {
     await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(/single card limit \(15\)/i);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Bạn đã đạt giới hạn trải Tarot hôm nay/i);
     expect(screen.queryByRole('link', { name: 'Nâng cấp Premium' })).not.toBeInTheDocument();
   });
 
