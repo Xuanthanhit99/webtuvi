@@ -199,7 +199,7 @@ export function longInactivityRule(data: ReflectionUserData): ReflectionRuleFind
     window: windowFor(gapDays),
     windowStart: latest.timestamp,
     windowEnd: now,
-    reason: `It's been ${gapDays} days since your last activity in BeaconVie.`,
+    reason: `Đã ${gapDays} ngày kể từ hoạt động gần nhất của bạn trên Mệnh Vi.`,
     groupKey: `INACTIVITY:${data.userId}`,
     sources: [{ sourceType: latest.sourceType, sourceId: latest.id, sourceTimestamp: latest.timestamp }],
     scoreHints: {

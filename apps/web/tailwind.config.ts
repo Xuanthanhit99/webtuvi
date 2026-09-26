@@ -20,7 +20,7 @@ const config: Config = {
         // Accessibility + Product Polish (2026-08-19) — see packages/config/tokens.ts for the
         // full rationale: `disabled` is reserved for genuinely-inactive controls (WCAG 1.4.3
         // exempt), `tertiary` is for readable secondary/supporting text and must stay >=4.5:1.
-        'text-tertiary': '#6F747D',
+        'text-tertiary': '#89909C',
         'text-disabled': '#555B65',
         'text-primary-light': '#211D33',
         insight: '#D5AD62',

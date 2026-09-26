@@ -44,7 +44,7 @@ export function Sidebar() {
                   active
                     ? // Subtle indigo wash + a thin antique-gold outline — not a bright fill.
                       'bg-[#4b3f9e]/[0.14] text-text-primary ring-1 ring-inset ring-[#d5ad62]/30'
-                    : 'text-white/40 hover:bg-white/[0.04] hover:text-text-primary',
+                    : 'text-white/60 hover:bg-white/[0.04] hover:text-text-primary',
                 )}
               >
                 <item.icon className="h-4 w-4 shrink-0" aria-hidden="true" />

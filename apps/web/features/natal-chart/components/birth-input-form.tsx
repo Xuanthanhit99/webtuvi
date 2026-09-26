@@ -24,13 +24,15 @@ function fieldErrorFor(error: ApiError): { field: FieldName; message: string } {
   switch (error.code) {
     case 'NATAL_CHART_INVALID_DATE_FORMAT':
     case 'NATAL_CHART_INVALID_CALENDAR_DATE':
+      return { field: 'birthDate', message: 'Ngày sinh không hợp lệ. Vui lòng kiểm tra lại.' };
     case 'NATAL_CHART_FUTURE_DATE_NOT_ALLOWED':
+      return { field: 'birthDate', message: 'Ngày sinh không thể ở tương lai.' };
     case 'NATAL_CHART_DATE_TOO_OLD':
-      return { field: 'birthDate', message: error.message };
+      return { field: 'birthDate', message: 'Ngày sinh nằm ngoài khoảng thời gian có thể tính.' };
     case 'NATAL_CHART_INVALID_TIME_FORMAT':
-      return { field: 'birthTime', message: error.message };
+      return { field: 'birthTime', message: 'Giờ sinh không hợp lệ. Vui lòng nhập theo định dạng 24 giờ.' };
     case 'NATAL_CHART_LOCATION_NOT_RESOLVED':
-      return { field: 'place', message: error.message };
+      return { field: 'place', message: 'Không xác định được nơi sinh. Vui lòng tìm và chọn lại địa điểm.' };
     default:
       return { field: null, message: error.message };
   }
@@ -68,8 +70,8 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
       setCandidates(null);
       setSearchError(
         error instanceof ApiError && error.code === 'GEOCODING_UNAVAILABLE'
-          ? 'Location search is temporarily unavailable. Please try again in a moment.'
-          : "Couldn't search for that place. Please try again.",
+          ? 'Tìm kiếm địa điểm tạm thời không khả dụng. Vui lòng thử lại sau ít phút.'
+          : 'Chưa thể tìm địa điểm này. Vui lòng thử lại.',
       );
     },
   });
@@ -101,7 +103,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
         setFieldError(fieldErrorFor(error));
         return;
       }
-      setFieldError({ field: null, message: "Couldn't calculate your chart. Please try again." });
+      setFieldError({ field: null, message: 'Chưa thể lập bản đồ sao. Vui lòng thử lại.' });
     },
   });
 
@@ -109,7 +111,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
     event.preventDefault();
     setFieldError(null);
     if (placeQuery.trim().length === 0) {
-      setFieldError({ field: 'place', message: 'Enter a birth place to search.' });
+      setFieldError({ field: 'place', message: 'Nhập nơi sinh để tìm kiếm.' });
       return;
     }
     setSelectedCandidate(null);
@@ -122,15 +124,15 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
     setLimitBanner(null);
 
     if (!birthDate) {
-      setFieldError({ field: 'birthDate', message: 'Birth date is required.' });
+      setFieldError({ field: 'birthDate', message: 'Vui lòng nhập ngày sinh.' });
       return;
     }
     if (birthTimeKnown && !birthTime) {
-      setFieldError({ field: 'birthTime', message: 'Enter a birth time, or check "I don’t know my birth time."' });
+      setFieldError({ field: 'birthTime', message: 'Nhập giờ sinh, hoặc chọn "Tôi không biết giờ sinh".' });
       return;
     }
     if (!selectedCandidate) {
-      setFieldError({ field: 'place', message: 'Search for your birth place and select a match.' });
+      setFieldError({ field: 'place', message: 'Tìm nơi sinh và chọn một kết quả phù hợp.' });
       return;
     }
 
@@ -163,7 +165,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
             setSelectedCandidate(null);
           }}
         >
-          Calculate another chart
+          Lập bản đồ khác
         </Button>
       </div>
     );
@@ -172,7 +174,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
   return (
     <form onSubmit={handleSubmit} className="grid gap-5 rounded-md border border-[#d5ad62]/25 bg-[#06111d] p-4 tablet:grid-cols-[minmax(0,1fr)_18rem]" noValidate>
       <div className="flex flex-col gap-4">
-        <FormField label="Date of birth" htmlFor="natal-chart-birthdate" required error={fieldError?.field === 'birthDate' ? fieldError.message : undefined}>
+        <FormField label="Ngày sinh" htmlFor="natal-chart-birthdate" required error={fieldError?.field === 'birthDate' ? fieldError.message : undefined}>
           <Input
             id="natal-chart-birthdate"
             type="date"
@@ -184,9 +186,9 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
         </FormField>
 
         <FormField
-          label="Time of birth"
+          label="Giờ sinh"
           htmlFor="natal-chart-birthtime"
-          hint="Your time affects your houses and rising sign — without it, we can still map your planets and signs, just not those."
+          hint="Giờ sinh ảnh hưởng đến các nhà và Cung Mọc — nếu không có, Mệnh Vi vẫn tính được vị trí hành tinh và cung hoàng đạo, chỉ trừ hai phần này."
           error={fieldError?.field === 'birthTime' ? fieldError.message : undefined}
         >
           <div className="flex flex-col gap-2">
@@ -206,12 +208,12 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
                 setBirthTimeKnown(!unknown);
                 if (unknown) setBirthTime('');
               }}
-              label="I don’t know my birth time"
+              label="Tôi không biết giờ sinh"
             />
           </div>
         </FormField>
 
-        <FormField label="Place of birth" htmlFor="natal-chart-place" required error={fieldError?.field === 'place' ? fieldError.message : undefined}>
+        <FormField label="Nơi sinh" htmlFor="natal-chart-place" required error={fieldError?.field === 'place' ? fieldError.message : undefined}>
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-2 tablet:flex-row">
               <Input
@@ -222,13 +224,13 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
                   setSelectedCandidate(null);
                   setCandidates(null);
                 }}
-                placeholder="e.g. Hà Nội, Vietnam"
+                placeholder="Ví dụ: Hà Nội, Việt Nam"
                 maxLength={PLACE_QUERY_MAX_LENGTH}
                 invalid={fieldError?.field === 'place'}
               />
               <Button type="button" variant="secondary" onClick={handleSearch} loading={search.isPending}>
                 <Search className="h-4 w-4" aria-hidden="true" />
-                Search
+                Tìm kiếm
               </Button>
             </div>
 
@@ -245,13 +247,13 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
                   {selectedCandidate.label}
                 </span>
                 <Button type="button" variant="ghost" size="sm" onClick={() => setSelectedCandidate(null)}>
-                  Change
+                  Đổi
                 </Button>
               </div>
             ) : (
               candidates &&
               (candidates.length > 0 ? (
-                <ul className="flex flex-col gap-1.5" aria-label="Matching places">
+                <ul className="flex flex-col gap-1.5" aria-label="Địa điểm phù hợp">
                   {candidates.map((candidate) => (
                     <li key={candidate.token}>
                       <button
@@ -266,7 +268,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
                   ))}
                 </ul>
               ) : (
-                <p className="text-body-sm text-text-secondary">No matching places found. Try a different search.</p>
+                <p className="text-body-sm text-text-secondary">Không tìm thấy địa điểm phù hợp. Hãy thử từ khóa khác.</p>
               ))
             )}
           </div>
@@ -284,7 +286,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
             {limitBanner.showUpgrade && (
               <Link href="/premium?reason=required" className="self-start">
                 <Button variant="secondary" size="sm">
-                  Upgrade to Premium
+                  Nâng cấp Premium
                 </Button>
               </Link>
             )}
@@ -292,7 +294,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
         )}
 
         <Button type="submit" variant="primary" loading={phase === 'calculating'}>
-          {phase === 'calculating' ? 'Calculating your chart…' : 'Calculate my chart'}
+          {phase === 'calculating' ? 'Đang lập bản đồ sao…' : 'Lập bản đồ sao'}
         </Button>
       </div>
 
@@ -300,10 +302,10 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
         <p className="font-serif text-heading-sm text-[#efb96c]">Dữ liệu được chuẩn hóa</p>
         <p className="mt-2">Nơi sinh được xác nhận từ kết quả tìm kiếm; tọa độ và múi giờ được xử lý tự động để lập bản đồ chính xác.</p>
         <div className="mt-5 grid grid-cols-2 gap-2 text-caption">
-          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Tropical</span>
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Hoàng đạo nhiệt đới</span>
           <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Placidus</span>
-          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Major aspects</span>
-          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Saved history</span>
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Góc hợp chính</span>
+          <span className="rounded-md border border-[#d5ad62]/20 px-3 py-2">Lưu lịch sử</span>
         </div>
       </aside>
     </form>

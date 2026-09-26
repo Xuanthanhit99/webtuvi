@@ -11,6 +11,9 @@ env:
   API_PORT: 4000
   API_BASE_URL: http://localhost:4000
   FRONTEND_URL: http://localhost:3000
+  # Web SEO tests/build must model the canonical production origin.
+  NEXT_PUBLIC_APP_URL: https://tuvitarot.vn
+  NEXT_PUBLIC_SITE_INDEXABLE: 'true'
   APP_PUBLIC_URL: http://localhost:3000
   CORS_ORIGINS: http://localhost:3000
   JWT_ACCESS_SECRET: ci-only-access-secret-not-for-production-use-000000
@@ -28,8 +31,13 @@ env:
   EMAIL_FROM: 'BeaconVie CI <no-reply@beaconvie.local>'
   MAILPIT_HOST: localhost
   MAILPIT_PORT: 1025
-  AUTH_RATE_LIMIT_MAX: 200
+  # CI/E2E shares one runner IP across hundreds of auth requests. Keep production
+  # limits unchanged; this test-only ceiling prevents cross-spec throttling.
+  AUTH_RATE_LIMIT_MAX: 2000
   AUTH_RATE_LIMIT_WINDOW_MS: 900000
+  # Dedicated account/memory/journal export bucket; test runner shares one IP.
+  EXPORT_RATE_LIMIT_MAX: 100
+  EXPORT_RATE_LIMIT_WINDOW_MS: 60000
   RATE_LIMIT_REDIS_PREFIX: 'beaconvie:throttle:ci'
   TRUST_PROXY: 'false'
   DEFAULT_AI_PROVIDER: mock
@@ -48,8 +56,21 @@ env:
   AI_DAILY_REQUEST_LIMIT: 1000
   AI_DAILY_TOKEN_LIMIT: 200000
   AI_MONTHLY_TOKEN_LIMIT: 2000000
+  DISCOVERY_RATE_LIMIT_MAX: 500
+  DISCOVERY_RATE_LIMIT_WINDOW_MS: 60000
+  DISCOVERY_RATE_LIMIT_IP_MAX: 1000
+  # Test-only payment configuration; mock checkout prevents external PayOS calls.
+  PAYOS_CLIENT_ID: test-only-payos-client-id-not-for-production
+  PAYOS_API_KEY: test-only-payos-api-key-not-for-production
+  PAYOS_CHECKSUM_KEY: test-only-payos-checksum-key-not-for-production-xxxxx
+  PAYOS_BASE_URL: https://api-merchant.payos.vn
+  PAYOS_MOCK_CHECKOUT: 'true'
+  PAYMENTS_ENABLED: 'true'
+  PREMIUM_PRICE_VND: 79000
+  PREMIUM_DURATION_DAYS: 30
+  PAYMENT_RATE_LIMIT_MAX: 200
+  PAYMENT_RATE_LIMIT_WINDOW_MS: 60000
   NEXT_PUBLIC_API_URL: http://localhost:4000
-  NEXT_PUBLIC_APP_URL: http://localhost:3000
 
 jobs:
   build-and-test:
@@ -86,12 +107,10 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22.17.0
           cache: pnpm
 
       - name: Install dependencies
@@ -120,6 +139,9 @@ jobs:
       - name: Prisma migrate status (fails if schema and migrations have drifted)
         run: pnpm --filter @beaconvie/api exec prisma migrate status
 
+      - name: Seed reference data for backend e2e
+        run: pnpm --filter @beaconvie/api prisma:seed:reference
+
       - name: Backend unit + e2e tests
         run: |
           pnpm --filter @beaconvie/api test
@@ -144,15 +166,17 @@ jobs:
       - name: Seed demo account (flows 2 and 3 log in as demo@beaconvie.local)
         run: pnpm --filter @beaconvie/api prisma:seed
 
-      - name: Run Playwright e2e (production build)
+      - name: Run production-readiness Playwright gate
         run: |
           node apps/api/dist/src/main.js &
           API_PID=$!
-          pnpm --filter @beaconvie/web start &
+          # NEXT_PUBLIC_APP_URL is intentionally the production canonical at build time for
+          # metadata/robots/sitemap. The browser itself must still talk to the local CI server.
+          NEXT_PUBLIC_APP_URL=http://localhost:3000 pnpm --filter @beaconvie/web start &
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          pnpm --filter @beaconvie/web test:e2e
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE

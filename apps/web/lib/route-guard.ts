@@ -6,7 +6,6 @@ export const AUTH_ROUTES = ['/login', '/register'];
 export const APP_ROUTES = [
   '/companion',
   '/journal',
-  '/discover',
   '/settings',
   '/memory',
   '/goals',
@@ -23,28 +22,21 @@ export const APP_ROUTES = [
 ];
 export const ONBOARDING_ROUTE = '/onboarding';
 
+export const PUBLIC_DISCOVERY_ROUTES = [
+  '/discover', '/discover/tu-vi', '/discover/tarot', '/discover/natal-chart',
+  '/discover/numerology', '/discover/eastern-horoscope',
+] as const;
+
+export function isPublicDiscoveryRoute(pathname: string): boolean {
+  return PUBLIC_DISCOVERY_ROUTES.some((route) => route === pathname);
+}
+
 // Sprint 14 (Ambiguity Cleanup) — `/menh-vi/*` is archived from public routing (see
 // app/menh-vi/layout.tsx and middleware.ts). Kept as a pure, unit-testable predicate for the same
 // reason resolveRedirect() is: middleware.ts can't be exercised directly without constructing a
 // real NextRequest.
 export function isArchivedRoute(pathname: string): boolean {
   return pathname === '/menh-vi' || pathname.startsWith('/menh-vi/');
-}
-
-const LEGACY_MENH_VI_REDIRECTS: Record<string, string> = {
-  '/menh-vi': '/',
-  '/menh-vi/la-so': '/discover/tu-vi',
-  '/menh-vi/tarot': '/discover/tarot',
-  '/menh-vi/ban-do-sao': '/discover/natal-chart',
-  '/menh-vi/than-so-hoc': '/discover/numerology',
-  '/menh-vi/kham-pha': '/discover',
-  '/menh-vi/cong-dong': '/community',
-  '/menh-vi/toi': '/settings',
-  '/menh-vi/nhat-ky-van-menh': '/journal',
-};
-
-export function resolveLegacyMenhViRedirect(pathname: string): string | null {
-  return LEGACY_MENH_VI_REDIRECTS[pathname.replace(/\/$/, '')] ?? null;
 }
 
 /** Interim Sprint — Admin Operator Tooling. Deliberately a separate predicate from
@@ -72,7 +64,7 @@ export function resolveRedirect({ pathname, hasAccessToken, session }: RouteGuar
   if (pathname === '/dashboard' || pathname.startsWith('/dashboard/')) return '/';
 
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
-  const isAppRoute = APP_ROUTES.some((route) => pathname.startsWith(route));
+  const isAppRoute = APP_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
   const isOnboardingRoute = pathname === ONBOARDING_ROUTE;
 
   if (!hasAccessToken || !session) {

@@ -1,16 +1,8 @@
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { NatalChartDashboard } from '@/features/natal-chart/components/natal-chart-dashboard';
+import { DiscoveryEntry } from '@/components/marketing/discovery-entry';
+import { createPublicSystemMetadata, PublicSystemLanding } from '@/components/marketing/public-system-landing';
 
-export const metadata: Metadata = {
-  title: 'Natal Chart',
-  description: 'A real, deterministic birth chart calculated from your birth date, time, and place — no placement is ever chosen or invented by AI.',
-};
+export const metadata = createPublicSystemMetadata('ban-do-sao');
 
-export default function NatalChartPage() {
-  return (
-    <Suspense fallback={null}>
-      <NatalChartDashboard />
-    </Suspense>
-  );
+export default function Page() {
+  return <DiscoveryEntry system="ban-do-sao"><PublicSystemLanding slug="ban-do-sao" /></DiscoveryEntry>;
 }

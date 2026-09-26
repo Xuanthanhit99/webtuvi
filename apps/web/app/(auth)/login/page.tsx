@@ -9,6 +9,8 @@ export const metadata: Metadata = buildMetadata({
   title: 'Đăng nhập',
   description: 'Đăng nhập Mệnh Vi để tiếp tục hành trình Tử Vi, Tarot, bản đồ sao và thần số học của bạn.',
   path: '/login',
+  // Auth forms stay out of the index; the (auth) layout's noindex would otherwise be overridden here.
+  noindex: true,
 });
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {

@@ -15,6 +15,7 @@ const FOOTER_COLUMNS = [
       { label: 'Lá số Tử Vi', href: '/discover/tu-vi' },
       { label: 'Bản đồ sao', href: '/discover/natal-chart' },
       { label: 'Thần số học', href: '/discover/numerology' },
+      { label: 'Ngũ hành phương Đông', href: '/discover/eastern-horoscope' },
       { label: 'Khám phá', href: '/discover' },
     ],
   },
@@ -60,7 +61,7 @@ export function HomeFooter() {
           </div>
         ))}
       </div>
-      <p className="mt-8 border-t border-white/[0.06] py-6 text-center text-caption text-[#6f7075]">
+      <p className="mt-8 border-t border-white/[0.06] py-6 text-center text-caption text-text-secondary">
         © {new Date().getFullYear()} Mệnh Vi. Bảo lưu mọi quyền.
       </p>
     </footer>

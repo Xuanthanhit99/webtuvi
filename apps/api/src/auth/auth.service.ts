@@ -155,10 +155,27 @@ export class AuthService {
       });
     }
 
-    await this.prisma.userSession.update({
-      where: { id: session.id },
+    // Atomically claim this refresh token. A plain update-by-id allows two concurrent
+    // requests to both read revokedAt=null before either write commits, so both can rotate
+    // the same token. updateMany adds revokedAt=null to the write predicate, making exactly
+    // one request the winner without holding a long transaction across token issuance.
+    const claimed = await this.prisma.userSession.updateMany({
+      where: { id: session.id, revokedAt: null },
       data: { revokedAt: new Date(), lastUsedAt: new Date() },
     });
+
+    if (claimed.count !== 1) {
+      // Another request already consumed this token. Treat the loser exactly like replay
+      // detection and revoke any replacement session in the same family defensively.
+      await this.prisma.userSession.updateMany({
+        where: { familyId: payload.familyId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+      throw new UnauthorizedException({
+        code: 'SESSION_EXPIRED',
+        message: 'Your session has expired. Please log in again.',
+      });
+    }
 
     const tokens = await this.issueTokens(user.id, userAgent, payload.familyId);
     return { user, tokens };

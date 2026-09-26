@@ -22,7 +22,7 @@
  *   - HOME_BACKGROUND.journeyBanner — current replacement 1672×941
  *   - FEATURE_ART_ASSET.*           — current replacements ~1414×1112 each
  *   - ARTICLE_COVER_ASSET.*         — current dedicated replacements 1659×948 each
- *   - HOME_MOBILE_VISUALS.*         — currently ~110×250  → target ≥800×1600 each
+ *   - HOME_MOBILE_VISUALS.*         — production replacements are present; keep target ≥800×1600 for future swaps
  *
  * Operational note: the built-in Next.js image optimizer caches generated variants; a same-path
  * file swap should be picked up on the next build/deploy, but front-end/CDN caches downstream of

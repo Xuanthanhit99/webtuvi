@@ -1,0 +1,10 @@
+HTTP/1.1 307 Temporary Redirect
+Date: Thu, 24 Sep 2026 02:26:11 GMT
+location: /login?next=%2Fdiscover%2Ftu-vi
+Server: railway-hikari
+x-railway-request-id: gP2jKd1fQaKVIWLw2prcFg
+Transfer-Encoding: chunked
+x-hikari-trace: hkg1.aebn
+x-railway-edge: hkg1
+Connection: keep-alive
+

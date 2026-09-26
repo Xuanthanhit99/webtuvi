@@ -1,16 +1,8 @@
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { NumerologyDashboard } from '@/features/numerology/components/numerology-dashboard';
+import { DiscoveryEntry } from '@/components/marketing/discovery-entry';
+import { createPublicSystemMetadata, PublicSystemLanding } from '@/components/marketing/public-system-landing';
 
-export const metadata: Metadata = {
-  title: 'Thần Số Học',
-  description: 'Khám phá sáu chỉ số Thần số học cốt lõi từ họ tên khai sinh và ngày sinh của bạn.',
-};
+export const metadata = createPublicSystemMetadata('than-so-hoc');
 
-export default function NumerologyPage() {
-  return (
-    <Suspense fallback={null}>
-      <NumerologyDashboard />
-    </Suspense>
-  );
+export default function Page() {
+  return <DiscoveryEntry system="than-so-hoc"><PublicSystemLanding slug="than-so-hoc" /></DiscoveryEntry>;
 }

@@ -232,7 +232,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
             <div className="absolute inset-x-8 bottom-4 h-20 rounded-[50%] border border-insight/20 opacity-70" aria-hidden="true" />
             <div className="relative flex h-full scale-[0.82] items-center justify-center tablet:scale-100">
               <div className="-mr-12 rotate-[-18deg] opacity-80"><TarotCardVisual id="hero-star" name="The Star" size="md" imageSrc="/assets/tarot-card/17-the-star.webp" /></div>
-              <div className="z-[1] rotate-[6deg]"><TarotCardVisual id="hero-back" name="Tarot card back" size="lg" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} /></div>
+              <div className="z-[1] rotate-[6deg]"><TarotCardVisual id="hero-back" name="Mặt sau lá Tarot" size="lg" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} /></div>
               <div className="-ml-14 mt-10 rotate-[17deg] opacity-85"><TarotCardVisual id="hero-cups" name="Ace of Cups" size="md" imageSrc="/assets/tarot-card/cups-ace.webp" /></div>
             </div>
           </div>
@@ -319,7 +319,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
               <span>{limitBanner.message}</span>
               {limitBanner.showUpgrade && (
                 <Link href="/premium?reason=required" className="self-start">
-                  <Button variant="secondary" size="sm">Upgrade to Premium</Button>
+                  <Button variant="secondary" size="sm">Nâng cấp Premium</Button>
                 </Link>
               )}
             </div>
@@ -367,7 +367,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
                   <div key={slotPos} className="flex h-48 w-32 items-center justify-center rounded-md border border-dashed border-insight/25">
                     {filledIndex !== undefined ? (
                       <motion.span layout layoutId={`tarot-fan-card-${filledIndex}`} transition={{ duration: ritual.reducedMotion ? 0.15 : 0.5, ease: [0.22, 1, 0.36, 1] }}>
-                        <TarotCardVisual id={`select-${filledIndex}`} name="Tarot card back" size="md" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
+                        <TarotCardVisual id={`select-${filledIndex}`} name="Mặt sau lá Tarot" size="md" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
                       </motion.span>
                     ) : (
                       <span className="text-caption text-text-tertiary">{slotPos + 1}</span>
@@ -408,7 +408,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
                         available ? 'hover:brightness-110' : 'opacity-35'
                       }`}
                     >
-                      <TarotCardVisual id={`select-${index}`} name="Tarot card back" size="md" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
+                      <TarotCardVisual id={`select-${index}`} name="Mặt sau lá Tarot" size="md" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
                     </motion.button>
                   );
                 });

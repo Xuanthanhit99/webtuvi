@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
 import { DashboardView } from './dashboard-view';
@@ -110,7 +110,7 @@ describe('Mệnh Vi Home page', () => {
     renderWithQuery(<DashboardView />);
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
-    expect(screen.getByText(/Đăng nhập để xem Dòng chảy hôm nay/i)).toBeInTheDocument();
+    expect(screen.getByText(/Khám phá bản thân qua Tử Vi, Tarot/i)).toBeInTheDocument();
     // The old onboarding/trust sections are gone entirely, not replaced by something similar.
     expect(screen.queryByText('Bắt đầu hành trình của bạn')).not.toBeInTheDocument();
     expect(screen.queryByText('Bắt đầu từ đâu?')).not.toBeInTheDocument();
@@ -123,7 +123,7 @@ describe('Mệnh Vi Home page', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
     const tuViLinks = screen.getAllByRole('link', { name: /Lá số Tử Vi/i });
-    expect(tuViLinks.some((link) => link.getAttribute('href')?.startsWith('/register?next='))).toBe(true);
+    expect(tuViLinks.some((link) => link.getAttribute('href') === '/discover/tu-vi')).toBe(true);
     expect(dashboardApi.get).not.toHaveBeenCalled();
     expect(tarotApi.listReadings).not.toHaveBeenCalled();
     expect(premiumApi.status).not.toHaveBeenCalled();
@@ -132,8 +132,6 @@ describe('Mệnh Vi Home page', () => {
 
   it('maps authenticated Home CTAs to real routes and fires specific analytics', async () => {
     renderWithQuery(<DashboardView />);
-    const user = userEvent.setup();
-
     await screen.findByText(/Cần ngày, giờ và nơi sinh/);
     const tuVi = screen.getAllByRole('link', { name: /Lá số Tử Vi/i }).find((link) => link.getAttribute('href') === '/discover/tu-vi')!;
     const tarot = screen.getAllByRole('link', { name: /Tarot/i }).find((link) => link.getAttribute('href') === '/discover/tarot')!;
@@ -146,10 +144,10 @@ describe('Mệnh Vi Home page', () => {
     expect(numerology).toHaveAttribute('href', '/discover/numerology');
 
     [tuVi, tarot, natal, numerology].forEach((link) => link.addEventListener('click', (event) => event.preventDefault()));
-    await user.click(tuVi);
-    await user.click(tarot);
-    await user.click(natal);
-    await user.click(numerology);
+    fireEvent.click(tuVi);
+    fireEvent.click(tarot);
+    fireEvent.click(natal);
+    fireEvent.click(numerology);
 
     expect(trackEvent).toHaveBeenCalledWith('home_tuvi_clicked', { feature: 'tu_vi', source: 'home' });
     expect(trackEvent).toHaveBeenCalledWith('home_tarot_clicked', { feature: 'tarot', source: 'home' });
@@ -209,4 +207,14 @@ describe('Mệnh Vi Home page', () => {
 
     expect(await screen.findByText('Bản đồ sao gần nhất')).toBeInTheDocument();
   });
+});
+
+
+it('renders public content while authentication is unresolved without fetching private data', () => {
+  jest.clearAllMocks();
+  (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: true });
+  renderWithQuery(<DashboardView />);
+  expect(screen.getByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
+  expect(dashboardApi.get).not.toHaveBeenCalled();
+  expect(tarotApi.listReadings).not.toHaveBeenCalled();
 });

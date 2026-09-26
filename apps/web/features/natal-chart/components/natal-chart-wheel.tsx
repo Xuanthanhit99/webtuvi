@@ -1,5 +1,5 @@
 import type { NatalChartDto } from '@beaconvie/types';
-import { ASPECT_TYPE_LINE_STYLE, PLANET_GLYPHS, SIGN_GLYPHS, SIGN_ORDER } from '../labels';
+import { ASPECT_TYPE_LINE_STYLE, PLANET_GLYPHS, SIGN_GLYPHS, SIGN_LABELS, SIGN_ORDER } from '../labels';
 
 const SIZE = 320;
 const CENTER = SIZE / 2;
@@ -15,6 +15,11 @@ const ASPECT_LINE_COLOR: Record<'harmonious' | 'tense' | 'neutral', string> = {
   tense: '#9D453E',
   neutral: '#8E7243',
 };
+
+function signName(chart: NatalChartDto, body: 'sun' | 'moon'): string {
+  const sign = chart.placements.find((p) => p.body === body)?.sign;
+  return sign ? SIGN_LABELS[sign] : 'chưa xác định';
+}
 
 function toRad(deg: number): number {
   return (deg * Math.PI) / 180;
@@ -80,10 +85,8 @@ export function NatalChartWheel({ chart }: { chart: NatalChartDto }) {
   const sortedPlacements = [...chart.placements].sort((a, b) => a.longitude - b.longitude);
   const radii = planetRadii(sortedPlacements.map((p) => p.longitude));
 
-  const ascLabel = chart.ascendant ? `Ascendant in ${chart.ascendant.sign}` : 'Ascendant unavailable';
-  const summaryLabel = `Natal chart wheel. Sun in ${chart.placements.find((p) => p.body === 'sun')?.sign ?? 'unknown'}, Moon in ${
-    chart.placements.find((p) => p.body === 'moon')?.sign ?? 'unknown'
-  }. ${ascLabel}. Full details are listed in the sections below.`;
+  const ascLabel = chart.ascendant ? `Cung Mọc tại ${SIGN_LABELS[chart.ascendant.sign]}` : 'Chưa xác định Cung Mọc';
+  const summaryLabel = `Vòng bản đồ sao. Mặt Trời tại ${signName(chart, 'sun')}, Mặt Trăng tại ${signName(chart, 'moon')}. ${ascLabel}. Chi tiết đầy đủ được liệt kê ở các phần bên dưới.`;
 
   return (
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={summaryLabel} className="mx-auto w-full max-w-[30rem] drop-shadow-[0_0_32px_rgba(213,173,98,0.18)]">

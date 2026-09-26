@@ -290,7 +290,7 @@ describe('MemoryRecordService — timeline', () => {
 
     const page = await service.timeline(OWNER, {});
 
-    expect(page.items[0]!.whyThisMemory).toMatch(/companion/i);
+    expect(page.items[0]!.whyThisMemory).toMatch(/người đồng hành/i);
     expect(page.items[0]!.sourceAvailable).toBe(true);
     expect(page.items[0]!.consentExplanation.length).toBeGreaterThan(0);
   });

@@ -129,7 +129,7 @@ function formatTieuHan(tieuHan: TuViCurrentTieuHanDto | null): string | null {
 
 export function DashboardView() {
   const { user, isLoading: authLoading } = useAuth();
-  const isGuest = !authLoading && !user;
+  const isGuest = !user;
 
   const dashboardQuery = useQuery({
     ...HOME_QUERY_OPTIONS,
@@ -183,7 +183,7 @@ export function DashboardView() {
     <div className="relative flex flex-col gap-10 text-[#f2eee5] tablet:gap-12">
       <PageAtmosphere />
       <HomeHero
-        authLoading={authLoading}
+        authLoading={false}
         isGuest={isGuest}
         userName={firstName(user?.displayName)}
         greeting={greeting}

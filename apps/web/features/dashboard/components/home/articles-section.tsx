@@ -4,17 +4,11 @@ import { ArrowRight } from 'lucide-react';
 import { ARTICLE_COVER_ASSET } from './production-assets';
 import { trackEvent } from '@/lib/analytics';
 
-/**
- * Static fallback — there is no articles/blog/CMS backend in this codebase yet (checked
- * apps/api/src/** and packages/types for an "article"/"blog"/"editorial" module; none exists).
- * These are illustrative editorial entries with dedicated editorial covers. Swap the entries
- * for a real content API once one ships — do not fabricate one here.
- */
 const ARTICLES = [
-  { category: 'Tử Vi', title: 'Rằm tháng 7 âm lịch – Ý nghĩa và những điều cần biết', readTime: '5 phút đọc', asset: 'tu_vi', href: '/discover/tu-vi', objectPosition: '50% 20%' },
-  { category: 'Tarot', title: 'Ý nghĩa 78 lá bài Tarot – Bộ môn đọc vị tâm hồn', readTime: '7 phút đọc', asset: 'tarot', href: '/discover/tarot', objectPosition: '50% 75%' },
-  { category: 'Chiêm tinh', title: 'Các hành tinh trong chiêm tinh – Ảnh hưởng đến cuộc sống bạn', readTime: '6 phút đọc', asset: 'natal_chart', href: '/discover/natal-chart', objectPosition: '35% 40%' },
-  { category: 'Thần số học', title: 'Thần số học là gì? Hướng dẫn cách tính và ý nghĩa', readTime: '6 phút đọc', asset: 'numerology', href: '/discover/numerology', objectPosition: '65% 30%' },
+  { category: 'Tử Vi', title: 'Tử Vi Đẩu Số – Bắt đầu với lá số và 12 cung', readTime: 'Tìm hiểu và bắt đầu', asset: 'tu_vi', href: '/discover/tu-vi', objectPosition: '50% 20%' },
+  { category: 'Tarot', title: 'Tarot 78 lá – Chọn cách trải bài phù hợp', readTime: 'Tìm hiểu và bắt đầu', asset: 'tarot', href: '/discover/tarot', objectPosition: '50% 75%' },
+  { category: 'Chiêm tinh', title: 'Bản đồ sao – Hành tinh, nhà và các góc hợp', readTime: 'Tìm hiểu và bắt đầu', asset: 'natal_chart', href: '/discover/natal-chart', objectPosition: '35% 40%' },
+  { category: 'Thần số học', title: 'Thần số học – Khám phá sáu chỉ số cốt lõi', readTime: 'Tìm hiểu và bắt đầu', asset: 'numerology', href: '/discover/numerology', objectPosition: '65% 30%' },
 ] as const;
 
 export function ArticlesSection() {
@@ -22,7 +16,7 @@ export function ArticlesSection() {
     <section aria-labelledby="articles-heading" className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 id="articles-heading" className="font-display text-heading-md font-semibold text-[#f2eee5]">
-          Bài viết nổi bật
+          Tìm hiểu các hệ khám phá
         </h2>
         <Link href="/discover" className="inline-flex items-center gap-1.5 text-body-sm font-semibold text-[#e6c980]">
           Xem tất cả <ArrowRight className="h-4 w-4" aria-hidden="true" />

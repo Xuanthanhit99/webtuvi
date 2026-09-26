@@ -272,29 +272,29 @@ function groupFor(date: Date): 'today' | 'this_week' | 'earlier' {
 function whyThisMemoryFor(memory: Memory): string {
   switch (memory.sourceType) {
     case 'ONBOARDING':
-      return 'From your onboarding conversation.';
+      return 'Từ cuộc trò chuyện làm quen của bạn.';
     case 'COMPANION':
-      return 'From a conversation with your Companion.';
+      return 'Từ cuộc trò chuyện với người đồng hành.';
     case 'USER_EXPLICIT':
-      return 'You asked BeaconVie to remember this.';
+      return 'Bạn đã yêu cầu Mệnh Vi ghi nhớ điều này.';
     case 'MIGRATED_LEGACY':
-      return 'Carried over from an earlier version of BeaconVie.';
+      return 'Được giữ lại từ phiên bản trước của Mệnh Vi.';
     case 'SYSTEM_TEST':
-      return 'Created for testing.';
+      return 'Được tạo để kiểm thử.';
   }
 }
 
 function consentExplanationFor(memory: Memory): string {
   switch (memory.consentState) {
     case 'ALLOW_TYPE':
-      return `You've allowed all ${memory.type.toLowerCase().replace('_', ' ')} memories.`;
+      return 'Bạn đã cho phép lưu các ký ức thuộc nhóm này.';
     case 'ALLOW_SELECTED':
-      return 'You allowed this specific memory.';
+      return 'Bạn đã cho phép lưu ký ức này.';
     case 'ASK_EVERY_TIME':
-      return 'You confirmed this memory when it was created.';
+      return 'Bạn đã xác nhận khi ký ức này được tạo.';
     case 'DENY_TYPE':
     case 'DISABLED':
-      return 'Kept from before this setting changed.';
+      return 'Được lưu từ trước khi cài đặt này thay đổi.';
   }
 }
 

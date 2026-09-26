@@ -7,7 +7,7 @@ import { houseLabel, PLANET_GLYPHS, PLANET_LABELS, SIGN_LABELS } from '../labels
  * §20). Real data + fixed traditional meaning only — never AI-generated. */
 export function PlanetList({ placements }: { placements: NatalPlacementDto[] }) {
   return (
-    <ul className="flex flex-col gap-2" aria-label="Planets">
+    <ul className="flex flex-col gap-2" aria-label="Các hành tinh">
       {placements.map((placement) => (
         <li key={placement.body} className="flex flex-col gap-1 rounded-md border border-[#d5ad62]/20 bg-[#071827] p-3">
           <div className="flex flex-wrap items-center gap-2">
@@ -16,10 +16,10 @@ export function PlanetList({ placements }: { placements: NatalPlacementDto[] }) 
             </span>
             <span className="text-body-sm font-semibold text-text-primary">{PLANET_LABELS[placement.body]}</span>
             <span className="text-body-sm text-text-secondary">
-              in {SIGN_LABELS[placement.sign]} · {placement.degreeInSign.toFixed(1)}°
+              tại {SIGN_LABELS[placement.sign]} · {placement.degreeInSign.toFixed(1)}°
             </span>
             {placement.house !== null && <Badge variant="neutral">{houseLabel(placement.house)}</Badge>}
-            {placement.retrograde && <Badge variant="medium">Retrograde</Badge>}
+            {placement.retrograde && <Badge variant="medium">Nghịch hành</Badge>}
           </div>
           <p className="text-body-sm text-text-secondary">{placement.meaning}</p>
         </li>

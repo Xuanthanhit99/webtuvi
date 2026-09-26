@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authReturnUrl, safeNextPath } from '@/lib/safe-next-path';
-import { isArchivedRoute, isAdminRoute, resolveLegacyMenhViRedirect, resolveRedirect } from '@/lib/route-guard';
+import { isArchivedRoute, isAdminRoute, isPublicDiscoveryRoute, resolveRedirect } from '@/lib/route-guard';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 const ACCESS_TOKEN_COOKIE = 'beaconvie_access_token';
@@ -18,6 +18,7 @@ async function fetchMe(cookieHeader: string): Promise<{ onboardingCompletedAt: s
     const res = await fetch(`${API_URL}/auth/me`, {
       headers: { cookie: cookieHeader },
       cache: 'no-store',
+      signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return null;
     const json = (await res.json()) as MeResponse;
@@ -30,22 +31,21 @@ async function fetchMe(cookieHeader: string): Promise<{ onboardingCompletedAt: s
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  const legacyRedirect = resolveLegacyMenhViRedirect(pathname);
-  if (legacyRedirect) {
-    return NextResponse.redirect(new URL(legacyRedirect, req.url));
-  }
-
-  // `/menh-vi/*` routes with no canonical equivalent remain archived from public routing. Rewriting
-  // before Next's route resolution forces true not-found handling instead of rendering an isolated
-  // prototype surface.
+  // Archived prototypes are always 404, including routes with a live tool equivalent.
   if (isArchivedRoute(pathname)) {
     return NextResponse.rewrite(new URL('/__archived-menh-vi-not-found__', req.url));
   }
 
   const hasAccessToken = req.cookies.has(ACCESS_TOKEN_COOKIE);
+  const publicDiscovery = isPublicDiscoveryRoute(pathname);
+  const privateReading = publicDiscovery && req.nextUrl.searchParams.has('item');
+  // Public HTML never waits for auth. Personal results still require a valid session.
+  if ((pathname === '/' || publicDiscovery) && !privateReading) return NextResponse.next();
 
   const session = hasAccessToken ? await fetchMe(req.headers.get('cookie') ?? '') : null;
-  const redirectTo = resolveRedirect({ pathname, hasAccessToken, session });
+  const redirectTo = privateReading
+    ? !session ? '/login' : !session.onboardingCompletedAt ? '/onboarding' : null
+    : resolveRedirect({ pathname, hasAccessToken, session });
 
   if (redirectTo) {
     const destination = pathname === '/login' || pathname === '/register' || pathname === '/onboarding'
@@ -54,7 +54,10 @@ export async function middleware(req: NextRequest) {
     const target = redirectTo === '/login' || redirectTo === '/onboarding'
       ? authReturnUrl(redirectTo, destination)
       : pathname === '/login' || pathname === '/register' || pathname === '/onboarding' ? destination : redirectTo;
-    return NextResponse.redirect(new URL(target, req.url));
+    const response = NextResponse.redirect(new URL(target, req.url));
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    response.headers.set('Cache-Control', 'private, no-store');
+    return response;
   }
 
   // Interim Sprint — Admin Operator Tooling: reached only once the visitor is confirmed
@@ -68,7 +71,12 @@ export async function middleware(req: NextRequest) {
     return NextResponse.rewrite(new URL('/__admin-not-found__', req.url));
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  if (privateReading) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    response.headers.set('Cache-Control', 'private, no-store');
+  }
+  return response;
 }
 
 export const config = {

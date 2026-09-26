@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { buildMetadata } from '@/lib/seo';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Compass, Layers3 } from 'lucide-react';
@@ -6,10 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
 import { FEATURE_ART_ASSET } from '@/features/dashboard/components/home/production-assets';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMetadata({
+  path: '/discover',
   title: 'Khám Phá',
   description: 'Chọn một hệ quy chiếu phù hợp để khám phá bản thân qua Tử Vi, Tarot, Bản đồ sao, Thần số học và Ngũ Hành Phương Đông.',
-};
+});
 
 const SYSTEMS = [
   { key: 'tu_vi', title: 'Tử Vi Lá Số', question: 'Bức tranh vận trình của mình được cấu thành như thế nào?', description: 'Lập lá số Tử Vi Đẩu Số từ ngày, giờ sinh và giới tính theo hệ quy tắc truyền thống đã được kiểm chứng.', href: '/discover/tu-vi', accent: 'text-[#d9b06c]' },
@@ -26,7 +28,7 @@ const PATHS = [
 
 export default function DiscoverPage() {
   return (
-    <main className="flex flex-col gap-12 pb-12">
+    <div className="flex flex-col gap-12 pb-12">
       <AnalyticsPageView event="discover_viewed" properties={{ feature: 'discover' }} />
 
       <header className="relative isolate overflow-hidden rounded-xl border border-[rgba(213,173,98,0.18)] bg-[#080d18] px-5 py-8 tablet:px-9 tablet:py-11 desktop:px-12">
@@ -46,7 +48,7 @@ export default function DiscoverPage() {
         <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-[1.15fr_1fr_1fr]">
           {SYSTEMS.map((system, index) => (
             <Link key={system.title} href={system.href} className={`group relative isolate min-h-[18rem] overflow-hidden rounded-xl border border-white/10 bg-[#0a101c] p-5 transition-colors hover:border-[#d5ad62]/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] tablet:p-7 ${index === 0 ? 'desktop:row-span-2 desktop:min-h-[37rem]' : ''} ${index === 3 ? 'desktop:col-span-2' : ''}`}>
-              <Image src={FEATURE_ART_ASSET[system.key]} alt="" fill sizes={index === 0 ? '(min-width: 1280px) 46vw, (min-width: 768px) 50vw, 100vw' : '(min-width: 1280px) 34vw, (min-width: 768px) 50vw, 100vw'} className="-z-10 object-cover opacity-55 transition duration-700 ease-organic group-hover:scale-[1.025] group-hover:opacity-65" />
+              <Image src={FEATURE_ART_ASSET[system.key]} alt="" fill sizes={index === 0 ? '(min-width: 1536px) 390px, (min-width: 1280px) 31vw, (min-width: 768px) 50vw, 100vw' : '(min-width: 1536px) 420px, (min-width: 1280px) 31vw, (min-width: 768px) 50vw, 100vw'} className="-z-10 object-cover opacity-55 transition duration-700 ease-organic group-hover:scale-[1.025] group-hover:opacity-65" />
               <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-t from-[#080d18] via-[#080d18]/72 to-transparent" />
               <div className="flex h-full flex-col justify-end">
                 <p className={`text-caption font-semibold uppercase tracking-[0.18em] ${system.accent}`}>{String(index + 1).padStart(2, '0')}</p>
@@ -70,13 +72,13 @@ export default function DiscoverPage() {
       <section aria-labelledby="paths-heading">
         <div className="mb-5"><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Gợi ý bắt đầu</p><h2 id="paths-heading" className="mt-1 font-serif text-heading-lg text-text-primary">Đi theo câu hỏi của bạn</h2><p className="mt-2 max-w-2xl text-body-sm text-text-secondary">Ba lộ trình biên tập từ những công cụ đang có — không phải đề xuất cá nhân hóa.</p></div>
         <ol className="divide-y divide-white/10 border-y border-white/10">
-          {PATHS.map((path) => <li key={path.step} className="grid gap-3 py-5 tablet:grid-cols-[3rem_minmax(0,1fr)_minmax(15rem,auto)] tablet:items-center"><span className="font-serif text-heading-md text-[#d5ad62]/65">{path.step}</span><div><h3 className="font-serif text-heading-sm text-text-primary">{path.title}</h3><p className="mt-1 max-w-2xl text-body-sm text-text-secondary">{path.description}</p></div><div className="flex flex-wrap gap-x-4 gap-y-2 tablet:justify-end">{path.links.map((link) => <Link key={link.href} href={link.href} className="inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-[#e6c980] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]">{link.label} <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>)}</div></li>)}
+          {PATHS.map((path) => <li key={path.step} className="grid gap-3 py-5 tablet:grid-cols-[3rem_minmax(0,1fr)_minmax(15rem,auto)] tablet:items-center"><span className="font-serif text-heading-md text-[#d5ad62]/80">{path.step}</span><div><h3 className="font-serif text-heading-sm text-text-primary">{path.title}</h3><p className="mt-1 max-w-2xl text-body-sm text-text-secondary">{path.description}</p></div><div className="flex flex-wrap gap-x-4 gap-y-2 tablet:justify-end">{path.links.map((link) => <Link key={link.href} href={link.href} className="inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-[#e6c980] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]">{link.label} <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>)}</div></li>)}
         </ol>
       </section>
 
       <section aria-labelledby="report-heading" className="rounded-xl border border-[#8f78b5]/20 bg-[radial-gradient(circle_at_85%_30%,rgba(99,74,139,0.18),transparent_26%),#0b101d] p-5 tablet:p-8">
-        <div className="grid items-center gap-5 tablet:grid-cols-[auto_minmax(0,1fr)_auto]"><Layers3 className="h-10 w-10 text-[#bca1d5]" aria-hidden="true" /><div><div className="flex flex-wrap items-center gap-2"><h2 id="report-heading" className="font-serif text-heading-md text-text-primary">Personal Destiny Report</h2><Badge variant="insight">Premium</Badge></div><p className="mt-2 max-w-2xl text-body-sm leading-relaxed text-text-secondary">Khi đã có Bản đồ sao và hồ sơ Thần số học, bạn có thể kết nối hai nguồn dữ liệu thành một bản luận giải dài.</p></div><Link href="/reports" className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]">Xem báo cáo <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
+        <div className="grid items-center gap-5 tablet:grid-cols-[auto_minmax(0,1fr)_auto]"><Layers3 className="h-10 w-10 text-[#bca1d5]" aria-hidden="true" /><div><div className="flex flex-wrap items-center gap-2"><h2 id="report-heading" className="font-serif text-heading-md text-text-primary">Báo Cáo Vận Mệnh</h2><Badge variant="insight">Premium</Badge></div><p className="mt-2 max-w-2xl text-body-sm leading-relaxed text-text-secondary">Khi đã có Bản đồ sao và hồ sơ Thần số học, bạn có thể kết nối hai nguồn dữ liệu thành một bản luận giải dài.</p></div><Link href="/reports" className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]">Xem báo cáo <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
       </section>
-    </main>
+    </div>
   );
 }

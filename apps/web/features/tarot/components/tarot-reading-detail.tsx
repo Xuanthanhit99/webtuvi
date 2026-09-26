@@ -13,10 +13,10 @@ export function TarotReadingDetail({ id, onClose }: { id: string; onClose: () =>
   return (
     <div className="flex flex-col gap-4">
       <Button variant="ghost" size="sm" onClick={onClose}>
-        ← Back to Tarot
+        ← Quay lại Tarot
       </Button>
       {isLoading && <Skeleton className="h-64 w-full" />}
-      {isError && <ErrorState description="Couldn't load that reading." onRetry={() => refetch()} />}
+      {isError && <ErrorState description="Chưa thể tải trải bài này." onRetry={() => refetch()} />}
       {data && <TarotReadingView reading={data} onChanged={() => refetch()} />}
     </div>
   );

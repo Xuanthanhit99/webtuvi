@@ -13,10 +13,10 @@ export function NatalChartDetail({ id, onClose }: { id: string; onClose: () => v
   return (
     <div className="flex flex-col gap-4">
       <Button variant="ghost" size="sm" onClick={onClose}>
-        ← Back to Natal Chart
+        ← Quay lại Bản đồ sao
       </Button>
       {isLoading && <Skeleton className="h-64 w-full" />}
-      {isError && <ErrorState description="Couldn't load that chart." onRetry={() => refetch()} />}
+      {isError && <ErrorState description="Chưa thể tải Bản đồ sao này." onRetry={() => refetch()} />}
       {data && <NatalChartView chart={data} onChanged={() => refetch()} />}
     </div>
   );

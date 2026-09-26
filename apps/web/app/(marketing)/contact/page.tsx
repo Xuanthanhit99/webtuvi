@@ -10,7 +10,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default function ContactPage() {
   return (
-    <main className="mx-auto max-w-content px-4 py-16 desktop:px-8">
+    <div className="mx-auto max-w-content px-4 py-16 desktop:px-8">
       <MvPage>
         <MvPageHeader eyebrow="Liên hệ" title="Gửi phản hồi cho Mệnh Vi" description="Câu hỏi, góp ý sản phẩm hoặc yêu cầu hỗ trợ đều có thể bắt đầu từ đây." />
         <p className="text-body-md text-text-secondary">
@@ -21,6 +21,6 @@ export default function ContactPage() {
         .
       </p>
       </MvPage>
-    </main>
+    </div>
   );
 }

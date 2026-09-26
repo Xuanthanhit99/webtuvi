@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo } from 'react';
+import { useSyncExternalStore } from 'react';
 import { Calendar, Play } from 'lucide-react';
 import type { TuViChartDto } from '@beaconvie/types';
 import { useHeroParallax } from './use-hero-parallax';
@@ -10,11 +10,18 @@ import { HOME_BACKGROUND } from './production-assets';
 import { DailyFlowPanel, DailyFlowPanelLocked } from './daily-flow-panel';
 import { Skeleton } from '@/components/ui/skeleton';
 
+function subscribeToClock(onChange: () => void) {
+  const timer = setInterval(onChange, 60_000);
+  return () => clearInterval(timer);
+}
+
+function currentDateLabel() {
+  const formatted = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+}
+
 function HeroStatusBar() {
-  const todayLabel = useMemo(() => {
-    const formatted = new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    return formatted.charAt(0).toUpperCase() + formatted.slice(1);
-  }, []);
+  const todayLabel = useSyncExternalStore(subscribeToClock, currentDateLabel, () => 'Hành trình khám phá bản thân');
 
   return (
     <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-white/[0.06] pt-5 text-caption text-[#d8d1c2]">
@@ -66,16 +73,8 @@ export function HomeHero({
         aria-hidden="true"
         fill
         priority
-        // Verified against the actual /_next/image output (not just assumed): Next.js never
-        // upscales past a source's natural size — w=1080 and w=3840 both return the identical
-        // native 895x472 JPEG. Below native, though, it DOES downscale for real (w=256→256x135,
-        // w=640→640x338), so an overly "precise" sizes hint can backfire on this undersized
-        // source — e.g. calc(100vw-128px) dips to exactly 640px at the 768px tablet breakpoint,
-        // which would land BELOW the 895px native width and throw away real detail for no
-        // reason. Simpler and safer: 100vw on phones (where the hero genuinely is small and
-        // downscaling is correct), a flat 1248px from tablet up — anything ≥895px lands in the
-        // native-cap zone and costs the same bytes as asking for more.
-        sizes="(max-width: 767px) 100vw, 1248px"
+        // Match the actual sidebar and content widths; only this above-the-fold image is prioritized.
+        sizes="(min-width: 1536px) 1248px, (min-width: 1280px) calc(100vw - 288px), (min-width: 768px) calc(100vw - 128px), calc(100vw - 32px)"
         className="object-cover object-[62%_center] tablet:object-center"
         style={{ transform: 'scale(1.05) translate(calc(var(--px, 0) * 3px), calc(var(--py, 0) * 3px))' }}
       />
@@ -118,7 +117,7 @@ export function HomeHero({
             )}
             <p className="mt-3 max-w-md text-body-sm leading-relaxed text-[#d8d1c2] tablet:mt-4">
               {isGuest
-                ? 'Đăng nhập để xem Dòng chảy hôm nay, lưu lá số và tiếp tục hành trình của riêng bạn.'
+                ? 'Khám phá bản thân qua Tử Vi, Tarot, bản đồ sao và thần số học. Tạo tài khoản để lưu kết quả và tiếp tục hành trình của riêng bạn.'
                 : 'Mỗi ngày là một cơ hội mới để hiểu mình hơn và sống tốt hơn.'}
             </p>
             <div className="mt-5 flex flex-wrap gap-3 tablet:mt-6">

@@ -86,7 +86,7 @@ describe('TarotDashboard', () => {
   it('shows an empty state when there is no history yet', async () => {
     (tarotApi.listReadings as jest.Mock).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
     renderWithQuery(<TarotDashboard />);
-    expect(await screen.findByText('No readings yet')).toBeInTheDocument();
+    expect(await screen.findByText('Chưa có trải bài')).toBeInTheDocument();
   });
 
   it('opening ?item=<id> renders the real reading detail instead of the draw/history view', async () => {
@@ -97,7 +97,7 @@ describe('TarotDashboard', () => {
     expect(await screen.findByText('A moment worth sitting with.')).toBeInTheDocument();
     expect(tarotApi.getReading).toHaveBeenCalledWith('r1');
     expect(screen.queryByRole('button', { name: /Bắt đầu trải bài/ })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: '← Back to Tarot' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '← Quay lại Tarot' })).toBeInTheDocument();
   });
 
   it('closing the detail view navigates back to the plain /discover/tarot route', async () => {
@@ -107,7 +107,7 @@ describe('TarotDashboard', () => {
     renderWithQuery(<TarotDashboard />);
 
     await screen.findByText('A moment worth sitting with.');
-    await user.click(screen.getByRole('button', { name: '← Back to Tarot' }));
+    await user.click(screen.getByRole('button', { name: '← Quay lại Tarot' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/discover/tarot', { scroll: false }));
   });
 });

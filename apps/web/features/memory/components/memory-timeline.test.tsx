@@ -31,8 +31,8 @@ const ITEM = {
   pinned: false,
   group: 'today' as const,
   sourceAvailable: true,
-  whyThisMemory: 'You asked BeaconVie to remember this.',
-  consentExplanation: 'You allowed this specific memory.',
+  whyThisMemory: 'Bạn đã yêu cầu Mệnh Vi ghi nhớ điều này.',
+  consentExplanation: 'Bạn đã cho phép lưu ký ức này.',
 };
 
 describe('MemoryTimeline', () => {

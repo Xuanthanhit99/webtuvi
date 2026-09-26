@@ -145,9 +145,12 @@ export const landingCopy = {
   },
   footer: {
     productLinks: [
-      { label: 'Cách hoạt động', href: '#how-it-works' },
-      { label: 'Khám phá', href: '#discovery' },
-      { label: 'Giá', href: '#pricing' },
+      { label: 'Khám phá', href: '/discover' },
+      { label: 'Tử Vi', href: '/discover/tu-vi' },
+      { label: 'Tarot', href: '/discover/tarot' },
+      { label: 'Bản đồ sao', href: '/discover/natal-chart' },
+      { label: 'Thần số học', href: '/discover/numerology' },
+      { label: 'Ngũ hành phương Đông', href: '/discover/eastern-horoscope' },
     ],
     companyLinks: [{ label: 'Giới thiệu', href: '/about' }],
     legalLinks: [

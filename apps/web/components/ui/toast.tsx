@@ -49,7 +49,7 @@ function ToastCard({ item }: { item: ToastItem }) {
       <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
       <span className="text-text-primary">{item.message}</span>
       <button
-        aria-label="Dismiss notification"
+        aria-label="Đóng thông báo"
         onClick={() => dismiss(item.id)}
         className="ml-2 text-text-secondary hover:text-text-primary"
       >

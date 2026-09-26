@@ -93,7 +93,7 @@ test('Free Tarot usage -> Premium boundary -> checkout -> verified webhook -> Pr
   expect((await blocked.json()).error.code).toBe('PREMIUM_REQUIRED');
   const banner = page.getByRole('alert').filter({ hasText: /free single card limit/i });
   await expect(banner).toBeVisible({ timeout: 10000 });
-  const upgradeLink = banner.getByRole('link', { name: 'Upgrade to Premium' });
+  const upgradeLink = banner.getByRole('link', { name: 'Nâng cấp Premium' });
   await expect(upgradeLink).toHaveAttribute('href', '/premium?reason=required');
 
   // 2. The Premium page — Free state, boundary banner, matrix, and a real checkout attempt.

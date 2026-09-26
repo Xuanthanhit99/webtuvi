@@ -54,6 +54,24 @@ describe('AppHeader — Operator Tools link visibility', () => {
   });
 });
 
+describe('AppHeader — notifications', () => {
+  it('renders no notification bell for a guest', () => {
+    (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
+    renderWithQuery(<AppHeader />);
+    expect(screen.queryByRole('button', { name: /Thông báo/ })).not.toBeInTheDocument();
+  });
+
+  it('renders the notification bell for a signed-in user', () => {
+    (useAuth as jest.Mock).mockReturnValue({
+      user: { id: 'u1', email: 'a@x.com', displayName: 'A', role: 'USER', emailVerifiedAt: null, onboardingCompletedAt: null, createdAt: '' },
+      isLoading: false,
+      refetch: jest.fn(),
+    });
+    renderWithQuery(<AppHeader />);
+    expect(screen.getByRole('button', { name: 'Thông báo' })).toBeInTheDocument();
+  });
+});
+
 describe('AppHeader — profile menu', () => {
   beforeEach(() => {
     jest.clearAllMocks();

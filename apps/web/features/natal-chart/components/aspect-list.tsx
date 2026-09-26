@@ -2,7 +2,7 @@ import type { NatalAspectDto } from '@beaconvie/types';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ASPECT_TYPE_LABELS, PLANET_GLYPHS, PLANET_LABELS } from '../labels';
 
-const ANGLE_LABELS: Record<string, string> = { ascendant: 'Ascendant', midheaven: 'Midheaven' };
+const ANGLE_LABELS: Record<string, string> = { ascendant: 'Cung Mọc (ASC)', midheaven: 'Thiên Đỉnh (MC)' };
 
 function pointLabel(point: string): string {
   if (point in PLANET_LABELS) return PLANET_LABELS[point as keyof typeof PLANET_LABELS];
@@ -18,13 +18,13 @@ function pointGlyph(point: string): string | null {
  * meaning only. */
 export function AspectList({ aspects }: { aspects: NatalAspectDto[] }) {
   if (aspects.length === 0) {
-    return <EmptyState title="No major aspects" description="No major aspects were found between this chart’s placements." />;
+    return <EmptyState title="Không có góc hợp chính" description="Không tìm thấy góc hợp chính nào giữa các vị trí trong bản đồ này." />;
   }
 
   const sorted = [...aspects].sort((a, b) => a.orb - b.orb);
 
   return (
-    <ul className="flex flex-col gap-2" aria-label="Aspects">
+    <ul className="flex flex-col gap-2" aria-label="Góc hợp">
       {sorted.map((aspect, index) => (
         <li key={index} className="flex flex-col gap-1 rounded-md border border-[#d5ad62]/20 bg-[#071827] p-3">
           <div className="flex flex-wrap items-center gap-2 text-body-sm">
@@ -45,7 +45,7 @@ export function AspectList({ aspects }: { aspects: NatalAspectDto[] }) {
               )}
               {pointLabel(aspect.pointB)}
             </span>
-            <span className="text-caption text-text-tertiary">orb {aspect.orb.toFixed(1)}°</span>
+            <span className="text-caption text-text-tertiary">sai số {aspect.orb.toFixed(1)}°</span>
           </div>
           <p className="text-body-sm text-text-secondary">{aspect.meaning}</p>
         </li>

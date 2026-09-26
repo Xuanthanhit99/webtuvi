@@ -28,9 +28,14 @@ describe('robots', () => {
 
   it('does not block genuinely public Discovery-adjacent marketing routes', () => {
     // These are real public routes and must remain crawlable.
-    for (const publicRoute of ['/about', '/contact', '/privacy', '/terms', '/login', '/register']) {
+    for (const publicRoute of ['/about', '/contact', '/privacy', '/terms', '/tu-vi', '/tarot', '/ban-do-sao', '/than-so-hoc']) {
       expect(disallow).not.toContain(publicRoute);
     }
+  });
+
+  it('allows crawlers to read noindex on authentication entry points', () => {
+    expect(disallow).not.toContain('/login');
+    expect(disallow).not.toContain('/register');
   });
 
   it('allows the site root', () => {

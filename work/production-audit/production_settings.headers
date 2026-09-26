@@ -1,0 +1,10 @@
+HTTP/1.1 307 Temporary Redirect
+Date: Thu, 24 Sep 2026 02:26:26 GMT
+location: /login?next=%2Fsettings
+Server: railway-hikari
+x-railway-request-id: xkDZ9KyNQB-rCUy0nPRhug
+Transfer-Encoding: chunked
+x-hikari-trace: hkg1.aebn
+x-railway-edge: hkg1
+Connection: keep-alive
+

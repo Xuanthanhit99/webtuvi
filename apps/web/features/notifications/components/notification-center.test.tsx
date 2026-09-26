@@ -40,14 +40,14 @@ describe('NotificationCenter', () => {
     (notificationsApi.list as jest.Mock).mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
     renderCenter();
 
-    expect(await screen.findByText(/nothing new/i)).toBeInTheDocument();
+    expect(await screen.findByText(/chưa có gì mới/i)).toBeInTheDocument();
   });
 
   it('shows an error state with a retry option when the list fails to load', async () => {
     (notificationsApi.list as jest.Mock).mockRejectedValue(new Error('boom'));
     renderCenter();
 
-    expect(await screen.findByText(/couldn.t load your notifications/i)).toBeInTheDocument();
+    expect(await screen.findByText(/chưa thể tải thông báo/i)).toBeInTheDocument();
   });
 
   it('renders each notification with title, body, and an unread indicator', async () => {
@@ -113,11 +113,11 @@ describe('NotificationCenter', () => {
     const user = userEvent.setup();
     renderCenter();
 
-    const button = await screen.findByRole('button', { name: /mark all read/i });
+    const button = await screen.findByRole('button', { name: /đánh dấu tất cả đã đọc/i });
     await user.click(button);
 
     await waitFor(() => expect(notificationsApi.markAllRead).toHaveBeenCalled());
-    expect(await screen.findByText(/all caught up/i)).toBeInTheDocument();
+    expect(await screen.findByText(/đã đọc hết thông báo/i)).toBeInTheDocument();
   });
 
   it('hides "Mark all read" when every notification is already read', async () => {
@@ -125,7 +125,7 @@ describe('NotificationCenter', () => {
     renderCenter();
 
     await screen.findByText("Today's card is ready");
-    expect(screen.queryByRole('button', { name: /mark all read/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /đánh dấu tất cả đã đọc/i })).not.toBeInTheDocument();
   });
 });
 
@@ -136,7 +136,7 @@ describe('NotificationCenter — unread semantic state', () => {
     (notificationsApi.list as jest.Mock).mockResolvedValue({ items: [NOTIFICATION], total: 1, page: 1, pageSize: 20 });
     renderCenter();
 
-    const item = await screen.findByRole('button', { name: /unread.*today.s card is ready/i });
+    const item = await screen.findByRole('button', { name: /chưa đọc.*today.s card is ready/i });
     expect(item).toBeInTheDocument();
   });
 
@@ -145,6 +145,6 @@ describe('NotificationCenter — unread semantic state', () => {
     renderCenter();
 
     const item = (await screen.findByText("Today's card is ready")).closest('button')!;
-    expect(item).not.toHaveTextContent(/unread/i);
+    expect(item).not.toHaveTextContent(/chưa đọc/i);
   });
 });

@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 export default function NotFound() {
   return (
-    <main className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-canvas px-4 py-10 text-center">
+    <main id="main-content" className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-canvas px-4 py-10 text-center">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_28%_20%,rgba(213,173,98,0.16),transparent_30%),radial-gradient(circle_at_78%_72%,rgba(112,140,121,0.12),transparent_34%)]" />
       <section className="relative max-w-[520px] rounded-lg border border-[rgba(213,173,98,0.18)] bg-surface px-6 py-8 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
         <p className="text-caption font-semibold uppercase tracking-[0.18em] text-insight">Không tìm thấy</p>

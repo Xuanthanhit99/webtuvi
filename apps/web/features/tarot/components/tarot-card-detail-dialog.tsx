@@ -53,14 +53,14 @@ export function TarotCardDetailDialog({
   if (!card) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} title={card.name} description={`${card.nameVi} · ${isReversed ? 'Drawn reversed' : 'Drawn upright'}`}>
+    <Dialog open={open} onClose={onClose} title={card.name} description={`${card.nameVi} · ${isReversed ? 'Rút ở chiều Ngược' : 'Rút ở chiều Xuôi'}`}>
       <div className="grid gap-5 rounded-md border border-[rgba(213,173,98,0.22)] bg-[#07111D] p-3 tablet:grid-cols-[auto_1fr]">
         <div className="flex justify-center">
           <TarotCardFace card={card} isReversed={isReversed} imageSrc={resolveTarotArtworkSrc(card)} />
         </div>
         <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="neutral">{card.arcana === 'MAJOR' ? 'Major Arcana' : 'Minor Arcana'}</Badge>
+          <Badge variant="neutral">{card.arcana === 'MAJOR' ? 'Ẩn chính' : 'Ẩn phụ'}</Badge>
           {card.suit && <Badge variant="neutral">{SUIT_LABELS[card.suit]}</Badge>}
           <Badge variant="insight">{isReversed ? 'Ngược' : 'Xuôi'}</Badge>
           {card.element && <Badge variant="neutral">{card.element}</Badge>}

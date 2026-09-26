@@ -150,7 +150,7 @@ export function TarotCardFace({
     <button
       type="button"
       onClick={onClick}
-      aria-label={`${card.name}${isReversed ? ', reversed' : ''}`}
+      aria-label={`${card.name}${isReversed ? ', ngược' : ''}`}
       className={cn(
         'relative transition-transform duration-standard',
         onClick && 'cursor-pointer hover:border-insight',

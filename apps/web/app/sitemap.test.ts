@@ -6,7 +6,7 @@ describe('sitemap', () => {
   const urls = routes.map((r) => new URL(r.url).pathname);
 
   it('includes the real public routes', () => {
-    for (const publicPath of ['/', '/about', '/contact', '/privacy', '/terms', '/login', '/register']) {
+    for (const publicPath of ['/', '/discover', '/discover/tu-vi', '/discover/tarot', '/discover/natal-chart', '/discover/numerology', '/discover/eastern-horoscope', '/about', '/contact', '/privacy', '/terms']) {
       expect(urls).toContain(publicPath);
     }
   });
@@ -31,10 +31,9 @@ describe('sitemap', () => {
     }
   });
 
-  it('every entry has a truthful (non-fabricated future) lastModified and a plausible priority/changeFrequency', () => {
-    const now = Date.now();
+  it('omits unverifiable modification dates and uses plausible priorities', () => {
     for (const route of routes) {
-      expect(new Date(route.lastModified as Date).getTime()).toBeLessThanOrEqual(now);
+      expect(route.lastModified).toBeUndefined();
       expect(route.priority).toBeGreaterThanOrEqual(0);
       expect(route.priority).toBeLessThanOrEqual(1);
     }

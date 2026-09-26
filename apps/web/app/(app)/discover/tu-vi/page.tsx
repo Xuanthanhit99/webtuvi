@@ -1,16 +1,8 @@
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { TuViDashboard } from '@/features/tu-vi/components/tu-vi-dashboard';
+import { DiscoveryEntry } from '@/components/marketing/discovery-entry';
+import { createPublicSystemMetadata, PublicSystemLanding } from '@/components/marketing/public-system-landing';
 
-export const metadata: Metadata = {
-  title: 'Tử Vi Lá Số',
-  description: 'A real, deterministic Vietnamese Tử Vi Đẩu Số chart calculated from your birth date, time, and sex — no palace or star is ever chosen or invented by AI.',
-};
+export const metadata = createPublicSystemMetadata('tu-vi');
 
-export default function TuViPage() {
-  return (
-    <Suspense fallback={null}>
-      <TuViDashboard />
-    </Suspense>
-  );
+export default function Page() {
+  return <DiscoveryEntry system="tu-vi"><PublicSystemLanding slug="tu-vi" /></DiscoveryEntry>;
 }
