@@ -53,9 +53,9 @@ const TAROT_STARS =
 
 function drawLimitBanner(error: unknown): { message: string; showUpgrade: boolean } | null {
   if (!(error instanceof ApiError)) return null;
-  if (error.code === 'PREMIUM_REQUIRED') return { message: error.message, showUpgrade: true };
+  if (error.code === 'PREMIUM_REQUIRED') return { message: 'Bạn đã dùng hết lượt miễn phí. Nâng cấp Premium để tiếp tục.', showUpgrade: true };
   if (error.code === 'TAROT_DAILY_LIMIT_REACHED' || error.code === 'TAROT_DAILY_DRAW_ALREADY_TAKEN') {
-    return { message: error.message, showUpgrade: false };
+    return { message: error.code === 'TAROT_DAILY_DRAW_ALREADY_TAKEN' ? 'Bạn đã rút lá Tarot hôm nay. Hãy quay lại vào ngày mai hoặc chọn kiểu trải bài khác.' : 'Bạn đã đạt giới hạn trải Tarot hôm nay. Vui lòng quay lại sau.', showUpgrade: false };
   }
   return null;
 }
@@ -90,8 +90,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
         setLimitBanner(banner);
         return;
       }
-      const message = error instanceof Error ? error.message : "Couldn't draw a card. Please try again.";
-      toast.error(message);
+      toast.error('Chưa thể rút bài lúc này. Vui lòng thử lại.');
     },
   });
 
@@ -231,9 +230,9 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
           <div className="relative min-h-80">
             <div className="absolute inset-x-8 bottom-4 h-20 rounded-[50%] border border-insight/20 opacity-70" aria-hidden="true" />
             <div className="relative flex h-full scale-[0.82] items-center justify-center tablet:scale-100">
-              <div className="-mr-12 rotate-[-18deg] opacity-80"><TarotCardVisual id="hero-star" name="The Star" size="md" imageSrc="/assets/tarot-card/17-the-star.webp" /></div>
+              <div className="-mr-12 rotate-[-18deg] opacity-80"><TarotCardVisual id="hero-star" name="Ngôi Sao" size="md" imageSrc="/assets/tarot-card/17-the-star.webp" /></div>
               <div className="z-[1] rotate-[6deg]"><TarotCardVisual id="hero-back" name="Mặt sau lá Tarot" size="lg" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} /></div>
-              <div className="-ml-14 mt-10 rotate-[17deg] opacity-85"><TarotCardVisual id="hero-cups" name="Ace of Cups" size="md" imageSrc="/assets/tarot-card/cups-ace.webp" /></div>
+              <div className="-ml-14 mt-10 rotate-[17deg] opacity-85"><TarotCardVisual id="hero-cups" name="Át Cốc" size="md" imageSrc="/assets/tarot-card/cups-ace.webp" /></div>
             </div>
           </div>
         </section>
