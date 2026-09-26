@@ -22,7 +22,7 @@ function fieldErrorFor(error: ApiError): { field: 'fullBirthName' | 'birthDate' 
     case 'NUMEROLOGY_INVALID_CALENDAR_DATE': return { field: 'birthDate', message: 'Ngày sinh chưa hợp lệ.' };
     case 'NUMEROLOGY_FUTURE_DATE_NOT_ALLOWED': return { field: 'birthDate', message: 'Ngày sinh không thể ở tương lai.' };
     case 'NUMEROLOGY_DATE_TOO_OLD': return { field: 'birthDate', message: 'Ngày sinh nằm ngoài phạm vi được hỗ trợ.' };
-    default: return { field: null, message: error.message };
+    default: return { field: null, message: 'Chưa thể tính các chỉ số. Vui lòng thử lại.' };
   }
 }
 
@@ -50,8 +50,8 @@ export function NumerologyForm({ onCalculated }: { onCalculated?: (reading: Nume
     onError: (error: unknown) => {
       setPhase('idle');
       if (error instanceof ApiError) {
-        if (error.code === 'PREMIUM_REQUIRED') { setLimitBanner({ message: error.message, showUpgrade: true }); return; }
-        if (error.code === 'NUMEROLOGY_DAILY_LIMIT_REACHED') { setLimitBanner({ message: error.message, showUpgrade: false }); return; }
+        if (error.code === 'PREMIUM_REQUIRED') { setLimitBanner({ message: 'Bạn đã dùng hết lượt miễn phí. Nâng cấp Premium để tiếp tục.', showUpgrade: true }); return; }
+        if (error.code === 'NUMEROLOGY_DAILY_LIMIT_REACHED') { setLimitBanner({ message: 'Bạn đã đạt giới hạn tính Thần số học hôm nay. Vui lòng quay lại sau.', showUpgrade: false }); return; }
         setFieldError(fieldErrorFor(error)); return;
       }
       setFieldError({ field: null, message: 'Chưa thể tính các chỉ số. Vui lòng thử lại.' });
