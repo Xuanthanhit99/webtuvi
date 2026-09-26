@@ -14,6 +14,8 @@ import { useTrackEvent } from '@/hooks/use-track-event';
 import { ApiError } from '@/lib/api-error';
 import { reportsApi } from '../api/reports-api';
 import { REPORT_FAILURE_REASON_MESSAGES } from '../labels';
+import { PLANET_LABELS, SIGN_LABELS } from '@/features/natal-chart/labels';
+import { NUMEROLOGY_TYPE_LABELS } from '@/features/numerology/labels';
 
 // Accessibility + Product Polish (2026-08-19): matches the existing polling convention already
 // used for another async-generation status (premium-return-status.tsx's PENDING order polling).
@@ -116,7 +118,7 @@ function ReportView({ report, onRegenerated }: { report: ReportDto; onRegenerate
     return (
       <Card className="flex flex-col items-center gap-3 py-10 text-center" role="status">
         <Skeleton className="h-6 w-48" />
-        <p className="text-body-sm text-text-secondary">Đang kết nối những dữ kiện bạn đã cho phép dùng...</p>
+        <p className="break-words text-body-sm text-text-secondary">Đang kết nối những dữ kiện bạn đã cho phép dùng...</p>
       </Card>
     );
   }
@@ -138,7 +140,7 @@ function ReportView({ report, onRegenerated }: { report: ReportDto; onRegenerate
   return (
     <div className="flex gap-6">
       <ReportTableOfContents hasCurrentThemes={!!result.currentThemes} hasPersonalizedReflection={!!result.personalizedReflection} />
-      <article className="mx-auto flex max-w-[720px] flex-1 flex-col gap-8">
+      <article className="mx-auto flex min-w-0 max-w-[720px] flex-1 flex-col gap-8">
         <header className="flex flex-col gap-1">
           <h1 className="font-display text-heading-lg text-text-primary">Báo cáo Định mệnh Cá nhân</h1>
           <p className="text-caption text-text-secondary">Tạo ngày {new Date(report.createdAt).toLocaleDateString('vi-VN')}</p>
@@ -146,7 +148,7 @@ function ReportView({ report, onRegenerated }: { report: ReportDto; onRegenerate
 
         <section id="overview" aria-labelledby="overview-heading" className="flex flex-col gap-2">
           <SectionHeading id="overview-heading">Tổng quan</SectionHeading>
-          <p className="text-body-md text-text-primary">{result.overview}</p>
+          <p className="break-words text-body-md text-text-primary">{result.overview}</p>
         </section>
 
         <SourceSummary snapshot={report.sourceSnapshot} />
@@ -171,7 +173,7 @@ function ReportView({ report, onRegenerated }: { report: ReportDto; onRegenerate
           <SectionHeading id="source-highlights-heading">Điểm tựa dữ liệu</SectionHeading>
           <ul className="flex flex-col gap-1.5">
             {result.sourceHighlights.map((highlight, i) => (
-              <li key={i} className="text-body-sm text-text-secondary">
+              <li key={i} className="break-words text-body-sm text-text-secondary">
                 <span className="font-semibold text-text-primary">{highlight.source}:</span> {highlight.fact}
               </li>
             ))}
@@ -188,7 +190,7 @@ function ReportView({ report, onRegenerated }: { report: ReportDto; onRegenerate
 
         <section id="methodology" aria-labelledby="methodology-heading" className="flex flex-col gap-2 border-t border-border-subtle pt-6">
           <SectionHeading id="methodology-heading">Phương pháp & minh bạch AI</SectionHeading>
-          <p className="text-body-sm text-text-secondary">{result.methodology}</p>
+          <p className="break-words text-body-sm text-text-secondary">{result.methodology}</p>
         </section>
 
         <div className="flex flex-wrap items-center gap-3 border-t border-border-subtle pt-6">
@@ -248,7 +250,7 @@ function NarrativeSection({ id, heading, section, badge }: { id: string; heading
         <SectionHeading id={`${id}-heading`}>{heading}</SectionHeading>
         {badge && <Badge variant="insight">{badge}</Badge>}
       </div>
-      <p className="text-body-md text-text-primary">{section.narrative}</p>
+      <p className="break-words text-body-md text-text-primary">{section.narrative}</p>
     </section>
   );
 }
@@ -261,7 +263,7 @@ function TitledSectionGroup({ id, heading, items }: { id: string; heading: strin
         {items.map((item, i) => (
           <li key={i}>
             <p className="text-body-sm font-semibold text-text-primary">{item.title}</p>
-            <p className="text-body-sm text-text-secondary">{item.narrative}</p>
+            <p className="break-words text-body-sm text-text-secondary">{item.narrative}</p>
           </li>
         ))}
       </ul>
@@ -309,7 +311,7 @@ function CalculatedFactsAppendix({ snapshot }: { snapshot: ReportDto['sourceSnap
         <ul className="flex flex-col gap-1">
           {snapshot.natalChart.placements.map((placement, i) => (
             <li key={i} className="text-caption text-text-secondary">
-              {placement.body} ở {placement.sign}
+              {PLANET_LABELS[placement.body] ?? placement.body} ở {SIGN_LABELS[placement.sign] ?? placement.sign}
               {placement.house ? `, nhà ${placement.house}` : ''}
               {placement.retrograde ? ' (nghịch hành)' : ''}
             </li>
@@ -321,8 +323,8 @@ function CalculatedFactsAppendix({ snapshot }: { snapshot: ReportDto['sourceSnap
         <ul className="flex flex-col gap-1">
           {snapshot.numerology.values.map((value, i) => (
             <li key={i} className="text-caption text-text-secondary">
-              {value.type.replace('_', ' ')}: {value.value}
-              {value.isMasterNumber ? ' (Số Master)' : ''}
+              {NUMEROLOGY_TYPE_LABELS[value.type] ?? value.type}: {value.value}
+              {value.isMasterNumber ? ' (Số đặc biệt)' : ''}
             </li>
           ))}
         </ul>
