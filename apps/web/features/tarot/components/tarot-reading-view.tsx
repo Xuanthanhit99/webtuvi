@@ -103,7 +103,7 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
               onClick={() => setDetailCard({ card: rc.card, isReversed: rc.isReversed })}
             />
             <span className="text-caption font-semibold text-insight">{rc.positionLabel ?? `Vị trí ${index + 1}`}</span>
-            <span className="rounded-full border border-insight/25 bg-[#17172D] px-2 py-0.5 text-caption font-semibold text-insight" aria-label={`Orientation ${rc.isReversed ? 'Ngược' : 'Xuôi'}`}>
+            <span className="rounded-full border border-insight/25 bg-[#17172D] px-2 py-0.5 text-caption font-semibold text-insight" aria-label={`Chiều lá bài: ${rc.isReversed ? 'Ngược' : 'Xuôi'}`}>
               {rc.isReversed ? 'Ngược' : 'Xuôi'}
             </span>
           </div>
