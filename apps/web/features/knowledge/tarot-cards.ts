@@ -1,6 +1,7 @@
 import { TAROT_DECK, type TarotCardSeed } from '../../../api/prisma/data/tarot-deck';
 
 export const TAROT_CARD_SEO_PATH = '/kien-thuc/tarot/la-bai';
+export const TAROT_SEO_UPDATED_AT = '2026-09-27T00:00:00+07:00';
 
 export const tarotSeoCards = TAROT_DECK;
 
