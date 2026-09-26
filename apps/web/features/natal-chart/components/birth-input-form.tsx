@@ -34,7 +34,7 @@ function fieldErrorFor(error: ApiError): { field: FieldName; message: string } {
     case 'NATAL_CHART_LOCATION_NOT_RESOLVED':
       return { field: 'place', message: 'Không xác định được nơi sinh. Vui lòng tìm và chọn lại địa điểm.' };
     default:
-      return { field: null, message: error.message };
+      return { field: null, message: 'Chưa thể lập bản đồ sao. Vui lòng thử lại.' };
   }
 }
 
@@ -93,11 +93,11 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
       setPhase('idle');
       if (error instanceof ApiError) {
         if (error.code === 'PREMIUM_REQUIRED') {
-          setLimitBanner({ message: error.message, showUpgrade: true });
+          setLimitBanner({ message: 'Bạn đã dùng hết lượt miễn phí. Nâng cấp Premium để tiếp tục.', showUpgrade: true });
           return;
         }
         if (error.code === 'NATAL_CHART_DAILY_LIMIT_REACHED') {
-          setLimitBanner({ message: error.message, showUpgrade: false });
+          setLimitBanner({ message: 'Bạn đã đạt giới hạn lập bản đồ sao hôm nay. Vui lòng quay lại sau.', showUpgrade: false });
           return;
         }
         setFieldError(fieldErrorFor(error));
