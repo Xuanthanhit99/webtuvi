@@ -1,39 +1,29 @@
 import { NUMEROLOGY_VALUE_TYPES, type NumerologyValueType } from './numerology-engine';
 
-/**
- * Phase E/Module 23 §10 — the deterministic, fixed-reference "Symbol Interpretation Engine".
- * Traditional numerology core-number meanings, grounded in standard/public-domain Pythagorean
- * numerology concepts (mirrors TarotCard's own original-but-traditionally-grounded meaning text
- * precedent — see docs/progress/sprint-6-progress.md "Deliberate scope decisions"). Never
- * AI-generated, never AI-editable — this is what "tap any number for its traditional symbolic
- * meaning" (Product Bible Module 15 §4) reads from. Editable in the future only through an Admin
- * content-curation process (Module 23 §10) — no such process exists yet, so this is a static,
- * versioned in-code table for Sprint 8.
- */
-export const NUMEROLOGY_MEANINGS_VERSION = 'numerology-meanings-v1';
+export const NUMEROLOGY_MEANINGS_VERSION = 'numerology-meanings-v2-vi';
 
 const CORE_NUMBER_MEANINGS: Record<number, { title: string; meaning: string }> = {
-  1: { title: 'The Leader', meaning: 'Independence, initiative, and a drive to originate rather than follow.' },
-  2: { title: 'The Peacemaker', meaning: 'Partnership, sensitivity, and a gift for cooperation and balance.' },
-  3: { title: 'The Communicator', meaning: 'Creative self-expression, optimism, and social warmth.' },
-  4: { title: 'The Builder', meaning: 'Discipline, structure, and a steady, practical approach to building something lasting.' },
-  5: { title: 'The Free Spirit', meaning: 'Change, adaptability, and a pull toward variety and new experience.' },
-  6: { title: 'The Caretaker', meaning: 'Responsibility, nurturing, and a focus on home, family, and service to others.' },
-  7: { title: 'The Seeker', meaning: 'Introspection, analysis, and a search for deeper understanding beneath the surface.' },
-  8: { title: 'The Achiever', meaning: 'Ambition, material accomplishment, and a natural sense for authority and organization.' },
-  9: { title: 'The Humanitarian', meaning: 'Compassion, completion, and a broad, idealistic concern for others.' },
-  11: { title: 'The Intuitive (Master Number)', meaning: 'Heightened intuition and inspiration — the amplified, more demanding expression of 2.' },
-  22: { title: 'The Master Builder (Master Number)', meaning: 'The capacity to turn big visions into lasting, practical reality — the amplified, more demanding expression of 4.' },
-  33: { title: 'The Master Teacher (Master Number)', meaning: 'Selfless service and compassion expressed on a larger scale — the amplified, more demanding expression of 6.' },
+  1: { title: 'Người Tiên Phong', meaning: 'Tính độc lập, chủ động và xu hướng tự mở lối thay vì đi theo người khác.' },
+  2: { title: 'Người Kết Nối', meaning: 'Khả năng hợp tác, sự tinh tế và thiên hướng tạo cân bằng trong các mối quan hệ.' },
+  3: { title: 'Người Biểu Đạt', meaning: 'Sức sáng tạo, tinh thần lạc quan và khả năng thể hiện bản thân một cách cởi mở.' },
+  4: { title: 'Người Kiến Tạo', meaning: 'Tính kỷ luật, cấu trúc và cách tiếp cận thực tế để xây dựng những giá trị bền vững.' },
+  5: { title: 'Tinh Thần Tự Do', meaning: 'Khả năng thích nghi, nhu cầu thay đổi và sự thôi thúc khám phá những trải nghiệm mới.' },
+  6: { title: 'Người Chăm Sóc', meaning: 'Tinh thần trách nhiệm, sự nuôi dưỡng và sự quan tâm đến gia đình, cộng đồng và việc phụng sự.' },
+  7: { title: 'Người Tìm Kiếm', meaning: 'Xu hướng hướng nội, phân tích và mong muốn hiểu sâu những điều nằm sau bề mặt.' },
+  8: { title: 'Người Thành Tựu', meaning: 'Tham vọng, năng lực tổ chức và thiên hướng biến mục tiêu thực tế thành kết quả.' },
+  9: { title: 'Người Nhân Ái', meaning: 'Lòng trắc ẩn, tinh thần hoàn thiện và sự quan tâm rộng mở đến người khác.' },
+  11: { title: 'Người Trực Giác · Số đặc biệt', meaning: 'Trực giác và cảm hứng được khuếch đại; đây là biểu hiện mạnh và đòi hỏi sự cân bằng cao hơn của số 2.' },
+  22: { title: 'Bậc Thầy Kiến Tạo · Số đặc biệt', meaning: 'Khả năng biến tầm nhìn lớn thành kết quả thực tế và bền vững; đây là biểu hiện mạnh hơn của số 4.' },
+  33: { title: 'Bậc Thầy Phụng Sự · Số đặc biệt', meaning: 'Lòng trắc ẩn và tinh thần phụng sự được mở rộng; đây là biểu hiện mạnh hơn của số 6.' },
 };
 
 const TYPE_FRAMING: Record<NumerologyValueType, string> = {
-  LIFE_PATH: 'Your Life Path Number describes the broad direction and lessons of your life.',
-  EXPRESSION: 'Your Expression Number describes the natural talents and abilities you were born with.',
-  SOUL_URGE: 'Your Soul Urge Number describes your inner motivation — what you genuinely want, beneath appearances.',
-  PERSONALITY: 'Your Personality Number describes the impression you tend to make on others at first.',
-  BIRTHDAY: 'Your Birthday Number describes a smaller, specific talent that supports your broader Life Path.',
-  PERSONAL_YEAR: 'Your Personal Year Number describes the theme of the current calendar year for you.',
+  LIFE_PATH: 'Số Đường đời phản ánh hướng đi tổng quát và những bài học lớn trong hành trình của bạn.',
+  EXPRESSION: 'Số Sứ mệnh phản ánh những năng lực và khuynh hướng tự nhiên thể hiện qua họ tên khai sinh.',
+  SOUL_URGE: 'Số Linh hồn phản ánh động lực sâu bên trong và điều bạn thực sự mong muốn.',
+  PERSONALITY: 'Số Nhân cách phản ánh ấn tượng bạn thường tạo ra với người khác.',
+  BIRTHDAY: 'Số Ngày sinh phản ánh một năng lực riêng hỗ trợ cho hành trình Đường đời.',
+  PERSONAL_YEAR: 'Số Năm cá nhân phản ánh chủ đề nổi bật của năm dương lịch hiện tại.',
 };
 
 export interface NumerologyMeaning {
@@ -48,8 +38,6 @@ export interface NumerologyMeaning {
 const MASTER_VALUES = new Set([11, 22, 33]);
 const ALL_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 22, 33];
 
-/** The full static table, every (type, value) pair this product supports — real reference data, no
- * placeholders (mirrors `TarotDeckService.list()`'s own "every row is real" precedent). */
 export function listNumerologyMeanings(): NumerologyMeaning[] {
   const meanings: NumerologyMeaning[] = [];
   for (const type of NUMEROLOGY_VALUE_TYPES) {
