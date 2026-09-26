@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
-import type { ReportDto, ReportNarrativeSectionDto, ReportTitledSectionDto } from '@beaconvie/types';
+import type { ReportDto, ReportNarrativeSectionDto, ReportTitledSectionDto, NatalChartPlanetValue, NatalZodiacSignValue, NumerologyValueTypeValue } from '@beaconvie/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -311,7 +311,7 @@ function CalculatedFactsAppendix({ snapshot }: { snapshot: ReportDto['sourceSnap
         <ul className="flex flex-col gap-1">
           {snapshot.natalChart.placements.map((placement, i) => (
             <li key={i} className="text-caption text-text-secondary">
-              {PLANET_LABELS[placement.body] ?? placement.body} ở {SIGN_LABELS[placement.sign] ?? placement.sign}
+              {PLANET_LABELS[placement.body as NatalChartPlanetValue] ?? placement.body} ở {SIGN_LABELS[placement.sign as NatalZodiacSignValue] ?? placement.sign}
               {placement.house ? `, nhà ${placement.house}` : ''}
               {placement.retrograde ? ' (nghịch hành)' : ''}
             </li>
@@ -323,7 +323,7 @@ function CalculatedFactsAppendix({ snapshot }: { snapshot: ReportDto['sourceSnap
         <ul className="flex flex-col gap-1">
           {snapshot.numerology.values.map((value, i) => (
             <li key={i} className="text-caption text-text-secondary">
-              {VALUE_TYPE_LABELS[value.type] ?? value.type}: {value.value}
+              {VALUE_TYPE_LABELS[value.type as NumerologyValueTypeValue] ?? value.type}: {value.value}
               {value.isMasterNumber ? ' (Số đặc biệt)' : ''}
             </li>
           ))}
