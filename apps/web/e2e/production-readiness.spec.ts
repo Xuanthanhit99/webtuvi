@@ -3,7 +3,25 @@ import AxeBuilder from '@axe-core/playwright';
 
 const publicRoutes = ['/', '/discover', '/discover/tu-vi', '/discover/tarot', '/discover/natal-chart', '/discover/numerology', '/discover/eastern-horoscope'];
 const supportingRoutes = ['/about', '/contact', '/privacy', '/terms'];
-const indexableRoutes = [...publicRoutes, ...supportingRoutes];
+const knowledgeRoutes = [
+  '/kien-thuc',
+  '/kien-thuc/tu-vi',
+  '/kien-thuc/tarot',
+  '/kien-thuc/than-so-hoc',
+  '/kien-thuc/ban-do-sao',
+  '/kien-thuc/ngu-hanh',
+  '/kien-thuc/tu-vi/la-so-tu-vi-la-gi',
+  '/kien-thuc/tu-vi/cach-xem-la-so-tu-vi',
+  '/kien-thuc/tarot/tarot-la-gi',
+  '/kien-thuc/tarot/y-nghia-78-la-tarot',
+  '/kien-thuc/than-so-hoc/than-so-hoc-la-gi',
+  '/kien-thuc/than-so-hoc/so-chu-dao-la-gi',
+  '/kien-thuc/than-so-hoc/so-chu-dao-11',
+  '/kien-thuc/ban-do-sao/ban-do-sao-la-gi',
+  '/kien-thuc/ban-do-sao/cung-moc-la-gi',
+  '/kien-thuc/ngu-hanh/ngu-hanh-la-gi',
+];
+const indexableRoutes = [...publicRoutes, ...supportingRoutes, ...knowledgeRoutes];
 const origin = 'https://tuvitarot.vn';
 test.describe.configure({ timeout: 90_000 });
 
