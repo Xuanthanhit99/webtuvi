@@ -7,7 +7,7 @@ describe('Content SEO sitemap', () => {
   it('includes the knowledge hub, launch articles and all 78 canonical Tarot cards', () => {
     const urls = sitemap().map((item) => item.url);
     expect(urls).toContain('https://tuvitarot.vn/kien-thuc');
-    expect(urls.filter((url) => url.includes('/kien-thuc/'))).toHaveLength(15);
+    expect(urls.filter((url) => url.includes('/kien-thuc/'))).toHaveLength(93);
     expect(urls).toContain('https://tuvitarot.vn/kien-thuc/than-so-hoc/so-chu-dao-11');
     expect(urls).toContain('https://tuvitarot.vn/kien-thuc/tarot/y-nghia-78-la-tarot');
     const tarotCards = urls.filter((url) => url.includes('/kien-thuc/tarot/la-bai/'));
