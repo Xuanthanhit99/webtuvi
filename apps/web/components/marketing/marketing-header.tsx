@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { label: 'Tarot', href: '/discover/tarot' },
   { label: 'Bản đồ sao', href: '/discover/natal-chart' },
   { label: 'Thần số học', href: '/discover/numerology' },
+  { label: 'Kiến thức', href: '/kien-thuc' },
   { label: 'Giới thiệu', href: '/about' },
 ];
 
