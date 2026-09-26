@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL, buildMetadata } from '@/lib/seo';
 import {
   TAROT_CARD_SEO_PATH,
+  TAROT_SEO_UPDATED_AT,
   tarotArcanaLabel,
   tarotCardBySlug,
   tarotCardDescription,
@@ -43,10 +44,10 @@ export default async function TarotCardKnowledgePage({ params }: Props) {
     '@type': 'Article',
     headline: tarotCardTitle(card),
     description: tarotCardDescription(card),
-    datePublished: '2026-09-26',
-    dateModified: '2026-09-26',
+    datePublished: '2026-09-26T00:00:00+07:00',
+    dateModified: TAROT_SEO_UPDATED_AT,
     mainEntityOfPage: url,
-    author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+    author: { '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/about` },
     publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
   };
   const breadcrumb = {
