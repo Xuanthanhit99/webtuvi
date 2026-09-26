@@ -26,6 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: tarotCardTitle(card),
     description: tarotCardDescription(card),
     path: `${TAROT_CARD_SEO_PATH}/${card.slug}`,
+    type: 'article',
   });
 }
 
