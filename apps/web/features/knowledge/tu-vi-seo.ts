@@ -1,4 +1,4 @@
-import { TU_VI_CORE13_STAR_IDS, TU_VI_MAIN_STAR_IDS, TU_VI_PALACE_ROLES } from '@beaconvie/types';
+import { TU_VI_CORE13_STAR_IDS, TU_VI_MAIN_STAR_IDS, TU_VI_PALACE_ROLES } from '@beaconvie/types/tu-vi-catalog';
 
 const PALACE_ROLES_FROM_MENH = TU_VI_PALACE_ROLES;
 const TU_VI_CHINH_TINH_IDS = TU_VI_MAIN_STAR_IDS;
