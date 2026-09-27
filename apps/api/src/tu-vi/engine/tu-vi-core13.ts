@@ -1,3 +1,4 @@
+import { TU_VI_CORE13_STAR_IDS as SHARED_TU_VI_CORE13_STAR_IDS } from '@beaconvie/types';
 import { EARTHLY_BRANCHES, getPalaceIndex, addPalaceOffset, type EarthlyBranch } from './tu-vi-palace';
 import { STEM_ELEMENT } from '../../eastern-horoscope/engine/eastern-horoscope-tables';
 import type { HeavenlyStem } from './tu-vi-can-chi';
@@ -18,21 +19,7 @@ import type { TuViSex } from './tu-vi-canonical-input';
  * structure as Mệnh/Thân's own rule.
  */
 
-export const TU_VI_CORE13_STAR_IDS = [
-  'Lộc Tồn',
-  'Kình Dương',
-  'Đà La',
-  'Địa Không',
-  'Địa Kiếp',
-  'Hỏa Tinh',
-  'Linh Tinh',
-  'Tả Phù',
-  'Hữu Bật',
-  'Văn Xương',
-  'Văn Khúc',
-  'Thiên Khôi',
-  'Thiên Việt',
-] as const;
+export const TU_VI_CORE13_STAR_IDS = SHARED_TU_VI_CORE13_STAR_IDS;
 
 export type Core13StarId = (typeof TU_VI_CORE13_STAR_IDS)[number];
 
