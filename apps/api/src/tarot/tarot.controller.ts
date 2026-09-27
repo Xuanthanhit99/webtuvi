@@ -7,7 +7,7 @@ import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-use
 import { TarotDeckService } from './deck/tarot-deck.service';
 import { TarotSelectionService } from './selection/tarot-selection.service';
 import { TarotRecordService, type ListReadingsResult } from './record/tarot-record.service';
-import { DrawReadingDto } from './dto/draw-reading.dto';
+import { CreateSelectionSessionDto, DrawReadingDto } from './dto/draw-reading.dto';
 import { ListReadingsQueryDto } from './dto/list-readings.dto';
 import { ListDeckQueryDto } from './dto/list-deck.dto';
 import type { TarotCardDto, TarotReadingDto, TarotReadingHistoryDto } from './tarot.mappers';
@@ -42,7 +42,7 @@ export class TarotController {
 
   @Post('selection-session')
   @ApiOperation({ summary: 'Create an opaque shuffled 78-card selection session; card identities stay server-side until positions are chosen' })
-  createSelectionSession(@CurrentUser() user: AuthenticatedUser, @Body() dto: Pick<DrawReadingDto, 'type'>) {
+  createSelectionSession(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateSelectionSessionDto) {
     return this.selection.create(user.id, dto.type);
   }
 
