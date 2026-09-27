@@ -87,7 +87,7 @@ describe('Tarot (e2e)', () => {
 
     it('a Three Card Spread draws 3 unique cards with Past/Present/Future position labels', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('three-card'));
-      const res = await drawSelected(app, headers, 'THREE_CARD', 201);
+      const res = await drawSelected(app, headers, 'THREE_CARD', undefined, 201);
       const reading = res.body.data as TarotReadingApi;
 
       expect(reading.cards).toHaveLength(3);
@@ -98,10 +98,10 @@ describe('Tarot (e2e)', () => {
 
     it('a second Daily Draw the same day is rejected — even after deleting the first one', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('daily'));
-      const first = await drawSelected(app, headers, 'DAILY_DRAW', 201);
+      const first = await drawSelected(app, headers, 'DAILY_DRAW', undefined, 201);
       const reading = first.body.data as TarotReadingApi;
 
-      const secondAttempt = await drawSelected(app, headers, 'DAILY_DRAW', 400);
+      const secondAttempt = await drawSelected(app, headers, 'DAILY_DRAW', undefined, 400);
       expect(secondAttempt.body.error.code).toBe('TAROT_DAILY_DRAW_ALREADY_TAKEN');
 
       await request(app.getHttpServer()).delete(`/tarot/readings/${reading.id}`).set(headers).expect(200);
@@ -124,7 +124,7 @@ describe('Tarot (e2e)', () => {
   describe('Lifecycle (Phase 3)', () => {
     it('archive -> restore returns to ACTIVE, and delete -> restore does the same, each writing real history', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('lifecycle'));
-      const created = await drawSelected(app, headers, 'SINGLE_CARD', 201);
+      const created = await drawSelected(app, headers, 'SINGLE_CARD', undefined, 201);
       const id = (created.body.data as TarotReadingApi).id;
 
       const archived = await request(app.getHttpServer()).post(`/tarot/readings/${id}/archive`).set(headers).expect(201);
@@ -155,7 +155,7 @@ describe('Tarot (e2e)', () => {
     it('getOne/history/archive/restore/delete 404 identically for a nonexistent id and another user’s reading', async () => {
       const ownerHeaders = await registerAndGetHeaders(app, uniqueEmail('owner'));
       const otherHeaders = await registerAndGetHeaders(app, uniqueEmail('other'));
-      const created = await drawSelected(app, ownerHeaders, 'SINGLE_CARD', 201);
+      const created = await drawSelected(app, ownerHeaders, 'SINGLE_CARD', undefined, 201);
       const id = (created.body.data as TarotReadingApi).id;
 
       const forReal = await request(app.getHttpServer()).get(`/tarot/readings/${id}`).set(otherHeaders).expect(404);
