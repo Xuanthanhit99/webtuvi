@@ -8,7 +8,7 @@ describe('TuViTrustSection', () => {
     const user = userEvent.setup();
     render(<TuViTrustSection />);
 
-    const toggle = screen.getByRole('button', { name: /AI không an sao cho bạn/i });
+    const toggle = screen.getByRole('button', { name: /Cách Mệnh Vi lập lá số/i });
     expect(toggle).toHaveAttribute('aria-expanded', 'false');
     expect(screen.queryByText(/Vân Đằng Thái Thứ Lang/)).not.toBeInTheDocument();
 
@@ -26,7 +26,7 @@ describe('TuViTrustSection', () => {
 
   it('renders expanded by default when defaultOpen is set (e.g. right after a real result)', () => {
     render(<TuViTrustSection defaultOpen />);
-    expect(screen.getByRole('button', { name: /AI không an sao cho bạn/i })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: /Cách Mệnh Vi lập lá số/i })).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByText(/Vân Đằng Thái Thứ Lang/)).toBeInTheDocument();
   });
 });
