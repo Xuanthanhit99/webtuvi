@@ -51,7 +51,8 @@ const keywordVi: Record<string,string> = {
 };
 
 function viKeywords(words: string[], reversed = false): string[] {
-  return words.map((word) => keywordVi[word.toLowerCase()] ?? (reversed ? `mặt cần xem lại: ${word}` : `chủ đề: ${word}`));
+  const fallback = reversed ? ['trì hoãn', 'mất cân bằng', 'điều cần xem lại'] : ['nhận thức', 'chuyển động', 'khả năng phát triển'];
+  return words.map((word, index) => keywordVi[word.toLowerCase()] ?? fallback[index % fallback.length]!);
 }
 
 function context(card: TarotCardSeed): string {
