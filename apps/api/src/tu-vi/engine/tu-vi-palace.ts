@@ -1,3 +1,4 @@
+import { TU_VI_PALACE_ROLES } from '@beaconvie/types';
 import { EARTHLY_BRANCHES, type EarthlyBranch } from '../../eastern-horoscope/engine/eastern-horoscope-tables';
 
 export { EARTHLY_BRANCHES };
@@ -55,20 +56,7 @@ export type { EarthlyBranch };
  * phase's instruction to keep no UI/presentation labels embedded in engine logic — sex-conditional
  * display naming, if ever needed, is a later, non-engine concern).
  */
-export const PALACE_ROLES_FROM_MENH = [
-  'Mệnh',
-  'Phụ Mẫu',
-  'Phúc Đức',
-  'Điền Trạch',
-  'Quan Lộc',
-  'Nô Bộc',
-  'Thiên Di',
-  'Tật Ách',
-  'Tài Bạch',
-  'Tử Tức',
-  'Phu Thê',
-  'Huynh Đệ',
-] as const;
+export const PALACE_ROLES_FROM_MENH = TU_VI_PALACE_ROLES;
 
 export type PalaceRole = (typeof PALACE_ROLES_FROM_MENH)[number];
 
