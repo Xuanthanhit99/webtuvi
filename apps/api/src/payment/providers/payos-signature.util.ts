@@ -40,18 +40,16 @@ export function verifyPayOSSignature(data: Record<string, unknown>, signature: s
  * process. Keep the millisecond timestamp as the high digits and use a monotonic two-digit suffix
  * for calls made in the same millisecond. The DB unique constraint on
  * `PaymentOrder.providerOrderCode` remains the cross-process collision guarantee. */
-let lastOrderCodeMs = 0;
-let sameMillisecondSequence = 0;
+let lastOrderCode = 0;
 
 export function generateOrderCode(): number {
-  const now = Date.now();
+  const timestampFloor = Date.now() * 100;
+  const nextOrderCode = Math.max(timestampFloor, lastOrderCode + 1);
 
-  if (now === lastOrderCodeMs) {
-    sameMillisecondSequence = (sameMillisecondSequence + 1) % 100;
-  } else {
-    lastOrderCodeMs = now;
-    sameMillisecondSequence = 0;
+  if (!Number.isSafeInteger(nextOrderCode)) {
+    throw new Error('Unable to generate a safe PayOS orderCode');
   }
 
-  return now * 100 + sameMillisecondSequence;
+  lastOrderCode = nextOrderCode;
+  return nextOrderCode;
 }
