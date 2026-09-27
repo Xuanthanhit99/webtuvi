@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mệnh Vi",
     "slug": "menh-vi-mobile",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "menhvi",
@@ -15,7 +15,9 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "vn.tuvitarot.menhvi",
+      "versionCode": 1
     },
     "web": {
       "output": "static",
@@ -37,6 +39,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "ios": {
+      "bundleIdentifier": "vn.tuvitarot.menhvi",
+      "buildNumber": "1",
+      "supportsTablet": false
     }
   }
 }
