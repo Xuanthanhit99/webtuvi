@@ -1,4 +1,4 @@
-import { TU_VI_PALACE_ROLES } from '@beaconvie/types';
+import { TU_VI_PALACE_ROLES } from '@beaconvie/types/tu-vi-catalog';
 import { EARTHLY_BRANCHES, type EarthlyBranch } from '../../eastern-horoscope/engine/eastern-horoscope-tables';
 
 export { EARTHLY_BRANCHES };
