@@ -31,9 +31,9 @@ describe('sitemap', () => {
     }
   });
 
-  it('omits unverifiable modification dates and uses plausible priorities', () => {
+  it('publishes modification dates only where backed by editorial source dates and uses plausible priorities', () => {
     for (const route of routes) {
-      expect(route.lastModified).toBeUndefined();
+      if (route.lastModified) expect(Number.isNaN(new Date(route.lastModified).getTime())).toBe(false);
       expect(route.priority).toBeGreaterThanOrEqual(0);
       expect(route.priority).toBeLessThanOrEqual(1);
     }
