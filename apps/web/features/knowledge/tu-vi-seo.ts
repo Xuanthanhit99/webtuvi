@@ -1,6 +1,6 @@
-import { PALACE_ROLES_FROM_MENH } from '../../../../api/src/tu-vi/engine/tu-vi-palace';
-import { TU_VI_CHINH_TINH_IDS } from '../../../../api/src/tu-vi/engine/tu-vi-chinh-tinh';
-import { TU_VI_CORE13_STAR_IDS } from '../../../../api/src/tu-vi/engine/tu-vi-core13';
+import { PALACE_ROLES_FROM_MENH } from '../../../api/src/tu-vi/engine/tu-vi-palace';
+import { TU_VI_CHINH_TINH_IDS } from '../../../api/src/tu-vi/engine/tu-vi-chinh-tinh';
+import { TU_VI_CORE13_STAR_IDS } from '../../../api/src/tu-vi/engine/tu-vi-core13';
 
 export const TU_VI_SEO_UPDATED_AT = '2026-09-27T00:00:00+07:00';
 export const TU_VI_PALACE_SEO_PATH = '/kien-thuc/tu-vi/cung';
