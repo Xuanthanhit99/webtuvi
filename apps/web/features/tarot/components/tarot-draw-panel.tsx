@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { motion, MotionConfig } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeft, Eye, Library, MoonStar, Sparkles } from 'lucide-react';
-import type { TarotReadingDto, TarotReadingTypeValue } from '@beaconvie/types';
+import type { TarotReadingDto, TarotReadingTypeValue, TarotSelectionSessionDto } from '@beaconvie/types';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { toast } from '@/components/ui/toast';
@@ -66,7 +66,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
   const [type, setType] = useState<TarotReadingTypeValue>('DAILY_DRAW');
   const [intention, setIntention] = useState<(typeof INTENTIONS)[number]['id']>('GENERAL');
   const [question, setQuestion] = useState('');
-  const [pendingReading, setPendingReading] = useState<TarotReadingDto | null>(null);
+  const [selectionSession, setSelectionSession] = useState<TarotSelectionSessionDto | null>(null);
   const [selectedSlots, setSelectedSlots] = useState<number[]>([]);
   const [result, setResult] = useState<TarotReadingDto | null>(null);
   const [limitBanner, setLimitBanner] = useState<{ message: string; showUpgrade: boolean } | null>(null);
@@ -76,12 +76,12 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
 
   const ritual = useTarotRitual();
   const draw = useMutation({
-    mutationFn: () => tarotApi.draw(type, type === 'DAILY_DRAW' ? undefined : question.trim() || undefined),
+    mutationFn: ({ token, positions }: { token: string; positions: number[] }) => tarotApi.draw(type, token, positions, type === 'DAILY_DRAW' ? undefined : question.trim() || undefined),
     onSuccess: (reading) => {
-      setPendingReading(reading);
-      setSelectedSlots([]);
-      setPhase('select');
+      setResult(reading);
+      setPhase('revealed');
       queryClient.invalidateQueries({ queryKey: ['tarot'] });
+      onDrawn?.(reading);
     },
     onError: (error: unknown) => {
       setPhase('spread');
@@ -94,15 +94,24 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     },
   });
 
-  function beginFocus() {
+  async function beginFocus() {
     setLimitBanner(null);
-    setPendingReading(null);
+    setSelectionSession(null);
     setResult(null);
     setSelectedSlots([]);
     setPhase('focus');
     ritual.startShuffle();
     trackEvent('tarot_started', { feature: 'tarot', spreadType: ANALYTICS_SPREAD_TYPE[type] });
-    draw.mutate();
+    try {
+      const session = await tarotApi.createSelectionSession(type);
+      setSelectionSession(session);
+      setPhase('select');
+    } catch (error) {
+      setPhase('spread');
+      const banner = drawLimitBanner(error);
+      if (banner) setLimitBanner(banner);
+      else toast.error('Chưa thể chuẩn bị bộ bài lúc này. Vui lòng thử lại.');
+    }
   }
 
   function skipShuffle() {
@@ -130,13 +139,11 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
   }
 
   function selectSlot(index: number) {
-    if (!pendingReading || selectedSlots.includes(index) || selectedSlots.length >= count) return;
+    if (!selectionSession || selectedSlots.includes(index) || selectedSlots.length >= count || draw.isPending) return;
     const next = [...selectedSlots, index];
     setSelectedSlots(next);
     if (next.length === count) {
-      setResult(pendingReading);
-      setPhase('revealed');
-      onDrawn?.(pendingReading);
+      draw.mutate({ token: selectionSession.token, positions: next });
     }
   }
 
@@ -158,7 +165,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
 
   function reset() {
     setPhase('landing');
-    setPendingReading(null);
+    setSelectionSession(null);
     setSelectedSlots([]);
     setResult(null);
     setLimitBanner(null);
@@ -334,13 +341,13 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
             <TarotDeckShuffle stage={ritual.shuffleStage} reducedMotion={ritual.reducedMotion} onSkip={skipShuffle} />
             <div>
               <p className="font-display text-heading-md text-insight">Hãy tập trung và chọn {count} lá bài</p>
-              <p className="mt-2 max-w-md text-body-sm text-text-secondary">Lá bài đã được hệ thống rút một cách nhất quán; khoảnh khắc này chỉ để bạn chậm lại trước khi lật bài.</p>
+              <p className="mt-2 max-w-md text-body-sm text-text-secondary">Hệ thống đang xáo đủ 78 lá. Danh tính lá được giữ kín cho đến khi chính bạn chọn vị trí.</p>
             </div>
           </section>
         </RitualStage>
       )}
 
-      {phase === 'select' && pendingReading && (
+      {phase === 'select' && selectionSession && (
         <RitualStage>
           <section className="relative flex flex-col items-center gap-5 p-4 tablet:p-6">
             <div className="text-center">
@@ -377,7 +384,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
             </div>
             <div className="mt-5 flex w-full flex-wrap justify-center gap-2 tablet:gap-3" onKeyDown={handleFanKeyDown}>
               {(() => {
-                const totalSlots = Math.max(7, count + 4);
+                const totalSlots = selectionSession.deckSize;
                 // Rotation/lift is keyed to each card's position *among the cards still in the
                 // fan*, not its original slot index — otherwise the remaining cards keep their
                 // old curve values after one flies out, and the arc reads as broken/lopsided
@@ -385,7 +392,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
                 const remaining = Array.from({ length: totalSlots }, (_, i) => i).filter((i) => !selectedSlots.includes(i));
                 const remainingCenter = (remaining.length - 1) / 2;
                 return remaining.map((index, visualPos) => {
-                  const available = index < count;
+                  const available = true;
                   return (
                     <motion.button
                       key={index}
@@ -395,7 +402,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
                       data-fan-index={index}
                       type="button"
                       disabled={!available}
-                      aria-label={available ? `Chọn lá ${index + 1}` : `Lá trang trí ${index + 1}`}
+                      aria-label={`Chọn lá ${index + 1}`}
                       onClick={() => selectSlot(index)}
                       layout
                       layoutId={`tarot-fan-card-${index}`}
@@ -415,7 +422,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
             </div>
             </div>
             <p className="max-w-lg text-center text-caption text-text-tertiary">
-              Vị trí bạn bấm chỉ chọn slot úp; card ID và chiều xuôi/ngược không bao giờ được gửi từ trình duyệt.
+              Bạn đang chọn thật từ đủ 78 vị trí đã được xáo. Danh tính và chiều của lá vẫn được giữ kín trên máy chủ cho tới khi bạn chốt lựa chọn.
             </p>
           </section>
         </RitualStage>
