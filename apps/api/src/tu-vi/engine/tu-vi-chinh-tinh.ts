@@ -1,4 +1,4 @@
-import { TU_VI_MAIN_STAR_IDS } from '@beaconvie/types';
+import { TU_VI_MAIN_STAR_IDS } from '@beaconvie/types/tu-vi-catalog';
 import { EARTHLY_BRANCHES, getPalaceIndex, addPalaceOffset, type EarthlyBranch } from './tu-vi-palace';
 import type { TuViCucId } from './tu-vi-cuc';
 
