@@ -44,7 +44,7 @@ async function register(app: INestApplication, email: string): Promise<{ headers
 async function seedRealisticUserData(app: INestApplication, prisma: PrismaService, headers: Record<string, string>, userId: string) {
   await request(app.getHttpServer()).post('/journal').set(headers).send({ title: 'A real entry', content: 'Real content.' }).expect(201);
   const selection = await request(app.getHttpServer()).post('/tarot/selection-session').set(headers).send({ type: 'DAILY_DRAW' }).expect(201);
-  await request(app.getHttpServer()).post('/tarot/draw').set(headers).send({ type: 'DAILY_DRAW', selectionToken: selection.body.token, selectedPositions: [0] }).expect(201);
+  await request(app.getHttpServer()).post('/tarot/draw').set(headers).send({ type: 'DAILY_DRAW', selectionToken: selection.body.data.token, selectedPositions: [0] }).expect(201);
   await request(app.getHttpServer())
     .post('/numerology/calculate')
     .set(headers)
