@@ -17,7 +17,29 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "vn.tuvitarot.menhvi",
-      "versionCode": 1
+      "versionCode": 1,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "tuvitarot.vn",
+              "pathPrefix": "/reset-password"
+            },
+            {
+              "scheme": "https",
+              "host": "tuvitarot.vn",
+              "pathPrefix": "/verify-email"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "output": "static",
