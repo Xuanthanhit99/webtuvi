@@ -1,4 +1,4 @@
-import { TU_VI_CORE13_STAR_IDS as SHARED_TU_VI_CORE13_STAR_IDS } from '@beaconvie/types';
+import { TU_VI_CORE13_STAR_IDS as SHARED_TU_VI_CORE13_STAR_IDS } from '@beaconvie/types/tu-vi-catalog';
 import { EARTHLY_BRANCHES, getPalaceIndex, addPalaceOffset, type EarthlyBranch } from './tu-vi-palace';
 import { STEM_ELEMENT } from '../../eastern-horoscope/engine/eastern-horoscope-tables';
 import type { HeavenlyStem } from './tu-vi-can-chi';
