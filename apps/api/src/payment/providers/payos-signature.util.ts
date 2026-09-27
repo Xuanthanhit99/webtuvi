@@ -37,9 +37,10 @@ export function verifyPayOSSignature(data: Record<string, unknown>, signature: s
 }
 
 /** A positive integer PayOS accepts as `orderCode`, unique per checkout attempt within this
- * process. Keep the millisecond timestamp as the high digits and use a monotonic two-digit suffix
- * for calls made in the same millisecond. The DB unique constraint on
- * `PaymentOrder.providerOrderCode` remains the cross-process collision guarantee. */
+ * process. The timestamp provides the floor and the process-local counter advances monotonically
+ * when multiple calls occur in the same millisecond (or if the clock does not advance). The DB
+ * unique constraint on `PaymentOrder.providerOrderCode` remains the cross-process collision
+ * guarantee. */
 let lastOrderCode = 0;
 
 export function generateOrderCode(): number {
