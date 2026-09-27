@@ -12,6 +12,9 @@ const knowledgeRoutes = [
   '/kien-thuc/ngu-hanh',
   '/kien-thuc/tu-vi/la-so-tu-vi-la-gi',
   '/kien-thuc/tu-vi/cach-xem-la-so-tu-vi',
+  '/kien-thuc/tu-vi/cach-an-14-chinh-tinh',
+  '/kien-thuc/tu-vi/cach-an-phu-tinh-core-13',
+  '/kien-thuc/tu-vi/tu-hoa-trong-bo-quy-tac',
   '/kien-thuc/tarot/tarot-la-gi',
   '/kien-thuc/tarot/y-nghia-78-la-tarot',
   '/kien-thuc/than-so-hoc/than-so-hoc-la-gi',
@@ -94,6 +97,9 @@ test('programmatic Tử Vi pages are crawlable and linked from the Tử Vi hub',
   }
   expect(await page.locator('a[href^="/kien-thuc/tu-vi/cung/"]').count()).toBe(12);
   expect(await page.locator('a[href^="/kien-thuc/tu-vi/sao/"]').count()).toBe(27);
+  for (const deepDive of ['/kien-thuc/tu-vi/cach-an-14-chinh-tinh', '/kien-thuc/tu-vi/cach-an-phu-tinh-core-13', '/kien-thuc/tu-vi/tu-hoa-trong-bo-quy-tac']) {
+    await expect(page.locator(`a[href="${deepDive}"]`)).toHaveCount(1);
+  }
 
   for (const route of representativeTuViEntityRoutes) {
     const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
@@ -104,6 +110,13 @@ test('programmatic Tử Vi pages are crawlable and linked from the Tử Vi hub',
     const schemas = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((json) => JSON.parse(json));
     expect(schemas.some((schema) => schema['@type'] === 'Article')).toBe(true);
     expect(schemas.some((schema) => schema['@type'] === 'BreadcrumbList')).toBe(true);
+    if (route.includes('/sao/')) {
+      await expect(page.getByText('Dữ liệu quyết định vị trí')).toBeVisible();
+      await expect(page.getByRole('link', { name: /Đọc phương pháp an sao và nguồn kiểm chứng/ })).toHaveCount(1);
+    }
+    if (route.includes('/cung/')) {
+      expect(await page.locator('a[href^="/kien-thuc/tu-vi/sao/"]').count()).toBe(4);
+    }
   }
 
   await page.goto('/kien-thuc/tarot');

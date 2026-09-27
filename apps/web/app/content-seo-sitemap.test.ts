@@ -7,9 +7,10 @@ describe('Content SEO sitemap', () => {
   it('includes knowledge content, all 78 Tarot cards and canonical Tử Vi palace/star pages', () => {
     const urls = sitemap().map((item) => item.url);
     expect(urls).toContain('https://tuvitarot.vn/kien-thuc');
-    expect(urls.filter((url) => url.includes('/kien-thuc/'))).toHaveLength(132);
+    expect(urls.filter((url) => url.includes('/kien-thuc/'))).toHaveLength(135);
     expect(urls).toContain('https://tuvitarot.vn/kien-thuc/than-so-hoc/so-chu-dao-11');
     expect(urls).toContain('https://tuvitarot.vn/kien-thuc/tarot/y-nghia-78-la-tarot');
+    for (const slug of ['cach-an-14-chinh-tinh', 'cach-an-phu-tinh-core-13', 'tu-hoa-trong-bo-quy-tac']) expect(urls).toContain(`https://tuvitarot.vn/kien-thuc/tu-vi/${slug}`);
     const tarotCards = urls.filter((url) => url.includes('/kien-thuc/tarot/la-bai/'));
     expect(tarotCards).toHaveLength(78);
     expect(new Set(tarotCards).size).toBe(78);

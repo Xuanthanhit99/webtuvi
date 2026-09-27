@@ -7,7 +7,8 @@ describe('Tử Vi SEO registry',()=>{
    const entries=tuViStarSeo.map(x=>starSourceContent(x.name));
    expect(entries).toHaveLength(27);
    expect(entries.every(x=>x.placement.length>40&&x.source.includes('VDTTL-1956'))).toBe(true);
-   expect(new Set(entries.map(x=>x.placement)).size).toBeGreaterThanOrEqual(20);
+   expect(new Set(entries.map(x=>`${x.placement}|${x.basis}|${x.relationship}`)).size).toBe(27);
+   expect(entries.every(x=>x.basis.length>5&&x.relationship.length>20&&x.deepDiveSlug.length>5)).toBe(true);
    expect(starSourceContent('Tả Phù').placement).toContain('tháng âm lịch');
    expect(starSourceContent('Văn Xương').placement).toContain('giờ sinh');
    expect(starSourceContent('Kình Dương').placement).toContain('Lộc Tồn');
