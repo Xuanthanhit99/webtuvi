@@ -5,6 +5,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { DiscoveryThrottlerGuard } from '../common/guards/discovery-throttler.guard';
 import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { TarotDeckService } from './deck/tarot-deck.service';
+import { TarotSelectionService } from './selection/tarot-selection.service';
 import { TarotRecordService, type ListReadingsResult } from './record/tarot-record.service';
 import { DrawReadingDto } from './dto/draw-reading.dto';
 import { ListReadingsQueryDto } from './dto/list-readings.dto';
@@ -24,6 +25,7 @@ export class TarotController {
   constructor(
     private readonly deck: TarotDeckService,
     private readonly records: TarotRecordService,
+    private readonly selection: TarotSelectionService,
   ) {}
 
   @Get('deck')
@@ -36,6 +38,12 @@ export class TarotController {
   @ApiOperation({ summary: 'Get one card by slug' })
   getCard(@Param('slug') slug: string): Promise<TarotCardDto> {
     return this.deck.getBySlug(slug);
+  }
+
+  @Post('selection-session')
+  @ApiOperation({ summary: 'Create an opaque shuffled 78-card selection session; card identities stay server-side until positions are chosen' })
+  createSelectionSession(@CurrentUser() user: AuthenticatedUser, @Body() dto: Pick<DrawReadingDto, 'type'>) {
+    return this.selection.create(user.id, dto.type);
   }
 
   @Post('draw')
