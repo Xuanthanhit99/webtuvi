@@ -1,8 +1,11 @@
 import { TAROT_DECK, type TarotCardSeed } from '../../../api/prisma/data/tarot-deck';
+import { tarotSeoVi } from '../../../api/prisma/data/tarot-seo-vi';
 
 export const TAROT_CARD_SEO_PATH = '/kien-thuc/tarot/la-bai';
+export const TAROT_SEO_UPDATED_AT = '2026-09-27T00:00:00+07:00';
 
 export const tarotSeoCards = TAROT_DECK;
+export { tarotSeoVi };
 
 export function tarotCardBySlug(slug: string): TarotCardSeed | undefined {
   return TAROT_DECK.find((card) => card.slug === slug);
@@ -24,7 +27,7 @@ export function tarotCardTitle(card: TarotCardSeed): string {
 }
 
 export function tarotCardDescription(card: TarotCardSeed): string {
-  const keywords = card.uprightKeywords.slice(0, 3).join(', ');
+  const keywords = tarotSeoVi(card).uprightKeywords.slice(0, 3).join(', ');
   return `Ý nghĩa lá ${card.nameVi} (${card.name}) trong Tarot: xuôi, ngược, tình yêu, công việc, tài chính và câu hỏi tự chiêm nghiệm. Từ khóa: ${keywords}.`;
 }
 

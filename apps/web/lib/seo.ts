@@ -48,6 +48,8 @@ export interface BuildMetadataOptions {
    * at the metadata level — the defense-in-depth layer described in the final report's §6
    * (never rely on robots.txt alone for a private/sensitive page). */
   noindex?: boolean;
+  /** OpenGraph object type. Knowledge/detail articles should explicitly advertise article semantics. */
+  type?: 'website' | 'article';
 }
 
 /**
@@ -56,7 +58,7 @@ export interface BuildMetadataOptions {
  * Noindex pages intentionally omit OG/Twitter — there's nothing to make shareable about a page
  * that must never be indexed or linked to publicly.
  */
-export function buildMetadata({ title, description = DEFAULT_DESCRIPTION, path, noindex = false }: BuildMetadataOptions): Metadata {
+export function buildMetadata({ title, description = DEFAULT_DESCRIPTION, path, noindex = false, type = 'website' }: BuildMetadataOptions): Metadata {
   const canonical = path === '/' ? '/' : path;
   const resolvedTitle = title ?? SITE_NAME;
   // Next.js merges a route's metadata into its parent layout's shallowly, key by key. A `title`
@@ -86,7 +88,7 @@ export function buildMetadata({ title, description = DEFAULT_DESCRIPTION, path, 
       title: resolvedTitle,
       description,
       url: canonical,
-      type: 'website',
+      type,
       siteName: SITE_NAME,
       locale: 'vi_VN',
       images: [{ url: DEFAULT_SOCIAL_IMAGE, width: 1896, height: 830, alt: `${SITE_NAME} — Tử Vi, Tarot, Bản đồ sao và Thần số học` }],

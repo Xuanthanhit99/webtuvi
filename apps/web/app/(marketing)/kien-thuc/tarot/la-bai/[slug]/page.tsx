@@ -4,12 +4,14 @@ import { notFound } from 'next/navigation';
 import { SITE_NAME, SITE_URL, buildMetadata } from '@/lib/seo';
 import {
   TAROT_CARD_SEO_PATH,
+  TAROT_SEO_UPDATED_AT,
   tarotArcanaLabel,
   tarotCardBySlug,
   tarotCardDescription,
   tarotCardTitle,
   tarotRelatedCards,
   tarotSeoCards,
+  tarotSeoVi,
 } from '@/features/knowledge/tarot-cards';
 
 type Props = { params: Promise<{ slug: string }> };
@@ -26,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: tarotCardTitle(card),
     description: tarotCardDescription(card),
     path: `${TAROT_CARD_SEO_PATH}/${card.slug}`,
+    type: 'article',
   });
 }
 
@@ -37,15 +40,16 @@ export default async function TarotCardKnowledgePage({ params }: Props) {
   const path = `${TAROT_CARD_SEO_PATH}/${card.slug}`;
   const url = `${SITE_URL}${path}`;
   const related = tarotRelatedCards(card);
+  const vi = tarotSeoVi(card);
   const article = {
     '@context': 'https://schema.org',
     '@type': 'Article',
     headline: tarotCardTitle(card),
     description: tarotCardDescription(card),
-    datePublished: '2026-09-26',
-    dateModified: '2026-09-26',
+    datePublished: '2026-09-26T00:00:00+07:00',
+    dateModified: TAROT_SEO_UPDATED_AT,
     mainEntityOfPage: url,
-    author: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+    author: { '@type': 'Organization', name: SITE_NAME, url: `${SITE_URL}/about` },
     publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
   };
   const breadcrumb = {
@@ -75,34 +79,34 @@ export default async function TarotCardKnowledgePage({ params }: Props) {
       <div className="mt-10 space-y-9 text-[17px] leading-8">
         <section>
           <h2 className="text-2xl font-semibold">Ý nghĩa xuôi</h2>
-          <p className="mt-3 text-muted-foreground">{card.uprightMeaning}</p>
-          <p className="mt-3"><strong>Từ khóa:</strong> {card.uprightKeywords.join(', ')}.</p>
+          <p className="mt-3 text-muted-foreground">{vi.uprightMeaning}</p>
+          <p className="mt-3"><strong>Từ khóa:</strong> {vi.uprightKeywords.join(', ')}.</p>
         </section>
         <section>
           <h2 className="text-2xl font-semibold">Ý nghĩa ngược</h2>
-          <p className="mt-3 text-muted-foreground">{card.reversedMeaning}</p>
-          <p className="mt-3"><strong>Từ khóa:</strong> {card.reversedKeywords.join(', ')}.</p>
+          <p className="mt-3 text-muted-foreground">{vi.reversedMeaning}</p>
+          <p className="mt-3"><strong>Từ khóa:</strong> {vi.reversedKeywords.join(', ')}.</p>
         </section>
         <section>
           <h2 className="text-2xl font-semibold">Tình yêu và các mối quan hệ</h2>
-          <p className="mt-3 text-muted-foreground">{card.loveMeaning}</p>
+          <p className="mt-3 text-muted-foreground">{vi.loveMeaning}</p>
         </section>
         <section>
           <h2 className="text-2xl font-semibold">Công việc và sự nghiệp</h2>
-          <p className="mt-3 text-muted-foreground">{card.careerMeaning}</p>
+          <p className="mt-3 text-muted-foreground">{vi.careerMeaning}</p>
         </section>
         <section>
           <h2 className="text-2xl font-semibold">Tài chính</h2>
-          <p className="mt-3 text-muted-foreground">{card.financeMeaning}</p>
+          <p className="mt-3 text-muted-foreground">{vi.financeMeaning}</p>
         </section>
         <section>
           <h2 className="text-2xl font-semibold">Góc nhìn cho bản thân</h2>
-          <p className="mt-3 text-muted-foreground">{card.selfMeaning}</p>
+          <p className="mt-3 text-muted-foreground">{vi.selfMeaning}</p>
         </section>
         <section>
           <h2 className="text-2xl font-semibold">Câu hỏi để tự chiêm nghiệm</h2>
           <ul className="mt-3 list-disc space-y-2 pl-6 text-muted-foreground">
-            {card.reflectionPrompts.map((prompt) => <li key={prompt}>{prompt}</li>)}
+            {vi.reflectionPrompts.map((prompt) => <li key={prompt}>{prompt}</li>)}
           </ul>
         </section>
       </div>
