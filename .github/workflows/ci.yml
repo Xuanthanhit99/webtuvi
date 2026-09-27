@@ -160,6 +160,18 @@ jobs:
       - name: Build Web
         run: pnpm build:web
 
+      # Build the exact production Web Dockerfile used by Railway. This catches missing COPY
+      # dependencies and standalone-image regressions that a workspace `next build` cannot see.
+      - name: Build Web production Docker image
+        run: |
+          docker build \
+            --file apps/web/Dockerfile \
+            --build-arg NEXT_PUBLIC_API_URL=http://localhost:4000 \
+            --build-arg NEXT_PUBLIC_APP_URL=https://tuvitarot.vn \
+            --build-arg NEXT_PUBLIC_ANALYTICS_ENABLED=false \
+            --tag beaconvie-web:ci \
+            .
+
       - name: Install Playwright browsers
         run: pnpm --filter @beaconvie/web exec playwright install --with-deps chromium
 
