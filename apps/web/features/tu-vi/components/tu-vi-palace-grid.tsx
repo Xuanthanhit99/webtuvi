@@ -26,7 +26,7 @@ function PalaceButton({ cell, selected, compact = false, onSelect }: { cell: Pal
       type="button"
       onClick={onSelect}
       aria-pressed={selected}
-      aria-label={`${cell.role} palace, at ${cell.branch}${markers.length ? `, ${markers.join(' and ')}` : ''}`}
+      aria-label={`Cung ${cell.role}, tại ${cell.branch}${markers.length ? `, ${markers.join(' và ')}` : ''}`}
       className={`group flex h-full w-full flex-col rounded-md border text-left transition-[border-color,background-color,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] ${selected ? 'border-[#d5ad62] bg-[#d5ad62]/[0.08]' : cell.isThan ? 'border-[#708c79]/45 bg-[#708c79]/[0.04]' : 'border-[#d5ad62]/15 bg-[#0b1220] hover:border-[#d5ad62]/40'} ${compact ? 'min-h-[76px] p-2' : 'p-2.5'}`}
     >
       <span className="flex w-full items-start justify-between gap-1">
@@ -39,7 +39,7 @@ function PalaceButton({ cell, selected, compact = false, onSelect }: { cell: Pal
           {cell.mainStars.map(({ star, dignity }) => (
             <li key={star} className="flex flex-wrap items-center gap-1">
               <span className="text-caption font-semibold text-[#f2eee5]">{star}</span>
-              <span className={`rounded-sm px-1 py-0.5 text-[0.58rem] font-semibold leading-none ${DIGNITY_TONE[dignity] ?? 'bg-surface-raised text-text-secondary'}`} aria-label={`dignity: ${dignity}`}>{DIGNITY_SHORT_LABEL[dignity]}</span>
+              <span className={`rounded-sm px-1 py-0.5 text-[0.58rem] font-semibold leading-none ${DIGNITY_TONE[dignity] ?? 'bg-surface-raised text-text-secondary'}`} aria-label={`Trạng thái: ${dignity}`}>{DIGNITY_SHORT_LABEL[dignity]}</span>
               {starTags(star, cell).length > 0 && <sup className="text-[#e6c980]">{starTags(star, cell).join('')}</sup>}
             </li>
           ))}
@@ -86,14 +86,14 @@ export function TuViPalaceGrid({ chart }: { chart: TuViChartDto }) {
 
   return (
     <div className="space-y-4">
-      <div className="hidden aspect-square grid-cols-4 grid-rows-4 gap-1.5 tablet:grid" aria-label="12 palaces, traditional lá số grid layout">
+      <div className="hidden aspect-square grid-cols-4 grid-rows-4 gap-1.5 tablet:grid" aria-label="Bố cục truyền thống 12 cung của lá số">
         {cells.map((cell) => { const pos = PALACE_GRID_POSITION[cell.branch]; return <div key={cell.branch} style={{ gridRow: pos.row, gridColumn: pos.col }}><PalaceButton cell={cell} selected={cell.branch === selectedBranch} onSelect={() => setSelectedBranch(cell.branch)} /></div>; })}
         <div style={{ gridRow: '2 / span 2', gridColumn: '2 / span 2' }}><ChartSummaryCell chart={chart} /></div>
       </div>
 
       <div className="tablet:hidden">
         <div className="mb-3 rounded-md border border-[#d5ad62]/20 bg-[#101827] p-3 text-center"><p className="font-display text-body-md font-semibold text-[#e6c980]">{chart.cuc}</p><p className="mt-1 text-caption text-[#a6a7ac]">Mệnh tại {chart.palaces.menh} · Thân tại {chart.palaces.than} · Giờ {chart.hourBranch}</p></div>
-        <div className="grid grid-cols-3 gap-1.5" aria-label="12 palaces, mobile overview">
+        <div className="grid grid-cols-3 gap-1.5" aria-label="Tổng quan 12 cung trên thiết bị di động">
           {cells.map((cell) => <PalaceButton key={cell.branch} cell={cell} compact selected={cell.branch === selectedBranch} onSelect={() => setSelectedBranch(cell.branch)} />)}
         </div>
       </div>
