@@ -6,6 +6,7 @@ import { AnalyticsModule } from '../analytics/analytics.module';
 import { TarotDeckService } from './deck/tarot-deck.service';
 import { TarotInterpretationService } from './interpretation/tarot-interpretation.service';
 import { TarotRecordService } from './record/tarot-record.service';
+import { TarotSelectionService } from './selection/tarot-selection.service';
 import { TarotController } from './tarot.controller';
 
 /**
@@ -25,6 +26,6 @@ import { TarotController } from './tarot.controller';
 @Module({
   imports: [CompanionModule, MemoryModule, PaymentModule, AnalyticsModule],
   controllers: [TarotController],
-  providers: [TarotDeckService, TarotRecordService, TarotInterpretationService],
+  providers: [TarotDeckService, TarotRecordService, TarotInterpretationService, TarotSelectionService],
 })
 export class TarotModule {}
