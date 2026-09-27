@@ -36,10 +36,22 @@ export function verifyPayOSSignature(data: Record<string, unknown>, signature: s
   return timingSafeEqual(expectedBuf, actualBuf);
 }
 
-/** A positive integer PayOS accepts as `orderCode`, unique per checkout attempt. Millisecond
- * timestamp (safely below Number.MAX_SAFE_INTEGER for the foreseeable future) with a random
- * two-digit suffix to avoid same-millisecond collisions under concurrent checkouts; the DB's own
- * unique constraint on `PaymentOrder.providerOrderCode` is the actual collision guarantee. */
+/** A positive integer PayOS accepts as `orderCode`, unique per checkout attempt within this
+ * process. Keep the millisecond timestamp as the high digits and use a monotonic two-digit suffix
+ * for calls made in the same millisecond. The DB unique constraint on
+ * `PaymentOrder.providerOrderCode` remains the cross-process collision guarantee. */
+let lastOrderCodeMs = 0;
+let sameMillisecondSequence = 0;
+
 export function generateOrderCode(): number {
-  return Date.now() * 100 + Math.floor(Math.random() * 100);
+  const now = Date.now();
+
+  if (now === lastOrderCodeMs) {
+    sameMillisecondSequence = (sameMillisecondSequence + 1) % 100;
+  } else {
+    lastOrderCodeMs = now;
+    sameMillisecondSequence = 0;
+  }
+
+  return now * 100 + sameMillisecondSequence;
 }
