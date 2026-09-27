@@ -73,11 +73,7 @@ describe('Tarot (e2e)', () => {
   describe('Draw (Phase 2/3/4)', () => {
     it('a Single Card draw creates a real reading with a real card and a generated interpretation', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('single'));
-      const res = await request(app.getHttpServer())
-        .post('/tarot/draw')
-        .set(headers)
-        .send({ type: 'SINGLE_CARD', question: 'What should I focus on today?' })
-        .expect(201);
+      const res = (await drawSelected(app, headers, 'SINGLE_CARD', 'What should I focus on today?')).expect(201);
       const reading = res.body.data as TarotReadingApi;
 
       expect(reading.status).toBe('ACTIVE');
@@ -91,7 +87,7 @@ describe('Tarot (e2e)', () => {
 
     it('a Three Card Spread draws 3 unique cards with Past/Present/Future position labels', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('three-card'));
-      const res = await drawSelected(app, headers, 'THREE_CARD').expect(201);
+      const res = (await drawSelected(app, headers, 'THREE_CARD')).expect(201);
       const reading = res.body.data as TarotReadingApi;
 
       expect(reading.cards).toHaveLength(3);
@@ -102,15 +98,15 @@ describe('Tarot (e2e)', () => {
 
     it('a second Daily Draw the same day is rejected — even after deleting the first one', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('daily'));
-      const first = await drawSelected(app, headers, 'DAILY_DRAW').expect(201);
+      const first = (await drawSelected(app, headers, 'DAILY_DRAW')).expect(201);
       const reading = first.body.data as TarotReadingApi;
 
-      const secondAttempt = await drawSelected(app, headers, 'DAILY_DRAW').expect(400);
+      const secondAttempt = (await drawSelected(app, headers, 'DAILY_DRAW')).expect(400);
       expect(secondAttempt.body.error.code).toBe('TAROT_DAILY_DRAW_ALREADY_TAKEN');
 
       await request(app.getHttpServer()).delete(`/tarot/readings/${reading.id}`).set(headers).expect(200);
 
-      const thirdAttempt = await drawSelected(app, headers, 'DAILY_DRAW').expect(400);
+      const thirdAttempt = (await drawSelected(app, headers, 'DAILY_DRAW')).expect(400);
       expect(thirdAttempt.body.error.code).toBe('TAROT_DAILY_DRAW_ALREADY_TAKEN');
     });
 
@@ -128,7 +124,7 @@ describe('Tarot (e2e)', () => {
   describe('Lifecycle (Phase 3)', () => {
     it('archive -> restore returns to ACTIVE, and delete -> restore does the same, each writing real history', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('lifecycle'));
-      const created = await drawSelected(app, headers, 'SINGLE_CARD').expect(201);
+      const created = (await drawSelected(app, headers, 'SINGLE_CARD')).expect(201);
       const id = (created.body.data as TarotReadingApi).id;
 
       const archived = await request(app.getHttpServer()).post(`/tarot/readings/${id}/archive`).set(headers).expect(201);
@@ -148,7 +144,7 @@ describe('Tarot (e2e)', () => {
 
     it('an invalid transition (archiving an already-archived reading) is rejected', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('invalid-transition'));
-      const created = await drawSelected(app, headers, 'SINGLE_CARD').expect(201);
+      const created = (await drawSelected(app, headers, 'SINGLE_CARD')).expect(201);
       const id = (created.body.data as TarotReadingApi).id;
       await request(app.getHttpServer()).post(`/tarot/readings/${id}/archive`).set(headers).expect(201);
       await request(app.getHttpServer()).post(`/tarot/readings/${id}/archive`).set(headers).expect(400);
@@ -159,7 +155,7 @@ describe('Tarot (e2e)', () => {
     it('getOne/history/archive/restore/delete 404 identically for a nonexistent id and another user’s reading', async () => {
       const ownerHeaders = await registerAndGetHeaders(app, uniqueEmail('owner'));
       const otherHeaders = await registerAndGetHeaders(app, uniqueEmail('other'));
-      const created = await drawSelected(app, ownerHeaders, 'SINGLE_CARD').expect(201);
+      const created = (await drawSelected(app, ownerHeaders, 'SINGLE_CARD')).expect(201);
       const id = (created.body.data as TarotReadingApi).id;
 
       const forReal = await request(app.getHttpServer()).get(`/tarot/readings/${id}`).set(otherHeaders).expect(404);
@@ -176,8 +172,8 @@ describe('Tarot (e2e)', () => {
     it('the reading list never includes another user’s readings', async () => {
       const mineHeaders = await registerAndGetHeaders(app, uniqueEmail('mine'));
       const theirsHeaders = await registerAndGetHeaders(app, uniqueEmail('theirs'));
-      await drawSelected(app, theirsHeaders, 'SINGLE_CARD', 'theirs').expect(201);
-      await drawSelected(app, mineHeaders, 'SINGLE_CARD', 'mine').expect(201);
+      (await drawSelected(app, theirsHeaders, 'SINGLE_CARD', 'theirs')).expect(201);
+      (await drawSelected(app, mineHeaders, 'SINGLE_CARD', 'mine')).expect(201);
 
       const list = await request(app.getHttpServer()).get('/tarot/readings').set(mineHeaders).expect(200);
       const questions = (list.body.data.items as { question: string }[]).map((r) => r.question);
