@@ -77,6 +77,40 @@ test('crawler receives complete public HTML, unique metadata, canonical URLs and
   await context.close();
 });
 
+const representativeTuViEntityRoutes = [
+  '/kien-thuc/tu-vi/cung/menh',
+  '/kien-thuc/tu-vi/cung/tai-bach',
+  '/kien-thuc/tu-vi/sao/tu-vi',
+  '/kien-thuc/tu-vi/sao/loc-ton',
+];
+
+test('programmatic Tử Vi pages are crawlable and linked from the Tử Vi hub', async ({ browser }) => {
+  const context = await browser.newContext({ javaScriptEnabled: false, baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3000' });
+  const page = await context.newPage();
+
+  await page.goto('/kien-thuc/tu-vi');
+  for (const route of representativeTuViEntityRoutes) {
+    await expect(page.locator(`a[href="${route}"]`)).toHaveCount(1);
+  }
+  expect(await page.locator('a[href^="/kien-thuc/tu-vi/cung/"]').count()).toBe(12);
+  expect(await page.locator('a[href^="/kien-thuc/tu-vi/sao/"]').count()).toBe(27);
+
+  for (const route of representativeTuViEntityRoutes) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    expect(response?.status(), route).toBe(200);
+    await expect(page.locator('h1')).toHaveCount(1);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${origin}${route}`);
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'index, follow');
+    const schemas = (await page.locator('script[type="application/ld+json"]').allTextContents()).map((json) => JSON.parse(json));
+    expect(schemas.some((schema) => schema['@type'] === 'Article')).toBe(true);
+    expect(schemas.some((schema) => schema['@type'] === 'BreadcrumbList')).toBe(true);
+  }
+
+  await page.goto('/kien-thuc/tarot');
+  expect(await page.locator('a[href^="/kien-thuc/tarot/la-bai/"]').count()).toBe(78);
+  await context.close();
+});
+
 test('private URLs remain protected, aliases redirect permanently and missing routes return 404', async ({ request }) => {
   for (const route of ['/settings', '/reports', '/premium', '/discover/tarot?item=invalid', '/discover/tarot?item=']) {
     const response = await request.get(route, { maxRedirects: 0 });
