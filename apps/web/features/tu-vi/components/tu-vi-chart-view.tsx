@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { AiInterpretation } from '@/components/ui/ai-interpretation';
 import { toast } from '@/components/ui/toast';
 import { tuViApi } from '../api/tu-vi-api';
-import { CHART_STATUS_BADGE_VARIANT, CHART_STATUS_LABELS, PALACE_ROLE_LABELS_EN, TRANSFORMATION_LABELS_EN } from '../labels';
+import { CHART_STATUS_BADGE_VARIANT, CHART_STATUS_LABELS, PALACE_ROLE_DESCRIPTIONS_VI, TRANSFORMATION_DESCRIPTIONS_VI } from '../labels';
 import { TuViPalaceGrid } from './tu-vi-palace-grid';
 import { TuViTrustSection } from './tu-vi-trust-section';
 import { TuViDaiVanTimeline } from './tu-vi-dai-van-timeline';
@@ -115,7 +115,7 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
 
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#708c79]/20 bg-[#708c79]/[0.05] px-4 py-3">
         <p className="text-caption text-text-secondary">Cung, sao và chu kỳ được tính từ dữ liệu sinh bằng hệ quy tắc cố định.</p>
-        <Badge variant="new">Dữ liệu lá số · Không do AI tạo</Badge>
+        <Badge variant="new">Dữ liệu lá số · Tính theo bộ quy tắc cố định</Badge>
       </div>
 
       <TuViTrustSection context="kết quả" />
@@ -162,7 +162,7 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
           {chart.transformations.map((t) => (
             <li key={t.transformation} className="flex items-center justify-between gap-2">
               <span className="text-text-primary">
-                {t.transformation} <span className="sr-only">({TRANSFORMATION_LABELS_EN[t.transformation] ?? t.transformation})</span>
+                {t.transformation} <span className="sr-only">({TRANSFORMATION_DESCRIPTIONS_VI[t.transformation] ?? t.transformation})</span>
               </span>
               <span className="text-text-secondary">
                 {t.targetStar} · {t.position}
@@ -190,11 +190,11 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
         isGenerating={retryInterpretation.isPending}
         onGenerate={() => retryInterpretation.mutate()}
         labels={{
-          heading: 'Luận giải bằng AI',
+          heading: 'Luận giải lá số',
           generating: 'Đang viết phần luận giải…',
           empty: 'Phần luận giải chưa sẵn sàng.',
           action: 'Tạo luận giải',
-          disclosure: 'AI chỉ diễn giải dữ liệu phía trên — không lựa chọn hoặc thay đổi cung, sao hay chu kỳ.',
+          disclosure: 'Phần luận giải chỉ diễn giải dữ liệu lá số phía trên; cung, sao và chu kỳ được tính trước bằng bộ quy tắc cố định.',
         }}
       />
 
@@ -213,9 +213,9 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
 
       <Section title="Danh mục 12 cung">
         <ul className="grid grid-cols-1 gap-1 text-body-sm tablet:grid-cols-2">
-          {Object.entries(PALACE_ROLE_LABELS_EN).map(([role, en]) => (
+          {Object.entries(PALACE_ROLE_DESCRIPTIONS_VI).map(([role, description]) => (
             <li key={role} className="text-text-secondary">
-              <span className="text-text-primary">{role}</span> — {en}
+              <span className="text-text-primary">{role}</span> — {description}
             </li>
           ))}
         </ul>
