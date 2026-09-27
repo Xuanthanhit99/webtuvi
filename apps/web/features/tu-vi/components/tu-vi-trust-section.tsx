@@ -18,7 +18,7 @@ const GLOSSARY: Array<{ term: string; description: string }> = [
   },
   {
     term: 'Phụ tinh',
-    description: 'Các sao bổ trợ được an theo quy tắc cố định để làm rõ thêm sắc thái của từng cung, không phải do AI thêm vào.',
+    description: 'Các sao bổ trợ được an theo quy tắc cố định để làm rõ thêm sắc thái của từng cung, được lấy trực tiếp từ kết quả tính toán của lá số.',
   },
   {
     term: 'Tuần / Triệt',
@@ -56,7 +56,7 @@ export function TuViTrustSection({ defaultOpen = false, context }: { defaultOpen
         <span className="flex items-center gap-2">
           <ShieldCheck className="h-4 w-4 shrink-0 text-insight" aria-hidden="true" />
           <span className="text-body-sm font-semibold text-text-primary">
-            AI không an sao cho bạn
+            Cách Mệnh Vi lập lá số
             {/* Same visible copy in both mount points by design; this sr-only suffix only
                 differentiates the two landmarks' accessible names for assistive tech (axe
                 landmark-unique) — never seen by sighted users. */}
@@ -69,8 +69,7 @@ export function TuViTrustSection({ defaultOpen = false, context }: { defaultOpen
       {open && (
         <div id={bodyId} className="mt-3 flex flex-col gap-4">
           <p className="text-body-sm leading-relaxed text-text-secondary">
-            Lá số được tính bằng một hệ thống quy tắc xác định (deterministic) từ ngày, giờ sinh và giới tính bạn nhập — cung, sao và Tứ Hóa
-            không phải do AI lựa chọn hay bịa ra. AI chỉ được dùng ở bước sau, để giải thích ý nghĩa của kết quả đã được an sẵn.
+            Lá số được tính bằng một hệ thống quy tắc cố định từ ngày, giờ sinh và giới tính bạn nhập. Cung, sao và Tứ Hóa được xác định trước khi phần luận giải được tạo; phần luận giải không được phép thay đổi các dữ kiện này.
           </p>
 
           <dl className="grid grid-cols-1 gap-3 tablet:grid-cols-2">
