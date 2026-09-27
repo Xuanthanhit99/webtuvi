@@ -84,7 +84,7 @@ describe('TarotDrawPanel', () => {
 
     await goToSpreadStep(user);
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
-    expect(screen.getByRole('status')).toHaveTextContent('Hãy tập trung');
+    expect(tarotApi.createSelectionSession).toHaveBeenCalledWith('DAILY_DRAW');
     expect(screen.queryByText('The Fool')).not.toBeInTheDocument();
 
     expect(await screen.findByRole('button', { name: 'Chọn lá 1' }, { timeout: 3000 })).toBeInTheDocument();
@@ -108,6 +108,7 @@ describe('TarotDrawPanel', () => {
     await user.click(screen.getByRole('button', { name: /Single Card/ }));
     await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
+    await user.click(await screen.findByRole('button', { name: 'Chọn lá 1' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/Bạn đã dùng hết lượt miễn phí/i);
     const upgradeLink = screen.getByRole('link', { name: 'Nâng cấp Premium' });
@@ -124,6 +125,7 @@ describe('TarotDrawPanel', () => {
     await user.click(screen.getByRole('button', { name: /Single Card/ }));
     await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
+    await user.click(await screen.findByRole('button', { name: 'Chọn lá 1' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/Bạn đã đạt giới hạn trải Tarot hôm nay/i);
     expect(screen.queryByRole('link', { name: 'Nâng cấp Premium' })).not.toBeInTheDocument();
