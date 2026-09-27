@@ -70,7 +70,7 @@ test('crawler receives complete public HTML, unique metadata, canonical URLs and
   expect(robots).toContain(`Sitemap: ${origin}/sitemap.xml`);
   expect(robots).not.toContain('Disallow: /discover');
   const sitemap = await (await request.get('/sitemap.xml')).text();
-  expect((sitemap.match(/<loc>/g) ?? []).length).toBe(indexableRoutes.length + 73);
+  expect((sitemap.match(/<loc>/g) ?? []).length).toBe(indexableRoutes.length + 112);
   for (const route of indexableRoutes) expect(sitemap).toContain(`<loc>${route === '/' ? origin : origin + route}</loc>`);
   for (const privatePath of ['/login', '/register', '/settings', '/reports', '/premium']) expect(sitemap).not.toContain(`<loc>${origin}${privatePath}</loc>`);
   expect(sitemap).toContain('<lastmod>');

@@ -3,6 +3,7 @@ import { SITE_URL, isIndexingEnabled } from '@/lib/seo';
 import { PUBLIC_DISCOVERY_ROUTES } from '@/lib/route-guard';
 import { ARTICLES, CLUSTERS } from '@/features/knowledge/content';
 import { TAROT_CARD_SEO_PATH, TAROT_SEO_UPDATED_AT, tarotSeoCards } from '@/features/knowledge/tarot-cards';
+import { TU_VI_PALACE_SEO_PATH, TU_VI_SEO_UPDATED_AT, TU_VI_STAR_SEO_PATH, tuViPalaceSeo, tuViStarSeo } from '@/features/knowledge/tu-vi-seo';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   if (!isIndexingEnabled()) return [];
@@ -13,6 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...Object.keys(CLUSTERS).map((cluster) => ({ path: `/kien-thuc/${cluster}`, priority: 0.75, changeFrequency: 'weekly' as const })),
     ...ARTICLES.map((article) => ({ path: `/kien-thuc/${article.cluster}/${article.slug}`, priority: 0.7, changeFrequency: 'monthly' as const, lastModified: new Date(`${article.updatedAt}T00:00:00+07:00`) })),
     ...tarotSeoCards.map((card) => ({ path: `${TAROT_CARD_SEO_PATH}/${card.slug}`, priority: 0.65, changeFrequency: 'monthly' as const, lastModified: new Date(TAROT_SEO_UPDATED_AT) })),
+    ...tuViPalaceSeo.map((item) => ({ path: `${TU_VI_PALACE_SEO_PATH}/${item.slug}`, priority: 0.65, changeFrequency: 'monthly' as const, lastModified: new Date(TU_VI_SEO_UPDATED_AT) })),
+    ...tuViStarSeo.map((item) => ({ path: `${TU_VI_STAR_SEO_PATH}/${item.slug}`, priority: 0.65, changeFrequency: 'monthly' as const, lastModified: new Date(TU_VI_SEO_UPDATED_AT) })),
     { path: '/about', priority: 0.5, changeFrequency: 'monthly' as const },
     { path: '/contact', priority: 0.4, changeFrequency: 'yearly' as const },
     { path: '/privacy', priority: 0.3, changeFrequency: 'yearly' as const },

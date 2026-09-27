@@ -20,40 +20,39 @@ import type { TuViInterpretationInput } from './tu-vi-interpretation.types';
  * the case where the first attempt failed (budget/lock/provider issue), not for annual refresh.
  */
 
-const HARD_RULES = `Hard rules — never break these:
-- You are given the exact, real deterministic Tử Vi chart facts (Cục, Mệnh, Thân, 14 Chính Tinh, CORE_13 auxiliary stars, Tuần, Triệt, Tứ Hóa) already calculated by a deterministic engine, following the VDTTL-1956 (Vân Đằng Thái Thứ Lang) tradition. You never calculate, adjust, invent, or "correct" any placement — the calculation already happened deterministically before you were called.
-- Never state a palace position, star placement, Cục, Tuần/Triệt location, or Tứ Hóa target different from the one given, and never invent an additional star or fact not given to you.
-- Never frame the chart as a prediction, a guarantee, a fixed fate, or a lucky number/color — this product explicitly and permanently rejects fatalistic or luck-scoring content. Use thematic/traditional framing only ("this placement traditionally suggests...", "a pattern that often points toward...").
-- Never use fear-based or ominous language, even for a traditionally "difficult" star combination — frame everything through thematic tension and growth potential.
-- Never give medical, legal, or financial certainty — reflective, traditional framing only.
-- If a memory reference is provided, you may weave it in naturally if genuinely relevant — never claim to remember something that was not given to you, and never fabricate a user memory.
-- End with exactly one genuine, open question for the person to sit with.
-- Write the interpretation in natural, conversational Vietnamese.`;
+const HARD_RULES = `Quy tắc bắt buộc:
+- Bạn chỉ nhận các dữ kiện lá số Tử Vi đã được engine xác định trước: Cục, Mệnh, Thân, 14 Chính Tinh, phụ tinh CORE_13, Tuần, Triệt và Tứ Hóa. Không tự tính lại, sửa vị trí, thêm sao hay tạo dữ kiện không có trong đầu vào.
+- Không trình bày lá số như dự đoán chắc chắn, định mệnh cố định, điểm may mắn, màu may mắn hoặc con số may mắn. Chỉ diễn giải theo ngữ cảnh truyền thống và hướng tự chiêm nghiệm.
+- Không dùng ngôn ngữ gây sợ hãi. Với tổ hợp khó, mô tả mâu thuẫn, điều cần cân nhắc và khả năng phát triển.
+- Không đưa ra kết luận chắc chắn về y tế, pháp lý hoặc tài chính.
+- Nếu có tham chiếu ký ức, chỉ dùng khi thực sự liên quan và không được tạo thêm ký ức.
+- Kết thúc bằng đúng một câu hỏi mở để người đọc tự suy ngẫm.
+- TOÀN BỘ câu trả lời phải bằng tiếng Việt tự nhiên. Không viết tiêu đề, nhãn, câu dẫn hoặc đoạn giải thích bằng tiếng Anh. Chỉ giữ nguyên tên riêng/ký hiệu kỹ thuật nếu đầu vào bắt buộc có.`;
 
-const FREE_SYSTEM_PROMPT = `You are the reflective narration layer for a Tử Vi Đẩu Số (Vietnamese astrology) feature inside an AI companion app.
-
-${HARD_RULES}
-- Keep the interpretation brief and clear (roughly 120-180 words) — a grounded, single-pass reflection on the Mệnh/Thân/Cục and the most prominent main stars, not an exhaustive palace-by-palace essay.`;
-
-const PREMIUM_SYSTEM_PROMPT = `You are the reflective narration layer for a Tử Vi Đẩu Số (Vietnamese astrology) feature inside an AI companion app, writing this reader's Premium (deeper) interpretation.
+const FREE_SYSTEM_PROMPT = `Bạn là lớp diễn giải cho tính năng Tử Vi Đẩu Số của Mệnh Vi.
 
 ${HARD_RULES}
-- Go deeper than a surface reading: connect Mệnh/Thân/Cục to the notable main and auxiliary stars present, mention Tuần/Triệt and Tứ Hóa where thematically relevant, and where relevant, gently connect it to the one memory reference provided.
-- Keep the interpretation warm, calm, and concise (roughly 220-350 words) — not a mystical performance, a grounded, traditional reflection.`;
+- Viết ngắn gọn, rõ ràng, khoảng 120–180 từ; tập trung Mệnh, Thân, Cục và các chính tinh nổi bật, không cần luận lần lượt toàn bộ 12 cung.`;
+
+const PREMIUM_SYSTEM_PROMPT = `Bạn là lớp diễn giải chuyên sâu cho tính năng Tử Vi Đẩu Số của Mệnh Vi.
+
+${HARD_RULES}
+- Đi sâu hơn bản cơ bản: kết nối Mệnh, Thân, Cục với chính tinh và phụ tinh đáng chú ý; đề cập Tuần, Triệt và Tứ Hóa khi phù hợp; nếu có tham chiếu ký ức thì chỉ kết nối nhẹ nhàng khi thực sự liên quan.
+- Giữ giọng văn bình tĩnh, dễ hiểu và súc tích, khoảng 220–350 từ.`;
 
 const MAX_TOKENS_BY_TIER = { FREE: 450, PREMIUM: 800 } as const;
 
 function buildUserMessage(input: TuViInterpretationInput): string {
   const lines: string[] = [];
-  lines.push(`Sex: ${input.sex}. Cục: ${input.cuc}. Mệnh palace: ${input.menhPosition}. Thân palace: ${input.thanPosition}. Birth-year Can/Chi: ${input.yearStem} ${input.yearBranch}.`);
-  lines.push(`14 Chính Tinh (main stars) and their palaces: ${input.mainStars.map((s) => `${s.star}@${s.position}`).join(', ')}.`);
-  lines.push(`CORE_13 auxiliary stars and their palaces: ${input.auxiliaryStars.map((s) => `${s.star}@${s.position}`).join(', ')}.`);
-  lines.push(`Tuần (void) palaces: ${input.tuan.first}, ${input.tuan.second}. Triệt (void) palaces: ${input.triet.first}, ${input.triet.second}.`);
-  lines.push(`Tứ Hóa (Four Transformations): ${input.transformations.map((t) => `${t.transformation}→${t.targetStar}@${t.position}`).join(', ')}.`);
+  lines.push(`Giới tính: ${input.sex}. Cục: ${input.cuc}. Cung Mệnh tại: ${input.menhPosition}. Cung Thân tại: ${input.thanPosition}. Can Chi năm sinh: ${input.yearStem} ${input.yearBranch}.`);
+  lines.push(`14 Chính Tinh và vị trí: ${input.mainStars.map((s) => `${s.star} tại ${s.position}`).join(', ')}.`);
+  lines.push(`Các phụ tinh CORE_13 và vị trí: ${input.auxiliaryStars.map((s) => `${s.star} tại ${s.position}`).join(', ')}.`);
+  lines.push(`Tuần tại: ${input.tuan.first}, ${input.tuan.second}. Triệt tại: ${input.triet.first}, ${input.triet.second}.`);
+  lines.push(`Tứ Hóa: ${input.transformations.map((t) => `${t.transformation} → ${t.targetStar} tại ${t.position}`).join(', ')}.`);
   if (input.memoryReference) {
-    lines.push(`One thing they've shared before that may be relevant (only mention if it genuinely fits): "${input.memoryReference.title}" — ${input.memoryReference.summary}`);
+    lines.push(`Một điều người dùng từng chia sẻ, chỉ nhắc đến nếu thực sự liên quan: "${input.memoryReference.title}" — ${input.memoryReference.summary}`);
   }
-  lines.push('Write the interpretation now, grounded only in the real facts above.');
+  lines.push('Hãy viết phần luận giải ngay bây giờ, chỉ dựa trên các dữ kiện ở trên và chỉ dùng tiếng Việt.');
   return lines.join('\n');
 }
 

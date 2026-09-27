@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { TuViChartDto } from '@beaconvie/types';
-import { DIGNITY_SHORT_LABEL, PALACE_ROLE_LABELS_EN } from '../labels';
+import { DIGNITY_SHORT_LABEL, PALACE_ROLE_DESCRIPTIONS_VI } from '../labels';
 
 /**
  * Time Cycles pass — Đại Vận (10-year life cycles) timeline. Every value rendered here comes
@@ -65,7 +65,7 @@ export function TuViDaiVanTimeline({ chart }: { chart: TuViChartDto }) {
           {isSelectedCurrent && <span className="rounded-sm bg-insight/15 px-2 py-0.5 text-caption font-semibold text-insight">Hiện tại</span>}
         </div>
         <p className="mt-1 text-body-sm text-text-secondary">
-          Cung {selected.role} <span className="text-text-tertiary">({PALACE_ROLE_LABELS_EN[selected.role]})</span> tại {selected.position}
+          Cung {selected.role} <span className="text-text-tertiary">({PALACE_ROLE_DESCRIPTIONS_VI[selected.role]})</span> tại {selected.position}
         </p>
 
         <div className="mt-4 grid gap-3 tablet:grid-cols-2">
