@@ -1,3 +1,4 @@
+import { TU_VI_MAIN_STAR_IDS } from '@beaconvie/types/tu-vi-catalog';
 import { EARTHLY_BRANCHES, getPalaceIndex, addPalaceOffset, type EarthlyBranch } from './tu-vi-palace';
 import type { TuViCucId } from './tu-vi-cuc';
 
@@ -20,22 +21,7 @@ import type { TuViCucId } from './tu-vi-cuc';
  * exactly, so only offsets are ever executed.
  */
 
-export const TU_VI_CHINH_TINH_IDS = [
-  'Tử Vi',
-  'Liêm Trinh',
-  'Thiên Đồng',
-  'Vũ Khúc',
-  'Thái Dương',
-  'Thiên Cơ',
-  'Thiên Phủ',
-  'Thái Âm',
-  'Tham Lang',
-  'Cự Môn',
-  'Thiên Tướng',
-  'Thiên Lương',
-  'Thất Sát',
-  'Phá Quân',
-] as const;
+export const TU_VI_CHINH_TINH_IDS = TU_VI_MAIN_STAR_IDS;
 
 export type ChinhTinhId = (typeof TU_VI_CHINH_TINH_IDS)[number];
 

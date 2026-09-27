@@ -48,6 +48,19 @@ describe('PayOS signature scheme (buildPayOSSignatureData/sign/verify)', () => {
     const b = generateOrderCode();
     expect(Number.isSafeInteger(a)).toBe(true);
     expect(a).toBeGreaterThan(0);
-    expect(a).not.toBe(b);
+    expect(b).toBeGreaterThan(a);
+  });
+
+  it('generateOrderCode stays unique across more than 100 calls in the same millisecond', () => {
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_790_487_629_516);
+
+    try {
+      const codes = Array.from({ length: 250 }, () => generateOrderCode());
+      expect(new Set(codes).size).toBe(codes.length);
+      expect(codes.every(Number.isSafeInteger)).toBe(true);
+      expect(codes.every((code, index) => index === 0 || code > codes[index - 1]!)).toBe(true);
+    } finally {
+      nowSpy.mockRestore();
+    }
   });
 });

@@ -12,6 +12,10 @@
     "./numerology": {
       "types": "./numerology.d.ts",
       "default": "./numerology.js"
+    },
+    "./tu-vi-catalog": {
+      "types": "./tu-vi-catalog.d.ts",
+      "default": "./tu-vi-catalog.js"
     }
   }
 }
