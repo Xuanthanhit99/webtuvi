@@ -106,7 +106,7 @@ describe('Tarot (e2e)', () => {
 
       await request(app.getHttpServer()).delete(`/tarot/readings/${reading.id}`).set(headers).expect(200);
 
-      const thirdAttempt = await drawSelected(app, headers, 'DAILY_DRAW', 400);
+      const thirdAttempt = await drawSelected(app, headers, 'DAILY_DRAW', undefined, 400);
       expect(thirdAttempt.body.error.code).toBe('TAROT_DAILY_DRAW_ALREADY_TAKEN');
     });
 
@@ -144,7 +144,7 @@ describe('Tarot (e2e)', () => {
 
     it('an invalid transition (archiving an already-archived reading) is rejected', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('invalid-transition'));
-      const created = await drawSelected(app, headers, 'SINGLE_CARD', 201);
+      const created = await drawSelected(app, headers, 'SINGLE_CARD', undefined, 201);
       const id = (created.body.data as TarotReadingApi).id;
       await request(app.getHttpServer()).post(`/tarot/readings/${id}/archive`).set(headers).expect(201);
       await request(app.getHttpServer()).post(`/tarot/readings/${id}/archive`).set(headers).expect(400);
