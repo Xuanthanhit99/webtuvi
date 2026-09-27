@@ -26,9 +26,9 @@ async function registerAndGetHeaders(app: INestApplication, email: string): Prom
   return csrfHeaders(accessCookie, res.headers['set-cookie']);
 }
 
-async function drawSelected(app: INestApplication, headers: Record<string, string>, type: 'SINGLE_CARD') {
+async function drawSelected(app: INestApplication, headers: Record<string, string>, type: 'SINGLE_CARD', expectedStatus = 201) {
   const session = await request(app.getHttpServer()).post('/tarot/selection-session').set(headers).send({ type }).expect(201);
-  return request(app.getHttpServer()).post('/tarot/draw').set(headers).send({ type, selectionToken: session.body.data.token, selectedPositions: [0] });
+  return request(app.getHttpServer()).post('/tarot/draw').set(headers).send({ type, selectionToken: session.body.data.token, selectedPositions: [0] }).expect(expectedStatus);
 }
 
 interface PaymentOrderApi {
@@ -277,9 +277,9 @@ describe('Payment & Premium (e2e)', () => {
       // Free user hits the 3/day ceiling.
       const freeHeaders = await registerAndGetHeaders(app, uniqueEmail('free-tarot'));
       for (let i = 0; i < 3; i++) {
-        (await drawSelected(app, freeHeaders, 'SINGLE_CARD')).expect(201);
+        await drawSelected(app, freeHeaders, 'SINGLE_CARD', 201);
       }
-      const denied = (await drawSelected(app, freeHeaders, 'SINGLE_CARD')).expect(403);
+      const denied = await drawSelected(app, freeHeaders, 'SINGLE_CARD', 403);
       expect(denied.body.error.code).toBe('PREMIUM_REQUIRED');
 
       // A different user, now genuinely verified-Premium via a real webhook, is allowed past 3.
@@ -292,7 +292,7 @@ describe('Payment & Premium (e2e)', () => {
         .expect(200);
 
       for (let i = 0; i < 4; i++) {
-        (await drawSelected(app, premiumHeaders, 'SINGLE_CARD')).expect(201);
+        await drawSelected(app, premiumHeaders, 'SINGLE_CARD', 201);
       }
     });
   });
