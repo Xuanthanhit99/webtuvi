@@ -7,7 +7,7 @@ import { TarotDrawPanel } from './tarot-draw-panel';
 import { tarotApi } from '../api/tarot-api';
 
 jest.mock('../api/tarot-api', () => ({
-  tarotApi: { draw: jest.fn(), getReading: jest.fn() },
+  tarotApi: { createSelectionSession: jest.fn(), draw: jest.fn(), getReading: jest.fn() },
 }));
 
 const drawnReading: TarotReadingDto = {
@@ -55,7 +55,7 @@ const drawnReading: TarotReadingDto = {
 };
 
 describe('TarotDrawPanel', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => { jest.clearAllMocks(); (tarotApi.createSelectionSession as jest.Mock).mockResolvedValue({ token: 'selection-token-1234567890', type: 'DAILY_DRAW', cardCount: 1, deckSize: 78, expiresAt: '2026-01-05T00:15:00.000Z' }); });
 
   async function goToSpreadStep(user: ReturnType<typeof userEvent.setup>) {
     await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
@@ -76,9 +76,8 @@ describe('TarotDrawPanel', () => {
     expect(screen.getByLabelText(/Câu hỏi của bạn/i)).toBeInTheDocument();
   });
 
-  it('draws server-side, then reveals only after the user selects the face-down slot', async () => {
-    let resolveDraw!: (reading: TarotReadingDto) => void;
-    (tarotApi.draw as jest.Mock).mockReturnValue(new Promise((resolve) => { resolveDraw = resolve; }));
+  it('offers all 78 face-down positions and draws only after the user makes a real selection', async () => {
+    (tarotApi.draw as jest.Mock).mockResolvedValue(drawnReading);
     const onDrawn = jest.fn();
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel onDrawn={onDrawn} />);
@@ -88,13 +87,14 @@ describe('TarotDrawPanel', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Hãy tập trung');
     expect(screen.queryByText('The Fool')).not.toBeInTheDocument();
 
-    resolveDraw(drawnReading);
     expect(await screen.findByRole('button', { name: 'Chọn lá 1' }, { timeout: 3000 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Chọn lá 78' })).toBeInTheDocument();
+    expect(tarotApi.draw).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Chọn lá 1' }));
     const artwork = await screen.findByTestId('tarot-card-artwork', {}, { timeout: 3000 });
     fireEvent.error(artwork);
     await waitFor(() => expect(screen.getAllByText('The Fool').length).toBeGreaterThan(0), { timeout: 3000 });
-    expect(tarotApi.draw).toHaveBeenCalledWith('DAILY_DRAW', undefined);
+    expect(tarotApi.draw).toHaveBeenCalledWith('DAILY_DRAW', 'selection-token-1234567890', [0], undefined);
     expect(onDrawn).toHaveBeenCalledWith(drawnReading);
   });
 
@@ -148,7 +148,7 @@ describe('TarotDrawPanel', () => {
     expect(screen.queryByText('The Fool')).not.toBeInTheDocument();
   });
 
-  it('shows selection immediately when the real draw resolves, without an artificial ritual delay', async () => {
+  it('shows all 78 selectable positions as soon as the selection session resolves', async () => {
     (tarotApi.draw as jest.Mock).mockResolvedValue(drawnReading);
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
@@ -156,7 +156,8 @@ describe('TarotDrawPanel', () => {
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
 
     expect(await screen.findByRole('button', { name: 'Chọn lá 1' }, { timeout: 3000 })).toBeInTheDocument();
-    expect(tarotApi.draw).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'Chọn lá 78' })).toBeInTheDocument();
+    expect(tarotApi.draw).not.toHaveBeenCalled();
   });
 
   it('under prefers-reduced-motion, the same real result still hands off through onDrawn', async () => {
