@@ -58,7 +58,7 @@ describe('PayOS signature scheme (buildPayOSSignatureData/sign/verify)', () => {
       const codes = Array.from({ length: 250 }, () => generateOrderCode());
       expect(new Set(codes).size).toBe(codes.length);
       expect(codes.every(Number.isSafeInteger)).toBe(true);
-      expect(codes.every((code, index) => index === 0 || code > codes[index - 1])).toBe(true);
+      expect(codes.every((code, index) => index === 0 || code > codes[index - 1]!)).toBe(true);
     } finally {
       nowSpy.mockRestore();
     }
