@@ -4,6 +4,11 @@ import type { TarotReadingType } from '@prisma/client';
 
 export const TAROT_READING_TYPES: TarotReadingType[] = ['DAILY_DRAW', 'SINGLE_CARD', 'THREE_CARD'];
 
+export class CreateSelectionSessionDto {
+  @IsIn(TAROT_READING_TYPES)
+  type!: TarotReadingType;
+}
+
 export class DrawReadingDto {
   @IsIn(TAROT_READING_TYPES)
   type!: TarotReadingType;
