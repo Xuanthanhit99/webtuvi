@@ -1125,6 +1125,14 @@ export interface TarotReadingDto {
   archivedAt: string | null;
 }
 
+export interface TarotSelectionSessionDto {
+  token: string;
+  type: TarotReadingTypeValue;
+  cardCount: number;
+  deckSize: number;
+  expiresAt: string;
+}
+
 export interface TarotReadingHistoryDto {
   id: string;
   action: TarotReadingHistoryActionValue;
