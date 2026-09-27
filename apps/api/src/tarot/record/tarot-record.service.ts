@@ -6,7 +6,7 @@ import { EntitlementService } from '../../payment/entitlement/entitlement.servic
 import { CostControlService } from '../../companion/cost/cost-control.service';
 import { GenerationLockService } from '../../companion/concurrency/generation-lock.service';
 import { AnalyticsService } from '../../analytics/analytics.service';
-import { drawCards } from '../draw/tarot-draw-engine.util';
+import { TarotSelectionService } from '../selection/tarot-selection.service';
 import { TarotInterpretationService } from '../interpretation/tarot-interpretation.service';
 import { toTarotReadingDto, toTarotReadingHistoryDto, type TarotReadingDto, type TarotReadingHistoryDto } from '../tarot.mappers';
 import type { DrawReadingDto } from '../dto/draw-reading.dto';
@@ -75,6 +75,7 @@ export class TarotRecordService {
     private readonly costControl: CostControlService,
     private readonly generationLock: GenerationLockService,
     private readonly analyticsService: AnalyticsService,
+    private readonly selectionService: TarotSelectionService,
   ) {}
 
   async draw(userId: string, dto: DrawReadingDto): Promise<TarotReadingDto> {
@@ -90,12 +91,10 @@ export class TarotRecordService {
     }
     const positions = spread.positions as { order: number; label: string }[];
 
-    // Stable, deterministic ordering — the draw engine's reproducibility depends on the same
-    // seed always being shuffled against the same input order (see tarot-draw-engine.util.ts).
-    const allCards = await this.prisma.tarotCard.findMany({ orderBy: { slug: 'asc' }, select: { id: true } });
-    const cardIds = allCards.map((c) => c.id);
-
-    const draw = drawCards({ cardIds, count: spread.cardCount });
+    const draw = await this.selectionService.resolve(userId, dto.type, dto.selectionToken, dto.selectedPositions);
+    if (draw.drawnCards.length !== spread.cardCount) {
+      throw new BadRequestException({ code: 'TAROT_SELECTION_INVALID', message: 'Số lá đã chọn không khớp kiểu trải bài.' });
+    }
 
     const reading = await this.prisma.$transaction(async (tx) => {
       const created = await tx.tarotReading.create({
