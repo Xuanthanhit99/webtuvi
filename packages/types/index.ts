@@ -1769,6 +1769,23 @@ export interface TrackAnalyticsEventsRequestDto {
 // (`TUVI_RULESET_V1 = VDTTL_1956_V1`, frozen), persisted once per calculation, narrated (never
 // calculated) by AI. See docs/domain/tu-vi/canonical-ruleset-v1.md. ---
 
+/** Shared canonical Tử Vi catalog used by both API calculation code and Web SEO.
+ * Keep runtime identifiers here so neither application imports source files from the other. */
+export const TU_VI_PALACE_ROLES = [
+  'Mệnh', 'Phụ Mẫu', 'Phúc Đức', 'Điền Trạch', 'Quan Lộc', 'Nô Bộc',
+  'Thiên Di', 'Tật Ách', 'Tài Bạch', 'Tử Tức', 'Phu Thê', 'Huynh Đệ',
+] as const;
+
+export const TU_VI_MAIN_STAR_IDS = [
+  'Tử Vi', 'Liêm Trinh', 'Thiên Đồng', 'Vũ Khúc', 'Thái Dương', 'Thiên Cơ', 'Thiên Phủ',
+  'Thái Âm', 'Tham Lang', 'Cự Môn', 'Thiên Tướng', 'Thiên Lương', 'Thất Sát', 'Phá Quân',
+] as const;
+
+export const TU_VI_CORE13_STAR_IDS = [
+  'Lộc Tồn', 'Kình Dương', 'Đà La', 'Địa Không', 'Địa Kiếp', 'Hỏa Tinh', 'Linh Tinh',
+  'Tả Phù', 'Hữu Bật', 'Văn Xương', 'Văn Khúc', 'Thiên Khôi', 'Thiên Việt',
+] as const;
+
 export type TuViChartStatusValue = 'ACTIVE' | 'ARCHIVED' | 'DELETED';
 export type TuViChartHistoryActionValue = 'CREATED' | 'VIEWED' | 'INTERPRETED' | 'ARCHIVED' | 'RESTORED' | 'DELETED';
 export type TuViSexValue = 'Nam' | 'Nữ';
