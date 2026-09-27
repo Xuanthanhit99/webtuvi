@@ -44,6 +44,7 @@ COPY packages/eslint-config ./packages/eslint-config
 # source-of-truth directories required by the web build instead of copying the whole API app.
 COPY apps/api/prisma/data ./apps/api/prisma/data
 COPY apps/api/src/tu-vi/engine ./apps/api/src/tu-vi/engine
+COPY apps/api/src/eastern-horoscope/engine ./apps/api/src/eastern-horoscope/engine
 COPY apps/web ./apps/web
 
 ARG NEXT_PUBLIC_API_URL
