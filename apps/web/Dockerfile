@@ -40,9 +40,10 @@ COPY packages/types ./packages/types
 # completes), which is exactly why this is easy to miss: the image builds and runs fine, it just
 # silently skips linting during the Docker build the whole time.
 COPY packages/eslint-config ./packages/eslint-config
-# Tarot SEO imports the canonical deck directly from the API Prisma data source. Keep that
-# single source of truth available to the web build without copying the rest of the API app.
+# Public SEO registries import canonical source data from the API package. Keep only the
+# source-of-truth directories required by the web build instead of copying the whole API app.
 COPY apps/api/prisma/data ./apps/api/prisma/data
+COPY apps/api/src/tu-vi/engine ./apps/api/src/tu-vi/engine
 COPY apps/web ./apps/web
 
 ARG NEXT_PUBLIC_API_URL
