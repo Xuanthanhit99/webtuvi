@@ -46,7 +46,7 @@ export class TuViController {
   @Post('charts/:id/interpret')
   @UseGuards(DiscoveryThrottlerGuard)
   @SkipThrottle({ auth: true, companion: true, 'companion-ip': true, payment: true, admin: true })
-  @ApiOperation({ summary: 'Retry/regenerate AI interpretation (only needed if the first attempt failed — a chart already has at most one permanent interpretation)' })
+  @ApiOperation({ summary: 'Tạo lại phần luận giải khi lần tạo trước chưa thành công; dữ liệu lá số không thay đổi' })
   retryInterpretation(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string): Promise<TuViChartDto> {
     return this.records.retryInterpretation(user.id, id);
   }
