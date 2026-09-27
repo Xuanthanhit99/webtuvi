@@ -27,7 +27,10 @@ it('publishes only canonical, public URLs with stable modification metadata', ()
   delete process.env.NEXT_PUBLIC_SITE_INDEXABLE;
   const entries = sitemap();
   for (const route of PUBLIC_DISCOVERY_ROUTES) expect(entries.map((entry) => entry.url)).toContain(`${SITE_URL}${route}`);
-  expect(entries.every((entry) => !entry.lastModified && !entry.url.includes('?'))).toBe(true);
+  expect(entries.every((entry) => !entry.url.includes('?'))).toBe(true);
+  const dated = entries.filter((entry) => entry.lastModified);
+  expect(dated.length).toBeGreaterThan(0);
+  expect(dated.every((entry) => !Number.isNaN(new Date(entry.lastModified!).getTime()))).toBe(true);
   expect(JSON.stringify(robots().rules)).not.toContain('"/discover"');
 });
 it('keeps auth forms out of the index and gives Home a branded absolute title', async () => {
