@@ -62,6 +62,18 @@ export default function SettingsScreen() {
           )}
         </MysticCard>
 
+        <MysticCard style={styles.card}>
+          <Text style={styles.title}>Ứng dụng</Text>
+          <Text style={styles.body}>Mệnh Vi · Tử Vi, Tarot và các công cụ khám phá bản thân.</Text>
+          <Pressable onPress={() => router.push('/(tabs)/discover')}><Text style={styles.link}>Khám phá các công cụ</Text></Pressable>
+          <Pressable onPress={() => router.push('/(auth)/forgot-password')}><Text style={styles.link}>Đổi mật khẩu qua email</Text></Pressable>
+        </MysticCard>
+
+        <MysticCard style={styles.card}>
+          <Text style={styles.title}>Quyền riêng tư & điều khoản</Text>
+          <Text style={styles.body}>Các tài liệu pháp lý đầy đủ được công bố trên tuvitarot.vn. Ứng dụng không tạo dữ kiện lá số bằng AI; AI chỉ dùng cho phần diễn giải được ghi nhãn.</Text>
+        </MysticCard>
+
         {__DEV__ && (
           <MysticCard style={styles.card}>
             <Text style={styles.title}>Xem trước trạng thái (chỉ dev)</Text>
@@ -91,6 +103,7 @@ const styles = StyleSheet.create({
   name: { fontFamily: font.display, fontSize: fontSize.bodyLg, color: color.textPrimary },
   body: { fontFamily: font.body, fontSize: fontSize.bodySm, color: color.textSecondary, lineHeight: 19 },
   warning: { fontFamily: font.bodyMedium, fontSize: fontSize.bodySm, color: color.gold },
+  link: { fontFamily: font.bodyMedium, fontSize: fontSize.bodySm, color: color.goldLight, paddingVertical: 6 },
   fixtureList: { gap: spacing.xs, marginTop: spacing.sm },
   fixtureRow: { paddingVertical: 10, paddingHorizontal: spacing.md, borderRadius: radius.sm, backgroundColor: color.surface },
   fixtureRowActive: { backgroundColor: 'rgba(213,173,98,0.14)', borderWidth: 1, borderColor: color.borderGold },
