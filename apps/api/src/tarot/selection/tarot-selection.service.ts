@@ -1,6 +1,8 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from 'node:crypto';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import type { TarotReadingType } from '@prisma/client';
+import type { AppConfiguration } from '../../config/configuration';
 import { PrismaService } from '../../prisma/prisma.service';
 import { drawCards, DRAW_ALGORITHM_VERSION } from '../draw/tarot-draw-engine.util';
 
@@ -28,9 +30,15 @@ const COUNT: Record<TarotReadingType, number> = { DAILY_DRAW: 1, SINGLE_CARD: 1,
 export class TarotSelectionService {
   private readonly key: Buffer;
 
-  constructor(private readonly prisma: PrismaService) {
-    const secret = process.env.JWT_SECRET ?? process.env.ACCESS_TOKEN_SECRET ?? 'development-only-tarot-selection-secret';
-    this.key = createHash('sha256').update(`tarot-selection-v1:${secret}`).digest();
+  constructor(
+    private readonly prisma: PrismaService,
+    configService: ConfigService,
+  ) {
+    const config = configService.get<AppConfiguration>('app');
+    if (!config?.jwt.accessSecret) {
+      throw new Error('JWT_ACCESS_SECRET is required for Tarot selection sessions');
+    }
+    this.key = createHash('sha256').update(`tarot-selection-v1:${config.jwt.accessSecret}`).digest();
   }
 
   async create(userId: string, type: TarotReadingType): Promise<TarotSelectionSession> {

@@ -5,7 +5,8 @@ const cards = Array.from({ length: 78 }, (_, i) => ({ id: `card-${String(i).padS
 
 describe('TarotSelectionService', () => {
   const prisma = { tarotCard: { count: jest.fn().mockResolvedValue(78), findMany: jest.fn().mockResolvedValue(cards) } };
-  const service = new TarotSelectionService(prisma as never);
+  const configService = { get: jest.fn().mockReturnValue({ jwt: { accessSecret: 'test-access-secret-that-is-at-least-32-characters' } }) };
+  const service = new TarotSelectionService(prisma as never, configService as never);
 
   it('creates an opaque session for a complete 78-card deck', async () => {
     const session = await service.create('u1', 'SINGLE_CARD');
