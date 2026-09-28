@@ -5,7 +5,6 @@ import { AppHeader } from '@/components/app-header';
 import { GoldButton, SecondaryButton } from '@/components/buttons';
 import { MysticCard } from '@/components/mystic-card';
 import { Screen } from '@/components/screen';
-import { ApiError } from '@/lib/api-client';
 import { discoveryError } from '@/lib/discovery-error';
 import { tarotApi } from '@/features/tarot/api';
 import { TarotReadingResult } from '@/features/tarot/reading-result';
