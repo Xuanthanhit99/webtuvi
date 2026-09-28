@@ -1,4 +1,4 @@
-import { useState } from 'react'; import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput } from 'react-native'; import type { EasternHoroscopeProfileDto } from '@beaconvie/types'; import { GoldButton, SecondaryButton } from '@/components/buttons'; import { MysticCard } from '@/components/mystic-card'; import { Screen } from '@/components/screen'; 
+import { useState } from 'react'; import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'; import type { EasternHoroscopeProfileDto } from '@beaconvie/types'; import { GoldButton, SecondaryButton } from '@/components/buttons'; import { MysticCard } from '@/components/mystic-card'; import { Screen } from '@/components/screen'; 
 import { discoveryError } from '@/lib/discovery-error'; import { discoverApi } from '@/features/discover/api';
 import { EasternResult } from '@/features/discover/eastern-result';
 import { ModuleActions } from '@/features/discover/module-actions'; import { color,font,fontSize,radius,spacing } from '@/theme/tokens';
