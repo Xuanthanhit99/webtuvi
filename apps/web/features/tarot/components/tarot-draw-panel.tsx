@@ -125,7 +125,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
 
   function handleFanKeyDown(event: React.KeyboardEvent<HTMLDivElement>) {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    const focusable = Array.from({ length: count }, (_, i) => i).filter((i) => !selectedSlots.includes(i));
+    const focusable = Array.from({ length: selectionSession?.deckSize ?? 0 }, (_, i) => i).filter((i) => !selectedSlots.includes(i));
     if (focusable.length === 0) return;
     const activeIndex = Number((document.activeElement as HTMLElement | null)?.dataset.fanIndex ?? -1);
     const currentPos = focusable.indexOf(activeIndex);
@@ -382,7 +382,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
                 );
               })}
             </div>
-            <div className="mt-5 flex w-full flex-wrap justify-center gap-2 tablet:gap-3" onKeyDown={handleFanKeyDown}>
+            <div className="mt-5 grid w-full grid-cols-6 gap-2 mobile:grid-cols-8 tablet:grid-cols-10 desktop:grid-cols-13" onKeyDown={handleFanKeyDown}>
               {(() => {
                 const totalSlots = selectionSession.deckSize;
                 // Rotation/lift is keyed to each card's position *among the cards still in the
@@ -390,8 +390,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
                 // old curve values after one flies out, and the arc reads as broken/lopsided
                 // instead of re-settling into a smooth fan (confirmed visually during QA).
                 const remaining = Array.from({ length: totalSlots }, (_, i) => i).filter((i) => !selectedSlots.includes(i));
-                const remainingCenter = (remaining.length - 1) / 2;
-                return remaining.map((index, visualPos) => {
+                return remaining.map((index) => {
                   const available = true;
                   return (
                     <motion.button
@@ -406,15 +405,21 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
                       onClick={() => selectSlot(index)}
                       layout
                       layoutId={`tarot-fan-card-${index}`}
-                      style={{ y: Math.abs(visualPos - remainingCenter) * 3, rotate: (visualPos - remainingCenter) * 6 }}
-                      whileHover={available ? { y: -14, scale: 1.04 } : undefined}
-                      whileFocus={available ? { y: -14, scale: 1.04 } : undefined}
-                      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                      className={`transition-[filter] duration-standard focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight motion-reduce:transform-none ${
-                        available ? 'hover:brightness-110' : 'opacity-35'
+                      whileHover={available ? { y: -4, scale: 1.04 } : undefined}
+                      whileFocus={available ? { y: -4, scale: 1.04 } : undefined}
+                      transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
+                      className={`group relative aspect-[2/3] w-full overflow-hidden rounded-[5px] border border-insight/25 bg-[#101827] shadow-[0_4px_14px_rgba(0,0,0,0.28)] transition-[filter,border-color] duration-standard focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight motion-reduce:transform-none ${
+                        available ? 'hover:border-insight/70 hover:brightness-110' : 'opacity-35'
                       }`}
                     >
-                      <TarotCardVisual id={`select-${index}`} name="Mặt sau lá Tarot" size="md" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} />
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-0 bg-cover bg-center"
+                        style={{ backgroundImage: `url(${TAROT_CARD_BACK_SRC})` }}
+                      />
+                      <span className="absolute bottom-0.5 right-0.5 rounded bg-[#07111D]/80 px-1 text-[9px] leading-4 text-insight">
+                        {index + 1}
+                      </span>
                     </motion.button>
                   );
                 });
