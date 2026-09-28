@@ -6,6 +6,7 @@ import { GoldButton, SecondaryButton } from '@/components/buttons';
 import { MysticCard } from '@/components/mystic-card';
 import { Screen } from '@/components/screen';
 import { ApiError } from '@/lib/api-client';
+import { discoveryError } from '@/lib/discovery-error';
 import { tuViApi } from '@/features/tu-vi/api';
 import { TuViChartResult } from '@/features/tu-vi/chart-result';
 import { color, font, fontSize, radius, spacing } from '@/theme/tokens';
