@@ -8,7 +8,7 @@ import { ButtonRow, GoldButton, SecondaryButton } from '@/components/buttons';
 import { useAuth, type DevFixture } from '@/providers/auth-provider';
 import { color, font, fontSize, radius, spacing } from '@/theme/tokens';
 
-const FIXTURES: Array<{ key: DevFixture; label: string }> = [
+const FIXTURES: { key: DevFixture; label: string }[] = [
   { key: 'off', label: 'Khách (thật)' },
   { key: 'authenticated-loading', label: 'Đã đăng nhập — Đang tải' },
   { key: 'authenticated-ok', label: 'Đã đăng nhập — Có dữ liệu' },
