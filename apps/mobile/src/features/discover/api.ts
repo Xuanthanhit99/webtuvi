@@ -1,4 +1,4 @@
-import type { EasternHoroscopeProfileDto, GeocodingSearchResultDto, ListEasternHoroscopeProfilesResultDto, ListNatalChartsResultDto, ListNumerologyReadingsResultDto, NatalChartDto, NumerologyReadingDto } from '@beaconvie/types';
+import type { EasternHoroscopeProfileDto, GeocodingSearchResultDto, ListEasternHoroscopeProfilesResultDto, ListNatalChartsResultDto, ListNumerologyReadingsResultDto, NatalChartDto, NumerologyMeaningDto, NumerologyReadingDto } from '@beaconvie/types';
 import { api } from '@/lib/api-client';
 
 export const discoverApi = {
@@ -6,10 +6,14 @@ export const discoverApi = {
   createNatalChart: (birthDate: string, birthTime: string | undefined, locationToken: string) => api.post<NatalChartDto>('/natal-charts', { birthDate, birthTime, locationToken }),
   listNatalCharts: () => api.get<ListNatalChartsResultDto>('/natal-charts?status=ACTIVE&page=1&pageSize=20'),
   getNatalChart: (id: string) => api.get<NatalChartDto>(`/natal-charts/${id}`),
+  retryNatalInterpretation: (id: string) => api.post<NatalChartDto>(`/natal-charts/${id}/interpret`),
   calculateNumerology: (fullBirthName: string, birthDate: string) => api.post<NumerologyReadingDto>('/numerology/calculate', { fullBirthName, birthDate }),
   listNumerology: () => api.get<ListNumerologyReadingsResultDto>('/numerology/readings?status=ACTIVE&page=1&pageSize=20'),
   getNumerology: (id: string) => api.get<NumerologyReadingDto>(`/numerology/readings/${id}`),
+  listNumerologyMeanings: () => api.get<NumerologyMeaningDto[]>('/numerology/meanings'),
+  retryNumerologyInterpretation: (id: string) => api.post<NumerologyReadingDto>(`/numerology/readings/${id}/interpret`),
   calculateEasternHoroscope: (birthDate: string) => api.post<EasternHoroscopeProfileDto>('/eastern-horoscope/calculate', { birthDate }),
   listEasternHoroscope: () => api.get<ListEasternHoroscopeProfilesResultDto>('/eastern-horoscope/profiles?status=ACTIVE&page=1&pageSize=20'),
   getEasternHoroscope: (id: string) => api.get<EasternHoroscopeProfileDto>(`/eastern-horoscope/profiles/${id}`),
+  retryEasternInterpretation: (id: string) => api.post<EasternHoroscopeProfileDto>(`/eastern-horoscope/profiles/${id}/interpret`),
 };
