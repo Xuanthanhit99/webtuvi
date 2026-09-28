@@ -162,6 +162,22 @@ describe('TarotDrawPanel', () => {
     expect(tarotApi.draw).not.toHaveBeenCalled();
   });
 
+
+  it('keyboard navigation spans the complete 78-card selection set', async () => {
+    (tarotApi.draw as jest.Mock).mockResolvedValue(drawnReading);
+    const user = userEvent.setup();
+    renderWithQuery(<TarotDrawPanel />);
+    await goToSpreadStep(user);
+    await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
+
+    const first = await screen.findByRole('button', { name: 'Chọn lá 1' }, { timeout: 3000 });
+    first.focus();
+    fireEvent.keyDown(first, { key: 'End' });
+    expect(screen.getByRole('button', { name: 'Chọn lá 78' })).toHaveFocus();
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Chọn lá 78' }), { key: 'Home' });
+    expect(first).toHaveFocus();
+  });
+
   it('under prefers-reduced-motion, the same real result still hands off through onDrawn', async () => {
     const matchMediaSpy = jest.spyOn(window, 'matchMedia').mockImplementation((query: string) => ({
       matches: query.includes('reduce'),
