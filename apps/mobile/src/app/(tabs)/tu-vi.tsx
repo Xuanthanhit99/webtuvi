@@ -5,32 +5,10 @@ import { AppHeader } from '@/components/app-header';
 import { GoldButton, SecondaryButton } from '@/components/buttons';
 import { MysticCard } from '@/components/mystic-card';
 import { Screen } from '@/components/screen';
-import { ApiError } from '@/lib/api-client';
 import { discoveryError } from '@/lib/discovery-error';
 import { tuViApi } from '@/features/tu-vi/api';
 import { TuViChartResult } from '@/features/tu-vi/chart-result';
 import { color, font, fontSize, radius, spacing } from '@/theme/tokens';
-
-const ERROR_MESSAGES: Record<string, string> = {
-  TUVI_INVALID_DATE_FORMAT: 'Ngày sinh phải đúng định dạng YYYY-MM-DD.',
-  TUVI_INVALID_DATE: 'Ngày sinh này không tồn tại trong dương lịch.',
-  TUVI_DATE_OUT_OF_RANGE: 'Ngày sinh nằm ngoài khoảng thời gian hệ thống hỗ trợ.',
-  TUVI_DATE_IN_FUTURE: 'Ngày sinh không thể ở trong tương lai.',
-  TUVI_INVALID_TIME_FORMAT: 'Giờ sinh phải theo định dạng 24 giờ HH:mm.',
-  TUVI_INVALID_TIME: 'Vui lòng nhập giờ sinh hợp lệ từ 00:00 đến 23:59.',
-  PREMIUM_REQUIRED: 'Bạn đã dùng hết lượt miễn phí.',
-  TU_VI_DAILY_LIMIT_REACHED: 'Bạn đã đạt giới hạn lập lá số hôm nay.',
-};
-
-function summary(chart: TuViChartDto) {
-  const x = chart as unknown as Record<string, unknown>;
-  return [
-    ['Ngày sinh', String(x.birthDate ?? '—')],
-    ['Giờ sinh', String(x.birthTime ?? '—')],
-    ['Giới tính', String(x.sex ?? '—')],
-    ['Trạng thái', String(x.interpretationStatus ?? x.status ?? 'Đã lập')],
-  ];
-}
 
 export default function TuViScreen() {
   const [birthDate, setBirthDate] = useState('');
@@ -47,7 +25,7 @@ export default function TuViScreen() {
     try {
       setResult(await tuViApi.calculate({ birthDate, birthTime, sex }));
     } catch (e) {
-      setError(e instanceof ApiError ? (ERROR_MESSAGES[e.code] ?? e.message) : 'Chưa thể lập lá số lúc này.');
+      setError(discoveryError(e,'Chưa thể lập lá số lúc này.').message);
     } finally { setBusy(false); }
   }
 
@@ -57,7 +35,7 @@ export default function TuViScreen() {
       const data = await tuViApi.listCharts();
       const rows = (data as unknown as { items?: TuViChartDto[] }).items ?? [];
       setHistory(rows);
-    } catch (e) { setError(e instanceof Error ? e.message : 'Chưa thể tải lá số đã lưu.'); }
+    } catch (e) { setError(discoveryError(e,'Chưa thể tải lá số đã lưu.').message); }
     finally { setBusy(false); }
   }
 
