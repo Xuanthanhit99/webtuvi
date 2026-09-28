@@ -7,6 +7,7 @@ import { MysticCard } from '@/components/mystic-card';
 import { Screen } from '@/components/screen';
 import { ApiError } from '@/lib/api-client';
 import { tuViApi } from '@/features/tu-vi/api';
+import { TuViChartResult } from '@/features/tu-vi/chart-result';
 import { color, font, fontSize, radius, spacing } from '@/theme/tokens';
 
 const ERROR_MESSAGES: Record<string, string> = {
@@ -62,12 +63,7 @@ export default function TuViScreen() {
   return <Screen><AppHeader /><ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled">
     <Text style={s.eyebrow}>TỬ VI ĐẨU SỐ</Text><Text style={s.title}>Lập lá số của bạn</Text>
     <Text style={s.copy}>Nhập ngày dương lịch, giờ sinh và giới tính. Engine trên máy chủ sẽ tự chuyển đổi và an sao; ứng dụng không tự tính lại kết quả.</Text>
-    {result ? <MysticCard style={s.card}>
-      <Text style={s.cardTitle}>Lá số đã được lập</Text>
-      {summary(result).map(([k,v]) => <View key={k} style={s.row}><Text style={s.muted}>{k}</Text><Text style={s.value}>{v}</Text></View>)}
-      <Text style={s.copy}>Mã lá số: {result.id}</Text>
-      <SecondaryButton label="Lập lá số khác" onPress={() => setResult(null)} />
-    </MysticCard> : <MysticCard style={s.card}>
+    {result ? <View style={{ gap: spacing.md }}><TuViChartResult chart={result} /><SecondaryButton label="Lập lá số khác" onPress={() => setResult(null)} /></View> : <MysticCard style={s.card}>
       <Text style={s.label}>Ngày sinh dương lịch</Text><TextInput value={birthDate} onChangeText={setBirthDate} placeholder="1995-08-24" placeholderTextColor={color.textMuted} style={s.input} autoCapitalize="none" />
       <Text style={s.label}>Giờ sinh</Text><TextInput value={birthTime} onChangeText={setBirthTime} placeholder="08:30" placeholderTextColor={color.textMuted} style={s.input} keyboardType="numbers-and-punctuation" />
       <Text style={s.label}>Giới tính</Text><View style={s.sexRow}>{(['Nam','Nữ'] as const).map(v=><Pressable key={v} onPress={()=>setSex(v)} style={[s.choice,sex===v&&s.choiceOn]}><Text style={[s.choiceText,sex===v&&s.choiceTextOn]}>{v}</Text></Pressable>)}</View>
