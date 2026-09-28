@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import type { NatalChartDto } from '@beaconvie/types';
 import { MysticCard } from '@/components/mystic-card';
-import { color,font,fontSize,spacing } from '@/theme/tokens';
+import { color, font, fontSize, spacing } from '@/theme/tokens';
 const BODY:Record<string,string>={SUN:'Mặt Trời',MOON:'Mặt Trăng',MERCURY:'Sao Thủy',VENUS:'Sao Kim',MARS:'Sao Hỏa',JUPITER:'Sao Mộc',SATURN:'Sao Thổ',URANUS:'Sao Thiên Vương',NEPTUNE:'Sao Hải Vương',PLUTO:'Sao Diêm Vương'};
 const SIGN:Record<string,string>={ARIES:'Bạch Dương',TAURUS:'Kim Ngưu',GEMINI:'Song Tử',CANCER:'Cự Giải',LEO:'Sư Tử',VIRGO:'Xử Nữ',LIBRA:'Thiên Bình',SCORPIO:'Bọ Cạp',SAGITTARIUS:'Nhân Mã',CAPRICORN:'Ma Kết',AQUARIUS:'Bảo Bình',PISCES:'Song Ngư'};
 const ASPECT:Record<string,string>={CONJUNCTION:'Đồng cung',OPPOSITION:'Đối đỉnh',TRINE:'Tam hợp',SQUARE:'Vuông góc',SEXTILE:'Lục hợp'};
