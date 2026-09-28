@@ -1,5 +1,9 @@
-import { ComingSoon } from '@/components/coming-soon';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { AppHeader } from '@/components/app-header';
+import { MysticCard } from '@/components/mystic-card';
+import { Screen } from '@/components/screen';
+import { color, font, fontSize, spacing } from '@/theme/tokens';
 
-export default function DiscoverScreen() {
-  return <ComingSoon title="Khám phá" description="Trung tâm khám phá (Bản đồ sao, Thần số học và hơn thế) đang được xây dựng trong giai đoạn tiếp theo." />;
-}
+const modules=[['Bản đồ sao','Natal Chart','Mặt Trời, Mặt Trăng, cung Mọc, hành tinh, nhà và các góc chiếu.'],['Thần số học','Numerology','Life Path, Expression, Soul Urge, Personality, Birthday và Maturity.'],['Tử vi phương Đông','Eastern Horoscope','Hồ sơ phương Đông theo ngày sinh, tách biệt với Tử Vi Đẩu Số.']];
+export default function DiscoverScreen(){return <Screen><AppHeader/><ScrollView contentContainerStyle={s.page}><Text style={s.eyebrow}>KHÁM PHÁ</Text><Text style={s.title}>Những hệ thống để hiểu mình</Text><Text style={s.copy}>Discovery hub native đã thay thế màn “đang xây dựng”. Các module bên dưới đang được nối trực tiếp vào API production theo cùng contract với Web.</Text>{modules.map(([name,en,desc])=><MysticCard key={name} style={s.card}><View><Text style={s.en}>{en}</Text><Text style={s.name}>{name}</Text></View><Text style={s.copy}>{desc}</Text><Text style={s.status}>Đang hoàn thiện màn nhập liệu & kết quả native</Text></MysticCard>)}</ScrollView></Screen>}
+const s=StyleSheet.create({page:{padding:spacing.lg,paddingBottom:48,gap:spacing.md},eyebrow:{fontFamily:font.bodySemibold,fontSize:fontSize.caption,color:color.gold,letterSpacing:2},title:{fontFamily:font.display,fontSize:fontSize.displayMd,color:color.textPrimary},copy:{fontFamily:font.body,fontSize:fontSize.bodySm,color:color.textSecondary,lineHeight:20},card:{padding:spacing.lg,gap:spacing.sm},en:{fontFamily:font.bodySemibold,fontSize:fontSize.caption,color:color.goldMuted,textTransform:'uppercase'},name:{fontFamily:font.display,fontSize:fontSize.headingMd,color:color.textPrimary},status:{fontFamily:font.bodyMedium,fontSize:fontSize.caption,color:color.goldLight}});
