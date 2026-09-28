@@ -1,4 +1,4 @@
-import type { ListReadingsResultDto, TarotCardDto, TarotReadingDto, TarotReadingHistoryDto, TarotReadingTypeValue } from '@beaconvie/types';
+import type { ListReadingsResultDto, TarotCardDto, TarotReadingDto, TarotReadingHistoryDto, TarotReadingTypeValue, TarotSelectionSessionDto } from '@beaconvie/types';
 import { api } from '@/lib/api-client';
 
 export interface ListDeckFilters {
@@ -28,7 +28,8 @@ function toQuery(params: object): string {
 export const tarotApi = {
   listDeck: (filters: ListDeckFilters = {}) => api.get<TarotCardDto[]>(`/tarot/deck${toQuery(filters)}`),
   getCard: (slug: string) => api.get<TarotCardDto>(`/tarot/deck/${slug}`),
-  draw: (type: TarotReadingTypeValue, question?: string) => api.post<TarotReadingDto>('/tarot/draw', { type, question }),
+  createSelectionSession: (type: TarotReadingTypeValue) => api.post<TarotSelectionSessionDto>('/tarot/selection-session', { type }),
+  draw: (type: TarotReadingTypeValue, selectionToken: string, selectedPositions: number[], question?: string) => api.post<TarotReadingDto>('/tarot/draw', { type, question, selectionToken, selectedPositions }),
   listReadings: (filters: ListReadingsFilters = {}) => api.get<ListReadingsResultDto>(`/tarot/readings${toQuery(filters)}`),
   getReading: (id: string) => api.get<TarotReadingDto>(`/tarot/readings/${id}`),
   readingHistory: (id: string) => api.get<TarotReadingHistoryDto[]>(`/tarot/readings/${id}/history`),

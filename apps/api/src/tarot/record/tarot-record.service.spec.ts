@@ -111,6 +111,7 @@ function makeService(seed: Row[] = [], isPremium = false) {
     costControl as never,
     generationLock as never,
     analyticsService as never,
+    { resolve: jest.fn() } as never,
   );
   return { service, prisma, entitlementService, interpretation, costControl, generationLock, analyticsService };
 }
@@ -171,7 +172,7 @@ describe('TarotRecordService — Daily Draw rate limit (Phase 9 security fix)', 
     ]);
     // draw() itself needs a real spread/card lookup we haven't mocked here — assert the guard
     // rejects before any of that by checking the thrown error directly.
-    await expect(service.draw(OWNER, { type: 'DAILY_DRAW' })).rejects.toMatchObject({
+    await expect(service.draw(OWNER, { type: 'DAILY_DRAW', selectionToken: 'selection-token-1234567890', selectedPositions: [0] })).rejects.toMatchObject({
       response: { code: 'TAROT_DAILY_DRAW_ALREADY_TAKEN' },
     });
     expect(prisma.tarotReading.findFirst).toHaveBeenCalled();
@@ -185,7 +186,7 @@ describe('TarotRecordService — Sprint 7 Free vs Premium daily usage limits', (
 
   it('a Free user is denied PREMIUM_REQUIRED after 3 Single Card draws today (raising the ceiling would help)', async () => {
     const { service } = makeService(readingsToday('SINGLE_CARD', 3), false);
-    await expect(service.draw(OWNER, { type: 'SINGLE_CARD' })).rejects.toMatchObject({ response: { code: 'PREMIUM_REQUIRED' } });
+    await expect(service.draw(OWNER, { type: 'SINGLE_CARD', selectionToken: 'selection-token-1234567890', selectedPositions: [0] })).rejects.toMatchObject({ response: { code: 'PREMIUM_REQUIRED' } });
   });
 
   it('a Free user may still draw a 3rd Single Card (limit not yet reached)', async () => {
@@ -193,23 +194,23 @@ describe('TarotRecordService — Sprint 7 Free vs Premium daily usage limits', (
     // No spread/card seeded — assert the usage-limit guard itself passes (no PREMIUM_REQUIRED/limit
     // error) by checking draw() gets past assertWithinDailyLimit and fails later on the (unmocked)
     // spread lookup instead.
-    await expect(service.draw(OWNER, { type: 'SINGLE_CARD' })).rejects.toMatchObject({ response: { code: 'TAROT_SPREAD_NOT_SEEDED' } });
+    await expect(service.draw(OWNER, { type: 'SINGLE_CARD', selectionToken: 'selection-token-1234567890', selectedPositions: [0] })).rejects.toMatchObject({ response: { code: 'TAROT_SPREAD_NOT_SEEDED' } });
     expect(prisma.tarotReading.count).toHaveBeenCalled();
   });
 
   it('a Free user is denied a Three Card Spread after 1 today', async () => {
     const { service } = makeService(readingsToday('THREE_CARD', 1), false);
-    await expect(service.draw(OWNER, { type: 'THREE_CARD' })).rejects.toMatchObject({ response: { code: 'PREMIUM_REQUIRED' } });
+    await expect(service.draw(OWNER, { type: 'THREE_CARD', selectionToken: 'selection-token-1234567890', selectedPositions: [0] })).rejects.toMatchObject({ response: { code: 'PREMIUM_REQUIRED' } });
   });
 
   it('a Premium user is allowed a 4th Single Card draw the same day (raised ceiling)', async () => {
     const { service } = makeService(readingsToday('SINGLE_CARD', 3), true);
-    await expect(service.draw(OWNER, { type: 'SINGLE_CARD' })).rejects.toMatchObject({ response: { code: 'TAROT_SPREAD_NOT_SEEDED' } });
+    await expect(service.draw(OWNER, { type: 'SINGLE_CARD', selectionToken: 'selection-token-1234567890', selectedPositions: [0] })).rejects.toMatchObject({ response: { code: 'TAROT_SPREAD_NOT_SEEDED' } });
   });
 
   it('a Premium user hitting their own (higher) Single Card ceiling gets a plain limit error, not PREMIUM_REQUIRED', async () => {
     const { service } = makeService(readingsToday('SINGLE_CARD', 15), true);
-    await expect(service.draw(OWNER, { type: 'SINGLE_CARD' })).rejects.toMatchObject({ response: { code: 'TAROT_DAILY_LIMIT_REACHED' } });
+    await expect(service.draw(OWNER, { type: 'SINGLE_CARD', selectionToken: 'selection-token-1234567890', selectedPositions: [0] })).rejects.toMatchObject({ response: { code: 'TAROT_DAILY_LIMIT_REACHED' } });
   });
 });
 
