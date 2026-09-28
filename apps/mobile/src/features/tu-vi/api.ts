@@ -9,4 +9,7 @@ export const tuViApi = {
   getChart: (id: string) => api.get<TuViChartDto>(`/tu-vi/charts/${id}`),
   chartHistory: (id: string) => api.get<TuViChartHistoryDto[]>(`/tu-vi/charts/${id}/history`),
   retryInterpretation: (id: string) => api.post<TuViChartDto>(`/tu-vi/charts/${id}/interpret`),
+  archive: (id: string) => api.post<TuViChartDto>(`/tu-vi/charts/${id}/archive`),
+  restore: (id: string) => api.post<TuViChartDto>(`/tu-vi/charts/${id}/restore`),
+  remove: (id: string) => api.delete<void>(`/tu-vi/charts/${id}`),
 };
