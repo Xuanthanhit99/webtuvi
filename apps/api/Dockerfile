@@ -103,6 +103,12 @@ COPY --from=build /repo/apps/api/dist ./apps/api/dist
 COPY --from=build /repo/apps/api/prisma ./apps/api/prisma
 COPY --from=build /repo/node_modules/.pnpm ./node_modules/.pnpm
 
+# Railway executes the pre-deploy command as the image USER. pnpm may need to
+# create temporary files while resolving/running the workspace script, so the
+# non-root runtime user must own the workspace rather than inheriting root-owned
+# COPY layers. Keep the ownership change before dropping privileges.
+RUN chown -R beaconvie:beaconvie /repo
+
 USER beaconvie
 WORKDIR /repo/apps/api
 EXPOSE 4000
