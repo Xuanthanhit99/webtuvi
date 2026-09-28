@@ -10,7 +10,7 @@ import { tarotApi } from '@/features/tarot/api';
 import { TarotReadingResult } from '@/features/tarot/reading-result';
 import { color, font, fontSize, radius, spacing } from '@/theme/tokens';
 
-const TYPES: Array<{value:TarotReadingTypeValue;label:string;count:number}>=[{value:'DAILY_DRAW',label:'Lá bài hôm nay',count:1},{value:'SINGLE_CARD',label:'Một lá',count:1},{value:'THREE_CARD',label:'Ba lá',count:3}];
+const TYPES: {value:TarotReadingTypeValue;label:string;count:number}[]=[{value:'DAILY_DRAW',label:'Lá bài hôm nay',count:1},{value:'SINGLE_CARD',label:'Một lá',count:1},{value:'THREE_CARD',label:'Ba lá',count:3}];
 
 export default function TarotScreen(){
  const [type,setType]=useState<TarotReadingTypeValue>('DAILY_DRAW'); const [question,setQuestion]=useState(''); const [positions,setPositions]=useState<number[]>([]); const [token,setToken]=useState(''); const [deckSize,setDeckSize]=useState(0); const [result,setResult]=useState<TarotReadingDto|null>(null); const [history,setHistory]=useState<TarotReadingDto[]>([]); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
