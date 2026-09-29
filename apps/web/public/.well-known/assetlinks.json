@@ -4,7 +4,7 @@
     "target": {
       "namespace": "android_app",
       "package_name": "vn.tuvitarot.menhvi",
-      "sha256_cert_fingerprints": ["REPLACE_WITH_EAS_ANDROID_SHA256_CERT_FINGERPRINT"]
+      "sha256_cert_fingerprints": ["11:FB:21:D0:04:73:C7:6E:85:B1:09:E6:32:9B:94:57:16:DC:03:C4:2E:B7:42:43:D3:D9:F2:16:26:4D:F5:E5"]
     }
   }
 ]
