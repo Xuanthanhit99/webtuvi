@@ -105,7 +105,7 @@ describe('TarotDrawPanel', () => {
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
     await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
-    await user.click(screen.getByRole('button', { name: /Single Card/ }));
+    await user.click(screen.getByRole('button', { name: /Một lá soi chiếu/ }));
     await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
     await user.click(await screen.findByRole('button', { name: 'Chọn lá 1' }));
@@ -122,7 +122,7 @@ describe('TarotDrawPanel', () => {
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
     await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
-    await user.click(screen.getByRole('button', { name: /Single Card/ }));
+    await user.click(screen.getByRole('button', { name: /Một lá soi chiếu/ }));
     await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
     await user.click(await screen.findByRole('button', { name: 'Chọn lá 1' }));
