@@ -26,7 +26,7 @@ export function TodayOverview({
   const signals = [tuVi, tarot, natal, numerology].filter((item): item is TodayOverviewSignal => item !== null);
 
   return (
-    <MvV2Surface aria-labelledby="today-overview-heading" className="bg-[radial-gradient(circle_at_18%_45%,rgba(213,173,98,0.09),transparent_28%),linear-gradient(135deg,rgba(10,18,31,0.98),rgba(8,13,24,0.94))]">
+    <MvV2Surface ariaLabelledby="today-overview-heading" className="bg-[radial-gradient(circle_at_18%_45%,rgba(213,173,98,0.09),transparent_28%),linear-gradient(135deg,rgba(10,18,31,0.98),rgba(8,13,24,0.94))]">
       <div className="grid items-center gap-6 p-5 tablet:grid-cols-[220px_minmax(0,1fr)] tablet:p-7 desktop:grid-cols-[260px_minmax(0,1fr)] desktop:p-8">
         <div className="relative mx-auto w-full max-w-[220px] tablet:max-w-[250px]">
           <DestinyOrbit className="w-full opacity-90" />
