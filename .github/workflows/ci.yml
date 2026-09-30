@@ -4,6 +4,7 @@ on:
   push:
     branches: [master]
   pull_request:
+  workflow_dispatch:
 
 env:
   DATABASE_URL: postgresql://beaconvie:beaconvie_ci_password@localhost:5432/beaconvie_ci?schema=public
