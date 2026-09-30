@@ -3,21 +3,21 @@ import type { BadgeVariant } from '@/components/ui/badge';
 
 /** Plain-language labels only — never AI wording. See docs/architecture/tarot-discovery.md. */
 export const READING_TYPE_LABELS: Record<TarotReadingTypeValue, string> = {
-  DAILY_DRAW: 'Daily Draw',
-  SINGLE_CARD: 'Single Card',
-  THREE_CARD: 'Three Card Spread',
+  DAILY_DRAW: 'Lá bài hôm nay',
+  SINGLE_CARD: 'Một lá soi chiếu',
+  THREE_CARD: 'Ba lá theo dòng thời gian',
 };
 
 export const READING_TYPE_DESCRIPTIONS: Record<TarotReadingTypeValue, string> = {
-  DAILY_DRAW: 'One card for today. Once per day — no re-draws, so the reflection stays honest.',
-  SINGLE_CARD: 'One card, any time, for whatever is on your mind right now.',
-  THREE_CARD: 'Three cards — Past, Present, Future — for a fuller picture of where things stand.',
+  DAILY_DRAW: 'Một lá dành cho hôm nay. Mỗi ngày chỉ rút một lần để giữ trọn khoảnh khắc soi chiếu.',
+  SINGLE_CARD: 'Một lá cho điều đang khiến bạn bận tâm ngay lúc này.',
+  THREE_CARD: 'Ba lá — Quá khứ, Hiện tại, Tương lai — để nhìn câu chuyện theo một dòng liền mạch.',
 };
 
 export const READING_STATUS_LABELS: Record<TarotReadingStatusValue, string> = {
-  ACTIVE: 'Active',
-  ARCHIVED: 'Archived',
-  DELETED: 'Deleted',
+  ACTIVE: 'Đang lưu',
+  ARCHIVED: 'Đã lưu trữ',
+  DELETED: 'Đã xóa',
 };
 
 export const READING_STATUS_BADGE_VARIANT: Record<TarotReadingStatusValue, BadgeVariant> = {
@@ -27,8 +27,8 @@ export const READING_STATUS_BADGE_VARIANT: Record<TarotReadingStatusValue, Badge
 };
 
 export const SUIT_LABELS: Record<TarotSuitValue, string> = {
-  WANDS: 'Wands',
-  CUPS: 'Cups',
-  SWORDS: 'Swords',
-  PENTACLES: 'Pentacles',
+  WANDS: 'Gậy',
+  CUPS: 'Cốc',
+  SWORDS: 'Kiếm',
+  PENTACLES: 'Tiền',
 };
