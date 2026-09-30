@@ -224,6 +224,7 @@ describe('TuViDashboard', () => {
     expect(screen.getAllByText('Bản mệnh và nền tảng cá nhân').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Hóa Lộc · Tử Vi').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/lấy trực tiếp từ lá số đã được Mệnh Vi tính và lưu/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('dialog', { name: 'Mệnh' })).toHaveAttribute('aria-modal', 'true');
     expect(screen.getByRole('button', { name: 'Đóng chi tiết cung' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Đóng chi tiết cung' }));
