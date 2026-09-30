@@ -44,7 +44,7 @@ export function TodayOverview({
             Hôm nay của bạn
           </h2>
           <p className="mt-2 max-w-2xl text-body-sm leading-relaxed text-[#aeb0b5]">
-            Một điểm nhìn chung từ những dữ liệu bạn đã thực sự tạo trong Mệnh Vi. Không có điểm số minh họa hay dữ liệu giả.
+            Một điểm nhìn chung từ lá số, trải bài và các hồ sơ bạn đã thực sự tạo trong Mệnh Vi.
           </p>
 
           {loading ? (
