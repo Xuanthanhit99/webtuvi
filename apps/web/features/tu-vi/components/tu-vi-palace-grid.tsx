@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import type { EarthlyBranchValue, TuViChartDto } from '@beaconvie/types';
-import { ChevronRight } from 'lucide-react';
-import { DIGNITY_SHORT_LABEL } from '../labels';
+import { ChevronRight, X } from 'lucide-react';
+import { DIGNITY_SHORT_LABEL, PALACE_ROLE_DESCRIPTIONS_VI, TRANSFORMATION_DESCRIPTIONS_VI } from '../labels';
 import { buildPalaceCells, PALACE_GRID_POSITION, type PalaceCell } from '../tu-vi-projection';
 
 const TRANSFORMATION_TAG: Record<string, string> = { 'Hóa Lộc': 'L', 'Hóa Quyền': 'Q', 'Hóa Khoa': 'K', 'Hóa Kỵ': 'K.' };
@@ -64,17 +64,20 @@ function ChartSummaryCell({ chart }: { chart: TuViChartDto }) {
   );
 }
 
-function PalaceDetail({ cell }: { cell: PalaceCell }) {
+function PalaceInspector({ cell, onClose }: { cell: PalaceCell; onClose: () => void }) {
   return (
-    <section aria-live="polite" aria-labelledby="selected-palace-heading" className="rounded-[16px] border border-[#d5ad62]/25 bg-[#101827] p-4 tablet:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-white/[0.07] pb-3">
-        <div><p className="text-caption uppercase tracking-[0.14em] text-[#d5ad62]">Cung đang chọn · {cell.branch}</p><h3 id="selected-palace-heading" className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">{cell.role}</h3></div>
-        <div className="flex gap-1">{cell.isMenh && <span className="rounded-sm bg-[#d5ad62]/15 px-2 py-1 text-caption font-semibold text-[#e6c980]">Mệnh</span>}{cell.isThan && <span className="rounded-sm bg-[#708c79]/15 px-2 py-1 text-caption font-semibold text-[#9eb5a5]">Thân</span>}</div>
+    <section aria-live="polite" aria-labelledby="selected-palace-heading" className="flex max-h-[78dvh] flex-col overflow-hidden rounded-t-[24px] border border-[#d5ad62]/25 bg-[#101827] shadow-[0_-24px_70px_rgba(0,0,0,0.42)] tablet:max-h-none tablet:rounded-[16px] tablet:shadow-[0_18px_55px_rgba(0,0,0,0.2)]">
+      <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-white/20 tablet:hidden" aria-hidden="true" />
+      <div className="flex items-start justify-between gap-3 border-b border-white/[0.07] p-4 tablet:p-5">
+        <div><p className="text-caption uppercase tracking-[0.14em] text-[#d5ad62]">Cung đang chọn · {cell.branch}</p><h3 id="selected-palace-heading" className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">{cell.role}</h3><p className="mt-1 max-w-prose text-body-sm leading-relaxed text-[#a6a7ac]">{PALACE_ROLE_DESCRIPTIONS_VI[cell.role]}</p></div>
+        <div className="flex items-start gap-2"><div className="flex gap-1">{cell.isMenh && <span className="rounded-sm bg-[#d5ad62]/15 px-2 py-1 text-caption font-semibold text-[#e6c980]">Mệnh</span>}{cell.isThan && <span className="rounded-sm bg-[#708c79]/15 px-2 py-1 text-caption font-semibold text-[#9eb5a5]">Thân</span>}</div><button type="button" onClick={onClose} aria-label="Đóng chi tiết cung" className="rounded-full border border-white/10 p-2 text-[#a6a7ac] transition-colors hover:bg-white/[0.06] hover:text-[#f2eee5] tablet:hidden"><X className="h-4 w-4" aria-hidden="true" /></button></div>
       </div>
-      <div className="mt-4 grid gap-5 tablet:grid-cols-2">
-        <div><p className="text-caption font-semibold uppercase tracking-[0.12em] text-[#777b83]">Chính tinh</p>{cell.mainStars.length ? <ul className="mt-2 space-y-2">{cell.mainStars.map(({ star, dignity }) => <li key={star} className="flex flex-wrap items-center gap-2 text-body-md font-semibold text-[#f2eee5]">{star}<span className={`rounded-sm px-1.5 py-0.5 text-caption ${DIGNITY_TONE[dignity]}`}>{DIGNITY_SHORT_LABEL[dignity]}</span>{starTags(star, cell).map((tag) => <sup key={tag} className="text-[#e6c980]">{tag}</sup>)}</li>)}</ul> : <p className="mt-2 text-body-sm text-[#a6a7ac]">Cung này không có chính tinh.</p>}</div>
+      <div className="overflow-y-auto p-4 tablet:p-5"><div className="grid gap-5">
+        <div><p className="text-caption font-semibold uppercase tracking-[0.12em] text-[#777b83]">Chính tinh</p>{cell.mainStars.length ? <ul className="mt-2 space-y-2">{cell.mainStars.map(({ star, dignity }) => <li key={star} className="flex flex-wrap items-center gap-2 text-body-md font-semibold text-[#f2eee5]">{star}<span className={`rounded-sm px-1.5 py-0.5 text-caption ${DIGNITY_TONE[dignity]}`} aria-label={`Trạng thái: ${dignity}`}>{DIGNITY_SHORT_LABEL[dignity]}</span>{starTags(star, cell).map((tag) => <sup key={tag} className="text-[#e6c980]">{tag}</sup>)}</li>)}</ul> : <p className="mt-2 text-body-sm text-[#a6a7ac]">Cung này không có chính tinh.</p>}</div>
         <div><p className="text-caption font-semibold uppercase tracking-[0.12em] text-[#777b83]">Phụ tinh và dấu hiệu</p>{cell.auxiliaryStars.length ? <p className="mt-2 text-body-sm leading-relaxed text-[#d8d1c2]">{cell.auxiliaryStars.join(' · ')}</p> : <p className="mt-2 text-body-sm text-[#a6a7ac]">Không có phụ tinh.</p>}<p className="mt-2 text-caption text-[#a6a7ac]">{[cell.hasTuan && 'Tuần', cell.hasTriet && 'Triệt'].filter(Boolean).join(' · ') || 'Không có Tuần / Triệt tại cung này'}</p></div>
-      </div>
+        <div><p className="text-caption font-semibold uppercase tracking-[0.12em] text-[#777b83]">Tứ Hóa tại cung</p>{cell.transformations.length ? <ul className="mt-2 space-y-2">{cell.transformations.map((item) => <li key={`${item.transformation}-${item.targetStar}`} className="rounded-md border border-[#d5ad62]/15 bg-[#d5ad62]/[0.04] p-2.5"><p className="text-body-sm font-semibold text-[#e6c980]">{item.transformation} · {item.targetStar}</p><p className="mt-1 text-caption leading-relaxed text-[#a6a7ac]">{TRANSFORMATION_DESCRIPTIONS_VI[item.transformation] ?? 'Dữ liệu Tứ Hóa đã được tính trong lá số.'}</p></li>)}</ul> : <p className="mt-2 text-body-sm text-[#a6a7ac]">Không có Tứ Hóa tại cung này.</p>}</div>
+        <div className="border-t border-white/[0.07] pt-4"><p className="text-caption font-semibold uppercase tracking-[0.12em] text-[#777b83]">Cơ sở hiển thị</p><p className="mt-2 text-caption leading-relaxed text-[#a6a7ac]">Cung, sao, trạng thái, Tứ Hóa và Tuần/Triệt lấy trực tiếp từ lá số đã được Mệnh Vi tính và lưu. Mô tả vai trò cung đến từ danh mục Tử Vi của Mệnh Vi; phần này không tạo thêm dữ liệu bằng AI.</p></div>
+      </div></div>
     </section>
   );
 }
@@ -82,23 +85,31 @@ function PalaceDetail({ cell }: { cell: PalaceCell }) {
 export function TuViPalaceGrid({ chart }: { chart: TuViChartDto }) {
   const cells = buildPalaceCells(chart);
   const [selectedBranch, setSelectedBranch] = useState<EarthlyBranchValue>(chart.palaces.menh);
+  const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
   const selected = cells.find((cell) => cell.branch === selectedBranch) ?? cells[0]!;
 
+  function selectPalace(branch: EarthlyBranchValue) {
+    setSelectedBranch(branch);
+    setMobileInspectorOpen(true);
+  }
+
   return (
-    <div className="space-y-4">
-      <div className="hidden aspect-square grid-cols-4 grid-rows-4 gap-1.5 tablet:grid" aria-label="Bố cục truyền thống 12 cung của lá số">
-        {cells.map((cell) => { const pos = PALACE_GRID_POSITION[cell.branch]; return <div key={cell.branch} style={{ gridRow: pos.row, gridColumn: pos.col }}><PalaceButton cell={cell} selected={cell.branch === selectedBranch} onSelect={() => setSelectedBranch(cell.branch)} /></div>; })}
+    <div className="relative">
+      <div className="tablet:grid tablet:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)] tablet:items-start tablet:gap-4">\n        <div className="hidden aspect-square grid-cols-4 grid-rows-4 gap-1.5 tablet:grid" aria-label="Bố cục truyền thống 12 cung của lá số">
+        {cells.map((cell) => { const pos = PALACE_GRID_POSITION[cell.branch]; return <div key={cell.branch} style={{ gridRow: pos.row, gridColumn: pos.col }}><PalaceButton cell={cell} selected={cell.branch === selectedBranch} onSelect={() => selectPalace(cell.branch)} /></div>; })}
         <div style={{ gridRow: '2 / span 2', gridColumn: '2 / span 2' }}><ChartSummaryCell chart={chart} /></div>
+        </div>
+        <div className="hidden tablet:sticky tablet:top-6 tablet:block"><PalaceInspector cell={selected} onClose={() => setMobileInspectorOpen(false)} /></div>
       </div>
 
       <div className="tablet:hidden">
         <div className="mb-3 rounded-md border border-[#d5ad62]/20 bg-[#101827] p-3 text-center"><p className="font-display text-body-md font-semibold text-[#e6c980]">{chart.cuc}</p><p className="mt-1 text-caption text-[#a6a7ac]">Mệnh tại {chart.palaces.menh} · Thân tại {chart.palaces.than} · Giờ {chart.hourBranch}</p></div>
         <div className="grid grid-cols-3 gap-1.5" aria-label="Tổng quan 12 cung trên thiết bị di động">
-          {cells.map((cell) => <PalaceButton key={cell.branch} cell={cell} compact selected={cell.branch === selectedBranch} onSelect={() => setSelectedBranch(cell.branch)} />)}
+          {cells.map((cell) => <PalaceButton key={cell.branch} cell={cell} compact selected={cell.branch === selectedBranch} onSelect={() => selectPalace(cell.branch)} />)}
         </div>
       </div>
 
-      <PalaceDetail cell={selected} />
+      {mobileInspectorOpen && <><button type="button" aria-label="Đóng nền chi tiết cung" onClick={() => setMobileInspectorOpen(false)} className="fixed inset-0 z-40 bg-black/55 backdrop-blur-[1px] tablet:hidden" /><div className="fixed inset-x-0 bottom-0 z-50 tablet:hidden"><PalaceInspector cell={selected} onClose={() => setMobileInspectorOpen(false)} /></div></>}
     </div>
   );
 }
