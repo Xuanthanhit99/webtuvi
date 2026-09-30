@@ -208,6 +208,27 @@ describe('TuViDashboard', () => {
     const careerPalace = (await screen.findAllByRole('button', { name: /^Cung Quan Lộc,/ }))[0]!;
     await user.click(careerPalace);
     expect(careerPalace).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('heading', { name: 'Quan Lộc' })).toBeInTheDocument();
+    expect(screen.getAllByRole('heading', { name: 'Quan Lộc' }).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Công việc, sự nghiệp và vai trò xã hội').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Không có Tứ Hóa tại cung này.').length).toBeGreaterThan(0);
   });
+  it('keeps the selected palace inspector grounded in persisted chart facts and exposes mobile close controls', async () => {
+    mockSearchParamsValue = 'item=c1';
+    (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
+    const user = userEvent.setup();
+    renderWithQuery(<TuViDashboard />);
+
+    const menhButtons = await screen.findAllByRole('button', { name: /^Cung Mệnh,/ });
+    await user.click(menhButtons[0]!);
+
+    expect(screen.getAllByText('Bản mệnh và nền tảng cá nhân').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Hóa Lộc · Tử Vi').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/lấy trực tiếp từ lá số đã được Mệnh Vi tính và lưu/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('dialog', { name: 'Mệnh' })).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByRole('button', { name: 'Đóng chi tiết cung' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Đóng chi tiết cung' }));
+    expect(screen.queryByRole('button', { name: 'Đóng nền chi tiết cung' })).not.toBeInTheDocument();
+  });
+
 });
