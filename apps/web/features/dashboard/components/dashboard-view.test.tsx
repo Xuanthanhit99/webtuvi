@@ -187,7 +187,7 @@ describe('Mệnh Vi Home page', () => {
     renderWithQuery(<DashboardView />);
 
     expect(await screen.findByRole('heading', { name: 'Hôm nay của bạn' })).toBeInTheDocument();
-    expect(screen.getByText('Bạn chưa có đủ dữ liệu cá nhân để tạo tổng quan hôm nay.')).toBeInTheDocument();
+    expect(await screen.findByText('Bạn chưa có đủ dữ liệu cá nhân để tạo tổng quan hôm nay.')).toBeInTheDocument();
     expect(await screen.findByText('Bạn chưa lập lá số Tử Vi.')).toBeInTheDocument();
     expect(screen.getByText('Bạn chưa lập lá số.')).toBeInTheDocument();
   });
