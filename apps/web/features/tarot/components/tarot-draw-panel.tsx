@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion, MotionConfig } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, Eye, Library, MoonStar, Sparkles } from 'lucide-react';
+import { ChevronLeft, Eye, Library, LoaderCircle, MoonStar, Sparkles } from 'lucide-react';
 import type { TarotReadingDto, TarotReadingTypeValue, TarotSelectionSessionDto } from '@beaconvie/types';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
@@ -426,9 +426,19 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
               })()}
             </div>
             </div>
-            <p className="max-w-lg text-center text-caption text-text-tertiary">
-              Bạn đang chọn thật từ đủ 78 vị trí đã được xáo. Danh tính và chiều của lá vẫn được giữ kín trên máy chủ cho tới khi bạn chốt lựa chọn.
-            </p>
+            {draw.isPending ? (
+              <div role="status" aria-live="polite" className="flex max-w-lg items-start gap-3 rounded-md border border-insight/30 bg-insight/10 px-4 py-3 text-left">
+                <LoaderCircle className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-insight motion-reduce:animate-none" aria-hidden="true" />
+                <div>
+                  <p className="text-body-sm font-semibold text-text-primary">Đã nhận lựa chọn của bạn</p>
+                  <p className="mt-1 text-caption leading-relaxed text-text-secondary">Mệnh Vi đang mở các lá bài và chuẩn bị phần diễn giải. Vui lòng chờ trong giây lát, bạn không cần chọn lại.</p>
+                </div>
+              </div>
+            ) : (
+              <p className="max-w-lg text-center text-caption text-text-tertiary">
+                Bạn đang chọn thật từ đủ 78 vị trí đã được xáo. Danh tính và chiều của lá vẫn được giữ kín trên máy chủ cho tới khi bạn chốt lựa chọn.
+              </p>
+            )}
           </section>
         </RitualStage>
       )}
