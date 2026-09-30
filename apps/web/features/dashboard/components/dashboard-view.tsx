@@ -7,6 +7,7 @@ import { ChevronRight } from 'lucide-react';
 import type { NatalChartDto, NumerologyReadingDto, TarotReadingDto, TuViChartDto, TuViCurrentTieuHanDto, TuViDaiVanCycleDto } from '@beaconvie/types';
 import { dashboardApi } from '../api/dashboard-api';
 import { HomeHero } from './home/hero';
+import { TodayOverview, type TodayOverviewSignal } from './home/today-overview';
 import { FeatureGrid } from './home/feature-grid';
 import { TodaySuggestions } from './home/today-suggestions';
 import { ArticlesSection } from './home/articles-section';
@@ -173,6 +174,37 @@ export function DashboardView() {
   const continuityItem = buildContinuityItem(tarotReading, natalChart, numerologyReading, sunSign, moonSign, lifePath);
   const continuityLoading = !isGuest && (tarotQuery.isLoading || natalQuery.isLoading || numerologyQuery.isLoading);
   const dailyText = dashboardQuery.data?.discoverySuggestion?.description;
+  const currentDaiVan = formatDaiVan(tuViChart?.currentDaiVan ?? null);
+  const currentTieuHan = formatTieuHan(tuViChart?.currentTieuHan ?? null);
+  const todayTuVi: TodayOverviewSignal | null = tuViChart
+    ? {
+        label: 'Tử Vi hiện tại',
+        value: currentTieuHan ?? currentDaiVan ?? `Mệnh an tại ${tuViChart.palaces.menh}`,
+        href: '/discover/tu-vi',
+      }
+    : null;
+  const todayTarot: TodayOverviewSignal | null = tarotReading
+    ? {
+        label: 'Tarot gần nhất',
+        value: `${tarotReading.spreadName}${tarotReading.cards[0]?.card.name ? ` · ${tarotReading.cards[0].card.name}` : ''}`,
+        href: '/discover/tarot',
+      }
+    : null;
+  const todayNatal: TodayOverviewSignal | null = natalChart
+    ? {
+        label: 'Bản đồ sao',
+        value: `Mặt Trời ${sunSign ?? 'đã tính'} · Mặt Trăng ${moonSign ?? 'đã tính'}`,
+        href: '/discover/natal-chart',
+      }
+    : null;
+  const todayNumerology: TodayOverviewSignal | null = numerologyReading && lifePath !== null
+    ? {
+        label: 'Thần số học',
+        value: `Con số chủ đạo ${lifePath}`,
+        href: '/discover/numerology',
+      }
+    : null;
+  const todayOverviewLoading = !isGuest && (tuViQuery.isLoading || tarotQuery.isLoading || natalQuery.isLoading || numerologyQuery.isLoading);
 
   useEffect(() => {
     if (authLoading) return;
@@ -194,6 +226,16 @@ export function DashboardView() {
         tuViChart={tuViChart}
         tuViLoading={!isGuest && tuViQuery.isLoading}
       />
+
+      {!isGuest && (
+        <TodayOverview
+          loading={todayOverviewLoading}
+          tuVi={todayTuVi}
+          tarot={todayTarot}
+          natal={todayNatal}
+          numerology={todayNumerology}
+        />
+      )}
 
       <FeatureGrid
         isGuest={isGuest}

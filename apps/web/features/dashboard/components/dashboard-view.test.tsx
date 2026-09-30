@@ -178,6 +178,7 @@ describe('Mệnh Vi Home page', () => {
 
     renderWithQuery(<DashboardView />);
 
+    expect(await screen.findByRole('heading', { name: 'Hôm nay của bạn' })).toBeInTheDocument();
     expect((await screen.findAllByText('24–33 tuổi · Cung Quan Lộc tại Ngọ')).length).toBeGreaterThan(0);
     expect(screen.getAllByText('27 tuổi (Âm lịch 2026) · Cung Mão').length).toBeGreaterThan(0);
   });
@@ -185,6 +186,8 @@ describe('Mệnh Vi Home page', () => {
   it('shows an honest empty state for a new authenticated user with no saved chart', async () => {
     renderWithQuery(<DashboardView />);
 
+    expect(await screen.findByRole('heading', { name: 'Hôm nay của bạn' })).toBeInTheDocument();
+    expect(await screen.findByText('Bạn chưa có đủ dữ liệu cá nhân để tạo tổng quan hôm nay.')).toBeInTheDocument();
     expect(await screen.findByText('Bạn chưa lập lá số Tử Vi.')).toBeInTheDocument();
     expect(screen.getByText('Bạn chưa lập lá số.')).toBeInTheDocument();
   });
