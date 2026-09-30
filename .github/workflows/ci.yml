@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches: [master, feat/menh-vi-v2-p0-home]
   pull_request:
 
 env:
