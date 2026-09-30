@@ -71,19 +71,19 @@ describe('TarotReadingView', () => {
     expect(screen.getByText(baseReading.interpretation!)).toBeInTheDocument();
     expect(screen.getAllByText('Focus').length).toBeGreaterThan(0);
     expect(screen.getByText('A leap of faith.')).toBeInTheDocument();
-    expect(screen.getByText('Có thể bạn muốn tự hỏi...')).toBeInTheDocument();
+    expect(screen.getByText('Sau khi đọc, hãy tự hỏi...')).toBeInTheDocument();
   });
 
   it('labels the interpretation as AI, distinct from the deterministic card above it', () => {
     renderWithQuery(<TarotReadingView reading={baseReading} />);
-    expect(screen.getByText('Diễn giải AI')).toBeInTheDocument();
+    expect(screen.getByText('Diễn giải trải bài')).toBeInTheDocument();
   });
 
   it('shows a "Generate interpretation" retry action when interpretation is still null', async () => {
     (tarotApi.retryInterpretation as jest.Mock).mockResolvedValue({ ...baseReading, interpretation: 'Now generated.' });
     const user = userEvent.setup();
     renderWithQuery(<TarotReadingView reading={{ ...baseReading, interpretation: null }} />);
-    expect(screen.getByText('Phần diễn giải chưa sẵn sàng.')).toBeInTheDocument();
+    expect(screen.getByText('Chưa có phần diễn giải tổng hợp cho trải bài này.')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Tạo diễn giải' }));
     await waitFor(() => expect(tarotApi.retryInterpretation).toHaveBeenCalledWith('r1'));
