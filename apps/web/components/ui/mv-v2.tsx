@@ -6,13 +6,16 @@ export function MvV2Surface({
   children,
   className,
   as: Tag = 'section',
+  ariaLabelledby,
 }: {
   children: React.ReactNode;
   className?: string;
   as?: 'div' | 'section' | 'article';
+  ariaLabelledby?: string;
 }) {
   return (
     <Tag
+      aria-labelledby={ariaLabelledby}
       className={cn(
         'relative overflow-hidden rounded-[20px] border border-white/[0.08] bg-[#0b1321]/80 shadow-[0_18px_55px_rgba(0,0,0,0.2)]',
         className,
