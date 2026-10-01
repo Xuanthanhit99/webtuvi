@@ -21,6 +21,8 @@ describe('MockProvider', () => {
     expect(result.usage.promptTokens).toBeGreaterThan(0);
     expect(result.usage.completionTokens).toBeGreaterThan(0);
     expect(result.usage.totalTokens).toBe(result.usage.promptTokens + result.usage.completionTokens);
+    expect(result.content).not.toMatch(/That sounds|What feels|Thanks for|I'm listening/i);
+    expect(result.content).toMatch(/[À-ỹ]/u);
   });
 
   it('varies the reply based on how many prior user turns exist, so a conversation does not loop the same line', async () => {
