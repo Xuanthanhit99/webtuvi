@@ -175,7 +175,13 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
         </dl>
       </Section>
 
-      <AiInterpretation
+      <section className="rounded-[24px] border border-[#d5ad62]/20 bg-[radial-gradient(circle_at_85%_0%,rgba(213,173,98,0.08),transparent_28%),#0b1320] p-4 tablet:p-5">
+        <div className="mb-4 border-b border-white/[0.07] pb-4">
+          <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Diễn giải sau dữ liệu</p>
+          <h3 className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">Đọc lá số của bạn</h3>
+          <p className="mt-2 max-w-2xl text-body-sm text-[#a6a7ac]">Phần này chỉ kết nối và diễn giải những cung, sao và chu kỳ đã được tính ở phía trên; không thay đổi dữ liệu lá số.</p>
+        </div>
+        <AiInterpretation
         interpretation={chart.interpretation}
         isGenerating={retryInterpretation.isPending}
         onGenerate={() => retryInterpretation.mutate()}
@@ -187,6 +193,7 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
           disclosure: 'Phần luận giải chỉ diễn giải dữ liệu lá số phía trên; cung, sao và chu kỳ được tính trước bằng bộ quy tắc cố định.',
         }}
       />
+      </section>
 
       <Section title="Thông tin hệ thống tính toán">
         <dl className="grid grid-cols-2 gap-2 text-body-sm">
