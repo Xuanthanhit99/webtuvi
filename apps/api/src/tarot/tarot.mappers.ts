@@ -1,4 +1,5 @@
 import type { TarotCard, TarotReading, TarotReadingCard, TarotReadingHistory, TarotSpread } from '@prisma/client';
+import { tarotSeoVi } from '../../prisma/data/tarot-seo-vi';
 
 export interface TarotCardDto {
   id: string;
@@ -54,6 +55,11 @@ export interface TarotReadingHistoryDto {
 }
 
 export function toTarotCardDto(card: TarotCard): TarotCardDto {
+  // The database keeps the canonical English reference text used by the draw/AI grounding layer.
+  // Vietnamese product surfaces reuse the existing 78-card editorial layer so API consumers never
+  // receive a half-English reading. Identity, slug, artwork, orientation and draw semantics stay
+  // untouched.
+  const vi = tarotSeoVi(card);
   return {
     id: card.id,
     slug: card.slug,
@@ -62,19 +68,19 @@ export function toTarotCardDto(card: TarotCard): TarotCardDto {
     arcana: card.arcana,
     suit: card.suit,
     number: card.number,
-    uprightKeywords: card.uprightKeywords,
-    uprightMeaning: card.uprightMeaning,
-    reversedKeywords: card.reversedKeywords,
-    reversedMeaning: card.reversedMeaning,
+    uprightKeywords: vi.uprightKeywords,
+    uprightMeaning: vi.uprightMeaning,
+    reversedKeywords: vi.reversedKeywords,
+    reversedMeaning: vi.reversedMeaning,
     element: card.element,
     astrological: card.astrological,
     categories: card.categories,
     imageSlug: card.imageSlug,
-    reflectionPrompts: card.reflectionPrompts,
-    loveMeaning: card.loveMeaning,
-    careerMeaning: card.careerMeaning,
-    financeMeaning: card.financeMeaning,
-    selfMeaning: card.selfMeaning,
+    reflectionPrompts: vi.reflectionPrompts,
+    loveMeaning: vi.loveMeaning,
+    careerMeaning: vi.careerMeaning,
+    financeMeaning: vi.financeMeaning,
+    selfMeaning: vi.selfMeaning,
     deckVersion: card.deckVersion,
   };
 }
