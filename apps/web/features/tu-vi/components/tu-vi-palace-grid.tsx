@@ -90,8 +90,9 @@ export function TuViPalaceGrid({ chart }: { chart: TuViChartDto }) {
   const lastTriggerRef = useRef<HTMLButtonElement | null>(null);
   const selected = cells.find((cell) => cell.branch === selectedBranch) ?? cells[0]!;
 
-  function selectPalace(branch: EarthlyBranchValue) {
+  function selectPalace(branch: EarthlyBranchValue, openMobileInspector = false) {
     setSelectedBranch(branch);
+    if (!openMobileInspector) return;
     lastTriggerRef.current = document.activeElement instanceof HTMLButtonElement ? document.activeElement : null;
     setMobileInspectorOpen(true);
   }
@@ -116,7 +117,7 @@ export function TuViPalaceGrid({ chart }: { chart: TuViChartDto }) {
       <div className="tablet:hidden">
         <div className="mb-3 rounded-xl border border-[#d5ad62]/20 bg-[#101827] p-3 text-center"><p className="font-display text-body-md font-semibold text-[#e6c980]">{chart.cuc}</p><p className="mt-1 text-caption text-[#a6a7ac]">Mệnh tại {chart.palaces.menh} · Thân tại {chart.palaces.than} · Giờ {chart.hourBranch}</p></div>
         <div className="grid grid-cols-2 gap-2 min-[520px]:grid-cols-3" aria-label="Tổng quan 12 cung trên thiết bị di động">
-          {cells.map((cell) => <PalaceButton key={cell.branch} cell={cell} compact selected={cell.branch === selectedBranch} onSelect={() => selectPalace(cell.branch)} />)}
+          {cells.map((cell) => <PalaceButton key={cell.branch} cell={cell} compact selected={cell.branch === selectedBranch} onSelect={() => selectPalace(cell.branch, true)} />)}
         </div>
       </div>
 
