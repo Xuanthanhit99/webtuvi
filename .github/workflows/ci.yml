@@ -197,15 +197,36 @@ jobs:
         if: always()
         run: |
           mkdir -p visual-qa
-          find apps/web/test-results -type f -name '*.png' -path '*authenticated-tools-remain-usable*' -exec cp {} visual-qa/ \; 2>/dev/null || true
-          find apps/web/test-results -type f -name '*.png' -path '*public-UX-discover-tu-vi*' -exec cp {} visual-qa/ \; 2>/dev/null || true
-          printf 'Exact commit: %s\nGenerated from Playwright mobile 390px and desktop 1440px runs.\n' "$GITHUB_SHA" > visual-qa/README.txt
+          mapfile -t SHOTS < <(find apps/web/test-results -type f -name '*.png' | sort)
+          printf 'Playwright screenshots found: %s\n' "${#SHOTS[@]}"
+          printf '%s\n' "${SHOTS[@]}"
+          TUVI_SHOTS=()
+          for shot in "${SHOTS[@]}"; do
+            if [[ "$shot" == *"public-UX-discover-tu-vi"* || "$shot" == *"authenticated-tools-remain-usable"* ]]; then
+              TUVI_SHOTS+=("$shot")
+            fi
+          done
+          if [ "${#TUVI_SHOTS[@]}" -lt 4 ]; then
+            echo "::error::Expected at least four Tử Vi visual QA screenshots (public/authenticated × 390/1440), found ${#TUVI_SHOTS[@]}."
+            exit 1
+          fi
+          index=0
+          for shot in "${TUVI_SHOTS[@]}"; do
+            index=$((index + 1))
+            cp "$shot" "visual-qa/tu-vi-${index}.png"
+          done
+          {
+            printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
+            printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
+            printf 'Screenshots: %s\n' "${#TUVI_SHOTS[@]}"
+            printf '%s\n' "${TUVI_SHOTS[@]}"
+          } > visual-qa/README.txt
 
       - name: Upload Tử Vi visual QA artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: tu-vi-visual-qa-${{ github.sha }}
+          name: tu-vi-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
           path: visual-qa/
           if-no-files-found: error
           retention-days: 14
