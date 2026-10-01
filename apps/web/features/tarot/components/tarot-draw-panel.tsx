@@ -391,7 +391,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
                 // instead of re-settling into a smooth fan (confirmed visually during QA).
                 const remaining = Array.from({ length: totalSlots }, (_, i) => i).filter((i) => !selectedSlots.includes(i));
                 return remaining.map((index) => {
-                  const available = true;
+                  const available = !draw.isPending;
                   return (
                     <motion.button
                       key={index}
