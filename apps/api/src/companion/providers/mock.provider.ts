@@ -7,10 +7,10 @@ import { estimateCostUsd } from './pricing';
 const MOCK_MODEL = 'mock-model';
 
 const REPLIES = [
-  "I hear you. What feels most present about that right now?",
-  "That sounds worth sitting with. What would feel like a small step forward?",
-  "Thanks for telling me. Is there a part of this you'd like to think through together?",
-  "I'm listening. Want to say more, or leave it there for now?",
+  'Mình đang lắng nghe. Điều gì đang hiện rõ nhất với bạn lúc này?',
+  'Điều đó có vẻ đáng để nhìn lại. Một bước nhỏ nào sẽ giúp bạn tiến về phía trước?',
+  'Cảm ơn bạn đã chia sẻ. Có phần nào bạn muốn cùng suy nghĩ kỹ hơn không?',
+  'Mình đang lắng nghe. Bạn muốn nói thêm hay tạm dừng ở đây?',
 ];
 
 /**
