@@ -15,7 +15,7 @@ describe('PublicSystemLanding structured data', () => {
     expect(breadcrumb.itemListElement.map((item: { name: string; item: string }) => [item.name, item.item])).toEqual([
       ['Trang chủ', 'https://tuvitarot.vn'],
       ['Khám phá', 'https://tuvitarot.vn/discover'],
-      ['Tarot 78 Lá', 'https://tuvitarot.vn/discover/tarot'],
+      ['Bói Tarot 78 Lá – Trải 1 Lá, 3 Lá & Lá Bài Hôm Nay', 'https://tuvitarot.vn/discover/tarot'],
     ]);
 
     const visibleCrumbs = container.querySelector('nav[aria-label="Đường dẫn"]')?.textContent;
