@@ -219,7 +219,8 @@ describe('TuViDashboard', () => {
     renderWithQuery(<TuViDashboard />);
 
     const menhButtons = await screen.findAllByRole('button', { name: /^Cung Mệnh,/ });
-    await user.click(menhButtons[0]!);
+    const mobileMenhButton = menhButtons[menhButtons.length - 1]!;
+    await user.click(mobileMenhButton);
 
     expect(screen.getAllByText('Bản mệnh và nền tảng cá nhân').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Hóa Lộc · Tử Vi').length).toBeGreaterThan(0);
@@ -231,7 +232,7 @@ describe('TuViDashboard', () => {
 
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('button', { name: 'Đóng nền chi tiết cung' })).not.toBeInTheDocument();
-    expect(menhButtons[0]).toHaveFocus();
+    expect(mobileMenhButton).toHaveFocus();
   });
 
 });
