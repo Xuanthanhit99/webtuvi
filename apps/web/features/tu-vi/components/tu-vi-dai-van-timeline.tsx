@@ -26,7 +26,7 @@ export function TuViDaiVanTimeline({ chart }: { chart: TuViChartDto }) {
   const auxiliaryStars = chart.auxiliaryStars.filter((s) => s.position === selected.position);
 
   return (
-    <section aria-labelledby="tu-vi-dai-van-heading" className="rounded-lg border border-[rgba(213,173,98,0.18)] bg-surface p-4">
+    <section aria-labelledby="tu-vi-dai-van-heading" className="rounded-[20px] border border-[rgba(213,173,98,0.18)] bg-[linear-gradient(145deg,#0b1320,#101827)] p-4 tablet:p-5">
       <div className="mb-3 flex items-center justify-between gap-2">
         <h3 id="tu-vi-dai-van-heading" className="font-display text-body-md font-semibold text-text-primary">
           Đại Vận — chu kỳ 10 năm
@@ -34,7 +34,7 @@ export function TuViDaiVanTimeline({ chart }: { chart: TuViChartDto }) {
         {chart.currentDaiVan && <span className="text-caption text-text-tertiary">Hiện tại: {chart.currentDaiVan.ageStart}–{chart.currentDaiVan.ageEnd} tuổi</span>}
       </div>
 
-      <div role="tablist" aria-label="Chọn giai đoạn Đại Vận" className="flex gap-1.5 overflow-x-auto pb-1">
+      <div role="tablist" aria-label="Chọn giai đoạn Đại Vận" className="flex snap-x gap-2 overflow-x-auto pb-2">
         {chart.daiVan.map((cycle) => {
           const isCurrent = cycle.index === chart.currentDaiVan?.index;
           const isSelected = cycle.index === selectedIndex;
@@ -46,7 +46,7 @@ export function TuViDaiVanTimeline({ chart }: { chart: TuViChartDto }) {
               aria-selected={isSelected}
               aria-current={isCurrent ? 'true' : undefined}
               onClick={() => setSelectedIndex(cycle.index)}
-              className={`min-h-11 shrink-0 rounded-md border px-3 text-body-sm font-medium transition-colors duration-fast ${
+              className={`min-h-12 shrink-0 snap-start rounded-xl border px-4 text-body-sm font-medium transition-colors duration-fast ${
                 isSelected ? 'border-insight bg-insight/10 text-text-primary' : isCurrent ? 'border-insight/50 text-text-primary' : 'border-[rgba(213,173,98,0.14)] text-text-secondary hover:border-insight/40'
               }`}
             >
@@ -57,7 +57,7 @@ export function TuViDaiVanTimeline({ chart }: { chart: TuViChartDto }) {
         })}
       </div>
 
-      <div className="mt-3 rounded-md border border-[rgba(213,173,98,0.18)] bg-surface-raised p-4">
+      <div className="mt-3 rounded-xl border border-[rgba(213,173,98,0.18)] bg-[#0b1220]/75 p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <p className="font-display text-heading-md font-semibold text-text-primary">
             Đại Vận {selected.ageStart} - {selected.ageEnd} <span className="text-body-sm font-normal text-text-tertiary">tuổi</span>
