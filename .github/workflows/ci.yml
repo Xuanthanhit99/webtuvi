@@ -197,29 +197,33 @@ jobs:
         if: always()
         run: |
           mkdir -p visual-qa
-          mapfile -t SHOTS < <(find apps/web/test-results -type f -name '*.png' | sort)
-          printf 'Playwright screenshots found: %s\n' "${#SHOTS[@]}"
-          printf '%s\n' "${SHOTS[@]}"
-          TUVI_SHOTS=()
-          for shot in "${SHOTS[@]}"; do
-            if [[ "$shot" == *"public-UX-discover-tu-vi"* || "$shot" == *"authenticated-tools-remain-usable"* ]]; then
-              TUVI_SHOTS+=("$shot")
+          mapfile -t TUVI_AUTH_SHOTS < <(find apps/web/test-results -type f -name '_discover_tu_vi.png' | sort)
+          printf 'Authenticated Tử Vi screenshots found: %s\n' "${#TUVI_AUTH_SHOTS[@]}"
+          printf '%s\n' "${TUVI_AUTH_SHOTS[@]}"
+
+          MOBILE_SHOT=''
+          DESKTOP_SHOT=''
+          for shot in "${TUVI_AUTH_SHOTS[@]}"; do
+            parent="$(basename "$(dirname "$shot")")"
+            if [[ "$parent" == *"390px"* ]]; then
+              MOBILE_SHOT="$shot"
+            elif [[ "$parent" == *"1440px"* ]]; then
+              DESKTOP_SHOT="$shot"
             fi
           done
-          if [ "${#TUVI_SHOTS[@]}" -lt 4 ]; then
-            echo "::error::Expected at least four Tử Vi visual QA screenshots (public/authenticated × 390/1440), found ${#TUVI_SHOTS[@]}."
+
+          if [ -z "$MOBILE_SHOT" ] || [ -z "$DESKTOP_SHOT" ]; then
+            echo "::error::Expected authenticated Tử Vi screenshots at both 390px and 1440px."
             exit 1
           fi
-          index=0
-          for shot in "${TUVI_SHOTS[@]}"; do
-            index=$((index + 1))
-            cp "$shot" "visual-qa/tu-vi-${index}.png"
-          done
+
+          cp "$MOBILE_SHOT" visual-qa/tu-vi-authenticated-mobile-390.png
+          cp "$DESKTOP_SHOT" visual-qa/tu-vi-authenticated-desktop-1440.png
           {
             printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
             printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
-            printf 'Screenshots: %s\n' "${#TUVI_SHOTS[@]}"
-            printf '%s\n' "${TUVI_SHOTS[@]}"
+            printf 'Mobile 390px: %s\n' "$MOBILE_SHOT"
+            printf 'Desktop 1440px: %s\n' "$DESKTOP_SHOT"
           } > visual-qa/README.txt
 
       - name: Upload Tử Vi visual QA artifact
