@@ -190,7 +190,10 @@ describe('TarotInterpretationService — Vietnamese language contract', () => {
     expect(user).toContain('Kiểu trải bài: Một lá soi chiếu.');
     expect(user).toContain('Câu hỏi của người dùng: "Mối quan hệ này đang cần điều gì?"');
     expect(user).toContain('Kẻ Khờ (The Fool) [xuôi]');
-    expect(user).toContain('Nghĩa tham chiếu: A leap of faith.');
+    expect(user).toMatch(/Nghĩa tham chiếu: Ở chiều xuôi, Kẻ Khờ/);
+    expect(user).toContain('Từ khóa tham chiếu:');
+    expect(user).not.toContain('A leap of faith.');
+    expect(user).not.toContain('beginnings');
     expect(user).not.toContain('Reading type:');
     expect(user).not.toContain('Traditional meaning:');
     expect(user).not.toContain('upright');
