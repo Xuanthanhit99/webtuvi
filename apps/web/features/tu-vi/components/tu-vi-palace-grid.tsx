@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { EarthlyBranchValue, TuViChartDto } from '@beaconvie/types';
 import { ChevronRight, X } from 'lucide-react';
 import { DIGNITY_SHORT_LABEL, PALACE_ROLE_DESCRIPTIONS_VI, TRANSFORMATION_DESCRIPTIONS_VI } from '../labels';
@@ -86,12 +86,22 @@ export function TuViPalaceGrid({ chart }: { chart: TuViChartDto }) {
   const cells = buildPalaceCells(chart);
   const [selectedBranch, setSelectedBranch] = useState<EarthlyBranchValue>(chart.palaces.menh);
   const [mobileInspectorOpen, setMobileInspectorOpen] = useState(false);
+  const mobileDialogRef = useRef<HTMLDivElement>(null);
+  const lastTriggerRef = useRef<HTMLButtonElement | null>(null);
   const selected = cells.find((cell) => cell.branch === selectedBranch) ?? cells[0]!;
 
   function selectPalace(branch: EarthlyBranchValue) {
     setSelectedBranch(branch);
+    lastTriggerRef.current = document.activeElement instanceof HTMLButtonElement ? document.activeElement : null;
     setMobileInspectorOpen(true);
   }
+
+  useEffect(() => {
+    if (!mobileInspectorOpen) return;
+    const closeButton = mobileDialogRef.current?.querySelector<HTMLButtonElement>('button[aria-label="Đóng chi tiết cung"]');
+    closeButton?.focus();
+    return () => lastTriggerRef.current?.focus();
+  }, [mobileInspectorOpen]);
 
   return (
     <div className="relative">
@@ -110,7 +120,7 @@ export function TuViPalaceGrid({ chart }: { chart: TuViChartDto }) {
         </div>
       </div>
 
-      {mobileInspectorOpen && <><button type="button" aria-label="Đóng nền chi tiết cung" onClick={() => setMobileInspectorOpen(false)} className="fixed inset-0 z-40 bg-black/55 backdrop-blur-[1px] tablet:hidden" /><div role="dialog" aria-modal="true" aria-labelledby="mobile-selected-palace-heading" onKeyDown={(event) => { if (event.key === 'Escape') setMobileInspectorOpen(false); }} className="fixed inset-x-0 bottom-0 z-50 tablet:hidden"><PalaceInspector cell={selected} headingId="mobile-selected-palace-heading" closable onClose={() => setMobileInspectorOpen(false)} /></div></>}
+      {mobileInspectorOpen && <><button type="button" aria-label="Đóng nền chi tiết cung" onClick={() => setMobileInspectorOpen(false)} className="fixed inset-0 z-40 bg-black/55 backdrop-blur-[1px] tablet:hidden" /><div role="dialog" aria-modal="true" aria-labelledby="mobile-selected-palace-heading" ref={mobileDialogRef} onKeyDown={(event) => { if (event.key === 'Escape') setMobileInspectorOpen(false); }} className="fixed inset-x-0 bottom-0 z-50 tablet:hidden"><PalaceInspector cell={selected} headingId="mobile-selected-palace-heading" closable onClose={() => setMobileInspectorOpen(false)} /></div></>}
     </div>
   );
 }
