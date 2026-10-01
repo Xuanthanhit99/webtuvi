@@ -98,6 +98,25 @@ describe('TarotDrawPanel', () => {
     expect(onDrawn).toHaveBeenCalledWith(drawnReading);
   });
 
+  it('locks the remaining deck and announces progress while the draw request is pending', async () => {
+    let resolveDraw!: (reading: TarotReadingDto) => void;
+    (tarotApi.draw as jest.Mock).mockImplementation(() => new Promise<TarotReadingDto>((resolve) => { resolveDraw = resolve; }));
+    const user = userEvent.setup();
+    renderWithQuery(<TarotDrawPanel />);
+
+    await goToSpreadStep(user);
+    await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
+    await user.click(await screen.findByRole('button', { name: 'Chọn lá 1' }));
+
+    expect(await screen.findByRole('status')).toHaveTextContent(/Đã nhận lựa chọn của bạn/i);
+    expect(screen.getByRole('button', { name: 'Chọn lá 2' })).toBeDisabled();
+    await user.click(screen.getByRole('button', { name: 'Chọn lá 2' }));
+    expect(tarotApi.draw).toHaveBeenCalledTimes(1);
+
+    resolveDraw(drawnReading);
+    await waitFor(() => expect(screen.queryByText(/Đã nhận lựa chọn của bạn/i)).not.toBeInTheDocument());
+  });
+
   it('a PREMIUM_REQUIRED draw error shows an upgrade banner with a link to /premium, not just a toast', async () => {
     (tarotApi.draw as jest.Mock).mockRejectedValue(
       new ApiError("You've reached today's free single card limit (3). Upgrade to Premium for a higher daily allowance.", 'PREMIUM_REQUIRED', 403),
