@@ -225,10 +225,13 @@ describe('TuViDashboard', () => {
     expect(screen.getAllByText('Hóa Lộc · Tử Vi').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/lấy trực tiếp từ lá số đã được Mệnh Vi tính và lưu/i).length).toBeGreaterThan(0);
     expect(screen.getByRole('dialog', { name: 'Mệnh' })).toHaveAttribute('aria-modal', 'true');
-    expect(screen.getByRole('button', { name: 'Đóng chi tiết cung' })).toBeInTheDocument();
+    const closeButton = screen.getByRole('button', { name: 'Đóng chi tiết cung' });
+    expect(closeButton).toBeInTheDocument();
+    expect(closeButton).toHaveFocus();
 
-    await user.click(screen.getByRole('button', { name: 'Đóng chi tiết cung' }));
+    await user.keyboard('{Escape}');
     expect(screen.queryByRole('button', { name: 'Đóng nền chi tiết cung' })).not.toBeInTheDocument();
+    expect(menhButtons[0]).toHaveFocus();
   });
 
 });
