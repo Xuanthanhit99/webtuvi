@@ -5,6 +5,7 @@ import { CostControlService } from '../../companion/cost/cost-control.service';
 import { ObservabilityService } from '../../companion/observability/observability.service';
 import type { AIProviderName, ChatMessage, TokenUsage } from '../../companion/providers/provider.types';
 import type { InterpretationInput } from '../tarot.types';
+import { tarotSeoVi } from '../../../prisma/data/tarot-seo-vi';
 
 const HARD_RULES = `Hard rules — never break these:
 - You are given the exact, real card(s) already drawn, their real upright/reversed orientation, and their real traditional meanings. You never choose, change, add, or remove a card — the draw already happened deterministically before you were called.
@@ -37,8 +38,11 @@ const MAX_TOKENS_BY_TIER = { FREE: 400, PREMIUM: 700 } as const;
 
 function describeCard(card: InterpretationInput['cards'][number]): string {
   const orientation = card.isReversed ? 'ngược' : 'xuôi';
-  const meaning = card.isReversed ? card.card.reversedMeaning : card.card.uprightMeaning;
-  const keywords = (card.isReversed ? card.card.reversedKeywords : card.card.uprightKeywords).join(', ');
+  // Ground the model with the same Vietnamese editorial layer served by the product API.
+  // Canonical card identity/artwork and deterministic draw data remain untouched in the DB.
+  const vi = tarotSeoVi(card.card);
+  const meaning = card.isReversed ? vi.reversedMeaning : vi.uprightMeaning;
+  const keywords = (card.isReversed ? vi.reversedKeywords : vi.uprightKeywords).join(', ');
   const position = card.positionLabel ? `${card.positionLabel} — ` : '';
   const displayName = card.card.nameVi?.trim() ? `${card.card.nameVi} (${card.card.name})` : card.card.name;
   return `${position}${displayName} [${orientation}]. Nghĩa tham chiếu: ${meaning} Từ khóa tham chiếu: ${keywords}.`;
