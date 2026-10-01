@@ -111,13 +111,6 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
           ))}
         </div>
         <div className="relative mt-4 flex flex-wrap gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={CHART_STATUS_BADGE_VARIANT[chart.status]}>{CHART_STATUS_LABELS[chart.status]}</Badge>
-          <span className="text-caption text-text-secondary">
-            Sinh ngày {chart.birthDate}, lúc {chart.birthTime} · <span className="text-text-primary">{chart.sex}</span>
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-2">
           {chart.status === 'ACTIVE' && (
             <Button variant="ghost" size="sm" onClick={() => archive.mutate()} loading={archive.isPending}>
               Lưu trữ
@@ -133,7 +126,6 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
               Xóa
             </Button>
           )}
-        </div>
         </div>
       </section>
 
