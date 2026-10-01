@@ -101,24 +101,24 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative overflow-hidden rounded-[20px] border border-[#d5ad62]/20 bg-[#0a111d]" noValidate>
+    <form onSubmit={handleSubmit} className="relative overflow-hidden rounded-[24px] border border-[#d5ad62]/20 bg-[linear-gradient(145deg,#09111d_0%,#0b1421_60%,#0d1725_100%)] shadow-[0_24px_80px_rgba(0,0,0,0.22)]" noValidate>
       <div className="grid desktop:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
-        <div className="space-y-6 p-5 tablet:p-7 desktop:p-9">
+        <div className="space-y-7 p-5 tablet:p-7 desktop:p-9">
           <div>
             <p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Dương lịch</p>
             <h3 className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">Thông tin sinh của bạn</h3>
             <p className="mt-2 text-body-sm text-[#a6a7ac]">Phiên bản hiện tại nhận ngày dương lịch. Hệ thống sẽ tự chuyển đổi sang âm lịch khi lập lá số.</p>
           </div>
 
-          <div className="grid gap-5 tablet:grid-cols-2">
-            <div className="rounded-md border border-white/[0.07] bg-[#0b1220]/75 p-4">
+          <div className="grid gap-3 tablet:grid-cols-2">
+            <div className="rounded-xl border border-white/[0.07] bg-[#0b1220]/75 p-4 transition-colors focus-within:border-[#d5ad62]/45">
               <div className="mb-3 flex items-center gap-2 text-[#e6c980]"><CalendarDays className="h-4 w-4" aria-hidden="true" /><span className="text-caption font-semibold uppercase tracking-[0.12em]">01 · Ngày sinh</span></div>
               <FormField label="Ngày sinh dương lịch" htmlFor="tu-vi-birthdate" required error={fieldError?.field === 'birthDate' ? fieldError.message : undefined}>
                 <Input id="tu-vi-birthdate" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} max={new Date().toISOString().slice(0, 10)} invalid={fieldError?.field === 'birthDate'} />
               </FormField>
             </div>
 
-            <div className="rounded-md border border-white/[0.07] bg-[#0b1220]/75 p-4">
+            <div className="rounded-xl border border-white/[0.07] bg-[#0b1220]/75 p-4 transition-colors focus-within:border-[#d5ad62]/45">
               <div className="mb-3 flex items-center gap-2 text-[#e6c980]"><Clock3 className="h-4 w-4" aria-hidden="true" /><span className="text-caption font-semibold uppercase tracking-[0.12em]">02 · Giờ sinh</span></div>
               <FormField label="Giờ sinh chính xác" htmlFor="tu-vi-birthtime" required hint="Nhập theo giờ 24 giờ. Hệ thống sẽ xác định khung giờ địa chi tương ứng." error={fieldError?.field === 'birthTime' ? fieldError.message : undefined}>
                 <Input id="tu-vi-birthtime" type="time" value={birthTime} onChange={(e) => setBirthTime(e.target.value)} invalid={fieldError?.field === 'birthTime'} />
@@ -126,7 +126,7 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
             </div>
           </div>
 
-          <fieldset className="rounded-md border border-white/[0.07] bg-[#0b1220]/75 p-4">
+          <fieldset className="rounded-xl border border-white/[0.07] bg-[#0b1220]/75 p-4 transition-colors focus-within:border-[#d5ad62]/45">
             <legend className="sr-only">Giới tính</legend>
             <div className="mb-3 flex items-center gap-2 text-[#e6c980]"><UserRound className="h-4 w-4" aria-hidden="true" /><span className="text-caption font-semibold uppercase tracking-[0.12em]">03 · Giới tính <span className="text-caution">*</span></span></div>
             <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-required="true" aria-invalid={!!sexError} aria-describedby={sexError ? 'tu-vi-sex-error' : undefined}>
@@ -141,10 +141,10 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
 
           {fieldError?.field === null && <p role="alert" className="text-body-sm text-caution">{fieldError.message}</p>}
           {limitBanner && <div role="alert" className="rounded-md border border-[#d5ad62]/30 bg-[#d5ad62]/[0.06] p-4 text-body-sm text-[#f2eee5]">{limitBanner.message}{limitBanner.showUpgrade && <Link href="/premium?reason=required" className="mt-3 block font-semibold text-[#e6c980]">Xem gói Premium</Link>}</div>}
-          <Button type="submit" variant="primary" className="w-full tablet:w-auto">Lập lá số của tôi</Button>
+          <div className="flex flex-col gap-2 tablet:flex-row tablet:items-center"><Button type="submit" variant="primary" className="w-full tablet:w-auto">Lập lá số của tôi</Button><p className="text-caption text-[#777b83]">Khoảng vài giây · kết quả được lưu vào tài khoản</p></div>
         </div>
 
-        <aside className="relative border-t border-[#d5ad62]/15 bg-[#0c1522] p-5 tablet:p-7 desktop:border-l desktop:border-t-0 desktop:p-9">
+        <aside className="relative border-t border-[#d5ad62]/15 bg-[#0c1522] p-5 tablet:p-7 desktop:border-l desktop:border-t-0 desktop:p-9 desktop:sticky desktop:top-24 desktop:self-start">
           <div className="absolute right-5 top-5 h-28 w-28 rounded-full border border-[#d5ad62]/10" />
           <p className="relative text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Trước khi bắt đầu</p>
           <h3 className="relative mt-2 font-display text-heading-md font-semibold text-[#f2eee5]">Giờ sinh tạo nên khác biệt</h3>

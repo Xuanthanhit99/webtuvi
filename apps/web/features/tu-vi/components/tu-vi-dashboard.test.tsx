@@ -147,7 +147,7 @@ describe('TuViDashboard', () => {
     (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
     renderWithQuery(<TuViDashboard />);
 
-    expect(await screen.findByText('Tổng quan lá số')).toBeInTheDocument();
+    expect(await screen.findByText('Lá số đã an')).toBeInTheDocument();
     expect(tuViApi.getChart).toHaveBeenCalledWith('c1');
     expect(screen.queryByRole('button', { name: /lập lá số của tôi/i })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '← Quay lại Lá số Tử Vi' })).toBeInTheDocument();
@@ -158,7 +158,7 @@ describe('TuViDashboard', () => {
     (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
     renderWithQuery(<TuViDashboard />);
 
-    await screen.findByText('Tổng quan lá số');
+    await screen.findByText('Lá số đã an');
     expect(screen.getByRole('tab', { name: /36–45/ })).toHaveAttribute('aria-current', 'true');
     expect(screen.getByText('2026')).toBeInTheDocument();
     expect(screen.getByText(/43 tuổi · hiện tại/)).toBeInTheDocument();
@@ -170,7 +170,7 @@ describe('TuViDashboard', () => {
     const user = userEvent.setup();
     renderWithQuery(<TuViDashboard />);
 
-    await screen.findByText('Tổng quan lá số');
+    await screen.findByText('Lá số đã an');
     await user.click(screen.getByRole('button', { name: '← Quay lại Lá số Tử Vi' }));
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/discover/tu-vi', { scroll: false }));
   });
@@ -180,7 +180,7 @@ describe('TuViDashboard', () => {
     (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
     renderWithQuery(<TuViDashboard />);
 
-    await screen.findByText('Tổng quan lá số');
+    await screen.findByText('Lá số đã an');
     expect(screen.getByText(/hệ quy tắc cố định/i)).toBeInTheDocument();
     expect(screen.getByText('Dữ liệu lá số · Tính theo bộ quy tắc cố định')).toBeInTheDocument();
     expect(screen.getByText('Luận giải lá số')).toBeInTheDocument();
@@ -193,7 +193,7 @@ describe('TuViDashboard', () => {
     (tuViApi.getChart as jest.Mock).mockResolvedValue(chart);
     renderWithQuery(<TuViDashboard />);
 
-    await screen.findByText('Tổng quan lá số');
+    await screen.findByText('Lá số đã an');
     for (const role of ['Mệnh', 'Phụ Mẫu', 'Phúc Đức', 'Điền Trạch', 'Quan Lộc', 'Nô Bộc', 'Thiên Di', 'Tật Ách', 'Tài Bạch', 'Tử Tức', 'Phu Thê', 'Huynh Đệ']) {
       expect(screen.getAllByLabelText(new RegExp(`^Cung ${role},`)).length).toBeGreaterThan(0);
     }
@@ -219,16 +219,20 @@ describe('TuViDashboard', () => {
     renderWithQuery(<TuViDashboard />);
 
     const menhButtons = await screen.findAllByRole('button', { name: /^Cung Mệnh,/ });
-    await user.click(menhButtons[0]!);
+    const mobileMenhButton = menhButtons[menhButtons.length - 1]!;
+    await user.click(mobileMenhButton);
 
     expect(screen.getAllByText('Bản mệnh và nền tảng cá nhân').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Hóa Lộc · Tử Vi').length).toBeGreaterThan(0);
     expect(screen.getAllByText(/lấy trực tiếp từ lá số đã được Mệnh Vi tính và lưu/i).length).toBeGreaterThan(0);
     expect(screen.getByRole('dialog', { name: 'Mệnh' })).toHaveAttribute('aria-modal', 'true');
-    expect(screen.getByRole('button', { name: 'Đóng chi tiết cung' })).toBeInTheDocument();
+    const closeButton = screen.getByRole('button', { name: 'Đóng chi tiết cung' });
+    expect(closeButton).toBeInTheDocument();
+    expect(closeButton).toHaveFocus();
 
-    await user.click(screen.getByRole('button', { name: 'Đóng chi tiết cung' }));
+    await user.keyboard('{Escape}');
     expect(screen.queryByRole('button', { name: 'Đóng nền chi tiết cung' })).not.toBeInTheDocument();
+    expect(mobileMenhButton).toHaveFocus();
   });
 
 });

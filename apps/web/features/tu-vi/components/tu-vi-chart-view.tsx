@@ -86,15 +86,31 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
   });
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
-        <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-col gap-6">
+      <section className="relative overflow-hidden rounded-[24px] border border-[#d5ad62]/20 bg-[radial-gradient(circle_at_82%_10%,rgba(213,173,98,0.13),transparent_30%),linear-gradient(135deg,#080d16_0%,#0b1421_58%,#101827_100%)] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.28)] tablet:p-6">
+        <div className="pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full border border-[#d5ad62]/10" aria-hidden="true" />
+        <div className="relative flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Lá số đã an</p>
+            <h2 className="mt-1 font-display text-heading-lg font-semibold text-[#f2eee5]">{chart.canChi.year.stem} {chart.canChi.year.branch} · {chart.cuc}</h2>
+            <p className="mt-2 text-body-sm text-[#a6a7ac]">Sinh ngày {chart.birthDate}, lúc {chart.birthTime} · {chart.sex} · Giờ {chart.hourBranch}</p>
+          </div>
           <Badge variant={CHART_STATUS_BADGE_VARIANT[chart.status]}>{CHART_STATUS_LABELS[chart.status]}</Badge>
-          <span className="text-caption text-text-secondary">
-            Sinh ngày {chart.birthDate}, lúc {chart.birthTime} · <span className="text-text-primary">{chart.sex}</span>
-          </span>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="relative mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/[0.07] bg-white/[0.07] tablet:grid-cols-4">
+          {[
+            ['Mệnh', chart.palaces.menh],
+            ['Thân', chart.palaces.than],
+            ['Cục', chart.cuc],
+            ['Âm lịch', `${chart.lunarDate.lunarDay}/${chart.lunarDate.lunarMonth}${chart.lunarDate.isLeapMonth ? ' nhuận' : ''}/${chart.lunarDate.lunarYear}`],
+          ].map(([label, value]) => (
+            <div key={label} className="bg-[#0b1320]/95 px-4 py-3">
+              <p className="text-caption text-[#777b83]">{label}</p>
+              <p className="mt-1 font-display text-body-md font-semibold text-[#f2eee5]">{value}</p>
+            </div>
+          ))}
+        </div>
+        <div className="relative mt-4 flex flex-wrap gap-2">
           {chart.status === 'ACTIVE' && (
             <Button variant="ghost" size="sm" onClick={() => archive.mutate()} loading={archive.isPending}>
               Lưu trữ
@@ -111,48 +127,22 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
             </Button>
           )}
         </div>
-      </div>
+      </section>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#708c79]/20 bg-[#708c79]/[0.05] px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#708c79]/20 bg-[#708c79]/[0.05] px-4 py-3">
         <p className="text-caption text-text-secondary">Cung, sao và chu kỳ được tính từ dữ liệu sinh bằng hệ quy tắc cố định.</p>
         <Badge variant="new">Dữ liệu lá số · Tính theo bộ quy tắc cố định</Badge>
       </div>
 
       <TuViTrustSection context="kết quả" />
 
-      <div className="rounded-[20px] border border-[#d5ad62]/20 bg-[#080e18] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.26)] tablet:p-5">
+      <section className="rounded-[24px] border border-[#d5ad62]/20 bg-[#080e18] p-3 shadow-[0_24px_70px_rgba(0,0,0,0.26)] tablet:p-5">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-2 border-b border-white/[0.07] pb-4">
           <div><p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Bản đồ 12 cung</p><h2 className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">Lá số của bạn</h2></div>
           <p className="text-caption text-[#a6a7ac]">Chọn một cung để xem chi tiết</p>
         </div>
         <TuViPalaceGrid chart={chart} />
-      </div>
-
-      <div className="rounded-lg border border-[rgba(213,173,98,0.2)] bg-surface p-4 tablet:p-5">
-          <p className="font-display text-body-sm font-semibold uppercase tracking-[0.16em] text-insight">Tổng quan lá số</p>
-          <div className="mt-3 grid grid-cols-2 gap-4 tablet:grid-cols-4">
-            <div>
-              <p className="text-caption text-text-tertiary">Mệnh</p>
-              <p className="font-display text-heading-md font-semibold text-text-primary">{chart.palaces.menh}</p>
-            </div>
-            <div>
-              <p className="text-caption text-text-tertiary">Thân</p>
-              <p className="font-display text-heading-md font-semibold text-text-primary">{chart.palaces.than}</p>
-            </div>
-          </div>
-          <div className="border-t border-[rgba(213,173,98,0.14)] pt-3 tablet:border-l tablet:border-t-0 tablet:pl-4 tablet:pt-0">
-            <p className="text-caption text-text-tertiary">Cục</p>
-            <p className="text-body-md font-semibold text-text-primary">{chart.cuc}</p>
-          </div>
-          <dl className="grid grid-cols-2 gap-2 border-t border-[rgba(213,173,98,0.14)] pt-3 text-body-sm tablet:border-l tablet:border-t-0 tablet:pl-4 tablet:pt-0">
-            <dt className="text-text-secondary">Can Chi năm</dt>
-            <dd className="text-text-primary">
-              {chart.canChi.year.stem} {chart.canChi.year.branch}
-            </dd>
-            <dt className="text-text-secondary">Giờ sinh</dt>
-            <dd className="text-text-primary">{chart.hourBranch}</dd>
-          </dl>
-      </div>
+      </section>
 
       <TuViDaiVanTimeline chart={chart} />
       <TuViTieuHanYearNav chart={chart} />
@@ -185,7 +175,13 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
         </dl>
       </Section>
 
-      <AiInterpretation
+      <section className="rounded-[24px] border border-[#d5ad62]/20 bg-[radial-gradient(circle_at_85%_0%,rgba(213,173,98,0.08),transparent_28%),#0b1320] p-4 tablet:p-5">
+        <div className="mb-4 border-b border-white/[0.07] pb-4">
+          <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Diễn giải sau dữ liệu</p>
+          <h3 className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">Đọc lá số của bạn</h3>
+          <p className="mt-2 max-w-2xl text-body-sm text-[#a6a7ac]">Phần này chỉ kết nối và diễn giải những cung, sao và chu kỳ đã được tính ở phía trên; không thay đổi dữ liệu lá số.</p>
+        </div>
+        <AiInterpretation
         interpretation={chart.interpretation}
         isGenerating={retryInterpretation.isPending}
         onGenerate={() => retryInterpretation.mutate()}
@@ -197,6 +193,7 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
           disclosure: 'Phần luận giải chỉ diễn giải dữ liệu lá số phía trên; cung, sao và chu kỳ được tính trước bằng bộ quy tắc cố định.',
         }}
       />
+      </section>
 
       <Section title="Thông tin hệ thống tính toán">
         <dl className="grid grid-cols-2 gap-2 text-body-sm">

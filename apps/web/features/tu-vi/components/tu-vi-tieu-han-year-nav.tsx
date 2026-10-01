@@ -36,19 +36,19 @@ export function TuViTieuHanYearNav({ chart }: { chart: TuViChartDto }) {
   const auxiliaryStars = chart.auxiliaryStars.filter((s) => s.position === detailEntry.palace);
 
   return (
-    <section aria-labelledby="tu-vi-tieu-han-heading" className="rounded-lg border border-[rgba(213,173,98,0.18)] bg-surface p-4">
+    <section aria-labelledby="tu-vi-tieu-han-heading" className="rounded-[20px] border border-[rgba(213,173,98,0.18)] bg-[linear-gradient(145deg,#0b1320,#101827)] p-4 tablet:p-5">
       <h3 id="tu-vi-tieu-han-heading" className="mb-3 font-display text-body-md font-semibold text-text-primary">
         Tiểu Hạn — chu kỳ theo năm
       </h3>
 
-      <ul className="flex flex-wrap gap-1.5" aria-label="Các năm gần hiện tại">
+      <ul className="flex snap-x gap-2 overflow-x-auto pb-2" aria-label="Các năm gần hiện tại">
         {chart.nearbyTieuHan.map((entry) => {
           const isCurrent = entry.tuoi === chart.currentTieuHan?.tuoi;
           return (
             <li key={entry.tuoi}>
               <div
                 aria-current={isCurrent ? 'true' : undefined}
-                className={`flex min-h-11 flex-col items-center justify-center rounded-md border px-3 py-1 text-center ${
+                className={`flex min-h-14 min-w-[92px] snap-start flex-col items-center justify-center rounded-xl border px-3 py-1 text-center ${
                   isCurrent ? 'border-insight bg-insight/10' : 'border-[rgba(213,173,98,0.14)]'
                 }`}
               >
@@ -63,7 +63,7 @@ export function TuViTieuHanYearNav({ chart }: { chart: TuViChartDto }) {
         })}
       </ul>
 
-      <div className="mt-3 rounded-md border border-[rgba(213,173,98,0.18)] bg-surface-raised p-4">
+      <div className="mt-3 rounded-xl border border-[rgba(213,173,98,0.18)] bg-[#0b1220]/75 p-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <p className="font-display text-body-lg font-semibold text-text-primary">Tiểu Hạn năm {detailEntry.lunarYear}</p>
           {chart.currentTieuHan && <span className="rounded-sm bg-insight/15 px-2 py-0.5 text-caption font-semibold text-insight">Hiện tại</span>}
