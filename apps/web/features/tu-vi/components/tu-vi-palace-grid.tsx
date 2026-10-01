@@ -27,7 +27,7 @@ function PalaceButton({ cell, selected, compact = false, onSelect }: { cell: Pal
       onClick={onSelect}
       aria-pressed={selected}
       aria-label={`Cung ${cell.role}, tại ${cell.branch}${markers.length ? `, ${markers.join(' và ')}` : ''}`}
-      className={`group flex h-full w-full flex-col rounded-md border text-left transition-[border-color,background-color,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] ${selected ? 'border-[#d5ad62] bg-[#d5ad62]/[0.08]' : cell.isThan ? 'border-[#708c79]/45 bg-[#708c79]/[0.04]' : 'border-[#d5ad62]/15 bg-[#0b1220] hover:border-[#d5ad62]/40'} ${compact ? 'min-h-[76px] p-2' : 'p-2.5'}`}
+      className={`group flex h-full w-full flex-col rounded-xl border text-left transition-[border-color,background-color,transform,box-shadow] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] ${selected ? 'border-[#d5ad62] bg-[#d5ad62]/[0.1] shadow-[inset_0_0_0_1px_rgba(213,173,98,0.12),0_10px_30px_rgba(0,0,0,0.18)]' : cell.isThan ? 'border-[#708c79]/45 bg-[#708c79]/[0.04]' : 'border-[#d5ad62]/15 bg-[#0b1220] hover:-translate-y-0.5 hover:border-[#d5ad62]/40'} ${compact ? 'min-h-[88px] p-3' : 'p-3'}`}
     >
       <span className="flex w-full items-start justify-between gap-1">
         <span className={`font-display font-semibold text-[#f2eee5] ${compact ? 'text-caption' : 'text-body-sm'}`}>{cell.role}</span>
@@ -66,7 +66,7 @@ function ChartSummaryCell({ chart }: { chart: TuViChartDto }) {
 
 function PalaceInspector({ cell, onClose, closable = false, headingId = 'selected-palace-heading' }: { cell: PalaceCell; onClose?: () => void; closable?: boolean; headingId?: string }) {
   return (
-    <section aria-live="polite" aria-labelledby={headingId} className="flex max-h-[78dvh] flex-col overflow-hidden rounded-t-[24px] border border-[#d5ad62]/25 bg-[#101827] shadow-[0_-24px_70px_rgba(0,0,0,0.42)] tablet:max-h-none tablet:rounded-[16px] tablet:shadow-[0_18px_55px_rgba(0,0,0,0.2)]">
+    <section aria-live="polite" aria-labelledby={headingId} className="flex max-h-[78dvh] flex-col overflow-hidden rounded-t-[28px] border border-[#d5ad62]/25 bg-[linear-gradient(180deg,#111b2b_0%,#0d1522_100%)] shadow-[0_-24px_70px_rgba(0,0,0,0.42)] tablet:max-h-none tablet:rounded-[16px] tablet:shadow-[0_18px_55px_rgba(0,0,0,0.2)]">
       <div className="mx-auto mt-2 h-1 w-10 rounded-full bg-white/20 tablet:hidden" aria-hidden="true" />
       <div className="flex items-start justify-between gap-3 border-b border-white/[0.07] p-4 tablet:p-5">
         <div><p className="text-caption uppercase tracking-[0.14em] text-[#d5ad62]">Cung đang chọn · {cell.branch}</p><h3 id={headingId} className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">{cell.role}</h3><p className="mt-1 max-w-prose text-body-sm leading-relaxed text-[#a6a7ac]">{PALACE_ROLE_DESCRIPTIONS_VI[cell.role]}</p></div>
@@ -95,8 +95,8 @@ export function TuViPalaceGrid({ chart }: { chart: TuViChartDto }) {
 
   return (
     <div className="relative">
-      <div className="tablet:grid tablet:grid-cols-[minmax(0,1fr)_minmax(280px,0.42fr)] tablet:items-start tablet:gap-4">
-        <div className="hidden aspect-square grid-cols-4 grid-rows-4 gap-1.5 tablet:grid" aria-label="Bố cục truyền thống 12 cung của lá số">
+      <div className="tablet:grid tablet:grid-cols-[minmax(0,1.25fr)_minmax(300px,0.48fr)] tablet:items-start tablet:gap-4">
+        <div className="hidden aspect-square grid-cols-4 grid-rows-4 gap-2 tablet:grid" aria-label="Bố cục truyền thống 12 cung của lá số">
         {cells.map((cell) => { const pos = PALACE_GRID_POSITION[cell.branch]; return <div key={cell.branch} style={{ gridRow: pos.row, gridColumn: pos.col }}><PalaceButton cell={cell} selected={cell.branch === selectedBranch} onSelect={() => selectPalace(cell.branch)} /></div>; })}
         <div style={{ gridRow: '2 / span 2', gridColumn: '2 / span 2' }}><ChartSummaryCell chart={chart} /></div>
         </div>
@@ -104,8 +104,8 @@ export function TuViPalaceGrid({ chart }: { chart: TuViChartDto }) {
       </div>
 
       <div className="tablet:hidden">
-        <div className="mb-3 rounded-md border border-[#d5ad62]/20 bg-[#101827] p-3 text-center"><p className="font-display text-body-md font-semibold text-[#e6c980]">{chart.cuc}</p><p className="mt-1 text-caption text-[#a6a7ac]">Mệnh tại {chart.palaces.menh} · Thân tại {chart.palaces.than} · Giờ {chart.hourBranch}</p></div>
-        <div className="grid grid-cols-3 gap-1.5" aria-label="Tổng quan 12 cung trên thiết bị di động">
+        <div className="mb-3 rounded-xl border border-[#d5ad62]/20 bg-[#101827] p-3 text-center"><p className="font-display text-body-md font-semibold text-[#e6c980]">{chart.cuc}</p><p className="mt-1 text-caption text-[#a6a7ac]">Mệnh tại {chart.palaces.menh} · Thân tại {chart.palaces.than} · Giờ {chart.hourBranch}</p></div>
+        <div className="grid grid-cols-2 gap-2 min-[520px]:grid-cols-3" aria-label="Tổng quan 12 cung trên thiết bị di động">
           {cells.map((cell) => <PalaceButton key={cell.branch} cell={cell} compact selected={cell.branch === selectedBranch} onSelect={() => selectPalace(cell.branch)} />)}
         </div>
       </div>
