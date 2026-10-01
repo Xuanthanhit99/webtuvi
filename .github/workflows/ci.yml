@@ -188,7 +188,7 @@ jobs:
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/tu-vi-visual-qa.spec.ts
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
@@ -219,6 +219,16 @@ jobs:
 
           cp "$MOBILE_SHOT" visual-qa/tu-vi-authenticated-mobile-390.png
           cp "$DESKTOP_SHOT" visual-qa/tu-vi-authenticated-desktop-1440.png
+          mapfile -t RESULT_MOBILE < <(find apps/web/test-results -type f -name 'tu-vi-result-390.png' | sort)
+          mapfile -t RESULT_DESKTOP < <(find apps/web/test-results -type f -name 'tu-vi-result-1440.png' | sort)
+          mapfile -t PALACE_MOBILE < <(find apps/web/test-results -type f -name 'tu-vi-palace-mobile-390.png' | sort)
+          if [ "${#RESULT_MOBILE[@]}" -ne 1 ] || [ "${#RESULT_DESKTOP[@]}" -ne 1 ] || [ "${#PALACE_MOBILE[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly three Tử Vi result visual QA screenshots."
+            exit 1
+          fi
+          cp "${RESULT_MOBILE[0]}" visual-qa/tu-vi-result-390.png
+          cp "${RESULT_DESKTOP[0]}" visual-qa/tu-vi-result-1440.png
+          cp "${PALACE_MOBILE[0]}" visual-qa/tu-vi-palace-mobile-390.png
           {
             printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
             printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
