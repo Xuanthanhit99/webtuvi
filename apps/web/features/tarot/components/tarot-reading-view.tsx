@@ -110,7 +110,12 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
         ))}
       </div>
 
-      <section className="relative grid gap-3 tablet:grid-cols-2">
+      <section className="relative">
+        <div className="mb-3">
+          <p className="text-caption font-semibold uppercase tracking-[0.14em] text-insight">Thông điệp từ từng lá</p>
+          <p className="mt-1 text-body-sm text-text-secondary">Đọc mỗi lá trong đúng vị trí của nó trước khi ghép lại thành câu chuyện chung.</p>
+        </div>
+        <div className="grid gap-3 tablet:grid-cols-2">
         {orderedCards.map((rc, index) => {
           const meaning = rc.isReversed ? rc.card.reversedMeaning : rc.card.uprightMeaning;
           const keywords = rc.isReversed ? rc.card.reversedKeywords : rc.card.uprightKeywords;
@@ -133,10 +138,34 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
             </article>
           );
         })}
+        </div>
+      </section>
+
+      <section className="relative rounded-md border border-insight/25 bg-[#17172D]/75 p-4">
+        <p className="text-caption font-semibold uppercase tracking-[0.14em] text-insight">Nhìn toàn bộ trải bài</p>
+        <h3 className="mt-1 font-display text-heading-md text-text-primary">Điều các lá bài đang cùng gợi mở</h3>
+        <p className="mt-2 text-body-sm leading-relaxed text-text-secondary">Phần diễn giải bên dưới kết nối các lá với nhau và với câu hỏi của bạn. Đây là góc nhìn để suy ngẫm, không phải một kết luận bắt buộc hay lời tiên đoán chắc chắn.</p>
+        <div className="mt-3">
+          <AiInterpretation
+            interpretation={reading.interpretation}
+            isGenerating={retryInterpretation.isPending}
+            onGenerate={() => {
+              trackEvent('tarot_interpretation_requested', { feature: 'tarot' });
+              retryInterpretation.mutate();
+            }}
+            labels={{
+              heading: 'Diễn giải trải bài',
+              generating: 'Mệnh Vi đang kết nối các lá bài thành một câu chuyện…',
+              empty: 'Chưa có phần diễn giải tổng hợp cho trải bài này.',
+              action: 'Tạo diễn giải',
+              disclosure: 'Phần này dùng AI để diễn giải các lá đã được hệ thống rút và lưu; AI không chọn hoặc thay đổi lá bài.',
+            }}
+          />
+        </div>
       </section>
 
       <section className="relative rounded-md border border-[rgba(213,173,98,0.2)] bg-[#0A1622]/85 p-4">
-        <h3 className="font-display text-heading-md text-insight">Có thể bạn muốn tự hỏi...</h3>
+        <h3 className="font-display text-heading-md text-insight">Sau khi đọc, hãy tự hỏi...</h3>
         <ul className="mt-3 grid gap-2 tablet:grid-cols-2">
           {orderedCards.flatMap((rc) => rc.card.reflectionPrompts.map((prompt) => ({ prompt, cardId: rc.card.id }))).map(({ prompt, cardId }) => (
             <li key={`${cardId}-${prompt}`} className="rounded-sm border border-[rgba(213,173,98,0.12)] bg-[#101827] px-3 py-2 text-body-sm text-text-secondary">
@@ -144,17 +173,6 @@ export function TarotReadingView({ reading, onChanged }: { reading: TarotReading
             </li>
           ))}
         </ul>
-      </section>
-
-      <section className="relative rounded-md border border-insight/25 bg-[#17172D]/75 p-3">
-        <AiInterpretation
-          interpretation={reading.interpretation}
-          isGenerating={retryInterpretation.isPending}
-          onGenerate={() => {
-            trackEvent('tarot_interpretation_requested', { feature: 'tarot' });
-            retryInterpretation.mutate();
-          }}
-        />
       </section>
 
       <TarotCardDetailDialog

@@ -7,6 +7,7 @@ function makeCard(overrides: Partial<InterpretationInput['cards'][number]> = {})
       id: 'card-1',
       slug: 'major-00-the-fool',
       name: 'The Fool',
+      nameVi: 'Kẻ Khờ',
       arcana: 'MAJOR',
       suit: null,
       number: 0,
@@ -176,5 +177,25 @@ describe('TarotInterpretationService — Vietnamese language contract', () => {
     const { service, streamCalls, attribution } = makeHarness();
     await service.interpret(baseInput(), attribution);
     expect(streamCalls[0]!.messages[0]!.content).toMatch(/Vietnamese/i);
+  });
+
+  it('builds a Vietnamese-first prompt and requires answering the user question before synthesis', async () => {
+    const { service, streamCalls, attribution } = makeHarness();
+    await service.interpret(baseInput({ question: 'Mối quan hệ này đang cần điều gì?' }), attribution);
+
+    const system = streamCalls[0]!.messages[0]!.content;
+    const user = streamCalls[0]!.messages[1]!.content;
+    expect(system).toMatch(/Answer the person's actual question or intention first/i);
+    expect(system).toMatch(/Do not leak English field labels/i);
+    expect(user).toContain('Kiểu trải bài: Một lá soi chiếu.');
+    expect(user).toContain('Câu hỏi của người dùng: "Mối quan hệ này đang cần điều gì?"');
+    expect(user).toContain('Kẻ Khờ (The Fool) [xuôi]');
+    expect(user).toMatch(/Nghĩa tham chiếu: Ở chiều xuôi, Kẻ Khờ/);
+    expect(user).toContain('Từ khóa tham chiếu:');
+    expect(user).not.toContain('A leap of faith.');
+    expect(user).not.toContain('beginnings');
+    expect(user).not.toContain('Reading type:');
+    expect(user).not.toContain('Traditional meaning:');
+    expect(user).not.toContain('upright');
   });
 });

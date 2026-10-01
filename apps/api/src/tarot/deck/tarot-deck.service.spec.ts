@@ -67,8 +67,8 @@ function makeService(cards: ReturnType<typeof makeCard>[]) {
 describe('TarotDeckService', () => {
   const deck = [
     makeCard({ id: 'c1', slug: 'major-00-the-fool', name: 'The Fool', arcana: 'MAJOR', suit: null, categories: ['new-beginnings'] }),
-    makeCard({ id: 'c2', slug: 'minor-wands-ace', name: 'Ace of Wands', arcana: 'MINOR', suit: 'WANDS', number: 1, categories: ['inspiration'], uprightKeywords: ['creation', 'potential'] }),
-    makeCard({ id: 'c3', slug: 'minor-cups-ace', name: 'Ace of Cups', arcana: 'MINOR', suit: 'CUPS', number: 1, categories: ['emotion'], uprightKeywords: ['love', 'compassion'] }),
+    makeCard({ id: 'c2', slug: 'wands-01-ace-of-wands', name: 'Ace of Wands', arcana: 'MINOR', suit: 'WANDS', number: 1, categories: ['inspiration'], uprightKeywords: ['creation', 'potential'] }),
+    makeCard({ id: 'c3', slug: 'cups-01-ace-of-cups', name: 'Ace of Cups', arcana: 'MINOR', suit: 'CUPS', number: 1, categories: ['emotion'], uprightKeywords: ['love', 'compassion'] }),
   ];
 
   it('lists every card with no filters', async () => {
@@ -80,20 +80,20 @@ describe('TarotDeckService', () => {
   it('filters by arcana', async () => {
     const { service } = makeService(deck);
     const result = await service.list({ arcana: 'MINOR' as never });
-    expect(result.map((c) => c.slug)).toEqual(['minor-wands-ace', 'minor-cups-ace']);
+    expect(result.map((c) => c.slug)).toEqual(['wands-01-ace-of-wands', 'cups-01-ace-of-cups']);
   });
 
   it('filters by suit', async () => {
     const { service } = makeService(deck);
     const result = await service.list({ suit: 'CUPS' as never });
     expect(result).toHaveLength(1);
-    expect(result[0]!.slug).toBe('minor-cups-ace');
+    expect(result[0]!.slug).toBe('cups-01-ace-of-cups');
   });
 
   it('filters by category', async () => {
     const { service } = makeService(deck);
     const result = await service.list({ category: 'emotion' });
-    expect(result.map((c) => c.slug)).toEqual(['minor-cups-ace']);
+    expect(result.map((c) => c.slug)).toEqual(['cups-01-ace-of-cups']);
   });
 
   it('filters by search across name and keywords', async () => {
@@ -102,7 +102,7 @@ describe('TarotDeckService', () => {
     expect(byName.map((c) => c.slug)).toEqual(['major-00-the-fool']);
 
     const byKeyword = await service.list({ search: 'love' });
-    expect(byKeyword.map((c) => c.slug)).toEqual(['minor-cups-ace']);
+    expect(byKeyword.map((c) => c.slug)).toEqual(['cups-01-ace-of-cups']);
   });
 
   it('getBySlug returns the matching card', async () => {

@@ -5,6 +5,7 @@ import { CostControlService } from '../../companion/cost/cost-control.service';
 import { ObservabilityService } from '../../companion/observability/observability.service';
 import type { AIProviderName, ChatMessage, TokenUsage } from '../../companion/providers/provider.types';
 import type { InterpretationInput } from '../tarot.types';
+import { tarotSeoVi } from '../../../prisma/data/tarot-seo-vi';
 
 const HARD_RULES = `Hard rules — never break these:
 - You are given the exact, real card(s) already drawn, their real upright/reversed orientation, and their real traditional meanings. You never choose, change, add, or remove a card — the draw already happened deterministically before you were called.
@@ -12,7 +13,9 @@ const HARD_RULES = `Hard rules — never break these:
 - Speak in reflective, possibility-framed language — never state a prediction as a fact ("this will happen"), always frame it as something to consider or notice.
 - If a memory reference is provided, you may weave it in naturally if genuinely relevant — never claim to remember something that was not given to you.
 - Never fabricate a user memory — if none is provided, do not invent one.
-- Write the interpretation in natural, conversational Vietnamese.`;
+- Write entirely in natural, conversational Vietnamese. Do not leak English field labels, orientation words, or source keywords into the answer; translate their meaning naturally when needed.
+- Answer the person's actual question or intention first when one is provided. Then explain how the drawn card(s), their positions, and orientations support that reflection.
+- Synthesize the cards into one coherent answer rather than listing encyclopedia-style definitions. Keep every claim grounded in the supplied cards and meanings.`;
 
 // Sprint 7 — Premium interpretation gating (Phase 13 of the sprint brief). The hard rules above are
 // identical for both tiers: Premium is never allowed to choose cards, change orientation, fabricate
@@ -34,23 +37,34 @@ ${HARD_RULES}
 const MAX_TOKENS_BY_TIER = { FREE: 400, PREMIUM: 700 } as const;
 
 function describeCard(card: InterpretationInput['cards'][number]): string {
-  const orientation = card.isReversed ? 'reversed' : 'upright';
-  const meaning = card.isReversed ? card.card.reversedMeaning : card.card.uprightMeaning;
-  const keywords = (card.isReversed ? card.card.reversedKeywords : card.card.uprightKeywords).join(', ');
+  const orientation = card.isReversed ? 'ngược' : 'xuôi';
+  // Ground the model with the same Vietnamese editorial layer served by the product API.
+  // Canonical card identity/artwork and deterministic draw data remain untouched in the DB.
+  const vi = tarotSeoVi(card.card);
+  const meaning = card.isReversed ? vi.reversedMeaning : vi.uprightMeaning;
+  const keywords = (card.isReversed ? vi.reversedKeywords : vi.uprightKeywords).join(', ');
   const position = card.positionLabel ? `${card.positionLabel} — ` : '';
-  return `${position}${card.card.name} (${orientation}). Traditional meaning: ${meaning} Keywords: ${keywords}.`;
+  const displayName = card.card.nameVi?.trim() ? `${card.card.nameVi} (${card.card.name})` : card.card.name;
+  return `${position}${displayName} [${orientation}]. Nghĩa tham chiếu: ${meaning} Từ khóa tham chiếu: ${keywords}.`;
 }
 
 function buildUserMessage(input: InterpretationInput): string {
   const lines: string[] = [];
-  lines.push(`Reading type: ${input.readingType.replace('_', ' ').toLowerCase()}.`);
-  if (input.question) lines.push(`Their question: "${input.question}"`);
-  lines.push('Real cards drawn, in order:');
+  const readingTypeLabel: Record<InterpretationInput['readingType'], string> = {
+    DAILY_DRAW: 'Lá bài hôm nay',
+    SINGLE_CARD: 'Một lá soi chiếu',
+    THREE_CARD: 'Ba lá theo dòng thời gian',
+  };
+  lines.push(`Kiểu trải bài: ${readingTypeLabel[input.readingType]}.`);
+  if (input.question) lines.push(`Câu hỏi của người dùng: "${input.question}"`);
+  lines.push('Các lá bài đã rút thật, theo đúng thứ tự:');
   for (const card of input.cards) lines.push(`- ${describeCard(card)}`);
   if (input.memoryReference) {
-    lines.push(`One thing they've shared before that may be relevant (only mention if it genuinely fits): "${input.memoryReference.title}" — ${input.memoryReference.summary}`);
+    lines.push(`Một ký ức người dùng từng chia sẻ có thể liên quan (chỉ nhắc nếu thực sự phù hợp): "${input.memoryReference.title}" — ${input.memoryReference.summary}`);
   }
-  lines.push('Write the interpretation now, grounded only in the real cards above.');
+  lines.push(input.question
+    ? 'Hãy trả lời trực diện câu hỏi trước, sau đó diễn giải mối liên hệ giữa các lá. Chỉ dựa trên các lá bài thật và dữ liệu tham chiếu ở trên.'
+    : 'Hãy diễn giải thành một thông điệp mạch lạc, chỉ dựa trên các lá bài thật và dữ liệu tham chiếu ở trên.');
   return lines.join('\n');
 }
 
