@@ -219,6 +219,16 @@ jobs:
 
           cp "$MOBILE_SHOT" visual-qa/tu-vi-authenticated-mobile-390.png
           cp "$DESKTOP_SHOT" visual-qa/tu-vi-authenticated-desktop-1440.png
+
+          mapfile -t TUVI_SEO_SHOTS < <(find apps/web/test-results -type f -name 'tu-vi-seo-*-mobile-390.png' | sort)
+          printf 'Tử Vi SEO mobile screenshots found: %s\n' "${#TUVI_SEO_SHOTS[@]}"
+          if [ "${#TUVI_SEO_SHOTS[@]}" -lt 4 ]; then
+            echo "::error::Expected four Tử Vi SEO mobile screenshots."
+            exit 1
+          fi
+          for shot in "${TUVI_SEO_SHOTS[@]}"; do
+            cp "$shot" "visual-qa/$(basename "$shot")"
+          done
           mapfile -t RESULT_MOBILE < <(find apps/web/test-results -type f -name 'tu-vi-result-390.png' | sort)
           mapfile -t RESULT_DESKTOP < <(find apps/web/test-results -type f -name 'tu-vi-result-1440.png' | sort)
           mapfile -t PALACE_MOBILE < <(find apps/web/test-results -type f -name 'tu-vi-palace-mobile-390.png' | sort)
