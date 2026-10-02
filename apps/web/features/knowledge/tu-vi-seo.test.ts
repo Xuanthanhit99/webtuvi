@@ -3,6 +3,14 @@ describe('Tử Vi SEO registry',()=>{
  it('covers exactly 12 canonical palaces',()=>{expect(tuViPalaceSeo).toHaveLength(12);expect(new Set(tuViPalaceSeo.map(x=>x.slug)).size).toBe(12);});
  it('derives the implemented 14 main stars plus CORE_13 auxiliary stars',()=>{expect(tuViStarSeo).toHaveLength(27);expect(new Set(tuViStarSeo.map(x=>x.slug)).size).toBe(27);});
  it('keeps public SEO labels Vietnamese',()=>{const text=[...tuViPalaceSeo.map(x=>x.description),...tuViStarSeo.map(x=>x.group)].join(' ');expect(text).toMatch(/[ăâđêôơưáàảãạéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵ]/i);expect(text).not.toMatch(/Life|Parents|Career|Wealth|Health|Friends|Travel|Siblings/i);});
+ it('keeps every palace and star page materially distinct for search intent',()=>{
+   const palaceSignatures=tuViPalaceSeo.map(x=>`${x.name}|${x.description}`);
+   const starSignatures=tuViStarSeo.map(x=>{const source=starSourceContent(x.name);return `${x.name}|${source.placement}|${source.basis}|${source.relationship}`;});
+   expect(new Set(palaceSignatures).size).toBe(12);
+   expect(new Set(starSignatures).size).toBe(27);
+   expect(tuViPalaceSeo.every(x=>x.description.length>=45)).toBe(true);
+   expect(tuViStarSeo.every(x=>{const source=starSourceContent(x.name);return source.placement.length>=45&&source.basis.length>=5&&source.relationship.length>=20;})).toBe(true);
+ });
  it('provides source-grounded, non-empty placement copy for every indexed star',()=>{
    const entries=tuViStarSeo.map(x=>starSourceContent(x.name));
    expect(entries).toHaveLength(27);

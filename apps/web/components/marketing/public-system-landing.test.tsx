@@ -22,6 +22,14 @@ describe('PublicSystemLanding structured data', () => {
     expect(visibleCrumbs).toBe('Trang chủ/Khám phá/Bói Tarot 78 Lá – Trải 1 Lá, 3 Lá & Lá Bài Hôm Nay');
   });
 
+  it('links the public Tu Vi tool landing into the existing knowledge cluster', () => {
+    const { getByRole } = render(<PublicSystemLanding slug="tu-vi" />);
+
+    expect(getByRole('link', { name: /Tổng quan Tử Vi/i })).toHaveAttribute('href', '/kien-thuc/tu-vi');
+    expect(getByRole('link', { name: /Hệ thống 12 cung/i })).toHaveAttribute('href', '/kien-thuc/tu-vi/cung/menh');
+    expect(getByRole('link', { name: /Hệ thống sao/i })).toHaveAttribute('href', '/kien-thuc/tu-vi/sao/tu-vi');
+  });
+
   it('never emits fabricated review, rating or FAQ schema', () => {
     const { container } = render(<PublicSystemLanding slug="tu-vi" />);
     const serialized = JSON.stringify(jsonLdOf(container));
