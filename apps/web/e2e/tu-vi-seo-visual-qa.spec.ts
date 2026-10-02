@@ -9,7 +9,7 @@ const pages = [
 
 for (const width of [390, 1440] as const) {
   test.describe(`Tử Vi SEO render QA ${width}px`, () => {
-    test.use({ viewport: { width, height: 900 }, reducedMotion: 'reduce' });
+    test.use({ viewport: { width, height: 900 } });
 
     for (const page of pages) {
       test(`${page.path} renders canonical structured content without overflow`, async ({ page: browserPage }) => {
