@@ -12,7 +12,7 @@ for (const width of [390, 1440] as const) {
     test.use({ viewport: { width, height: 900 } });
 
     for (const page of pages) {
-      test(`${page.path} renders canonical structured content without overflow`, async ({ page: browserPage }) => {
+      test(`${page.path} renders canonical structured content without overflow`, async ({ page: browserPage }, testInfo) => {
         await browserPage.goto(page.path);
         await expect(browserPage.getByRole('heading', { level: 1, name: page.heading })).toBeVisible();
         await expect(browserPage.locator('link[rel="canonical"]')).toHaveAttribute('href', new RegExp(page.path.replaceAll('/', '\\/') + '$'));
@@ -29,7 +29,7 @@ for (const width of [390, 1440] as const) {
         await expect(browserPage.getByRole('link', { name: 'Lập lá số Tử Vi' })).toHaveAttribute('href', '/discover/tu-vi');
 
         if (width === 390) {
-          await browserPage.screenshot({ path: `tu-vi-seo-${page.type}-mobile-390.png`, fullPage: true });
+          await browserPage.screenshot({ path: testInfo.outputPath(`tu-vi-seo-${page.type}-mobile-390.png`), fullPage: true });
         }
       });
     }
