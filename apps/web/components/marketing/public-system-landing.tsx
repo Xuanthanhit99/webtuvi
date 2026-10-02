@@ -61,6 +61,27 @@ export function PublicSystemLanding({ slug }: { slug: Slug }) {
       <p className="mt-3 text-body-sm leading-relaxed text-text-secondary">Các diễn giải là góc nhìn để tự khám phá và suy ngẫm, không phải kết luận khoa học hay lời khuyên y tế, pháp lý hoặc tài chính. Kết quả cá nhân chỉ được xem trong tài khoản của bạn.</p>
       <Link href="/discover" className="mt-5 inline-flex min-h-11 items-center text-body-sm font-semibold text-[#e6c980] hover:underline">Khám phá các hệ khác</Link>
     </section>
+    {slug === 'tu-vi' && (
+      <section aria-labelledby="tu-vi-knowledge-heading" className="mx-auto max-w-4xl border-t border-white/10 py-10">
+        <p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#e6c980]">Kiến thức Tử Vi</p>
+        <h2 id="tu-vi-knowledge-heading" className="mt-2 font-serif text-heading-md">Hiểu cấu trúc trước khi đọc lá số</h2>
+        <p className="mt-4 max-w-3xl text-body-md leading-relaxed text-text-secondary">Tra cứu hệ thống 12 cung và các sao đang được Mệnh Vi triển khai để hiểu dữ liệu xuất hiện trên lá số. Nội dung kiến thức giải thích cấu trúc và nguồn đối chiếu, không thay đổi kết quả do engine tính.</p>
+        <div className="mt-6 grid gap-3 tablet:grid-cols-3">
+          <Link href="/kien-thuc/tu-vi" className="rounded-xl border border-white/10 bg-surface p-4 hover:border-[#d5ad62]/45">
+            <span className="font-semibold text-text-primary">Tổng quan Tử Vi</span>
+            <span className="mt-1 block text-body-sm leading-relaxed text-text-secondary">Bắt đầu từ nền tảng, cách đọc lá số và phương pháp an sao.</span>
+          </Link>
+          <Link href="/kien-thuc/tu-vi/cung/menh" className="rounded-xl border border-white/10 bg-surface p-4 hover:border-[#d5ad62]/45">
+            <span className="font-semibold text-text-primary">Hệ thống 12 cung</span>
+            <span className="mt-1 block text-body-sm leading-relaxed text-text-secondary">Từ Cung Mệnh, tiếp tục đối chiếu toàn bộ 12 cung trong lá số.</span>
+          </Link>
+          <Link href="/kien-thuc/tu-vi/sao/tu-vi" className="rounded-xl border border-white/10 bg-surface p-4 hover:border-[#d5ad62]/45">
+            <span className="font-semibold text-text-primary">Hệ thống sao</span>
+            <span className="mt-1 block text-body-sm leading-relaxed text-text-secondary">Tra cứu từ sao Tử Vi sang các chính tinh và phụ tinh đã được kiểm chứng.</span>
+          </Link>
+        </div>
+      </section>
+    )}
     </div>
   </>;
 }
