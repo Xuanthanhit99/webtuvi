@@ -133,10 +133,12 @@ describe('Mệnh Vi Home page', () => {
   it('maps authenticated Home CTAs to real routes and fires specific analytics', async () => {
     renderWithQuery(<DashboardView />);
     await screen.findByText(/Cần ngày, giờ và nơi sinh/);
-    const tuVi = screen.getAllByRole('link', { name: /Lá số Tử Vi/i }).find((link) => link.getAttribute('href') === '/discover/tu-vi')!;
-    const tarot = screen.getAllByRole('link', { name: /Tarot/i }).find((link) => link.textContent?.includes('Mở Tarot'))!;
-    const natal = screen.getAllByRole('link', { name: /Bản đồ sao/i }).find((link) => link.getAttribute('href') === '/discover/natal-chart')!;
-    const numerology = screen.getAllByRole('link', { name: /Thần số học/i }).find((link) => link.getAttribute('href') === '/discover/numerology')!;
+    const featureSection = screen.getByRole('heading', { name: 'Khám phá vận mệnh' }).closest('section')!;
+    const featureLinks = Array.from(featureSection.querySelectorAll('a'));
+    const tuVi = featureLinks.find((link) => link.getAttribute('href') === '/discover/tu-vi')!;
+    const tarot = featureLinks.find((link) => link.getAttribute('href') === '/discover/tarot')!;
+    const natal = featureLinks.find((link) => link.getAttribute('href') === '/discover/natal-chart')!;
+    const numerology = featureLinks.find((link) => link.getAttribute('href') === '/discover/numerology')!;
 
     expect(tuVi).toHaveAttribute('href', '/discover/tu-vi');
     expect(tarot).toHaveAttribute('href', '/discover/tarot');
