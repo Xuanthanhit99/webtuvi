@@ -188,23 +188,23 @@ jobs:
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/home-v4-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
 
-      - name: Collect Home V4.1 visual QA screenshots
+      - name: Collect Home V5.2 visual QA screenshots
         if: always()
         run: |
           mkdir -p home-visual-qa
-          mapfile -t HOME_MOBILE < <(find apps/web/test-results -type f -name 'home-v4-390.png' | sort)
-          mapfile -t HOME_DESKTOP < <(find apps/web/test-results -type f -name 'home-v4-1536.png' | sort)
+          mapfile -t HOME_MOBILE < <(find apps/web/test-results -type f -name 'home-v52-390.png' | sort)
+          mapfile -t HOME_DESKTOP < <(find apps/web/test-results -type f -name 'home-v52-1536.png' | sort)
           if [ "${#HOME_MOBILE[@]}" -ne 1 ] || [ "${#HOME_DESKTOP[@]}" -ne 1 ]; then
-            echo "::error::Expected exactly one Home V4.1 screenshot at 390px and 1536px."
+            echo "::error::Expected exactly one Home V5.2 screenshot at 390px and 1536px."
             exit 1
           fi
-          cp "${HOME_MOBILE[0]}" home-visual-qa/home-v4-mobile-390.png
-          cp "${HOME_DESKTOP[0]}" home-visual-qa/home-v4-desktop-1536.png
+          cp "${HOME_MOBILE[0]}" home-visual-qa/home-v52-mobile-390.png
+          cp "${HOME_DESKTOP[0]}" home-visual-qa/home-v52-desktop-1536.png
           {
             printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
             printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
@@ -212,11 +212,11 @@ jobs:
             printf 'Desktop 1536px: %s\n' "${HOME_DESKTOP[0]}"
           } > home-visual-qa/README.txt
 
-      - name: Upload Home V4.1 visual QA artifact
+      - name: Upload Home V5.2 visual QA artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: home-v4-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          name: home-v52-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
           path: home-visual-qa/
           if-no-files-found: error
           retention-days: 14
