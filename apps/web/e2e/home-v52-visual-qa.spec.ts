@@ -27,7 +27,7 @@ for (const width of [390, 1536]) {
       expect((await button.boundingBox())?.height ?? 0, `${label} touch target`).toBeGreaterThanOrEqual(44);
     }
     await page.getByRole('button', { name: /Công việc/i }).click();
-    await expect(page.getByRole('link', { name: /Xem vận trình/i })).toHaveAttribute('href', '/discover/tu-vi');
+    await expect(page.getByRole('link', { name: /Xem vận trình/i }).filter({ hasText: 'Xem vận trình' })).toHaveAttribute('href', '/discover/tu-vi');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
     expect(errors).toEqual([]);
