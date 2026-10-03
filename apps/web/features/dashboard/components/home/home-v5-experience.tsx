@@ -15,14 +15,16 @@ const INTENTS = [
   { key: 'future', label: 'Tương lai', icon: Star, title: 'Tử Vi', href: '/discover/tu-vi', cta: 'Lập lá số', reason: 'Đại Vận và Tiểu Hạn cho bạn một khung thời gian để đọc giai đoạn phía trước.' },
 ] as const;
 
-const SYSTEM_META: Record<string, { key: DiscoveryModuleKey; href: string }> = {
+type SystemTitle = 'Tarot' | 'Tử Vi' | 'Bản đồ sao' | 'Thần số học';
+
+const SYSTEM_META: Record<SystemTitle, { key: DiscoveryModuleKey; href: string }> = {
   'Tử Vi': { key: 'tu_vi', href: '/discover/tu-vi' },
   Tarot: { key: 'tarot', href: '/discover/tarot' },
   'Bản đồ sao': { key: 'natal_chart', href: '/discover/natal-chart' },
   'Thần số học': { key: 'numerology', href: '/discover/numerology' },
 };
 
-const SYSTEM_ORDER = ['Tarot', 'Tử Vi', 'Bản đồ sao', 'Thần số học'] as const;
+const SYSTEM_ORDER: readonly SystemTitle[] = ['Tarot', 'Tử Vi', 'Bản đồ sao', 'Thần số học'];
 
 export type HomeV5ContinuityItem = { title: string; description: string; href: string };
 
@@ -41,7 +43,7 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
 }) {
   const [selectedKey, setSelectedKey] = useState<(typeof INTENTS)[number]['key']>('love');
   const selected = useMemo(() => INTENTS.find((item) => item.key === selectedKey) ?? INTENTS[0], [selectedKey]);
-  const selectedMeta = SYSTEM_META[selected.title];
+  const selectedMeta = SYSTEM_META[selected.title as SystemTitle];
   const alternatives = SYSTEM_ORDER.filter((title) => title !== selected.title).slice(0, 2);
 
   return (
