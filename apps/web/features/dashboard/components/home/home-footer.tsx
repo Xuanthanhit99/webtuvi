@@ -35,21 +35,21 @@ const FOOTER_COLUMNS = [
 
 export function HomeFooter() {
   return (
-    <footer className="border-t border-white/10 pt-8">
-      <div className="grid gap-8 tablet:grid-cols-[1.2fr_1fr_1fr_1fr]">
+    <footer className="border-t border-white/10 pt-6 pb-[calc(5.75rem+env(safe-area-inset-bottom))] tablet:pb-0 tablet:pt-8">
+      <div className="grid gap-5 tablet:gap-8 tablet:grid-cols-[1.2fr_1fr_1fr_1fr]">
         <div className="max-w-xs">
           <Link href="/" aria-label="Mệnh Vi" className="flex items-center gap-3">
             <Logo withWordmark={false} />
             <span className="font-display text-body-lg font-semibold text-[#f2eee5]">Mệnh Vi</span>
           </Link>
-          <p className="mt-3 text-body-sm leading-relaxed text-[#a6a7ac]">
+          <p className="mt-2 hidden text-body-sm leading-relaxed text-[#a6a7ac] tablet:block">
             Mệnh Vi đồng hành cùng bạn trên hành trình khám phá bản thân và vận mệnh.
           </p>
         </div>
         {FOOTER_COLUMNS.map((column) => (
           <div key={column.title}>
             <p className="text-body-sm font-semibold text-[#f2eee5]">{column.title}</p>
-            <ul className="mt-3 flex flex-col gap-2">
+            <ul className="mt-2 flex flex-row flex-wrap gap-x-4 gap-y-2 tablet:mt-3 tablet:flex-col">
               {column.links.map((link) => (
                 <li key={link.label}>
                   <Link href={link.href} className="text-body-sm text-[#a6a7ac] hover:text-[#f2eee5]">
@@ -61,7 +61,7 @@ export function HomeFooter() {
           </div>
         ))}
       </div>
-      <p className="mt-8 border-t border-white/[0.06] py-6 text-center text-caption text-text-secondary">
+      <p className="mt-5 border-t border-white/[0.06] py-4 text-center text-caption text-text-secondary tablet:mt-8 tablet:py-6">
         © {new Date().getFullYear()} Mệnh Vi. Bảo lưu mọi quyền.
       </p>
     </footer>
