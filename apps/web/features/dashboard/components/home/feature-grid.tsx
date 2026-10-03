@@ -63,7 +63,7 @@ function FeatureCard({
 
   if (loading) {
     return (
-      <div className="flex h-[268px] flex-col overflow-hidden rounded-[18px] border border-white/10 bg-[#0e1524]/70 p-4 desktop:h-[300px]" aria-label={`${meta.title} đang tải`}>
+      <div className="flex h-[268px] flex-col overflow-hidden rounded-[18px] border border-white/10 bg-[#0e1524]/70 p-4 desktop:h-[252px]" aria-label={`${meta.title} đang tải`}>
         <Skeleton className="h-[150px] w-full bg-white/10 desktop:h-[58%]" />
         <Skeleton className="mt-4 h-4 w-24 bg-white/10" />
         <Skeleton className="mt-2 h-8 w-full bg-white/10" />
@@ -73,7 +73,7 @@ function FeatureCard({
 
   if (error) {
     return (
-      <div className="flex h-[268px] flex-col justify-center rounded-[18px] border border-white/10 bg-[#0e1524]/70 p-4 desktop:h-[300px] desktop:p-5">
+      <div className="flex h-[268px] flex-col justify-center rounded-[18px] border border-white/10 bg-[#0e1524]/70 p-4 desktop:h-[252px] desktop:p-5">
         <h3 className="text-body-md font-semibold text-[#f2eee5]">{meta.title}</h3>
         <p className="mt-1.5 text-caption leading-snug text-[#a6a7ac]">{error}</p>
         <button type="button" onClick={onRetry} className="mt-3 inline-flex min-h-9 w-fit items-center text-caption font-semibold text-[#e6c980]">
@@ -91,13 +91,13 @@ function FeatureCard({
         trackEvent(meta.analyticsEvent, { feature: asset, source: 'home' });
       }}
       className={cn(
-        'group flex h-[268px] flex-col overflow-hidden rounded-[18px] border border-white/10 bg-[#0c1420] transition-[transform,border-color,box-shadow] duration-standard desktop:h-[300px]',
+        'group flex h-[268px] flex-col overflow-hidden rounded-[18px] border border-white/10 bg-[#0c1420] transition-[transform,border-color,box-shadow] duration-standard desktop:h-[252px]',
         'hover:-translate-y-[3px] hover:border-[#d5ad62]/45 hover:shadow-[0_16px_36px_-12px_rgba(213,173,98,0.28)] focus-visible:-translate-y-[3px] focus-visible:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] motion-reduce:transform-none',
       )}
     >
       {/* Artwork fills the top ~62% of the card edge-to-edge (object-cover, intentional crop —
           not a narrow portrait floating in a wide box) then fades into the content below. */}
-      <div className="relative h-[150px] shrink-0 overflow-hidden desktop:h-[62%]">
+      <div className="relative h-[150px] shrink-0 overflow-hidden desktop:h-[54%]">
         {/* Goes through Next's optimizer (not `unoptimized`) so it's ready for the HD masters
             (see production-assets.ts's ASSET_RESOLUTION_TARGETS): confirmed live against this
             exact endpoint that Next never upscales past a source's native size — serving the
@@ -181,10 +181,16 @@ export function FeatureGrid({
   onRetryNumerology: () => void;
 }) {
   return (
-    <section aria-labelledby="features-heading" className="space-y-4">
-      <h2 id="features-heading" className="font-display text-heading-md font-semibold text-[#f2eee5]">
-        Khám phá vận mệnh
-      </h2>
+    <section aria-labelledby="features-heading" className="space-y-4 border-t border-white/[0.07] pt-2 tablet:pt-4">
+      <div className="flex flex-col gap-1 tablet:flex-row tablet:items-end tablet:justify-between">
+        <div>
+          <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#8f929a]">Khi bạn muốn đi sâu hơn</p>
+          <h2 id="features-heading" className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">
+            Khám phá theo từng hệ
+          </h2>
+        </div>
+        <p className="max-w-md text-body-sm leading-relaxed text-[#8f929a]">Mỗi hệ mở một góc nhìn khác. Bạn không cần bắt đầu từ tất cả cùng lúc.</p>
+      </div>
       <div className="grid grid-cols-2 gap-4 desktop:grid-cols-4">
         <FeatureCard
           asset="tu_vi"
