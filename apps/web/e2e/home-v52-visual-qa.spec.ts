@@ -31,6 +31,13 @@ for (const width of [390, 1536]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
     expect(errors).toEqual([]);
-    await page.screenshot({ path: testInfo.outputPath(`home-v52-${width}.png`), fullPage: true });
+    await page.screenshot({
+      path: testInfo.outputPath(`home-v52-${width}.png`),
+      fullPage: true,
+      // Playwright tiles a full-page capture while fixed elements remain viewport-fixed, which
+      // makes the phone nav appear over a middle section in the stitched evidence. Production
+      // behavior is verified above; neutralize only that fixed positioning for the visual artifact.
+      style: width === 390 ? 'nav[aria-label="Điều hướng chính"] { position: absolute !important; }' : undefined,
+    });
   });
 }
