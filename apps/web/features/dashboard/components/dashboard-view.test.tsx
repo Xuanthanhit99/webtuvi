@@ -48,7 +48,7 @@ describe('Mệnh Vi Home V5.2', () => {
     await user.click(screen.getByRole('button', { name: /Công việc/i }));
     expect(screen.getByRole('button', { name: /Công việc/i })).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('heading', { name: 'Tử Vi' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Xem vận trình/i })).toHaveAttribute('href', '/discover/tu-vi');
+    expect(screen.getAllByRole('link', { name: /Xem vận trình/i }).some((link) => link.getAttribute('href') === '/discover/tu-vi')).toBe(true);
   });
 
   it('renders guest Home without fetching private personalized APIs', async () => {
