@@ -7,6 +7,7 @@ import { ChevronRight } from 'lucide-react';
 import type { NatalChartDto, NumerologyReadingDto, TarotReadingDto, TuViChartDto, TuViCurrentTieuHanDto, TuViDaiVanCycleDto } from '@beaconvie/types';
 import { dashboardApi } from '../api/dashboard-api';
 import { HomeHero } from './home/hero';
+import { HomeIntentRouter } from './home/home-intent-router';
 import { TodayOverview, type TodayOverviewSignal } from './home/today-overview';
 import { FeatureGrid } from './home/feature-grid';
 import { TodaySuggestions } from './home/today-suggestions';
@@ -226,6 +227,8 @@ export function DashboardView() {
         tuViChart={tuViChart}
         tuViLoading={!isGuest && tuViQuery.isLoading}
       />
+
+      <HomeIntentRouter />
 
       {!isGuest && (
         <TodayOverview
