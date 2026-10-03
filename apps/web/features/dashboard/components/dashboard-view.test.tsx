@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
 import { DashboardView } from './dashboard-view';
@@ -7,219 +7,84 @@ import { tarotApi } from '@/features/tarot/api/tarot-api';
 import { numerologyApi } from '@/features/numerology/api/numerology-api';
 import { natalChartApi } from '@/features/natal-chart/api/natal-chart-api';
 import { tuViApi } from '@/features/tu-vi/api/tu-vi-api';
-import { premiumApi } from '@/features/premium/api/premium-api';
 import { useAuth } from '@/providers/auth-provider';
 import { trackEvent } from '@/lib/analytics';
 
-jest.mock('../api/dashboard-api', () => ({
-  dashboardApi: { get: jest.fn() },
-}));
-
-jest.mock('@/features/tarot/api/tarot-api', () => ({
-  tarotApi: { listReadings: jest.fn() },
-}));
-
-jest.mock('@/features/numerology/api/numerology-api', () => ({
-  numerologyApi: { listReadings: jest.fn() },
-}));
-
-jest.mock('@/features/natal-chart/api/natal-chart-api', () => ({
-  natalChartApi: { listCharts: jest.fn() },
-}));
-
-jest.mock('@/features/tu-vi/api/tu-vi-api', () => ({
-  tuViApi: { listCharts: jest.fn() },
-}));
-
-jest.mock('@/features/premium/api/premium-api', () => ({
-  premiumApi: { status: jest.fn(), checkout: jest.fn() },
-}));
-
-jest.mock('@/providers/auth-provider', () => ({
-  useAuth: jest.fn(),
-}));
-
-jest.mock('@/lib/analytics', () => ({
-  trackEvent: jest.fn(),
-}));
+jest.mock('../api/dashboard-api', () => ({ dashboardApi: { get: jest.fn() } }));
+jest.mock('@/features/tarot/api/tarot-api', () => ({ tarotApi: { listReadings: jest.fn() } }));
+jest.mock('@/features/numerology/api/numerology-api', () => ({ numerologyApi: { listReadings: jest.fn() } }));
+jest.mock('@/features/natal-chart/api/natal-chart-api', () => ({ natalChartApi: { listCharts: jest.fn() } }));
+jest.mock('@/features/tu-vi/api/tu-vi-api', () => ({ tuViApi: { listCharts: jest.fn() } }));
+jest.mock('@/providers/auth-provider', () => ({ useAuth: jest.fn() }));
+jest.mock('@/lib/analytics', () => ({ trackEvent: jest.fn() }));
 
 const emptyList = { items: [], total: 0, page: 1, pageSize: 1 };
-const freeStatus = {
-  isPremium: false,
-  status: 'NONE',
-  expiresAt: null,
-  priceVnd: 79000,
-  currency: 'VND',
-  isMvpTestPrice: true,
-  paymentsEnabled: true,
-};
 
 function mockHomeData() {
   (useAuth as jest.Mock).mockReturnValue({ user: { displayName: 'Thành Nguyễn' }, isLoading: false, refetch: jest.fn() });
-  (dashboardApi.get as jest.Mock).mockResolvedValue({
-    hero: { greeting: 'Good afternoon, Thành.', subheadline: '', ctaLabel: 'Say hello', ctaHref: '/companion' },
-    companionPanel: { previewMessages: [], suggestionChip: null },
-    memoryHighlight: null,
-    discoverySuggestion: null,
-    recentActivity: [],
-  });
+  (dashboardApi.get as jest.Mock).mockResolvedValue({ discoverySuggestion: null });
   (tarotApi.listReadings as jest.Mock).mockResolvedValue(emptyList);
   (numerologyApi.listReadings as jest.Mock).mockResolvedValue(emptyList);
   (natalChartApi.listCharts as jest.Mock).mockResolvedValue(emptyList);
   (tuViApi.listCharts as jest.Mock).mockResolvedValue(emptyList);
-  (premiumApi.status as jest.Mock).mockResolvedValue(freeStatus);
 }
 
-describe('Mệnh Vi Home page', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    window.sessionStorage.clear();
-    mockHomeData();
-  });
+describe('Mệnh Vi Home V5.2', () => {
+  beforeEach(() => { jest.clearAllMocks(); window.sessionStorage.clear(); mockHomeData(); });
 
-  it('uses the authenticated user name without hard-coding a production name', async () => {
+  it('renders the locked Oracle Workspace hierarchy for an authenticated user', async () => {
     renderWithQuery(<DashboardView />);
-
-    expect(await screen.findByRole('heading', { name: 'Thành' })).toBeInTheDocument();
-    expect(await screen.findByText('Vận trình hôm nay chưa được tạo.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: /Thành, điều gì đang ở trong tâm trí bạn/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Dòng chảy hôm nay' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Tarot' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Tiếp tục hành trình' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Khám phá theo từng hệ' })).not.toBeInTheDocument();
   });
 
-  it('renders honest empty states for missing discovery data', async () => {
+  it('changes the recommended path from the selected intent', async () => {
+    const user = userEvent.setup();
     renderWithQuery(<DashboardView />);
-
-    expect(await screen.findByText(/Bản đồ vận mệnh theo Tử Vi Đẩu Số/)).toBeInTheDocument();
-    expect(screen.getByText('Một lá bài cho câu hỏi của bạn.')).toBeInTheDocument();
-    expect(screen.getByText(/Cần ngày, giờ và nơi sinh/)).toBeInTheDocument();
-    expect(screen.getByText(/[Cc]ác con số cốt lõi từ tên và ngày sinh/)).toBeInTheDocument();
+    await screen.findByRole('heading', { name: 'Tarot' });
+    await user.click(screen.getByRole('button', { name: /Công việc/i }));
+    expect(screen.getByRole('button', { name: /Công việc/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('heading', { name: 'Tử Vi' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Xem vận trình/i })).toHaveAttribute('href', '/discover/tu-vi');
   });
 
-  it('shows a module-level daily insight error without crashing Home', async () => {
-    (dashboardApi.get as jest.Mock).mockRejectedValue(new Error('network down'));
-
-    renderWithQuery(<DashboardView />);
-
-    expect(await screen.findByText('Không thể tải vận trình hôm nay.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Thử lại' })).toBeInTheDocument();
-    // Both the Discovery card and the footer nav now link here — no longer a single match.
-    expect(screen.getAllByRole('link', { name: /Lá số Tử Vi/ }).length).toBeGreaterThan(0);
-  });
-
-  it('always renders the persistent sidebar shell — no separate top-nav landing page for guests', async () => {
+  it('renders guest Home without fetching private personalized APIs', async () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
-
     renderWithQuery(<DashboardView />);
-
-    expect(await screen.findByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
-    expect(screen.getByText(/Khám phá bản thân qua Tử Vi, Tarot/i)).toBeInTheDocument();
-    // The old onboarding/trust sections are gone entirely, not replaced by something similar.
-    expect(screen.queryByText('Bắt đầu hành trình của bạn')).not.toBeInTheDocument();
-    expect(screen.queryByText('Bắt đầu từ đâu?')).not.toBeInTheDocument();
-  });
-
-  it('renders guest Home without calling private personalized APIs', async () => {
-    (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
-
-    renderWithQuery(<DashboardView />);
-
-    expect(await screen.findByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
-    const tuViLinks = screen.getAllByRole('link', { name: /Lá số Tử Vi/i });
-    expect(tuViLinks.some((link) => link.getAttribute('href') === '/discover/tu-vi')).toBe(true);
+    expect(await screen.findByRole('heading', { level: 1, name: 'Điều gì đang ở trong tâm trí bạn?' })).toBeInTheDocument();
+    expect(screen.getByText('Đăng nhập để mở tín hiệu từ hồ sơ của bạn.')).toBeInTheDocument();
     expect(dashboardApi.get).not.toHaveBeenCalled();
     expect(tarotApi.listReadings).not.toHaveBeenCalled();
-    expect(premiumApi.status).not.toHaveBeenCalled();
     await waitFor(() => expect(trackEvent).toHaveBeenCalledWith('home_viewed', { feature: 'home', source: 'guest' }));
   });
 
-  it('maps authenticated Home CTAs to real routes and fires specific analytics', async () => {
+  it('keeps the real current Tử Vi cycle in today flow', async () => {
+    (tuViApi.listCharts as jest.Mock).mockResolvedValue({ items: [{ id: 'chart-1', palaces: { menh: 'Tý' }, currentDaiVan: { index: 3, ageStart: 24, ageEnd: 33, role: 'Quan Lộc', position: 'Ngọ' }, currentTieuHan: { tuoi: 27, lunarYear: 2026, palace: 'Mão' }, createdAt: '2026-08-01T00:00:00.000Z' }], total: 1, page: 1, pageSize: 1 });
     renderWithQuery(<DashboardView />);
-    await screen.findByText(/Cần ngày, giờ và nơi sinh/);
-    const featureSection = screen.getByRole('heading', { name: 'Khám phá theo từng hệ' }).closest('section')!;
-    const featureLinks = Array.from(featureSection.querySelectorAll('a'));
-    const tuVi = featureLinks.find((link) => link.getAttribute('href') === '/discover/tu-vi')!;
-    const tarot = featureLinks.find((link) => link.getAttribute('href') === '/discover/tarot')!;
-    const natal = featureLinks.find((link) => link.getAttribute('href') === '/discover/natal-chart')!;
-    const numerology = featureLinks.find((link) => link.getAttribute('href') === '/discover/numerology')!;
-
-    expect(tuVi).toHaveAttribute('href', '/discover/tu-vi');
-    expect(tarot).toHaveAttribute('href', '/discover/tarot');
-    expect(natal).toHaveAttribute('href', '/discover/natal-chart');
-    expect(numerology).toHaveAttribute('href', '/discover/numerology');
-
-    [tuVi, tarot, natal, numerology].forEach((link) => link.addEventListener('click', (event) => event.preventDefault()));
-    fireEvent.click(tuVi);
-    fireEvent.click(tarot);
-    fireEvent.click(natal);
-    fireEvent.click(numerology);
-
-    expect(trackEvent).toHaveBeenCalledWith('home_tuvi_clicked', { feature: 'tu_vi', source: 'home' });
-    expect(trackEvent).toHaveBeenCalledWith('home_tarot_clicked', { feature: 'tarot', source: 'home' });
-    expect(trackEvent).toHaveBeenCalledWith('home_astrology_clicked', { feature: 'natal_chart', source: 'home' });
-    expect(trackEvent).toHaveBeenCalledWith('home_numerology_clicked', { feature: 'numerology', source: 'home' });
+    expect(await screen.findByText('27 tuổi (Âm lịch 2026) · Cung Mão')).toBeInTheDocument();
   });
 
-  it('shows a retryable module error for API-backed feature cards', async () => {
-    (tuViApi.listCharts as jest.Mock).mockRejectedValue(new Error('tu vi down'));
-    const user = userEvent.setup();
-
+  it('keeps the most recent real reading as continuity', async () => {
+    (tarotApi.listReadings as jest.Mock).mockResolvedValue({ items: [{ id: 't1', spreadName: 'Một lá', cards: [{ card: { name: 'The Star' } }], createdAt: '2026-08-20T00:00:00.000Z' }], total: 1, page: 1, pageSize: 1 });
+    (natalChartApi.listCharts as jest.Mock).mockResolvedValue({ items: [{ id: 'n1', placements: [], createdAt: '2026-08-21T00:00:00.000Z' }], total: 1, page: 1, pageSize: 1 });
     renderWithQuery(<DashboardView />);
-
-    expect(await screen.findByText('Không thể tải lá số.')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Thử lại' }));
-    expect(tuViApi.listCharts).toHaveBeenCalledTimes(2);
-  });
-
-  it('shows the real current Đại Vận and Tiểu Hạn for a returning user with a saved chart', async () => {
-    const chartWithCycles = {
-      id: 'chart-1',
-      palaces: { menh: 'Tý' },
-      currentDaiVan: { index: 3, ageStart: 24, ageEnd: 33, role: 'Quan Lộc', position: 'Ngọ' },
-      currentTieuHan: { tuoi: 27, lunarYear: 2026, palace: 'Mão' },
-      createdAt: '2026-08-01T00:00:00.000Z',
-    };
-    (tuViApi.listCharts as jest.Mock).mockResolvedValue({ items: [chartWithCycles], total: 1, page: 1, pageSize: 1 });
-
-    renderWithQuery(<DashboardView />);
-
-    expect(await screen.findByRole('heading', { name: 'Hôm nay của bạn' })).toBeInTheDocument();
-    expect((await screen.findAllByText('24–33 tuổi · Cung Quan Lộc tại Ngọ')).length).toBeGreaterThan(0);
-    expect(screen.getAllByText('27 tuổi (Âm lịch 2026) · Cung Mão').length).toBeGreaterThan(0);
-  });
-
-  it('shows an honest empty state for a new authenticated user with no saved chart', async () => {
-    renderWithQuery(<DashboardView />);
-
-    expect(await screen.findByRole('heading', { name: 'Hôm nay của bạn' })).toBeInTheDocument();
-    expect(await screen.findByText('Bạn chưa có đủ dữ liệu cá nhân để tạo tổng quan hôm nay.')).toBeInTheDocument();
-    expect(await screen.findByText('Bạn chưa lập lá số Tử Vi.')).toBeInTheDocument();
-    expect(screen.getByText('Bạn chưa lập lá số.')).toBeInTheDocument();
-  });
-
-  it('picks the most recently created reading for the "Tiếp tục hành trình" card', async () => {
-    (tarotApi.listReadings as jest.Mock).mockResolvedValue({
-      items: [{ id: 't1', spreadName: 'Một lá', cards: [{ card: { name: 'The Star' } }], createdAt: '2026-08-20T00:00:00.000Z' }],
-      total: 1,
-      page: 1,
-      pageSize: 1,
-    });
-    (natalChartApi.listCharts as jest.Mock).mockResolvedValue({
-      items: [{ id: 'n1', placements: [], createdAt: '2026-08-21T00:00:00.000Z' }],
-      total: 1,
-      page: 1,
-      pageSize: 1,
-    });
-
-    renderWithQuery(<DashboardView />);
-
     expect(await screen.findByText('Bản đồ sao gần nhất')).toBeInTheDocument();
+  });
+
+  it('uses honest empty state when no personal signals exist', async () => {
+    renderWithQuery(<DashboardView />);
+    expect(await screen.findByText(/Chưa có dữ liệu cá nhân/)).toBeInTheDocument();
+    expect(screen.getByText('Chưa có hành trình gần đây.')).toBeInTheDocument();
   });
 });
 
-
-it('renders public content while authentication is unresolved without fetching private data', () => {
+it('renders public V5.2 content while authentication is unresolved without fetching private data', () => {
   jest.clearAllMocks();
   (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: true });
   renderWithQuery(<DashboardView />);
-  expect(screen.getByRole('heading', { level: 1, name: 'Mệnh Vi' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1, name: 'Điều gì đang ở trong tâm trí bạn?' })).toBeInTheDocument();
   expect(dashboardApi.get).not.toHaveBeenCalled();
-  expect(tarotApi.listReadings).not.toHaveBeenCalled();
 });
