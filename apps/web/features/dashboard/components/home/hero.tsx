@@ -62,7 +62,7 @@ export function HomeHero({
     <section
       ref={parallaxRef}
       aria-labelledby="home-hero-heading"
-      className="relative isolate overflow-hidden rounded-[22px] border border-white/[0.08] px-5 py-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] min-[430px]:py-7 tablet:px-8 tablet:py-11 desktop:min-h-[580px] desktop:px-12 desktop:py-14"
+      className="relative isolate overflow-hidden rounded-[22px] border border-white/[0.08] px-5 py-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] min-[430px]:py-7 tablet:px-8 tablet:py-9 desktop:min-h-[470px] desktop:px-10 desktop:py-10"
     >
       {/* The user's personal destiny space, not a marketing banner — production hero scenery
           (mountains, lake, moon, the celestial wheel already painted into the sky) with a light
@@ -96,8 +96,8 @@ export function HomeHero({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[22%] bg-gradient-to-t from-[#050810]/18 to-transparent" />
 
       <div className="relative z-10 flex h-full w-full flex-col justify-center">
-        <div className="grid gap-6 tablet:grid-cols-[1.3fr_1fr] tablet:gap-12 tablet:items-center">
-          <div className="max-w-lg">
+        <div className="grid gap-6 tablet:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)] tablet:items-center tablet:gap-8 desktop:gap-10">
+          <div className="max-w-[520px]">
             {authLoading ? (
               <Skeleton className="mb-5 h-16 w-56 bg-white/10" />
             ) : isGuest ? (
