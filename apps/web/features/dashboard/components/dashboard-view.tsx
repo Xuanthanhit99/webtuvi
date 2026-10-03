@@ -165,8 +165,6 @@ export function DashboardView() {
   const sunSign = getPlacementSign(natalChart, 'sun');
   const moonSign = getPlacementSign(natalChart, 'moon');
   const continuityItem = buildContinuityItem(tarotReading, natalChart, numerologyReading, sunSign, moonSign, lifePath);
-  const continuityLoading = !isGuest && (tarotQuery.isLoading || natalQuery.isLoading || numerologyQuery.isLoading);
-  const dailyText = dashboardQuery.data?.discoverySuggestion?.description;
   const currentDaiVan = formatDaiVan(tuViChart?.currentDaiVan ?? null);
   const currentTieuHan = formatTieuHan(tuViChart?.currentTieuHan ?? null);
   const todayTuVi: TodayOverviewSignal | null = tuViChart
@@ -206,7 +204,6 @@ export function DashboardView() {
 
   return (
     <div className="relative flex flex-col gap-10 text-[#f2eee5] tablet:gap-12">
-      <PageAtmosphere />
       <HomeV5Experience
         isGuest={isGuest}
         greeting={greeting}
