@@ -203,7 +203,7 @@ export function DashboardView() {
   }, [authLoading, isGuest]);
 
   return (
-    <div className="relative flex flex-col gap-10 text-[#f2eee5] tablet:gap-12">
+    <div className="relative flex flex-col gap-10 pb-[calc(5.75rem+env(safe-area-inset-bottom))] text-[#f2eee5] tablet:gap-12 tablet:pb-0">
       <HomeV5Experience
         isGuest={isGuest}
         greeting={greeting}
