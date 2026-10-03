@@ -11,6 +11,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ApiError } from '@/lib/api-error';
 import { trackEvent } from '@/lib/analytics';
+import { trackNatalChartGoogleAdsConversion } from '@/lib/google-ads';
 import { geocodingApi, natalChartApi } from '../api/natal-chart-api';
 import { NatalChartView } from './natal-chart-view';
 
@@ -87,6 +88,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
       setResult(chart);
       setPhase('revealed');
       queryClient.invalidateQueries({ queryKey: ['natal-chart'] });
+      trackNatalChartGoogleAdsConversion();
       onCalculated?.(chart);
     },
     onError: (error: unknown) => {

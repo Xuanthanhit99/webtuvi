@@ -3,8 +3,11 @@ import userEvent from '@testing-library/user-event';
 import type { GeocodingSearchResultDto, NatalChartDto } from '@beaconvie/types';
 import { renderWithQuery } from '@/test/render-with-query';
 import { ApiError } from '@/lib/api-error';
+import { trackNatalChartGoogleAdsConversion } from '@/lib/google-ads';
 import { BirthInputForm } from './birth-input-form';
 import { geocodingApi, natalChartApi } from '../api/natal-chart-api';
+
+jest.mock('@/lib/google-ads', () => ({ trackNatalChartGoogleAdsConversion: jest.fn() }));
 
 jest.mock('../api/natal-chart-api', () => ({
   natalChartApi: { create: jest.fn(), getChart: jest.fn() },
@@ -115,6 +118,7 @@ describe('BirthInputForm', () => {
 
     await waitFor(() => expect(natalChartApi.create).toHaveBeenCalledWith({ birthDate: '2000-06-15', birthTime: '14:30', locationToken: 'token-hanoi' }));
     await waitFor(() => expect(onCalculated).toHaveBeenCalledWith(calculatedChart));
+    expect(trackNatalChartGoogleAdsConversion).toHaveBeenCalledTimes(1);
     expect(screen.getByText('Diễn giải AI')).toBeInTheDocument();
   });
 
@@ -163,6 +167,7 @@ describe('BirthInputForm', () => {
     await user.click(screen.getByRole('button', { name: /^lập bản đồ sao$/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/Bạn đã dùng hết lượt miễn phí/i);
+    expect(trackNatalChartGoogleAdsConversion).not.toHaveBeenCalled();
     expect(screen.getByRole('link', { name: 'Nâng cấp Premium' })).toHaveAttribute('href', '/premium?reason=required');
   });
 
