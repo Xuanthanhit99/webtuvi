@@ -133,7 +133,7 @@ describe('Mệnh Vi Home page', () => {
   it('maps authenticated Home CTAs to real routes and fires specific analytics', async () => {
     renderWithQuery(<DashboardView />);
     await screen.findByText(/Cần ngày, giờ và nơi sinh/);
-    const featureSection = screen.getByRole('heading', { name: 'Khám phá vận mệnh' }).closest('section')!;
+    const featureSection = screen.getByRole('heading', { name: 'Khám phá theo từng hệ' }).closest('section')!;
     const featureLinks = Array.from(featureSection.querySelectorAll('a'));
     const tuVi = featureLinks.find((link) => link.getAttribute('href') === '/discover/tu-vi')!;
     const tarot = featureLinks.find((link) => link.getAttribute('href') === '/discover/tarot')!;
