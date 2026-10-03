@@ -25,11 +25,11 @@ export function HomeIntentRouter() {
         <p className="mt-2 text-body-sm leading-relaxed text-[#aeb0b5]">Không cần biết trước nên dùng hệ nào. Chọn điều gần với câu hỏi của bạn hôm nay.</p>
       </div>
 
-      <div role="list" aria-label="Các điều bạn muốn khám phá" className="mt-6 grid grid-cols-2 gap-2.5 tablet:grid-cols-3 tablet:gap-3">
+      <div aria-label="Các điều bạn muốn khám phá" className="mt-6 grid grid-cols-2 gap-2.5 tablet:grid-cols-3 tablet:gap-3">
         {INTENTS.map((intent) => {
           const active = intent.key === selected.key;
           return (
-            <button key={intent.key} type="button" role="listitem" aria-pressed={active} onClick={() => setSelectedKey(intent.key)}
+            <button key={intent.key} type="button" aria-pressed={active} onClick={() => setSelectedKey(intent.key)}
               className={`min-h-[92px] rounded-[16px] border p-3.5 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] tablet:min-h-[104px] tablet:p-4 ${active ? 'border-[#d5ad62]/70 bg-[#d5ad62]/[0.08]' : 'border-white/[0.08] bg-[#0b1220]/45 hover:border-[#d5ad62]/30'}`}>
               <span className="block font-display text-body-md text-[#f2eee5]">{intent.label}</span>
               <span className="mt-1.5 block text-caption leading-relaxed text-[#9fa2aa]">{intent.detail}</span>
