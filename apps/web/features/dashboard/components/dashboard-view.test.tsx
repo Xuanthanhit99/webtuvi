@@ -134,7 +134,7 @@ describe('Mệnh Vi Home page', () => {
     renderWithQuery(<DashboardView />);
     await screen.findByText(/Cần ngày, giờ và nơi sinh/);
     const tuVi = screen.getAllByRole('link', { name: /Lá số Tử Vi/i }).find((link) => link.getAttribute('href') === '/discover/tu-vi')!;
-    const tarot = screen.getAllByRole('link', { name: /Tarot/i }).find((link) => link.getAttribute('href') === '/discover/tarot')!;
+    const tarot = screen.getAllByRole('link', { name: /Tarot/i }).find((link) => link.textContent?.includes('Mở Tarot'))!;
     const natal = screen.getAllByRole('link', { name: /Bản đồ sao/i }).find((link) => link.getAttribute('href') === '/discover/natal-chart')!;
     const numerology = screen.getAllByRole('link', { name: /Thần số học/i }).find((link) => link.getAttribute('href') === '/discover/numerology')!;
 
