@@ -31,16 +31,16 @@ export function TuViDashboard() {
     <MvPage>
       <TuViHero />
 
-      <TuViTrustSection context="tổng quan" />
-
       <div id="tu-vi-form" className="scroll-mt-24">
-        <MvSection eyebrow="Nhập dữ liệu sinh" title="Lập lá số">
+        <MvSection eyebrow="Bước 01 · Dữ liệu sinh" title="Thông tin sinh → Lập lá số">
           <TuViForm />
         </MvSection>
       </div>
 
+      <TuViTrustSection context="phương pháp" />
+
       <div id="tu-vi-history" className="scroll-mt-24">
-        <MvSection eyebrow="Dòng thời gian" title="Lá số đã lưu">
+        <MvSection eyebrow="Lá số của bạn" title="Lịch sử lá số">
           <TuViHistoryList filters={{}} onSelect={selectItem} />
         </MvSection>
       </div>
