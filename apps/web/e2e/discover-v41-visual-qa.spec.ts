@@ -34,12 +34,25 @@ for (const width of [390, 1536]) {
     await expect(page.getByRole('heading', { name: 'Tarot' })).toBeVisible();
 
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (width === 390) {
+      const nav = page.locator('nav[aria-label="Điều hướng chính"]');
+      await expect(nav).toBeVisible();
+      const navBox = await nav.boundingBox();
+      expect(navBox).not.toBeNull();
+      expect(Math.abs((navBox!.y + navBox!.height) - 900), 'production nav stays pinned to viewport bottom').toBeLessThanOrEqual(2);
+      const main = page.locator('#main-content');
+      const paddingBottom = await main.evaluate((element) => Number.parseFloat(getComputedStyle(element).paddingBottom));
+      expect(paddingBottom, 'AppShell reserves bottom-nav clearance').toBeGreaterThanOrEqual(navBox!.height + 39);
+    }
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
     expect(errors).toEqual([]);
 
     await page.screenshot({
       path: testInfo.outputPath(`discover-v41-${width}.png`),
       fullPage: true,
+      // Full-page capture stitches viewport tiles while fixed elements stay fixed. Production
+      // positioning and AppShell clearance are asserted above; neutralize only the nav's fixed
+      // positioning in the evidence so the mobile artifact cannot show a false mid-page overlay.
       style: width === 390 ? 'nav[aria-label="Điều hướng chính"] { position: absolute !important; }' : undefined,
     });
   });
