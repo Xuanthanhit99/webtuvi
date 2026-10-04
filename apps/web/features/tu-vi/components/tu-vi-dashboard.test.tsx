@@ -159,7 +159,7 @@ describe('TuViDashboard', () => {
     renderWithQuery(<TuViDashboard />);
 
     await screen.findByText('Lá số đã an');
-    expect(screen.getByRole('tab', { name: /36–45/ })).toHaveAttribute('aria-current', 'true');
+    expect(screen.getAllByRole('tab', { name: /36–45/ }).every((tab) => tab.getAttribute('aria-current') === 'true')).toBe(true);
     expect(screen.getByText('2026')).toBeInTheDocument();
     expect(screen.getByText(/43 tuổi · hiện tại/)).toBeInTheDocument();
   });
