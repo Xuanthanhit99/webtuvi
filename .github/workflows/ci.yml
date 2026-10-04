@@ -188,7 +188,7 @@ jobs:
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/discover-v41-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
@@ -218,6 +218,34 @@ jobs:
         with:
           name: home-v52-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
           path: home-visual-qa/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Collect Discover V4.1 visual QA screenshots
+        if: always()
+        run: |
+          mkdir -p discover-visual-qa
+          mapfile -t DISCOVER_MOBILE < <(find apps/web/test-results -type f -name 'discover-v41-390.png' | sort)
+          mapfile -t DISCOVER_DESKTOP < <(find apps/web/test-results -type f -name 'discover-v41-1536.png' | sort)
+          if [ "${#DISCOVER_MOBILE[@]}" -ne 1 ] || [ "${#DISCOVER_DESKTOP[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Discover V4.1 screenshot at 390px and 1536px."
+            exit 1
+          fi
+          cp "${DISCOVER_MOBILE[0]}" discover-visual-qa/discover-v41-mobile-390.png
+          cp "${DISCOVER_DESKTOP[0]}" discover-visual-qa/discover-v41-desktop-1536.png
+          {
+            printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
+            printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
+            printf 'Mobile 390px: %s\n' "${DISCOVER_MOBILE[0]}"
+            printf 'Desktop 1536px: %s\n' "${DISCOVER_DESKTOP[0]}"
+          } > discover-visual-qa/README.txt
+
+      - name: Upload Discover V4.1 visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discover-v41-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: discover-visual-qa/
           if-no-files-found: error
           retention-days: 14
 
