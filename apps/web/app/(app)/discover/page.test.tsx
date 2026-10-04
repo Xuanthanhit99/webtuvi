@@ -1,5 +1,10 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import DiscoverPage from './page';
+
+function setupUser() {
+  return { user: userEvent.setup() };
+}
 
 // Domain + Brand Production Lock — the founder decision renamed the product to Tử Vi Tarot, but
 // Eastern Horoscope (Ngũ Hành Phương Đông, Chinese Zodiac/Five Elements) and Tử Vi Lá Số
@@ -59,17 +64,21 @@ describe('DiscoverPage — Tử Vi Lá Số (live, Sprint 18B)', () => {
   });
 });
 
-describe('DiscoverPage — editorial information architecture', () => {
-  it('offers real cross-module paths and labels static curation honestly', () => {
+describe('DiscoverPage — locked V4.1 intent-led information architecture', () => {
+  it('starts from the user question instead of a system catalog', () => {
     render(<DiscoverPage />);
-    expect(screen.getByRole('heading', { name: 'Đi theo câu hỏi của bạn' })).toBeInTheDocument();
-    expect(screen.getByText(/không phải đề xuất cá nhân hóa/i)).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Khám phá Thần số học/i })).toHaveAttribute('href', '/discover/numerology');
+    expect(screen.getByRole('heading', { name: 'Điều gì đang khiến bạn bận lòng?' })).toBeInTheDocument();
+    for (const label of ['Tình yêu', 'Công việc', 'Bản thân', 'Quyết định', 'Tương lai']) {
+      expect(screen.getByRole('button', { name: label })).toBeInTheDocument();
+    }
   });
 
-  it('keeps the cross-system report separate from the five discovery systems', () => {
+  it('maps an intent to a real recommended system and keeps alternatives separate', async () => {
+    const { user } = setupUser();
     render(<DiscoverPage />);
-    expect(screen.getByRole('heading', { name: 'Báo Cáo Vận Mệnh' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: /Xem báo cáo/i })).toHaveAttribute('href', '/reports');
+    await user.click(screen.getByRole('button', { name: 'Công việc' }));
+    expect(screen.getByRole('heading', { name: 'Tử Vi Lá Số' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Bắt đầu với Tử Vi Lá Số/i })).toHaveAttribute('href', '/discover/tu-vi');
+    expect(screen.getByRole('heading', { name: 'Một điểm bắt đầu, không phải một phán quyết' })).toBeInTheDocument();
   });
 });
