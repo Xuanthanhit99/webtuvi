@@ -79,7 +79,8 @@ describe('TarotDashboard', () => {
     (tarotApi.listReadings as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<TarotDashboard />);
     expect(screen.getByRole('heading', { name: 'Tarot', level: 1 })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Bắt đầu trải bài/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Điều gì bạn muốn soi chiếu/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Tiếp tục chọn trải bài/i })).toBeInTheDocument();
     await waitFor(() => expect(screen.getByText('Mở thư viện 78 lá')).toBeInTheDocument());
   });
 
