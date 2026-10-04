@@ -71,7 +71,11 @@ for (const width of [390, 1536]) {
     await page.screenshot({
       path: testInfo.outputPath(`tarot-v42-${width}.png`),
       fullPage: true,
-      style: width === 390 ? 'nav[aria-label="Điều hướng chính"] { position: absolute !important; }' : undefined,
+      // Production positioning and AppShell clearance are asserted above. During a full-page
+      // capture Playwright stitches viewport tiles while fixed elements remain fixed, which can
+      // place the mobile nav mid-document in the evidence. Neutralize only its fixed positioning
+      // for the screenshot, matching the locked Home/Discover evidence strategy.
+      style: width === 390 ? 'nav[aria-label="Điều hướng chính"].fixed { position: absolute !important; bottom: 0 !important; }' : undefined,
     });
   });
 }
