@@ -35,7 +35,7 @@ for (const width of [390, 1536]) {
 
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (width === 390) {
-      const nav = page.locator('nav[aria-label="Điều hướng chính"]');
+      const nav = page.locator('nav[aria-label="Điều hướng chính"].fixed');
       await expect(nav).toBeVisible();
       const navBox = await nav.boundingBox();
       expect(navBox).not.toBeNull();
