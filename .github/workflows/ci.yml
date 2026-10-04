@@ -291,18 +291,18 @@ jobs:
             parent="$(basename "$(dirname "$shot")")"
             if [[ "$parent" == *"390px"* ]]; then
               MOBILE_SHOT="$shot"
-            elif [[ "$parent" == *"1440px"* ]]; then
+            elif [[ "$parent" == *"1536px"* ]]; then
               DESKTOP_SHOT="$shot"
             fi
           done
 
           if [ -z "$MOBILE_SHOT" ] || [ -z "$DESKTOP_SHOT" ]; then
-            echo "::error::Expected authenticated Tử Vi screenshots at both 390px and 1440px."
+            echo "::error::Expected authenticated Tử Vi screenshots at both 390px and 1536px."
             exit 1
           fi
 
           cp "$MOBILE_SHOT" visual-qa/tu-vi-authenticated-mobile-390.png
-          cp "$DESKTOP_SHOT" visual-qa/tu-vi-authenticated-desktop-1440.png
+          cp "$DESKTOP_SHOT" visual-qa/tu-vi-authenticated-desktop-1536.png
 
           mapfile -t TUVI_SEO_SHOTS < <(find apps/web/test-results -type f -name 'tu-vi-seo-*-mobile-390.png' | sort)
           printf 'Tử Vi SEO mobile screenshots found: %s\n' "${#TUVI_SEO_SHOTS[@]}"
@@ -314,20 +314,20 @@ jobs:
             cp "$shot" "visual-qa/$(basename "$shot")"
           done
           mapfile -t RESULT_MOBILE < <(find apps/web/test-results -type f -name 'tu-vi-result-390.png' | sort)
-          mapfile -t RESULT_DESKTOP < <(find apps/web/test-results -type f -name 'tu-vi-result-1440.png' | sort)
+          mapfile -t RESULT_DESKTOP < <(find apps/web/test-results -type f -name 'tu-vi-result-1536.png' | sort)
           mapfile -t PALACE_MOBILE < <(find apps/web/test-results -type f -name 'tu-vi-palace-mobile-390.png' | sort)
           if [ "${#RESULT_MOBILE[@]}" -ne 1 ] || [ "${#RESULT_DESKTOP[@]}" -ne 1 ] || [ "${#PALACE_MOBILE[@]}" -ne 1 ]; then
             echo "::error::Expected exactly three Tử Vi result visual QA screenshots."
             exit 1
           fi
           cp "${RESULT_MOBILE[0]}" visual-qa/tu-vi-result-390.png
-          cp "${RESULT_DESKTOP[0]}" visual-qa/tu-vi-result-1440.png
+          cp "${RESULT_DESKTOP[0]}" visual-qa/tu-vi-result-1536.png
           cp "${PALACE_MOBILE[0]}" visual-qa/tu-vi-palace-mobile-390.png
           {
             printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
             printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
             printf 'Mobile 390px: %s\n' "$MOBILE_SHOT"
-            printf 'Desktop 1440px: %s\n' "$DESKTOP_SHOT"
+            printf 'Desktop 1536px: %s\n' "$DESKTOP_SHOT"
           } > visual-qa/README.txt
 
       - name: Upload Tử Vi visual QA artifact
