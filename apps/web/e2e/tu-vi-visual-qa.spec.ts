@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-for (const width of [390, 1440]) {
+for (const width of [390, 1536]) {
   test(`Tu Vi result visual QA at ${width}px`, async ({ page, context }, testInfo) => {
     test.setTimeout(90000);
     await page.setViewportSize({ width, height: 900 });
