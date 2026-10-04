@@ -197,6 +197,9 @@ for (const width of [390, 1536]) {
       const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
       expect.soft(accessibility.violations, route).toEqual([]);
       await page.screenshot({ path: testInfo.outputPath(`${route.replace(/[^a-z0-9]/gi, '_')}.png`), fullPage: true });
+      if (route === '/discover/natal-chart') {
+        await page.screenshot({ path: testInfo.outputPath(`natal-chart-v41-${width}.png`), fullPage: true });
+      }
     }
     await page.goto('/discover/tarot?item=00000000-0000-4000-8000-000000000001');
     await expect(page.getByText('Chưa thể tải trải bài này.')).toBeVisible();
