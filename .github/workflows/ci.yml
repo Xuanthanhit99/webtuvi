@@ -160,35 +160,6 @@ jobs:
       - name: Build Web
         run: pnpm build:web
 
-      # Bản đồ sao V4.1 visual evidence is captured by the authenticated production-readiness
-      # gate at both canonical fidelity viewports. Keep a dedicated artifact for human review.
-      - name: Collect Bản đồ sao V4.1 visual QA screenshots
-        if: always()
-        run: |
-          mkdir -p natal-chart-visual-qa
-          mapfile -t NATAL_MOBILE < <(find apps/web/test-results -type f --name '*_discover_natal_chart.png' | sort)
-          mapfile -t NATAL_DESKTOP < <(find apps/web/test-results -type f --name '*_discover_natal_chart.png' | sort)
-          if [ "${#NATAL_MOBILE[@]}" -ne 1 ] || [ "${#NATAL_DESKTOP[@]}" -ne 1 ]; then
-            echo "::error::Expected exactly one Bản đồ sao V4.1 screenshot at 390px and 1536px."
-            exit 1
-          fi
-          cp "${NATAL_MOBILE[0]}" natal-chart-visual-qa/natal-chart-v41-mobile-390.png
-          cp "${NATAL_DESKTOP[0]}" natal-chart-visual-qa/natal-chart-v41-desktop-1536.png
-          {
-            printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
-            printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
-            printf 'Mobile 390px: %s\n' "${NATAL_MOBILE[0]}"
-            printf 'Desktop 1536px: %s\n' "${NATAL_DESKTOP[0]}"
-          } > natal-chart-visual-qa/README.txt
-
-      - name: Upload Bản đồ sao V4.1 visual QA artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: natal-chart-v41-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
-          path: natal-chart-visual-qa/
-          if-no-files-found: error
-          retention-days: 14
       # Build the exact production Web Dockerfile used by Railway. This catches missing COPY
       # dependencies and standalone-image regressions that a workspace `next build` cannot see.
       - name: Build Web production Docker image
@@ -222,6 +193,35 @@ jobs:
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
 
+      # Bản đồ sao V4.1 visual evidence is captured by the authenticated production-readiness
+      # gate at both canonical fidelity viewports. Keep a dedicated artifact for human review.
+      - name: Collect Bản đồ sao V4.1 visual QA screenshots
+        if: always()
+        run: |
+          mkdir -p natal-chart-visual-qa
+          mapfile -t NATAL_MOBILE < <(find apps/web/test-results -type f --name '*_discover_natal_chart.png' | sort)
+          mapfile -t NATAL_DESKTOP < <(find apps/web/test-results -type f --name '*_discover_natal_chart.png' | sort)
+          if [ "${#NATAL_MOBILE[@]}" -ne 1 ] || [ "${#NATAL_DESKTOP[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Bản đồ sao V4.1 screenshot at 390px and 1536px."
+            exit 1
+          fi
+          cp "${NATAL_MOBILE[0]}" natal-chart-visual-qa/natal-chart-v41-mobile-390.png
+          cp "${NATAL_DESKTOP[0]}" natal-chart-visual-qa/natal-chart-v41-desktop-1536.png
+          {
+            printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
+            printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
+            printf 'Mobile 390px: %s\n' "${NATAL_MOBILE[0]}"
+            printf 'Desktop 1536px: %s\n' "${NATAL_DESKTOP[0]}"
+          } > natal-chart-visual-qa/README.txt
+
+      - name: Upload Bản đồ sao V4.1 visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: natal-chart-v41-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: natal-chart-visual-qa/
+          if-no-files-found: error
+          retention-days: 14
       - name: Collect Home V5.2 visual QA screenshots
         if: always()
         run: |
