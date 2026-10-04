@@ -144,43 +144,6 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
         <TuViPalaceGrid chart={chart} />
       </section>
 
-      <section className="rounded-[24px] border border-[#d5ad62]/20 bg-[radial-gradient(circle_at_85%_0%,rgba(213,173,98,0.08),transparent_28%),#0b1320] p-4 tablet:p-5">
-        <div className="mb-4 border-b border-white/[0.07] pb-4">
-          <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Diễn giải sau dữ liệu</p>
-          <h3 className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">Đọc lá số của bạn</h3>
-          <p className="mt-2 max-w-2xl text-body-sm text-[#a6a7ac]">Phần này chỉ kết nối và diễn giải những cung, sao và chu kỳ đã được tính ở phía trên; không thay đổi dữ liệu lá số.</p>
-        </div>
-        <AiInterpretation
-        interpretation={chart.interpretation}
-        isGenerating={retryInterpretation.isPending}
-        onGenerate={() => retryInterpretation.mutate()}
-        labels={{
-          heading: 'Luận giải lá số',
-          generating: 'Đang viết phần luận giải…',
-          empty: 'Phần luận giải chưa sẵn sàng.',
-          action: 'Tạo luận giải',
-          disclosure: 'Phần luận giải chỉ diễn giải dữ liệu lá số phía trên; cung, sao và chu kỳ được tính trước bằng bộ quy tắc cố định.',
-       <section className="rounded-[24px] border border-[#d5ad62]/20 bg-[radial-gradient(circle_at_85%_0%,rgba(213,173,98,0.08),transparent_28%),#0b1320] p-4 tablet:p-5">
-        <div className="mb-4 border-b border-white/[0.07] pb-4">
-          <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Diễn giải sau dữ liệu</p>
-          <h3 className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">Đọc lá số của bạn</h3>
-          <p className="mt-2 max-w-2xl text-body-sm text-[#a6a7ac]">Phần này chỉ kết nối và diễn giải những cung, sao và chu kỳ đã được tính ở phía trên; không thay đổi dữ liệu lá số.</p>
-        </div>
-        <AiInterpretation
-        interpretation={chart.interpretation}
-        isGenerating={retryInterpretation.isPending}
-        onGenerate={() => retryInterpretation.mutate()}
-        labels={{
-          heading: 'Luận giải lá số',
-          generating: 'Đang viết phần luận giải…',
-          empty: 'Phần luận giải chưa sẵn sàng.',
-          action: 'Tạo luận giải',
-          disclosure: 'Phần luận giải chỉ diễn giải dữ liệu lá số phía trên; cung, sao và chu kỳ được tính trước bằng bộ quy tắc cố định.',
-        }}
-      />
-      </section>
-
-
       <TuViDaiVanTimeline chart={chart} />
       <TuViTieuHanYearNav chart={chart} />
 
@@ -212,5 +175,53 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
         </dl>
       </Section>
 
+      <section className="rounded-[24px] border border-[#d5ad62]/20 bg-[radial-gradient(circle_at_85%_0%,rgba(213,173,98,0.08),transparent_28%),#0b1320] p-4 tablet:p-5">
+        <div className="mb-4 border-b border-white/[0.07] pb-4">
+          <p className="text-caption font-semibold uppercase tracking-[0.16em] text-[#d5ad62]">Diễn giải sau dữ liệu</p>
+          <h3 className="mt-1 font-display text-heading-md font-semibold text-[#f2eee5]">Đọc lá số của bạn</h3>
+          <p className="mt-2 max-w-2xl text-body-sm text-[#a6a7ac]">Phần này chỉ kết nối và diễn giải những cung, sao và chu kỳ đã được tính ở phía trên; không thay đổi dữ liệu lá số.</p>
+        </div>
+        <AiInterpretation
+        interpretation={chart.interpretation}
+        isGenerating={retryInterpretation.isPending}
+        onGenerate={() => retryInterpretation.mutate()}
+        labels={{
+          heading: 'Luận giải lá số',
+          generating: 'Đang viết phần luận giải…',
+          empty: 'Phần luận giải chưa sẵn sàng.',
+          action: 'Tạo luận giải',
+          disclosure: 'Phần luận giải chỉ diễn giải dữ liệu lá số phía trên; cung, sao và chu kỳ được tính trước bằng bộ quy tắc cố định.',
+        }}
+      />
+      </section>
 
- 
+
+      <TuViDaiVanTimeline chart={chart} />
+      <TuViTieuHanYearNav chart={chart} />
+
+
+      <Section title="Thông tin hệ thống tính toán">
+        <dl className="grid grid-cols-2 gap-2 text-body-sm">
+          <dt className="text-text-secondary">Phiên bản engine</dt>
+          <dd className="text-text-primary">{chart.versions.engineVersion}</dd>
+          <dt className="text-text-secondary">Bộ quy tắc</dt>
+          <dd className="text-text-primary">{chart.versions.rulesetVersion}</dd>
+          <dt className="text-text-secondary">Hệ chính tinh</dt>
+          <dd className="text-text-primary">{chart.versions.mainStarVersion}</dd>
+          <dt className="text-text-secondary">Hệ phụ tinh</dt>
+          <dd className="text-text-primary">{chart.versions.auxiliaryVersion}</dd>
+        </dl>
+      </Section>
+
+      <Section title="Danh mục 12 cung">
+        <ul className="grid grid-cols-1 gap-1 text-body-sm tablet:grid-cols-2">
+          {Object.entries(PALACE_ROLE_DESCRIPTIONS_VI).map(([role, description]) => (
+            <li key={role} className="text-text-secondary">
+              <span className="text-text-primary">{role}</span> — {description}
+            </li>
+          ))}
+        </ul>
+      </Section>
+    </div>
+  );
+}
