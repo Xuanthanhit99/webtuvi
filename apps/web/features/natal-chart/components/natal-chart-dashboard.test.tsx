@@ -74,8 +74,8 @@ describe('NatalChartDashboard', () => {
   it('renders the birth-data form and real chart history by default', async () => {
     (natalChartApi.listCharts as jest.Mock).mockResolvedValue(listResult);
     renderWithQuery(<NatalChartDashboard />);
-    expect(screen.getByRole('heading', { name: 'Bầu trời tại khoảnh khắc bạn sinh ra' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Lập bản đồ sao của bạn' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Thông tin sinh → Lập bản đồ sao' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Lập bản đồ sao' })).toBeInTheDocument();
     expect(await screen.findByText('Hà Nội, Vietnam')).toBeInTheDocument();
   });
 
@@ -92,7 +92,7 @@ describe('NatalChartDashboard', () => {
 
     expect(await screen.findByText('Hà Nội, Vietnam')).toBeInTheDocument();
     expect(natalChartApi.getChart).toHaveBeenCalledWith('c1');
-    expect(screen.queryByRole('link', { name: 'Lập bản đồ sao của bạn' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Lập bản đồ sao' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: '← Quay lại Bản đồ sao' })).toBeInTheDocument();
   });
 
