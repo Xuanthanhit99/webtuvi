@@ -58,22 +58,23 @@ describe('TarotDrawPanel', () => {
   beforeEach(() => { jest.clearAllMocks(); (tarotApi.createSelectionSession as jest.Mock).mockResolvedValue({ token: 'selection-token-1234567890', type: 'DAILY_DRAW', cardCount: 1, deckSize: 78, expiresAt: '2026-01-05T00:15:00.000Z' }); });
 
   async function goToSpreadStep(user: ReturnType<typeof userEvent.setup>) {
-    await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
-    await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
+    await user.click(screen.getByRole('button', { name: /Tiếp tục chọn trải bài/ }));
   }
 
-  it('defaults to Daily Draw and hides the question field', () => {
+  it('starts with intent and optional question before spread selection', () => {
     renderWithQuery(<TarotDrawPanel />);
-    expect(screen.getByRole('button', { name: /Bắt đầu trải bài/ })).toBeInTheDocument();
-    expect(screen.queryByLabelText(/Câu hỏi của bạn/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Điều gì bạn muốn soi chiếu/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Câu hỏi của bạn/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Tiếp tục chọn trải bài/ })).toBeInTheDocument();
   });
 
-  it('shows the optional question field during the intention step', async () => {
+  it('moves from intent and question to spread selection', async () => {
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
-    await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
-    await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
-    expect(screen.getByLabelText(/Câu hỏi của bạn/i)).toBeInTheDocument();
+    await user.type(screen.getByLabelText(/Câu hỏi của bạn/i), 'Mình nên nhìn điều gì rõ hơn?');
+    await user.click(screen.getByRole('button', { name: /Tiếp tục chọn trải bài/ }));
+    expect(screen.getByRole('heading', { name: /Chọn kiểu trải bài/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Tập trung và xáo bài/i })).toBeInTheDocument();
   });
 
   it('offers all 78 face-down positions and draws only after the user makes a real selection', async () => {
