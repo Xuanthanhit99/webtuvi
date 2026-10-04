@@ -8,8 +8,8 @@ export const metadata = createPublicSystemMetadata('tu-vi');
 
 function TuViCrawlerFallback() {
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
-      <h1 className="text-3xl font-semibold">Lá số Tử Vi Đẩu Số</h1>
+    <section className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6" aria-labelledby="tu-vi-fallback-title">
+      <h1 id="tu-vi-fallback-title" className="text-3xl font-semibold">Lá số Tử Vi Đẩu Số</h1>
       <p className="mt-4 max-w-3xl text-sm leading-7">
         Lập lá số Tử Vi từ ngày, giờ và thông tin sinh để xem tổng quan mệnh bàn, bản đồ 12 cung,
         các sao chính và phần luận giải theo từng cung. Mệnh Vi trình bày dữ liệu an sao theo quy
@@ -24,7 +24,7 @@ function TuViCrawlerFallback() {
       <Link className="mt-6 inline-flex underline underline-offset-4" href="/discover">
         Khám phá các hệ của Mệnh Vi
       </Link>
-    </main>
+    </section>
   );
 }
 
