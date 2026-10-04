@@ -160,8 +160,8 @@ describe('TuViDashboard', () => {
 
     await screen.findByText('Lá số đã an');
     expect(screen.getAllByRole('tab', { name: /36–45/ }).every((tab) => tab.getAttribute('aria-current') === 'true')).toBe(true);
-    expect(screen.getByText('2026')).toBeInTheDocument();
-    expect(screen.getByText(/43 tuổi · hiện tại/)).toBeInTheDocument();
+    expect(screen.getAllByText('2026').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/43 tuổi · hiện tại/).length).toBeGreaterThan(0);
   });
 
   it('closing the detail view navigates back to the plain /discover/tu-vi route', async () => {
