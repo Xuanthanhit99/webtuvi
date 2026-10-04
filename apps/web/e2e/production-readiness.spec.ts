@@ -172,7 +172,7 @@ for (const width of [390, 1440]) {
 }
 
 
-for (const width of [390, 1440]) {
+for (const width of [390, 1536]) {
   test(`authenticated tools remain usable at ${width}px`, async ({ page, context, baseURL }, testInfo) => {
     test.setTimeout(180_000); // Seven authenticated routes, accessibility scans and a saved-result error flow.
     expect(new URL(baseURL!).hostname).toBe('localhost');
