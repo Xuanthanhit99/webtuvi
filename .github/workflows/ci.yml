@@ -188,7 +188,7 @@ jobs:
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/discover-v41-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/discover-v41-visual-qa.spec.ts e2e/tarot-v42-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
@@ -246,6 +246,34 @@ jobs:
         with:
           name: discover-v41-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
           path: discover-visual-qa/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Collect Tarot V4.2 visual QA screenshots
+        if: always()
+        run: |
+          mkdir -p tarot-visual-qa
+          mapfile -t TAROT_MOBILE < <(find apps/web/test-results -type f -name 'tarot-v42-390.png' | sort)
+          mapfile -t TAROT_DESKTOP < <(find apps/web/test-results -type f -name 'tarot-v42-1536.png' | sort)
+          if [ "${#TAROT_MOBILE[@]}" -ne 1 ] || [ "${#TAROT_DESKTOP[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Tarot V4.2 screenshot at 390px and 1536px."
+            exit 1
+          fi
+          cp "${TAROT_MOBILE[0]}" tarot-visual-qa/tarot-v42-mobile-390.png
+          cp "${TAROT_DESKTOP[0]}" tarot-visual-qa/tarot-v42-desktop-1536.png
+          {
+            printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
+            printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
+            printf 'Mobile 390px: %s\n' "${TAROT_MOBILE[0]}"
+            printf 'Desktop 1536px: %s\n' "${TAROT_DESKTOP[0]}"
+          } > tarot-visual-qa/README.txt
+
+      - name: Upload Tarot V4.2 visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarot-v42-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: tarot-visual-qa/
           if-no-files-found: error
           retention-days: 14
 
