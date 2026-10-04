@@ -118,15 +118,22 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
 
       <p className="text-caption text-text-secondary">Được tính từ dữ liệu sinh của bạn. AI không lựa chọn hoặc thay đổi bất kỳ vị trí nào.</p>
 
+      <div>
+        <p className="text-caption font-semibold uppercase text-[#8ddbd0]">Bước 02 · Tổng quan</p>
+        <h2 className="mt-2 font-serif text-heading-lg text-text-primary">Big Three của bạn</h2>
+        <p className="mt-2 text-body-sm text-text-secondary">Ba điểm đọc nhanh trước khi đi vào vòng bản đồ và các lớp dữ liệu chi tiết.</p>
+      </div>
+      <BigThreeSummary chart={chart} />
+
       <section className="grid items-center gap-5 rounded-md border border-[#d5ad62]/20 bg-[#071827]/75 p-4 desktop:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="flex justify-center">
           <NatalChartWheel chart={chart} />
         </div>
         <div className="flex flex-col gap-4">
           <div>
-            <p className="text-caption font-semibold uppercase text-[#8ddbd0]">Tổng quan</p>
-            <h2 className="mt-2 font-serif text-heading-lg text-text-primary">Big Three và cấu trúc chính</h2>
-            <p className="mt-2 text-body-sm text-text-secondary">Khám phá các vị trí hành tinh, nhà và góc hợp đã được tính toán; phần luận giải AI được trình bày riêng.</p>
+            <p className="text-caption font-semibold uppercase text-[#8ddbd0]">Bước 03 · Bản đồ sao</p>
+            <h2 className="mt-2 font-serif text-heading-lg text-text-primary">Cấu trúc bầu trời của bạn</h2>
+            <p className="mt-2 text-body-sm text-text-secondary">Vòng bản đồ thể hiện các vị trí đã tính; chọn các lớp bên dưới để đọc ý nghĩa hành tinh, nhà và góc hợp.</p>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-md border border-[#d5ad62]/20 p-3">
@@ -148,9 +155,7 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
           </div>
         </div>
       </section>
-      <BigThreeSummary chart={chart} />
-
-      <Section id="planets" title="Các hành tinh" defaultOpen>
+      <Section id="planets" title="Bước 04 · Hành tinh & ý nghĩa vị trí" defaultOpen>
         <PlanetList placements={chart.placements} />
       </Section>
 
@@ -162,16 +167,19 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
         <AspectList aspects={chart.aspects} />
       </Section>
 
-      <InterpretationSections
+      <div className="mt-1">
+        <p className="mb-2 text-caption font-semibold uppercase text-[#8ddbd0]">Bước 05 · Luận giải sâu</p>
+        <InterpretationSections
         interpretation={chart.interpretation}
         isGenerating={retryInterpretation.isPending}
         onGenerate={() => {
           trackEvent('natal_interpretation_requested', { feature: 'natal_chart' });
           retryInterpretation.mutate();
         }}
-      />
+        />
+      </div>
 
-      <Section id="calculation-details" title="Chi tiết cách tính">
+      <Section id="calculation-details" title="Dữ liệu chuyên sâu · Chi tiết cách tính">
         <dl className="grid grid-cols-2 gap-2 text-body-sm">
           <dt className="text-text-secondary">Hoàng đạo</dt>
           <dd className="text-text-primary">{chart.zodiacMode}</dd>
