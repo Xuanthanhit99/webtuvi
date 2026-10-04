@@ -124,9 +124,8 @@ describe('TarotDrawPanel', () => {
     );
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
-    await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
+    await user.click(screen.getByRole('button', { name: /Tiếp tục chọn trải bài/ }));
     await user.click(screen.getByRole('button', { name: /Một lá soi chiếu/ }));
-    await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
     await user.click(await screen.findByRole('button', { name: 'Chọn lá 1' }));
 
@@ -141,9 +140,8 @@ describe('TarotDrawPanel', () => {
     );
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
-    await user.click(screen.getByRole('button', { name: /Bắt đầu trải bài/ }));
+    await user.click(screen.getByRole('button', { name: /Tiếp tục chọn trải bài/ }));
     await user.click(screen.getByRole('button', { name: /Một lá soi chiếu/ }));
-    await user.click(screen.getByRole('button', { name: /Tiếp tục/ }));
     await user.click(screen.getByRole('button', { name: /Tập trung và xáo bài/ }));
     await user.click(await screen.findByRole('button', { name: 'Chọn lá 1' }));
 
@@ -151,7 +149,7 @@ describe('TarotDrawPanel', () => {
     expect(screen.queryByRole('link', { name: 'Nâng cấp Premium' })).not.toBeInTheDocument();
   });
 
-  it('"Rút trải bài khác" resets back to the landing', async () => {
+  it('"Rút trải bài khác" resets back to intent', async () => {
     (tarotApi.draw as jest.Mock).mockResolvedValue(drawnReading);
     const user = userEvent.setup();
     renderWithQuery(<TarotDrawPanel />);
@@ -166,7 +164,7 @@ describe('TarotDrawPanel', () => {
     // (TarotReadingView only renders once the reveal sequence's `revealStage` reaches 'done') —
     // findByRole already polls, so just give it enough time to finish.
     await user.click(await screen.findByRole('button', { name: 'Rút trải bài khác' }, { timeout: 3000 }));
-    expect(screen.getByRole('button', { name: /Bắt đầu trải bài/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Tiếp tục chọn trải bài/ })).toBeInTheDocument();
     expect(screen.queryByText('The Fool')).not.toBeInTheDocument();
   });
 
