@@ -1,83 +1,93 @@
-import type { Metadata } from 'next';
-import { buildMetadata } from '@/lib/seo';
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowRight, Compass, Layers3 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
+import { ArrowRight, Compass, Sparkles } from 'lucide-react';
 import { AnalyticsPageView } from '@/components/analytics/analytics-page-view';
-import { FEATURE_ART_ASSET } from '@/features/dashboard/components/home/production-assets';
+import { FEATURE_BADGE_ASSET } from '@/features/dashboard/components/home/production-assets';
 
-export const metadata: Metadata = buildMetadata({
-  path: '/discover',
-  title: 'Khám Phá',
-  description: 'Chọn một hệ quy chiếu phù hợp để khám phá bản thân qua Tử Vi, Tarot, Bản đồ sao, Thần số học và Ngũ Hành Phương Đông.',
-});
+type SystemKey = 'tu_vi' | 'tarot' | 'natal_chart' | 'numerology';
+type IntentKey = 'love' | 'work' | 'self' | 'decision' | 'future';
 
-const SYSTEMS = [
-  { key: 'tu_vi', title: 'Tử Vi Lá Số', question: 'Bức tranh vận trình của mình được cấu thành như thế nào?', description: 'Lập lá số Tử Vi Đẩu Số từ ngày, giờ sinh và giới tính theo hệ quy tắc truyền thống đã được kiểm chứng.', href: '/discover/tu-vi', accent: 'text-[#d9b06c]' },
-  { key: 'tarot', title: 'Tarot', question: 'Điều gì cần được nhìn rõ trong khoảnh khắc này?', description: 'Chọn một trải bài và lắng nghe góc nhìn được mở ra từ bộ bài 78 lá.', href: '/discover/tarot', accent: 'text-[#c3a2d9]' },
-  { key: 'natal_chart', title: 'Bản Đồ Sao', question: 'Bầu trời lúc mình sinh ra nói gì về khí chất và cách kết nối?', description: 'Dựng bản đồ sao phương Tây từ ngày, giờ và địa điểm sinh.', href: '/discover/natal-chart', accent: 'text-[#91b9dc]' },
-  { key: 'numerology', title: 'Thần Số Học', question: 'Những con số nào đang kể câu chuyện riêng của mình?', description: 'Khám phá sáu chỉ số cốt lõi từ họ tên khai sinh và ngày sinh.', href: '/discover/numerology', accent: 'text-[#c79ade]' },
-] as const;
+const SYSTEMS: Record<SystemKey, { title: string; href: string; description: string }> = {
+  tu_vi: { title: 'Tử Vi Lá Số', href: '/discover/tu-vi', description: 'Nhìn vào vận trình và cấu trúc cuộc đời qua lá số Tử Vi Đẩu Số.' },
+  tarot: { title: 'Tarot', href: '/discover/tarot', description: 'Soi sáng một câu hỏi đang hiện diện bằng góc nhìn từ bộ bài 78 lá.' },
+  natal_chart: { title: 'Bản Đồ Sao', href: '/discover/natal-chart', description: 'Khám phá khí chất, cảm xúc và cách kết nối từ bầu trời lúc bạn sinh ra.' },
+  numerology: { title: 'Thần Số Học', href: '/discover/numerology', description: 'Đọc những chỉ số cốt lõi được hình thành từ họ tên khai sinh và ngày sinh.' },
+};
 
-const PATHS = [
-  { step: '01', title: 'Nhìn vào cấu trúc', description: 'Bắt đầu với Tử Vi hoặc Bản đồ sao khi bạn muốn thấy một chân dung nhiều lớp.', links: [{ label: 'Lập lá số Tử Vi', href: '/discover/tu-vi' }, { label: 'Dựng Bản đồ sao', href: '/discover/natal-chart' }] },
-  { step: '02', title: 'Gọi tên điều cốt lõi', description: 'Thần số học cô đọng họ tên và ngày sinh thành một hồ sơ dễ đi sâu từng phần.', links: [{ label: 'Khám phá Thần số học', href: '/discover/numerology' }] },
-  { step: '03', title: 'Trở về hiện tại', description: 'Tarot phù hợp khi bạn đang mang một câu hỏi và cần thêm một góc nhìn để suy ngẫm.', links: [{ label: 'Rút bài Tarot', href: '/discover/tarot' }] },
-] as const;
+const INTENTS: Array<{ key: IntentKey; label: string; question: string; primary: SystemKey; alternatives: SystemKey[]; why: string }> = [
+  { key: 'love', label: 'Tình yêu', question: 'Mình nên nhìn mối quan hệ này như thế nào?', primary: 'tarot', alternatives: ['natal_chart', 'tu_vi'], why: 'Tarot phù hợp khi bạn đang có một câu hỏi tình cảm cụ thể và cần thêm một góc nhìn để suy ngẫm ở hiện tại.' },
+  { key: 'work', label: 'Công việc', question: 'Công việc và hướng đi sắp tới của mình ra sao?', primary: 'tu_vi', alternatives: ['numerology', 'tarot'], why: 'Tử Vi phù hợp khi bạn muốn nhìn công việc trong bức tranh vận trình rộng hơn, dựa trên dữ liệu ngày giờ sinh.' },
+  { key: 'self', label: 'Bản thân', question: 'Điều gì tạo nên con người và cách mình kết nối?', primary: 'natal_chart', alternatives: ['numerology', 'tu_vi'], why: 'Bản đồ sao phù hợp khi câu hỏi hướng vào khí chất, cảm xúc và cách bạn tương tác với thế giới.' },
+  { key: 'decision', label: 'Quyết định', question: 'Mình cần nhìn rõ điều gì trước lựa chọn này?', primary: 'tarot', alternatives: ['numerology', 'tu_vi'], why: 'Tarot tạo một khoảng dừng để nhìn lựa chọn từ nhiều biểu tượng và góc độ; quyết định cuối cùng vẫn thuộc về bạn.' },
+  { key: 'future', label: 'Tương lai', question: 'Mình đang ở đâu trong hành trình dài hơn?', primary: 'tu_vi', alternatives: ['natal_chart', 'numerology'], why: 'Tử Vi phù hợp để nhìn các chu kỳ và vận trình dài hạn; đây là một hệ diễn giải, không phải lời khẳng định chắc chắn về tương lai.' },
+];
 
 export default function DiscoverPage() {
+  const [intentKey, setIntentKey] = useState<IntentKey>('love');
+  const intent = INTENTS.find((item) => item.key === intentKey) ?? INTENTS[0]!;
+  const primary = SYSTEMS[intent.primary];
+
   return (
-    <div className="flex flex-col gap-12 pb-12">
+    <div className="flex flex-col gap-8 pb-12 text-[#f2eee5] tablet:gap-10">
       <AnalyticsPageView event="discover_viewed" properties={{ feature: 'discover' }} />
 
-      <header className="relative isolate overflow-hidden rounded-xl border border-[rgba(213,173,98,0.18)] bg-[#080d18] px-5 py-8 tablet:px-9 tablet:py-11 desktop:px-12">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_82%_16%,rgba(86,110,163,0.2),transparent_25%),radial-gradient(circle_at_72%_76%,rgba(114,66,137,0.16),transparent_28%),linear-gradient(135deg,rgba(8,15,27,0.98),rgba(11,13,25,0.9))]" />
-        <div className="grid items-end gap-8 tablet:grid-cols-[minmax(0,1fr)_20rem]">
-          <div className="max-w-3xl">
-            <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#d5ad62]">Khám phá</p>
-            <h1 className="mt-3 font-serif text-heading-xl leading-tight text-text-primary tablet:text-display-sm">Một câu hỏi, nhiều cách để hiểu mình</h1>
-            <p className="mt-4 max-w-2xl text-body-md leading-relaxed text-text-secondary">Mỗi hệ quy chiếu soi sáng một lớp khác nhau: cấu trúc cuộc đời, khí chất, những con số cốt lõi hay câu hỏi của hiện tại. Hãy bắt đầu từ điều đang khiến bạn tò mò nhất.</p>
-          </div>
-          <div className="flex items-center gap-3 border-l border-[#d5ad62]/20 pl-5 text-body-sm text-text-secondary"><Compass className="h-8 w-8 shrink-0 text-[#d5ad62]" aria-hidden="true" /><p>Không cần chọn “đúng”. Chỉ cần chọn điều gần với câu hỏi của bạn hôm nay.</p></div>
-        </div>
-      </header>
+      <header className="relative isolate overflow-hidden rounded-2xl border border-[#d5ad62]/20 bg-[#080d18] px-5 py-8 tablet:px-9 tablet:py-10 desktop:px-12">
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_82%_16%,rgba(86,110,163,0.18),transparent_26%),linear-gradient(135deg,rgba(8,15,27,0.99),rgba(14,13,24,0.94))]" />
+        <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#d5ad62]">Khám phá cùng Mệnh Vi</p>
+        <h1 className="mt-3 max-w-3xl font-serif text-heading-xl leading-tight tablet:text-display-sm">Điều gì đang khiến bạn bận lòng?</h1>
+        <p className="mt-4 max-w-2xl text-body-md leading-relaxed text-text-secondary">Bắt đầu từ câu hỏi của bạn. Mệnh Vi sẽ gợi ý một hệ quy chiếu phù hợp để khám phá — không có lựa chọn nào là “đúng” duy nhất.</p>
 
-      <section aria-labelledby="systems-heading">
-        <div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Các hệ khám phá</p><h2 id="systems-heading" className="mt-1 font-serif text-heading-lg text-text-primary">Bạn muốn nhìn vào điều gì?</h2></div><span className="hidden text-caption text-text-tertiary tablet:block">4 hệ quy chiếu cốt lõi</span></div>
-        <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-[1.15fr_1fr_1fr]">
-          {SYSTEMS.map((system, index) => (
-            <Link key={system.title} href={system.href} className={`group relative isolate min-h-[18rem] overflow-hidden rounded-xl border border-white/10 bg-[#0a101c] p-5 transition-colors hover:border-[#d5ad62]/35 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62] tablet:p-7 ${index === 0 ? 'desktop:row-span-2 desktop:min-h-[37rem]' : ''} ${index === 3 ? 'desktop:col-span-2' : ''}`}>
-              <Image src={FEATURE_ART_ASSET[system.key]} alt="" fill sizes={index === 0 ? '(min-width: 1536px) 390px, (min-width: 1280px) 31vw, (min-width: 768px) 50vw, 100vw' : '(min-width: 1536px) 420px, (min-width: 1280px) 31vw, (min-width: 768px) 50vw, 100vw'} className="-z-10 object-cover opacity-55 transition duration-700 ease-organic group-hover:scale-[1.025] group-hover:opacity-65" />
-              <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-t from-[#080d18] via-[#080d18]/72 to-transparent" />
-              <div className="flex h-full flex-col justify-end">
-                <p className={`text-caption font-semibold uppercase tracking-[0.18em] ${system.accent}`}>{String(index + 1).padStart(2, '0')}</p>
-                <h3 className="mt-2 font-serif text-heading-md text-text-primary">{system.title}</h3>
-                <p className="mt-2 max-w-xl text-body-md font-medium leading-relaxed text-text-primary">{system.question}</p>
-                <p className="mt-2 max-w-xl text-body-sm leading-relaxed text-text-secondary">{system.description}</p>
-                <span className="mt-5 inline-flex min-h-11 items-center gap-2 self-start text-body-sm font-semibold text-[#e6c980]">Bắt đầu khám phá <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" /></span>
-              </div>
-            </Link>
+        <div className="mt-7 flex flex-wrap gap-2" aria-label="Chọn điều bạn đang quan tâm">
+          {INTENTS.map((item) => (
+            <button key={item.key} type="button" aria-pressed={intentKey === item.key} onClick={() => setIntentKey(item.key)} className={`min-h-11 rounded-full border px-4 text-body-sm font-semibold transition ${intentKey === item.key ? 'border-[#d5ad62]/60 bg-[#d5ad62]/12 text-[#f0d89d]' : 'border-white/10 bg-white/[0.025] text-text-secondary hover:border-[#d5ad62]/30 hover:text-text-primary'}`}>
+              {item.label}
+            </button>
           ))}
         </div>
+        <div className="mt-5 flex items-start gap-3 border-t border-white/10 pt-5 text-body-sm text-text-secondary"><Compass className="mt-0.5 h-5 w-5 shrink-0 text-[#d5ad62]" aria-hidden="true" /><p>{intent.question}</p></div>
+      </header>
+
+      <section aria-labelledby="recommendation-heading" className="grid gap-4 desktop:grid-cols-[minmax(0,1.35fr)_minmax(18rem,.65fr)]">
+        <div className="relative overflow-hidden rounded-2xl border border-[#d5ad62]/25 bg-[#0a101c] p-6 tablet:p-8">
+          <div className="grid items-center gap-7 tablet:grid-cols-[minmax(0,1fr)_12rem]">
+            <div>
+              <p className="text-caption font-semibold uppercase tracking-[0.2em] text-[#d5ad62]">Mệnh Vi gợi ý bắt đầu từ</p>
+              <h2 id="recommendation-heading" className="mt-2 font-serif text-heading-lg text-text-primary">{primary.title}</h2>
+              <p className="mt-3 max-w-2xl text-body-md leading-relaxed text-text-secondary">{primary.description}</p>
+              <Link href={primary.href} className="mt-6 inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#d5ad62] px-5 font-semibold text-[#15110a] transition hover:bg-[#e2bf79] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f0d89d]">Bắt đầu với {primary.title} <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+            </div>
+            <div className="mx-auto flex h-44 w-44 items-center justify-center rounded-full border border-[#d5ad62]/15 bg-[#d5ad62]/[0.035]">
+              <Image src={FEATURE_BADGE_ASSET[intent.primary]} alt="" width={160} height={160} className="h-36 w-36 object-contain opacity-90" aria-hidden="true" />
+            </div>
+          </div>
+        </div>
+
+        <aside className="rounded-2xl border border-white/10 bg-[#0a0f19] p-5 tablet:p-6">
+          <p className="text-caption font-semibold uppercase tracking-[0.18em] text-text-tertiary">Bạn cũng có thể thử</p>
+          <div className="mt-4 divide-y divide-white/10">
+            {intent.alternatives.map((key) => {
+              const system = SYSTEMS[key];
+              return <Link key={key} href={system.href} className="group flex min-h-[5.25rem] items-center gap-3 py-3"><Image src={FEATURE_BADGE_ASSET[key]} alt="" width={48} height={48} className="h-12 w-12 shrink-0 object-contain opacity-80" aria-hidden="true" /><div className="min-w-0 flex-1"><p className="font-serif text-heading-sm text-text-primary">{system.title}</p><p className="mt-1 line-clamp-2 text-caption leading-relaxed text-text-secondary">{system.description}</p></div><ArrowRight className="h-4 w-4 shrink-0 text-[#d5ad62] transition-transform group-hover:translate-x-1" aria-hidden="true" /></Link>;
+            })}
+          </div>
+        </aside>
       </section>
 
-      <section aria-labelledby="eastern-heading" className="relative overflow-hidden rounded-xl border border-[#d5ad62]/18 bg-[linear-gradient(110deg,#111522,#15111c)] p-5 tablet:p-8">
-        <div className="grid items-center gap-6 tablet:grid-cols-[minmax(0,1fr)_auto]">
-          <div><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Một lăng kính khác</p><h2 id="eastern-heading" className="mt-2 font-serif text-heading-md text-text-primary">Ngũ Hành Phương Đông</h2><p className="mt-3 max-w-2xl text-body-sm leading-relaxed text-text-secondary">Khám phá con giáp và ngũ hành từ ngày sinh. Đây là một hệ riêng, không phải lá số Tử Vi Đẩu Số.</p></div>
-          <Link href="/discover/eastern-horoscope" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-[#d5ad62]/30 px-4 text-body-sm font-semibold text-[#e6c980] hover:bg-[#d5ad62]/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]">Khám phá Ngũ Hành <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+      <section aria-labelledby="why-heading" className="rounded-2xl border border-[#8f78b5]/20 bg-[radial-gradient(circle_at_88%_30%,rgba(99,74,139,0.16),transparent_30%),#0b101d] p-5 tablet:p-8">
+        <div className="grid gap-5 tablet:grid-cols-[auto_minmax(0,1fr)] tablet:items-start">
+          <Sparkles className="h-8 w-8 text-[#c5a8db]" aria-hidden="true" />
+          <div><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#c5a8db]">Vì sao gợi ý này phù hợp?</p><h2 id="why-heading" className="mt-2 font-serif text-heading-md text-text-primary">Một điểm bắt đầu, không phải một phán quyết</h2><p className="mt-3 max-w-3xl text-body-sm leading-relaxed text-text-secondary">{intent.why}</p></div>
         </div>
       </section>
 
-      <section aria-labelledby="paths-heading">
-        <div className="mb-5"><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Gợi ý bắt đầu</p><h2 id="paths-heading" className="mt-1 font-serif text-heading-lg text-text-primary">Đi theo câu hỏi của bạn</h2><p className="mt-2 max-w-2xl text-body-sm text-text-secondary">Ba lộ trình biên tập từ những công cụ đang có — không phải đề xuất cá nhân hóa.</p></div>
-        <ol className="divide-y divide-white/10 border-y border-white/10">
-          {PATHS.map((path) => <li key={path.step} className="grid gap-3 py-5 tablet:grid-cols-[3rem_minmax(0,1fr)_minmax(15rem,auto)] tablet:items-center"><span className="font-serif text-heading-md text-[#d5ad62]/80">{path.step}</span><div><h3 className="font-serif text-heading-sm text-text-primary">{path.title}</h3><p className="mt-1 max-w-2xl text-body-sm text-text-secondary">{path.description}</p></div><div className="flex flex-wrap gap-x-4 gap-y-2 tablet:justify-end">{path.links.map((link) => <Link key={link.href} href={link.href} className="inline-flex min-h-11 items-center gap-1 text-body-sm font-semibold text-[#e6c980] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]">{link.label} <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" /></Link>)}</div></li>)}
-        </ol>
-      </section>
-
-      <section aria-labelledby="report-heading" className="rounded-xl border border-[#8f78b5]/20 bg-[radial-gradient(circle_at_85%_30%,rgba(99,74,139,0.18),transparent_26%),#0b101d] p-5 tablet:p-8">
-        <div className="grid items-center gap-5 tablet:grid-cols-[auto_minmax(0,1fr)_auto]"><Layers3 className="h-10 w-10 text-[#bca1d5]" aria-hidden="true" /><div><div className="flex flex-wrap items-center gap-2"><h2 id="report-heading" className="font-serif text-heading-md text-text-primary">Báo Cáo Vận Mệnh</h2><Badge variant="insight">Premium</Badge></div><p className="mt-2 max-w-2xl text-body-sm leading-relaxed text-text-secondary">Khi đã có Bản đồ sao và hồ sơ Thần số học, bạn có thể kết nối hai nguồn dữ liệu thành một bản luận giải dài.</p></div><Link href="/reports" className="inline-flex min-h-11 items-center gap-2 text-body-sm font-semibold text-[#e6c980] hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d5ad62]">Xem báo cáo <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
+      <section aria-labelledby="eastern-heading" className="border-t border-white/10 pt-7">
+        <div className="flex flex-col gap-4 tablet:flex-row tablet:items-center tablet:justify-between">
+          <div><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d5ad62]">Một lăng kính khác</p><h2 id="eastern-heading" className="mt-1 font-serif text-heading-md text-text-primary">Ngũ Hành Phương Đông</h2><p className="mt-2 max-w-2xl text-body-sm text-text-secondary">Khám phá con giáp và ngũ hành từ ngày sinh. Đây là một hệ riêng, không phải lá số Tử Vi Đẩu Số.</p></div>
+          <Link href="/discover/eastern-horoscope" className="inline-flex min-h-11 shrink-0 items-center gap-2 self-start font-semibold text-[#e6c980] tablet:self-auto">Khám phá Ngũ Hành <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+        </div>
       </section>
     </div>
   );
