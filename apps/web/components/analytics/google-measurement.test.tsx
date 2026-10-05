@@ -54,6 +54,11 @@ describe('GoogleMeasurement', () => {
         'page_view',
         expect.objectContaining({ page_path: '/tarot' }),
       );
+      expect(
+        (window.gtag as jest.Mock).mock.calls.filter(
+          ([command, eventName]) => command === 'event' && eventName === 'page_view',
+        ),
+      ).toHaveLength(1);
     });
   });
 
