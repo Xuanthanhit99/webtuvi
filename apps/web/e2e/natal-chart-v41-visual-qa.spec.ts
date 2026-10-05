@@ -35,20 +35,20 @@ for (const width of [390, 1536]) {
     await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible({ timeout: 15_000 });
 
     await page.goto('/discover/natal-chart', { waitUntil: 'domcontentloaded' });
-    const dateOfBirth = page.getByLabel('Date of birth');
+    const dateOfBirth = page.getByLabel('Ngày sinh');
     await expect(dateOfBirth).toBeVisible({ timeout: 15_000 });
     await expect(dateOfBirth).toBeEditable();
     await dateOfBirth.fill('2000-06-15');
-    await page.getByLabel('Time of birth').fill('14:30');
-    await page.getByLabel('Place of birth').fill('Ha Noi');
-    await page.getByRole('button', { name: /^search$/i }).click();
+    await page.getByLabel('Giờ sinh').fill('14:30');
+    await page.getByLabel('Nơi sinh').fill('Ha Noi');
+    await page.getByRole('button', { name: 'Tìm kiếm' }).click();
 
-    const candidates = page.locator('ul[aria-label="Matching places"] button');
+    const candidates = page.locator('ul[aria-label="Địa điểm phù hợp"] button');
     await expect(candidates.first()).toBeVisible({ timeout: 15_000 });
     await candidates.first().click();
-    await expect(page.getByRole('button', { name: 'Change' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Đổi' })).toBeVisible();
 
-    await page.getByRole('button', { name: /calculate my chart/i }).click();
+    await page.getByRole('button', { name: 'Lập bản đồ sao' }).click();
 
     const bigThree = page.getByRole('group', { name: 'Big Three' });
     await expect(bigThree).toBeVisible({ timeout: 15_000 });
