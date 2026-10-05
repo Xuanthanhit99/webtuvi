@@ -74,10 +74,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Script id="google-consent-default" strategy="beforeInteractive">
           {GOOGLE_CONSENT_DEFAULT}
         </Script>
-        <GoogleMeasurement />
         <a href="#main-content" className="skip-link">
           Bỏ qua điều hướng và đến nội dung chính
         </a>
+        <GoogleMeasurement />
         <QueryProvider>
           <AuthProvider>
             {children}
