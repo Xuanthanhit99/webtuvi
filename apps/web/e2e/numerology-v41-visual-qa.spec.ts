@@ -29,10 +29,17 @@ for (const width of [390, 1536]) {
     await registerAndSkipOnboarding(page, width);
 
     await page.goto('/');
+    const consent = page.getByRole('button', { name: /^Đồng ý/i });
+    if (await consent.isVisible().catch(() => false)) await consent.click();
     await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible({ timeout: 15_000 });
 
     await page.goto('/discover/numerology', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { name: 'Những con số kể câu chuyện riêng của bạn' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator('#numerology-name')).toBeVisible();
+    await expect(page.locator('#numerology-name')).toBeEditable();
+    await expect(page.locator('#numerology-birthdate')).toBeEditable();
+    await expect(page.getByText('Đang tải kết quả của bạn...')).toBeHidden({ timeout: 15_000 });
+    await page.evaluate(() => document.fonts.ready);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`numerology-v41-entry-${width}.png`), fullPage: true });
 
