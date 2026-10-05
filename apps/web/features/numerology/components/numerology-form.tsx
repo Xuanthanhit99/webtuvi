@@ -73,9 +73,9 @@ export function NumerologyForm({ onCalculated }: { onCalculated?: (reading: Nume
   }
 
   return (
-    <form onSubmit={handleSubmit} className="relative grid overflow-hidden rounded-xl border border-[#b78ad0]/20 bg-[#080d1c] tablet:grid-cols-[minmax(0,1.15fr)_minmax(17rem,0.85fr)]" noValidate>
+    <form onSubmit={handleSubmit} className="relative grid overflow-hidden rounded-xl border border-[#b78ad0]/20 bg-[#080d1c] tablet:grid-cols-[minmax(0,1.25fr)_minmax(16rem,0.75fr)]" noValidate>
       <div className="flex flex-col gap-5 p-5 tablet:p-7">
-        <div><p className="font-serif text-heading-sm text-text-primary">Thông tin của bạn</p><p className="mt-1 text-body-sm text-text-secondary">Nhập đúng họ tên trên giấy khai sinh để các chỉ số từ tên được nhất quán.</p></div>
+        <div><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#c39cdb]">Dữ liệu để tính</p><p className="mt-2 font-serif text-heading-sm text-text-primary">Tên khai sinh và ngày sinh</p><p className="mt-1 text-body-sm text-text-secondary">Nhập đúng họ tên trên giấy khai sinh để các chỉ số từ tên được nhất quán.</p></div>
         <FormField label="Họ tên khai sinh" htmlFor="numerology-name" required error={fieldError?.field === 'fullBirthName' ? fieldError.message : undefined}>
           <Input id="numerology-name" value={fullBirthName} onChange={(e) => setFullBirthName(e.target.value)} placeholder="Ví dụ: Nguyễn Văn An" maxLength={NAME_MAX_LENGTH} invalid={fieldError?.field === 'fullBirthName'} autoComplete="name" />
         </FormField>
@@ -87,8 +87,8 @@ export function NumerologyForm({ onCalculated }: { onCalculated?: (reading: Nume
         <Button type="submit" variant="primary" loading={phase === 'calculating'}>{phase === 'calculating' ? 'Đang tính các chỉ số…' : 'Khám phá hồ sơ số học'}</Button>
       </div>
       <aside className="relative border-t border-[#b78ad0]/15 bg-[radial-gradient(circle_at_70%_20%,rgba(143,89,179,0.18),transparent_42%),rgba(17,12,31,0.72)] p-5 text-body-sm text-text-secondary tablet:border-l tablet:border-t-0 tablet:p-7">
-        <p className="text-caption font-semibold uppercase tracking-[0.2em] text-[#c39cdb]">Bạn sẽ nhận được</p><p className="mt-3 font-serif text-heading-sm text-[#f1d69d]">Một chân dung số học có chiều sâu</p>
-        <ul className="mt-5 space-y-4"><li><span className="text-text-primary">Bản sắc cốt lõi</span><br />Đường đời, sứ mệnh, linh hồn và nhân cách.</li><li><span className="text-text-primary">Nhịp điệu hiện tại</span><br />Ngày sinh và năm cá nhân của bạn.</li><li><span className="text-text-primary">Minh bạch</span><br />Có thể mở từng chỉ số để xem cách hình thành.</li></ul>
+        <p className="text-caption font-semibold uppercase tracking-[0.2em] text-[#c39cdb]">Bạn sẽ nhận được</p><p className="mt-3 font-serif text-heading-sm text-[#f1d69d]">Bạn sẽ thấy gì sau khi tính?</p>
+        <ol className="mt-5 space-y-4"><li><span className="text-[#f1d69d]">01</span> <span className="text-text-primary">Số chủ đạo</span><br /><span className="pl-7">Điểm neo đầu tiên của hồ sơ.</span></li><li><span className="text-[#f1d69d]">02</span> <span className="text-text-primary">Chân dung 6 chỉ số</span><br /><span className="pl-7">Ý nghĩa và cách tính có thể kiểm tra.</span></li><li><span className="text-[#f1d69d]">03</span> <span className="text-text-primary">Nhịp hiện tại & luận giải</span><br /><span className="pl-7">Personal Year tách rõ khỏi phần AI diễn giải.</span></li></ol>
         <p className="mt-6 border-t border-[#b78ad0]/15 pt-4 text-caption">Họ tên và ngày sinh chỉ được dùng để tạo hồ sơ số học của bạn.</p>
       </aside>
     </form>
