@@ -16,7 +16,10 @@ jest.mock('next/script', () => {
 });
 
 describe('GoogleMeasurement', () => {
+  const originalGaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   beforeEach(() => {
+    process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = 'G-TEST123456';
     window.localStorage.clear();
     window.dataLayer = [];
     window.gtag = jest.fn();
@@ -24,6 +27,11 @@ describe('GoogleMeasurement', () => {
 
   afterEach(() => {
     delete window.gtag;
+    if (originalGaMeasurementId === undefined) {
+      delete process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+    } else {
+      process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID = originalGaMeasurementId;
+    }
   });
 
   it('uses a single Google tag loader and keeps the existing Ads destination', () => {
@@ -33,6 +41,7 @@ describe('GoogleMeasurement', () => {
     const loaders = screen.getAllByTestId('external-google-tag');
 
     expect(config.textContent).toContain("AW-18479493951");
+    expect(config.textContent).toContain("G-TEST123456");
     expect(loaders).toHaveLength(1);
   });
 
