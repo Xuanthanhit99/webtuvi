@@ -16,7 +16,7 @@ for (const width of [390, 1536]) {
     expect((await context.request.post('http://localhost:4000/onboarding/skip', { headers: { 'X-CSRF-Token': csrf! } })).ok()).toBe(true);
     await page.goto('/discover/tu-vi');
     const consent = page.getByRole('button', { name: /^Đồng ý/i });
-    if (await consent.isVisible().catch(() => false)) await consent.click();
+    if (await consent.isVisible({ timeout: 2000 }).catch(() => false)) { await consent.click({ force: true, timeout: 5000 }); await expect(consent).toBeHidden({ timeout: 5000 }); }
     await page.locator('#tu-vi-birthdate').fill('1984-02-02');
     await page.locator('#tu-vi-birthtime').fill('00:30');
     await page.locator('#tu-vi-sex-Nam').check();
