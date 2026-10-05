@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Playfair_Display, Be_Vietnam_Pro, IBM_Plex_Mono } from 'next/font/google';
 import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
@@ -27,6 +28,17 @@ const mono = IBM_Plex_Mono({
   display: 'swap',
   preload: false,
 });
+
+const GOOGLE_CONSENT_DEFAULT = `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = gtag;
+gtag('consent', 'default', {
+  analytics_storage: 'denied',
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  wait_for_update: 500
+});`;
 
 const TAGLINE = `${SITE_NAME} — Tử Vi, Tarot, Bản đồ sao và Thần số học`;
 
@@ -59,6 +71,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="vi" className={`${displayFont.variable} ${bodyFont.variable} ${mono.variable}`}>
       <body>
+        <Script id="google-consent-default" strategy="beforeInteractive">
+          {GOOGLE_CONSENT_DEFAULT}
+        </Script>
         <GoogleMeasurement />
         <a href="#main-content" className="skip-link">
           Bỏ qua điều hướng và đến nội dung chính
