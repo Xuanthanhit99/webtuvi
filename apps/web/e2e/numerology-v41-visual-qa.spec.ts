@@ -30,7 +30,10 @@ for (const width of [390, 1536]) {
 
     await page.goto('/');
     const consent = page.getByRole('button', { name: /^Đồng ý/i });
-    if (await consent.isVisible().catch(() => false)) await consent.click();
+    if (await consent.isVisible({ timeout: 2_000 }).catch(() => false)) {
+      await consent.click({ force: true, timeout: 5_000 });
+      await expect(consent).toBeHidden({ timeout: 5_000 });
+    }
     await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible({ timeout: 15_000 });
 
     await page.goto('/discover/numerology', { waitUntil: 'domcontentloaded' });
