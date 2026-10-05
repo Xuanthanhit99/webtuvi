@@ -5,7 +5,9 @@ import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 
 const GOOGLE_ADS_TAG_ID = 'AW-18479493951';
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+function getGaMeasurementId() {
+  return process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+}
 const CONSENT_KEY = 'menhvi_google_consent_v1';
 
 type ConsentChoice = 'granted' | 'denied';
@@ -27,7 +29,7 @@ function updateConsent(choice: ConsentChoice) {
 }
 
 function sendPageView(pathname: string) {
-  if (!GA_MEASUREMENT_ID || !window.gtag) return;
+  if (!getGaMeasurementId() || !window.gtag) return;
   window.gtag('event', 'page_view', {
     page_location: `${window.location.origin}${pathname}`,
     page_path: pathname,
@@ -36,6 +38,7 @@ function sendPageView(pathname: string) {
 }
 
 export function GoogleMeasurement() {
+  const gaMeasurementId = getGaMeasurementId();
   const pathname = usePathname();
   const lastTrackedPath = useRef<string | null>(null);
   const [consent, setConsent] = useState<ConsentChoice | null>(() => {
@@ -67,13 +70,13 @@ export function GoogleMeasurement() {
   return (
     <>
       <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID || GOOGLE_ADS_TAG_ID}`}
+        src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId || GOOGLE_ADS_TAG_ID}`}
         strategy="afterInteractive"
       />
       <Script id="google-measurement-config" strategy="afterInteractive">
         {`gtag('js', new Date());
 gtag('config', '${GOOGLE_ADS_TAG_ID}');
-${GA_MEASUREMENT_ID ? `gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });` : ''}`}
+${gaMeasurementId ? `gtag('config', '${gaMeasurementId}', { send_page_view: false });` : ''}`}
       </Script>
 
       {consent === null ? (
