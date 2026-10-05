@@ -26,6 +26,15 @@ function updateConsent(choice: ConsentChoice) {
   });
 }
 
+function sendPageView(pathname: string) {
+  if (!GA_MEASUREMENT_ID || !window.gtag) return;
+  window.gtag('event', 'page_view', {
+    page_location: `${window.location.origin}${pathname}`,
+    page_path: pathname,
+    page_title: document.title,
+  });
+}
+
 export function GoogleMeasurement() {
   const pathname = usePathname();
   const [consent, setConsent] = useState<ConsentChoice | null>(() => {
@@ -39,16 +48,14 @@ export function GoogleMeasurement() {
   }, [consent]);
 
   useEffect(() => {
-    if (!GA_MEASUREMENT_ID || consent !== 'granted' || !window.gtag) return;
-    window.gtag('event', 'page_view', {
-      page_location: `${window.location.origin}${pathname}`,
-      page_path: pathname,
-      page_title: document.title,
-    });
+    if (consent !== 'granted') return;
+    sendPageView(pathname);
   }, [pathname, consent]);
 
   const chooseConsent = (choice: ConsentChoice) => {
     window.localStorage.setItem(CONSENT_KEY, choice);
+    updateConsent(choice);
+    if (choice === 'granted') sendPageView(pathname);
     setConsent(choice);
   };
 
