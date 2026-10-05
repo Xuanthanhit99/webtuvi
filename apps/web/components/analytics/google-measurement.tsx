@@ -28,15 +28,15 @@ function updateConsent(choice: ConsentChoice) {
 
 export function GoogleMeasurement() {
   const pathname = usePathname();
-  const [consent, setConsent] = useState<ConsentChoice | null>(null);
+  const [consent, setConsent] = useState<ConsentChoice | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const saved = window.localStorage.getItem(CONSENT_KEY);
+    return saved === 'granted' || saved === 'denied' ? saved : null;
+  });
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(CONSENT_KEY);
-    if (saved === 'granted' || saved === 'denied') {
-      setConsent(saved);
-      updateConsent(saved);
-    }
-  }, []);
+    if (consent) updateConsent(consent);
+  }, [consent]);
 
   useEffect(() => {
     if (!GA_MEASUREMENT_ID || consent !== 'granted' || !window.gtag) return;
@@ -50,23 +50,10 @@ export function GoogleMeasurement() {
   const chooseConsent = (choice: ConsentChoice) => {
     window.localStorage.setItem(CONSENT_KEY, choice);
     setConsent(choice);
-    updateConsent(choice);
   };
 
   return (
     <>
-      <Script id="google-consent-default" strategy="beforeInteractive">
-        {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-window.gtag = gtag;
-gtag('consent', 'default', {
-  analytics_storage: 'denied',
-  ad_storage: 'denied',
-  ad_user_data: 'denied',
-  ad_personalization: 'denied',
-  wait_for_update: 500
-});`}
-      </Script>
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID || GOOGLE_ADS_TAG_ID}`}
         strategy="afterInteractive"
