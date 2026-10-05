@@ -188,7 +188,7 @@ jobs:
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/discover-v41-visual-qa.spec.ts e2e/tarot-v42-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/natal-chart-v41-visual-qa.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/discover-v41-visual-qa.spec.ts e2e/tarot-v42-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
