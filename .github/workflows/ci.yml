@@ -199,8 +199,8 @@ jobs:
         if: always()
         run: |
           mkdir -p natal-chart-visual-qa
-          mapfile -t NATAL_MOBILE < <(find apps/web/test-results -type f --name '*_discover_natal_chart.png' | sort)
-          mapfile -t NATAL_DESKTOP < <(find apps/web/test-results -type f --name '*_discover_natal_chart.png' | sort)
+          mapfile -t NATAL_MOBILE < <(find apps/web/test-results -type f -name 'natal-chart-v41-390.png' | sort)
+          mapfile -t NATAL_DESKTOP < <(find apps/web/test-results -type f -name 'natal-chart-v41-1536.png' | sort)
           if [ "${#NATAL_MOBILE[@]}" -ne 1 ] || [ "${#NATAL_DESKTOP[@]}" -ne 1 ]; then
             echo "::error::Expected exactly one Bản đồ sao V4.1 screenshot at 390px and 1536px."
             exit 1
