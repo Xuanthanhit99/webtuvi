@@ -58,8 +58,14 @@ for (const width of [390, 1536]) {
     await expect(page.getByRole('img', { name: /Vòng bản đồ sao/i })).toBeVisible();
     await expect(page.locator('#natal-chart-section-planets')).toBeVisible();
 
+    await page.getByRole('button', { name: 'Các nhà' }).click();
+    await expect(page.locator('#natal-chart-section-houses')).toBeVisible();
+
     await page.getByRole('button', { name: 'Các góc hợp chính' }).click();
     await expect(page.locator('#natal-chart-section-major-aspects').getByRole('listitem').first()).toBeVisible();
+
+    await page.getByRole('button', { name: 'Dữ liệu chuyên sâu · Chi tiết cách tính' }).click();
+    await expect(page.locator('#natal-chart-section-calculation-details')).toBeVisible();
 
     await page.evaluate(() => document.fonts.ready);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
