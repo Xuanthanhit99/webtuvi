@@ -398,3 +398,5 @@ jobs:
           path: visual-qa/
           if-no-files-found: error
           retention-days: 14
+
+# CI retrigger: Numerology V4.1 exact-head visual gate.
