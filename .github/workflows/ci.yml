@@ -188,10 +188,37 @@ jobs:
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/natal-chart-v41-visual-qa.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/discover-v41-visual-qa.spec.ts e2e/tarot-v42-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/natal-chart-v41-visual-qa.spec.ts e2e/numerology-v41-visual-qa.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/discover-v41-visual-qa.spec.ts e2e/tarot-v42-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
+
+      - name: Collect Thần số học V4.1 visual QA screenshots
+        if: always()
+        run: |
+          mkdir -p numerology-visual-qa
+          mapfile -t ENTRY_MOBILE < <(find apps/web/test-results -type f -name 'numerology-v41-entry-390.png' | sort)
+          mapfile -t ENTRY_DESKTOP < <(find apps/web/test-results -type f -name 'numerology-v41-entry-1536.png' | sort)
+          mapfile -t RESULT_MOBILE < <(find apps/web/test-results -type f -name 'numerology-v41-result-390.png' | sort)
+          mapfile -t RESULT_DESKTOP < <(find apps/web/test-results -type f -name 'numerology-v41-result-1536.png' | sort)
+          if [ "${#ENTRY_MOBILE[@]}" -ne 1 ] || [ "${#ENTRY_DESKTOP[@]}" -ne 1 ] || [ "${#RESULT_MOBILE[@]}" -ne 1 ] || [ "${#RESULT_DESKTOP[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Thần số học V4.1 entry and result screenshot at both 390px and 1536px."
+            exit 1
+          fi
+          cp "${ENTRY_MOBILE[0]}" numerology-visual-qa/numerology-v41-entry-mobile-390.png
+          cp "${ENTRY_DESKTOP[0]}" numerology-visual-qa/numerology-v41-entry-desktop-1536.png
+          cp "${RESULT_MOBILE[0]}" numerology-visual-qa/numerology-v41-result-mobile-390.png
+          cp "${RESULT_DESKTOP[0]}" numerology-visual-qa/numerology-v41-result-desktop-1536.png
+          printf 'PR head commit: %s\nWorkflow checkout SHA: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}" "$GITHUB_SHA" > numerology-visual-qa/README.txt
+
+      - name: Upload Thần số học V4.1 visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: numerology-v41-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: numerology-visual-qa/
+          if-no-files-found: error
+          retention-days: 14
 
       # Bản đồ sao V4.1 visual evidence is captured by the authenticated production-readiness
       # gate at both canonical fidelity viewports. Keep a dedicated artifact for human review.
