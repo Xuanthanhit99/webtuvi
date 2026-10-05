@@ -1,17 +1,24 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { NumerologyForm } from './numerology-form';
 import { NumerologyHistoryList } from './numerology-history-list';
 import { NumerologyReadingDetail } from './numerology-reading-detail';
 import { MvPage, MvSection } from '@/components/ui/mv-page';
+import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 import { Board04NumberMark } from './board04-number-mark';
 import { FEATURE_ART_ASSET } from '@/features/dashboard/components/home/production-assets';
 
 export function NumerologyDashboard() {
   const router = useRouter();
   const activeId = useSearchParams().get('item');
+
+  useEffect(() => {
+    trackGoogleFunnelEvent('tool_view', 'numerology');
+  }, []);
   const selectItem = (id: string | null) => router.replace(id ? `/discover/numerology?item=${id}` : '/discover/numerology', { scroll: false });
   if (activeId) return <NumerologyReadingDetail id={activeId} onClose={() => selectItem(null)} />;
 
