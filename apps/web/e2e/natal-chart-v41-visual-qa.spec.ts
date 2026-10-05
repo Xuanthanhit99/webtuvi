@@ -55,10 +55,10 @@ for (const width of [390, 1536]) {
     await expect(bigThree.getByText('Song Tử', { exact: true })).toBeVisible();
     await expect(bigThree.getByText('Nhân Mã', { exact: true })).toBeVisible();
     await expect(bigThree.getByText('Thiên Bình', { exact: true })).toBeVisible();
-    await expect(page.getByRole('img', { name: /natal chart wheel/i })).toBeVisible();
+    await expect(page.getByRole('img', { name: /Vòng bản đồ sao/i })).toBeVisible();
     await expect(page.locator('#natal-chart-section-planets')).toBeVisible();
 
-    await page.getByRole('button', { name: 'Major Aspects' }).click();
+    await page.getByRole('button', { name: 'Các góc hợp chính' }).click();
     await expect(page.locator('#natal-chart-section-major-aspects').getByRole('listitem').first()).toBeVisible();
 
     await page.evaluate(() => document.fonts.ready);
