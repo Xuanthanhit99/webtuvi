@@ -18,6 +18,7 @@ import { useAuth, useInvalidateAuth } from '@/providers/auth-provider';
 import { ApiError } from '@/lib/api-error';
 import { accountError } from '../account-error';
 import { trackEvent } from '@/lib/analytics';
+import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 
 const PASSWORD_RULES = 'Từ 8 đến 128 ký tự, có ít nhất một chữ số hoặc ký hiệu.';
 
@@ -40,6 +41,7 @@ export function RegisterForm() {
     trackEvent('signup_started', { feature: 'auth' });
     try {
       await authApi.register(values);
+      trackGoogleFunnelEvent('sign_up');
       await invalidateAuth();
       await refetchAuth();
       const next = safeNextPath(searchParams.get('next'));
