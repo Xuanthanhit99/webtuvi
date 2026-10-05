@@ -28,8 +28,17 @@ for (const width of [390, 1536]) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await registerAndSkipOnboarding(page, width);
 
-    await page.goto('/discover/natal-chart');
-    await page.getByLabel('Date of birth').fill('2000-06-15');
+    // Bootstrap the authenticated web session before entering the tool directly. This mirrors
+    // production-readiness: prove the browser sees the API-issued auth cookies, then wait for
+    // the actual Natal form rather than letting locator.fill() absorb the whole test timeout.
+    await page.goto('/');
+    await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible({ timeout: 15_000 });
+
+    await page.goto('/discover/natal-chart', { waitUntil: 'domcontentloaded' });
+    const dateOfBirth = page.getByLabel('Date of birth');
+    await expect(dateOfBirth).toBeVisible({ timeout: 15_000 });
+    await expect(dateOfBirth).toBeEditable();
+    await dateOfBirth.fill('2000-06-15');
     await page.getByLabel('Time of birth').fill('14:30');
     await page.getByLabel('Place of birth').fill('Ha Noi');
     await page.getByRole('button', { name: /^search$/i }).click();
