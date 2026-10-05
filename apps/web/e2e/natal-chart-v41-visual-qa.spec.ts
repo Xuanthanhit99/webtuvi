@@ -52,9 +52,9 @@ for (const width of [390, 1536]) {
 
     const bigThree = page.getByRole('group', { name: 'Big Three' });
     await expect(bigThree).toBeVisible({ timeout: 15_000 });
-    await expect(bigThree.getByText('Gemini', { exact: true })).toBeVisible();
-    await expect(bigThree.getByText('Sagittarius', { exact: true })).toBeVisible();
-    await expect(bigThree.getByText('Libra', { exact: true })).toBeVisible();
+    await expect(bigThree.getByText('Song Tử', { exact: true })).toBeVisible();
+    await expect(bigThree.getByText('Nhân Mã', { exact: true })).toBeVisible();
+    await expect(bigThree.getByText('Thiên Bình', { exact: true })).toBeVisible();
     await expect(page.getByRole('img', { name: /natal chart wheel/i })).toBeVisible();
     await expect(page.locator('#natal-chart-section-planets')).toBeVisible();
 
