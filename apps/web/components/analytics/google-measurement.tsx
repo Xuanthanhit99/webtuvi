@@ -28,6 +28,20 @@ function updateConsent(choice: ConsentChoice) {
   });
 }
 
+
+export type GoogleFunnelTool = 'tarot' | 'tu_vi' | 'natal_chart' | 'numerology';
+export type GoogleFunnelEvent = 'tool_view' | 'tool_start' | 'tool_complete' | 'result_view' | 'save_result' | 'sign_up';
+
+export function trackGoogleFunnelEvent(event: GoogleFunnelEvent, tool?: GoogleFunnelTool): void {
+  if (typeof window === 'undefined' || !getGaMeasurementId() || !window.gtag) return;
+  try {
+    if (window.localStorage.getItem(CONSENT_KEY) !== 'granted') return;
+  } catch {
+    return;
+  }
+  window.gtag('event', event, tool ? { tool } : {});
+}
+
 function sendPageView(pathname: string) {
   if (!getGaMeasurementId() || !window.gtag) return;
   window.gtag('event', 'page_view', {

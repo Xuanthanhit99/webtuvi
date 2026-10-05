@@ -1,11 +1,14 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BirthInputForm } from './birth-input-form';
 import { NatalChartHistoryList } from './natal-chart-history-list';
 import { NatalChartDetail } from './natal-chart-detail';
 import { MvPage, MvSection } from '@/components/ui/mv-page';
+import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 import { Board04AstroMark } from './board04-astro-mark';
 import { FEATURE_ART_ASSET } from '@/features/dashboard/components/home/production-assets';
 
@@ -25,6 +28,10 @@ export function NatalChartDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeId = searchParams.get('item');
+
+  useEffect(() => {
+    trackGoogleFunnelEvent('tool_view', 'natal_chart');
+  }, []);
 
   function selectItem(id: string | null) {
     router.replace(id ? `/discover/natal-chart?item=${id}` : '/discover/natal-chart', { scroll: false });

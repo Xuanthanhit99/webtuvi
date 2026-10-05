@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { GoogleMeasurement } from './google-measurement';
+import { GoogleMeasurement, trackGoogleFunnelEvent } from './google-measurement';
 
 jest.mock('next/navigation', () => ({
   usePathname: () => '/tarot',
@@ -80,4 +80,22 @@ describe('GoogleMeasurement', () => {
     });
     expect(window.gtag).not.toHaveBeenCalledWith('event', 'page_view', expect.anything());
   });
+
+  it('sends funnel events only after measurement consent is granted', () => {
+    trackGoogleFunnelEvent('tool_start', 'tarot');
+    expect(window.gtag).not.toHaveBeenCalledWith('event', 'tool_start', expect.anything());
+
+    window.localStorage.setItem('menhvi_google_consent_v1', 'granted');
+    trackGoogleFunnelEvent('tool_start', 'tarot');
+
+    expect(window.gtag).toHaveBeenCalledWith('event', 'tool_start', { tool: 'tarot' });
+  });
+
+  it('supports successful sign_up without inventing a tool attribution', () => {
+    window.localStorage.setItem('menhvi_google_consent_v1', 'granted');
+    trackGoogleFunnelEvent('sign_up');
+
+    expect(window.gtag).toHaveBeenCalledWith('event', 'sign_up', {});
+  });
+
 });
