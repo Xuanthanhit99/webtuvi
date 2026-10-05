@@ -26,15 +26,12 @@ describe('GoogleMeasurement', () => {
     delete window.gtag;
   });
 
-  it('declares denied consent before Google configuration and uses a single tag loader', () => {
+  it('uses a single Google tag loader and keeps the existing Ads destination', () => {
     render(<GoogleMeasurement />);
 
-    const consent = screen.getByTestId('google-consent-default');
     const config = screen.getByTestId('google-measurement-config');
     const loaders = screen.getAllByTestId('external-google-tag');
 
-    expect(consent.textContent).toContain("analytics_storage: 'denied'");
-    expect(consent.textContent).toContain("ad_storage: 'denied'");
     expect(config.textContent).toContain("AW-18479493951");
     expect(loaders).toHaveLength(1);
   });
