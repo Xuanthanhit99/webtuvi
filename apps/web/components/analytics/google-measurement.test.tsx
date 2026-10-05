@@ -1,0 +1,72 @@
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { GoogleMeasurement } from './google-measurement';
+
+jest.mock('next/navigation', () => ({
+  usePathname: () => '/tarot',
+}));
+
+jest.mock('next/script', () => {
+  return function MockScript(props: { id?: string; src?: string; children?: React.ReactNode }) {
+    return (
+      <div data-testid={props.id || 'external-google-tag'} data-src={props.src}>
+        {typeof props.children === 'string' ? props.children : null}
+      </div>
+    );
+  };
+});
+
+describe('GoogleMeasurement', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.dataLayer = [];
+    window.gtag = jest.fn();
+  });
+
+  afterEach(() => {
+    delete window.gtag;
+  });
+
+  it('declares denied consent before Google configuration and uses a single tag loader', () => {
+    render(<GoogleMeasurement />);
+
+    const consent = screen.getByTestId('google-consent-default');
+    const config = screen.getByTestId('google-measurement-config');
+    const loaders = screen.getAllByTestId('external-google-tag');
+
+    expect(consent.textContent).toContain("analytics_storage: 'denied'");
+    expect(consent.textContent).toContain("ad_storage: 'denied'");
+    expect(config.textContent).toContain("AW-18479493951");
+    expect(loaders).toHaveLength(1);
+  });
+
+  it('does not send a page view until analytics consent is granted', async () => {
+    render(<GoogleMeasurement />);
+
+    expect(window.gtag).not.toHaveBeenCalledWith('event', 'page_view', expect.anything());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Đồng ý' }));
+
+    await waitFor(() => {
+      expect(window.gtag).toHaveBeenCalledWith(
+        'consent',
+        'update',
+        expect.objectContaining({ analytics_storage: 'granted' }),
+      );
+      expect(window.gtag).toHaveBeenCalledWith(
+        'event',
+        'page_view',
+        expect.objectContaining({ page_path: '/tarot' }),
+      );
+    });
+  });
+
+  it('persists denial and does not send a page view', async () => {
+    render(<GoogleMeasurement />);
+    fireEvent.click(screen.getByRole('button', { name: 'Từ chối' }));
+
+    await waitFor(() => {
+      expect(window.localStorage.getItem('menhvi_google_consent_v1')).toBe('denied');
+    });
+    expect(window.gtag).not.toHaveBeenCalledWith('event', 'page_view', expect.anything());
+  });
+});
