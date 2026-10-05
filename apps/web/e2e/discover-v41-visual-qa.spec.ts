@@ -11,6 +11,8 @@ for (const width of [390, 1536]) {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto('/discover', { waitUntil: 'networkidle' });
+    const consent = page.getByRole('button', { name: /^Đồng ý/i });
+    if (await consent.isVisible().catch(() => false)) await consent.click();
     await page.evaluate(() => document.fonts.ready);
 
     await expect(page.getByRole('heading', { level: 1, name: 'Điều gì đang khiến bạn bận lòng?' })).toBeVisible();
