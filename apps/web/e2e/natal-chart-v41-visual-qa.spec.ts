@@ -35,12 +35,12 @@ for (const width of [390, 1536]) {
     await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible({ timeout: 15_000 });
 
     await page.goto('/discover/natal-chart', { waitUntil: 'domcontentloaded' });
-    const dateOfBirth = page.getByLabel('Ngày sinh');
+    const dateOfBirth = page.locator('#natal-chart-birthdate');
     await expect(dateOfBirth).toBeVisible({ timeout: 15_000 });
     await expect(dateOfBirth).toBeEditable();
     await dateOfBirth.fill('2000-06-15');
-    await page.getByLabel('Giờ sinh').fill('14:30');
-    await page.getByLabel('Nơi sinh').fill('Ha Noi');
+    await page.locator('#natal-chart-birthtime').fill('14:30');
+    await page.locator('#natal-chart-place').fill('Ha Noi');
     await page.getByRole('button', { name: 'Tìm kiếm' }).click();
 
     const candidates = page.locator('ul[aria-label="Địa điểm phù hợp"] button');
