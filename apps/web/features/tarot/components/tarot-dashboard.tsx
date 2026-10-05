@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TarotDrawPanel } from './tarot-draw-panel';
@@ -7,6 +9,7 @@ import { TarotHistoryList } from './tarot-history-list';
 import { TarotReadingDetail } from './tarot-reading-detail';
 import { TarotLibrary } from './tarot-library';
 import { MvPage, MvSection } from '@/components/ui/mv-page';
+import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 import { FEATURE_ART_ASSET } from '@/features/dashboard/components/home/production-assets';
 
 /**
@@ -18,6 +21,10 @@ export function TarotDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeId = searchParams.get('item');
+
+  useEffect(() => {
+    trackGoogleFunnelEvent('tool_view', 'tarot');
+  }, []);
 
   function selectItem(id: string | null) {
     router.replace(id ? `/discover/tarot?item=${id}` : '/discover/tarot', { scroll: false });

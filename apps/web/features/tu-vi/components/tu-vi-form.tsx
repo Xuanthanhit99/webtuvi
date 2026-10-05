@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { ApiError } from '@/lib/api-error';
 import { trackEvent } from '@/lib/analytics';
+import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 import { tuViApi } from '../api/tu-vi-api';
 import { TuViChartView } from './tu-vi-chart-view';
 
@@ -45,6 +46,9 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
     mutationFn: () => tuViApi.calculate({ birthDate, birthTime, sex: sex as 'Nam' | 'Nữ' }),
     onSuccess: (chart) => {
       setResult(chart);
+      trackGoogleFunnelEvent('tool_complete', 'tu_vi');
+      trackGoogleFunnelEvent('save_result', 'tu_vi');
+      trackGoogleFunnelEvent('result_view', 'tu_vi');
       queryClient.invalidateQueries({ queryKey: ['tu-vi'] });
       onCalculated?.(chart);
     },
@@ -70,6 +74,7 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
     if (!birthTime) return setFieldError({ field: 'birthTime', message: 'Giờ sinh là dữ liệu bắt buộc để xác định cung và an sao.' });
     if (!sex) return setSexError('Vui lòng chọn Nam hoặc Nữ theo hệ quy tắc của lá số.');
     trackEvent('tu_vi_started', { feature: 'tu_vi' });
+    trackGoogleFunnelEvent('tool_start', 'tu_vi');
     calculate.mutate();
   }
 

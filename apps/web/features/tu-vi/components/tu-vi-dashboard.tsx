@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+
 import { useRouter, useSearchParams } from 'next/navigation';
 import { TuViForm } from './tu-vi-form';
 import { TuViHero } from './tu-vi-hero';
@@ -7,6 +9,7 @@ import { TuViHistoryList } from './tu-vi-history-list';
 import { TuViDetail } from './tu-vi-detail';
 import { TuViTrustSection } from './tu-vi-trust-section';
 import { MvPage, MvSection } from '@/components/ui/mv-page';
+import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 
 /**
  * `/discover/tu-vi` — intro, birth-data form, reveal, and history, using the same `?item=<id>`
@@ -18,6 +21,10 @@ export function TuViDashboard() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeId = searchParams.get('item');
+
+  useEffect(() => {
+    trackGoogleFunnelEvent('tool_view', 'tu_vi');
+  }, []);
 
   function selectItem(id: string | null) {
     router.replace(id ? `/discover/tu-vi?item=${id}` : '/discover/tu-vi', { scroll: false });

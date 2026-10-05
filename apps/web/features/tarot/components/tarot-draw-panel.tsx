@@ -11,6 +11,7 @@ import { FormField } from '@/components/ui/form-field';
 import { toast } from '@/components/ui/toast';
 import { ApiError } from '@/lib/api-error';
 import { trackEvent } from '@/lib/analytics';
+import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 import { tarotApi } from '../api/tarot-api';
 import { TarotReadingView } from './tarot-reading-view';
 import { TarotCardVisual } from './tarot-card-face';
@@ -82,6 +83,9 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
       setPhase('revealed');
       queryClient.invalidateQueries({ queryKey: ['tarot'] });
       onDrawn?.(reading);
+      trackGoogleFunnelEvent('tool_complete', 'tarot');
+      trackGoogleFunnelEvent('save_result', 'tarot');
+      trackGoogleFunnelEvent('result_view', 'tarot');
     },
     onError: (error: unknown) => {
       setPhase('spread');
@@ -102,6 +106,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
     setPhase('focus');
     ritual.startShuffle();
     trackEvent('tarot_started', { feature: 'tarot', spreadType: ANALYTICS_SPREAD_TYPE[type] });
+    trackGoogleFunnelEvent('tool_start', 'tarot');
     try {
       const session = await tarotApi.createSelectionSession(type);
       setSelectionSession(session);

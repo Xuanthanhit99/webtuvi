@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
 import { ApiError } from '@/lib/api-error';
 import { trackEvent } from '@/lib/analytics';
+import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 import { clearGuestNumerologyTrial, readGuestNumerologyTrial } from '@/features/guest-trials/guest-trial-storage';
 import { numerologyApi } from '../api/numerology-api';
 import { NumerologyReadingView } from './numerology-reading-view';
@@ -45,6 +46,9 @@ export function NumerologyForm({ onCalculated }: { onCalculated?: (reading: Nume
     mutationFn: () => numerologyApi.calculate(fullBirthName.trim(), birthDate),
     onSuccess: (reading) => {
       setResult(reading); setPhase('revealed'); clearGuestNumerologyTrial();
+      trackGoogleFunnelEvent('tool_complete', 'numerology');
+      trackGoogleFunnelEvent('save_result', 'numerology');
+      trackGoogleFunnelEvent('result_view', 'numerology');
       queryClient.invalidateQueries({ queryKey: ['numerology'] }); onCalculated?.(reading);
     },
     onError: (error: unknown) => {
@@ -63,7 +67,8 @@ export function NumerologyForm({ onCalculated }: { onCalculated?: (reading: Nume
     if (!fullBirthName.trim()) { setFieldError({ field: 'fullBirthName', message: 'Vui lòng nhập đầy đủ họ tên khai sinh.' }); return; }
     if (fullBirthName.trim().length > NAME_MAX_LENGTH) { setFieldError({ field: 'fullBirthName', message: `Họ tên không được dài quá ${NAME_MAX_LENGTH} ký tự.` }); return; }
     if (!birthDate) { setFieldError({ field: 'birthDate', message: 'Vui lòng chọn ngày sinh.' }); return; }
-    setPhase('calculating'); trackEvent('numerology_started', { feature: 'numerology' }); calculate.mutate();
+    setPhase('calculating'); trackEvent('numerology_started', { feature: 'numerology' });
+    trackGoogleFunnelEvent('tool_start', 'numerology'); calculate.mutate();
   }
 
   if (phase === 'revealed' && result) {

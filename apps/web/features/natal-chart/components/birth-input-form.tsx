@@ -11,6 +11,7 @@ import { FormField } from '@/components/ui/form-field';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ApiError } from '@/lib/api-error';
 import { trackEvent } from '@/lib/analytics';
+import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 import { geocodingApi, natalChartApi } from '../api/natal-chart-api';
 import { NatalChartView } from './natal-chart-view';
 
@@ -86,6 +87,9 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
     onSuccess: (chart) => {
       setResult(chart);
       setPhase('revealed');
+      trackGoogleFunnelEvent('tool_complete', 'natal_chart');
+      trackGoogleFunnelEvent('save_result', 'natal_chart');
+      trackGoogleFunnelEvent('result_view', 'natal_chart');
       queryClient.invalidateQueries({ queryKey: ['natal-chart'] });
       onCalculated?.(chart);
     },
@@ -138,6 +142,7 @@ export function BirthInputForm({ onCalculated }: { onCalculated?: (chart: NatalC
 
     setPhase('calculating');
     trackEvent('natal_started', { feature: 'natal_chart' });
+    trackGoogleFunnelEvent('tool_start', 'natal_chart');
     create.mutate();
   }
 

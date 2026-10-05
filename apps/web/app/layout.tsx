@@ -4,17 +4,10 @@ import { Playfair_Display, Be_Vietnam_Pro, IBM_Plex_Mono } from 'next/font/googl
 import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
 import { Toaster } from '@/components/ui/toast';
+import { GoogleMeasurement } from '@/components/analytics/google-measurement';
 import { SITE_NAME, SITE_URL, DEFAULT_DESCRIPTION, isIndexingEnabled } from '@/lib/seo';
 import '@/styles/globals.css';
 
-// Module 4 §16 specifies Fraunces/Karla, but neither ships a Vietnamese subset on
-// Google Fonts (confirmed at build time — Fraunces only offers latin/latin-ext).
-// Sprint 1's Vietnamese-support requirement is a hard technical constraint, so
-// these are substituted with typographically similar families that do carry a
-// "vietnamese" subset: Playfair Display (warm editorial serif, in the Companion-
-// voice/heading role Fraunces would have held) and Be Vietnam Pro (a humanist
-// grotesque sans purpose-built for Vietnamese, in Karla's body/UI role). See
-// docs/architecture/sprint-1-decisions.md.
 const displayFont = Playfair_Display({
   subsets: ['latin', 'vietnamese'],
   variable: '--font-fraunces',
@@ -28,8 +21,6 @@ const bodyFont = Be_Vietnam_Pro({
   display: 'swap',
 });
 
-// Mono is used only for numerals/timestamps (Module 4 §16 scope), never Vietnamese
-// prose, so it doesn't need the vietnamese subset.
 const mono = IBM_Plex_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
@@ -38,8 +29,18 @@ const mono = IBM_Plex_Mono({
   preload: false,
 });
 
+const GOOGLE_CONSENT_DEFAULT = `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+window.gtag = gtag;
+gtag('consent', 'default', {
+  analytics_storage: 'denied',
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  wait_for_update: 500
+});`;
+
 const TAGLINE = `${SITE_NAME} — Tử Vi, Tarot, Bản đồ sao và Thần số học`;
-const GOOGLE_ADS_TAG_ID = 'AW-18479493951';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -70,19 +71,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="vi" className={`${displayFont.variable} ${bodyFont.variable} ${mono.variable}`}>
       <body>
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_TAG_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="google-ads-tag" strategy="afterInteractive">
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${GOOGLE_ADS_TAG_ID}');`}
+        <Script id="google-consent-default" strategy="beforeInteractive">
+          {GOOGLE_CONSENT_DEFAULT}
         </Script>
         <a href="#main-content" className="skip-link">
           Bỏ qua điều hướng và đến nội dung chính
         </a>
+        <GoogleMeasurement />
         <QueryProvider>
           <AuthProvider>
             {children}
