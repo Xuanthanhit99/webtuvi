@@ -172,6 +172,25 @@ for (const width of [390, 1440]) {
 }
 
 
+async function createNatalChartVisualResult(page: import('@playwright/test').Page): Promise<void> {
+  await page.goto('/discover/natal-chart');
+  await page.getByLabel('Date of birth').fill('2000-06-15');
+  await page.getByLabel('Time of birth').fill('14:30');
+  await page.getByLabel('Place of birth').fill('Ha Noi');
+  await page.getByRole('button', { name: /^search$/i }).click();
+  const candidates = page.locator('ul[aria-label="Matching places"] button');
+  await expect(candidates.first()).toBeVisible({ timeout: 15_000 });
+  await candidates.first().click();
+  await expect(page.getByRole('button', { name: 'Change' })).toBeVisible();
+  await page.getByRole('button', { name: /calculate my chart/i }).click();
+  await expect(page.getByRole('group', { name: 'Big Three' })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole('img', { name: /natal chart wheel/i })).toBeVisible();
+  await expect(page.locator('#natal-chart-section-planets')).toBeVisible();
+  await page.getByRole('button', { name: 'Major Aspects' }).click();
+  await expect(page.locator('#natal-chart-section-major-aspects').getByRole('listitem').first()).toBeVisible();
+}
+
+
 for (const width of [390, 1536]) {
   test(`authenticated tools remain usable at ${width}px`, async ({ page, context, baseURL }, testInfo) => {
     test.setTimeout(180_000); // Seven authenticated routes, accessibility scans and a saved-result error flow.
@@ -201,6 +220,11 @@ for (const width of [390, 1536]) {
         await page.screenshot({ path: testInfo.outputPath(`natal-chart-v41-${width}.png`), fullPage: true });
       }
     }
+    await createNatalChartVisualResult(page);
+    await page.evaluate(() => document.fonts.ready);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath(`natal-chart-v41-result-${width}.png`), fullPage: true });
+
     await page.goto('/discover/tarot?item=00000000-0000-4000-8000-000000000001');
     await expect(page.getByText('Chưa thể tải trải bài này.')).toBeVisible();
     await page.getByRole('button', { name: '← Quay lại Tarot' }).click();
