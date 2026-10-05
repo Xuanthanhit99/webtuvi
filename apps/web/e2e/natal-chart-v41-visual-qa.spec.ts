@@ -32,11 +32,7 @@ for (const width of [390, 1536]) {
     // production-readiness: prove the browser sees the API-issued auth cookies, then wait for
     // the actual Natal form rather than letting locator.fill() absorb the whole test timeout.
     await page.goto('/');
-    const consent = page.getByRole('button', { name: /^Đồng ý/i });
-    if (await consent.isVisible({ timeout: 2_000 }).catch(() => false)) {
-      await consent.click({ force: true, timeout: 5_000 });
-      await expect(consent).toBeHidden({ timeout: 5_000 });
-    }
+    await page.addInitScript(() => window.localStorage.setItem('menhvi_google_consent_v1', 'granted'));
     await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible({ timeout: 15_000 });
 
     await page.goto('/discover/natal-chart', { waitUntil: 'domcontentloaded' });
