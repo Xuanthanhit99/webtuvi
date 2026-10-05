@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 
@@ -37,6 +37,7 @@ function sendPageView(pathname: string) {
 
 export function GoogleMeasurement() {
   const pathname = usePathname();
+  const lastTrackedPath = useRef<string | null>(null);
   const [consent, setConsent] = useState<ConsentChoice | null>(() => {
     if (typeof window === 'undefined') return null;
     const saved = window.localStorage.getItem(CONSENT_KEY);
@@ -48,14 +49,18 @@ export function GoogleMeasurement() {
   }, [consent]);
 
   useEffect(() => {
-    if (consent !== 'granted') return;
+    if (consent !== 'granted' || lastTrackedPath.current === pathname) return;
     sendPageView(pathname);
+    lastTrackedPath.current = pathname;
   }, [pathname, consent]);
 
   const chooseConsent = (choice: ConsentChoice) => {
     window.localStorage.setItem(CONSENT_KEY, choice);
     updateConsent(choice);
-    if (choice === 'granted') sendPageView(pathname);
+    if (choice === 'granted' && lastTrackedPath.current !== pathname) {
+      sendPageView(pathname);
+      lastTrackedPath.current = pathname;
+    }
     setConsent(choice);
   };
 
