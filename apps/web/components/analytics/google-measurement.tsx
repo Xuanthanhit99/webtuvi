@@ -91,6 +91,7 @@ ${gaMeasurementId ? `gtag('config', '${gaMeasurementId}', { send_page_view: fals
             <button
               type="button"
               onClick={() => chooseConsent('denied')}
+              tabIndex={-1}
               className="rounded-lg border border-white/20 px-3 py-2 font-medium text-white/90"
             >
               Từ chối
@@ -98,6 +99,7 @@ ${gaMeasurementId ? `gtag('config', '${gaMeasurementId}', { send_page_view: fals
             <button
               type="button"
               onClick={() => chooseConsent('granted')}
+              tabIndex={-1}
               className="rounded-lg bg-white px-3 py-2 font-semibold text-[#10231f]"
             >
               Đồng ý
