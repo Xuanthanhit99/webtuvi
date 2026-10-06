@@ -31,8 +31,8 @@ for (const width of [390, 1536]) {
     // Bootstrap the authenticated web session before entering the tool directly. This mirrors
     // production-readiness: prove the browser sees the API-issued auth cookies, then wait for
     // the actual Natal form rather than letting locator.fill() absorb the whole test timeout.
-    await page.goto('/');
     await page.addInitScript(() => window.localStorage.setItem('menhvi_google_consent_v1', 'granted'));
+    await page.goto('/');
     await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible({ timeout: 15_000 });
 
     await page.goto('/discover/natal-chart', { waitUntil: 'domcontentloaded' });
