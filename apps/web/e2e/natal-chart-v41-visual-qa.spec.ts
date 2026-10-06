@@ -62,6 +62,11 @@ for (const width of [390, 1536]) {
     await expect(bigThree.getByText('Nhân Mã', { exact: true })).toBeVisible();
     await expect(bigThree.getByText('Thiên Bình', { exact: true })).toBeVisible();
     await expect(page.getByRole('img', { name: /Vòng bản đồ sao/i })).toBeVisible();
+    const planetsButton = page.getByRole('button', { name: 'Bước 04 · Hành tinh & ý nghĩa vị trí' });
+    if (width === 390) {
+      await expect(planetsButton).toHaveAttribute('aria-expanded', 'false');
+      await planetsButton.click();
+    }
     await expect(page.locator('#natal-chart-section-planets')).toBeVisible();
 
     await page.getByRole('button', { name: 'Các nhà' }).click();
@@ -72,6 +77,12 @@ for (const width of [390, 1536]) {
 
     await page.getByRole('button', { name: 'Dữ liệu chuyên sâu · Chi tiết cách tính' }).click();
     await expect(page.locator('#natal-chart-section-calculation-details')).toBeVisible();
+
+    // Restore the compact progressive-disclosure state before visual evidence.
+    if (await planetsButton.getAttribute('aria-expanded') === 'true') await planetsButton.click();
+    await page.getByRole('button', { name: 'Các nhà' }).click();
+    await page.getByRole('button', { name: 'Các góc hợp chính' }).click();
+    await page.getByRole('button', { name: 'Dữ liệu chuyên sâu · Chi tiết cách tính' }).click();
 
     await page.evaluate(() => document.fonts.ready);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { NatalChartDto } from '@beaconvie/types';
@@ -17,8 +17,19 @@ import { HouseList } from './house-list';
 import { AspectList } from './aspect-list';
 import { InterpretationSections } from './interpretation-sections';
 
-function Section({ id, title, defaultOpen = false, children }: { id: string; title: string; defaultOpen?: boolean; children: React.ReactNode }) {
-  const [open, setOpen] = useState(defaultOpen);
+function subscribeToViewport(onStoreChange: () => void) {
+  window.addEventListener('resize', onStoreChange);
+  return () => window.removeEventListener('resize', onStoreChange);
+}
+
+function isMobileViewport() {
+  return window.innerWidth < 768;
+}
+
+function Section({ id, title, defaultOpen = false, collapseOnMobile = false, children }: { id: string; title: string; defaultOpen?: boolean; collapseOnMobile?: boolean; children: React.ReactNode }) {
+  const mobile = useSyncExternalStore(subscribeToViewport, isMobileViewport, () => false);
+  const [openOverride, setOpenOverride] = useState<boolean | null>(null);
+  const open = openOverride ?? (collapseOnMobile && mobile ? false : defaultOpen);
   // A stable ASCII id, independent of the (localized) visible title.
   const sectionId = `natal-chart-section-${id}`;
   return (
@@ -26,7 +37,7 @@ function Section({ id, title, defaultOpen = false, children }: { id: string; tit
       <button
         type="button"
         id={`${sectionId}-heading`}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpenOverride(!open)}
         aria-expanded={open}
         aria-controls={sectionId}
         className="flex w-full items-center justify-between gap-2 rounded-md border border-[#d5ad62]/20 bg-[#071827] px-4 py-3 text-left text-body-sm font-semibold text-text-secondary transition-colors duration-fast hover:border-[#d5ad62]/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
@@ -155,7 +166,7 @@ export function NatalChartView({ chart, onChanged }: { chart: NatalChartDto; onC
           </div>
         </div>
       </section>
-      <Section id="planets" title="Bước 04 · Hành tinh & ý nghĩa vị trí" defaultOpen>
+      <Section id="planets" title="Bước 04 · Hành tinh & ý nghĩa vị trí" defaultOpen collapseOnMobile>
         <PlanetList placements={chart.placements} />
       </Section>
 
