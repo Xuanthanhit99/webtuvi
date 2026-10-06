@@ -35,8 +35,8 @@ describe('Mệnh Vi Home V5.2', () => {
   it('renders the locked Oracle Workspace hierarchy for an authenticated user', async () => {
     renderWithQuery(<DashboardView />);
     expect(await screen.findByRole('heading', { level: 1, name: /Thành, điều gì đang ở trong tâm trí bạn/i })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Dòng chảy hôm nay' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Tarot' })).toBeInTheDocument();
+    expect(screen.getByText('Dòng chảy hôm nay')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Tarot' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Tiếp tục hành trình' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Khám phá theo từng hệ' })).not.toBeInTheDocument();
   });
@@ -44,10 +44,10 @@ describe('Mệnh Vi Home V5.2', () => {
   it('changes the recommended path from the selected intent', async () => {
     const user = userEvent.setup();
     renderWithQuery(<DashboardView />);
-    await screen.findByRole('heading', { name: 'Tarot' });
+    await screen.findByRole('heading', { level: 2, name: 'Tarot' });
     await user.click(screen.getByRole('button', { name: /Công việc/i }));
     expect(screen.getByRole('button', { name: /Công việc/i })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('heading', { name: 'Tử Vi' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Tử Vi' })).toBeInTheDocument();
     expect(screen.getAllByRole('link', { name: /Xem vận trình/i }).some((link) => link.getAttribute('href') === '/discover/tu-vi')).toBe(true);
   });
 
@@ -55,7 +55,7 @@ describe('Mệnh Vi Home V5.2', () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
     renderWithQuery(<DashboardView />);
     expect(await screen.findByRole('heading', { level: 1, name: 'Điều gì đang ở trong tâm trí bạn?' })).toBeInTheDocument();
-    expect(screen.getByText('Đăng nhập để mở tín hiệu từ hồ sơ của bạn.')).toBeInTheDocument();
+    expect(screen.getByText('Đăng nhập để mở tín hiệu cá nhân.')).toBeInTheDocument();
     expect(dashboardApi.get).not.toHaveBeenCalled();
     expect(tarotApi.listReadings).not.toHaveBeenCalled();
     await waitFor(() => expect(trackEvent).toHaveBeenCalledWith('home_viewed', { feature: 'home', source: 'guest' }));
