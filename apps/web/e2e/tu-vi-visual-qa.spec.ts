@@ -14,8 +14,8 @@ for (const width of [390, 1536]) {
     const csrf = cookies.find((cookie) => cookie.name === 'beaconvie_csrf_token')?.value;
     expect(csrf).toBeTruthy();
     expect((await context.request.post('http://localhost:4000/onboarding/skip', { headers: { 'X-CSRF-Token': csrf! } })).ok()).toBe(true);
-    await page.goto('/discover/tu-vi');
     await page.addInitScript(() => window.localStorage.setItem('menhvi_google_consent_v1', 'granted'));
+    await page.goto('/discover/tu-vi');
     await page.locator('#tu-vi-birthdate').fill('1984-02-02');
     await page.locator('#tu-vi-birthtime').fill('00:30');
     await page.locator('#tu-vi-sex-Nam').check();
