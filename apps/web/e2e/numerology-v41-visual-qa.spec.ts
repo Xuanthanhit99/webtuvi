@@ -1,5 +1,10 @@
 import { test, expect, type Page } from '@playwright/test';
 
+async function expectConsentBannerHidden(page: import('@playwright/test').Page): Promise<void> {
+  expect(await page.evaluate(() => window.localStorage.getItem('menhvi_google_consent_v1'))).toBe('granted');
+  await expect(page.getByRole('complementary', { name: 'Quyền riêng tư và đo lường' })).toBeHidden({ timeout: 15_000 });
+}
+
 test.describe.configure({ timeout: 180_000 });
 
 async function registerAndSkipOnboarding(page: Page, width: number): Promise<void> {
@@ -40,6 +45,7 @@ for (const width of [390, 1536]) {
     await expect(page.getByText('Đang tải kết quả của bạn...')).toBeHidden({ timeout: 15_000 });
     await page.evaluate(() => document.fonts.ready);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expectConsentBannerHidden(page);
     await page.screenshot({ path: testInfo.outputPath(`numerology-v41-entry-${width}.png`), fullPage: true });
 
     await page.locator('#numerology-name').fill('Nguyen Van A');
@@ -60,6 +66,7 @@ for (const width of [390, 1536]) {
 
     await page.evaluate(() => document.fonts.ready);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expectConsentBannerHidden(page);
     await page.screenshot({ path: testInfo.outputPath(`numerology-v41-result-${width}.png`), fullPage: true });
   });
 }

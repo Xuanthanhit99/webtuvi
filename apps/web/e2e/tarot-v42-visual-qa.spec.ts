@@ -1,6 +1,11 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+async function expectConsentBannerHidden(page: import('@playwright/test').Page): Promise<void> {
+  expect(await page.evaluate(() => window.localStorage.getItem('menhvi_google_consent_v1'))).toBe('granted');
+  await expect(page.getByRole('complementary', { name: 'Quyền riêng tư và đo lường' })).toBeHidden({ timeout: 15_000 });
+}
+
 for (const width of [390, 1536]) {
   test(`Tarot V4.2 visual QA at ${width}px`, async ({ page, context, baseURL }, testInfo) => {
     test.setTimeout(90_000);
@@ -68,6 +73,8 @@ for (const width of [390, 1536]) {
     }
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
     expect(errors).toEqual([]);
+
+    await expectConsentBannerHidden(page);
 
     await page.screenshot({
       path: testInfo.outputPath(`tarot-v42-${width}.png`),
