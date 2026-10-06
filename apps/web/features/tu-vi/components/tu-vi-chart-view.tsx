@@ -196,10 +196,6 @@ export function TuViChartView({ chart, onChanged }: { chart: TuViChartDto; onCha
       </section>
 
 
-      <TuViDaiVanTimeline chart={chart} />
-      <TuViTieuHanYearNav chart={chart} />
-
-
       <Section title="Thông tin hệ thống tính toán">
         <dl className="grid grid-cols-2 gap-2 text-body-sm">
           <dt className="text-text-secondary">Phiên bản engine</dt>

@@ -188,6 +188,7 @@ for (const width of [390, 1536]) {
     expect(onboarded.ok()).toBe(true);
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
+    await page.addInitScript(() => window.localStorage.setItem('menhvi_google_consent_v1', 'granted'));
     for (const route of publicRoutes) {
       await page.goto(route);
       await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible();
@@ -197,6 +198,8 @@ for (const width of [390, 1536]) {
       await page.evaluate(() => document.fonts.ready);
       const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
       expect.soft(accessibility.violations, route).toEqual([]);
+      expect(await page.evaluate(() => window.localStorage.getItem('menhvi_google_consent_v1'))).toBe('granted');
+      await expect(page.getByRole('complementary', { name: 'Quyền riêng tư và đo lường' })).toBeHidden({ timeout: 15_000 });
       await page.screenshot({ path: testInfo.outputPath(`${route.replace(/[^a-z0-9]/gi, '_')}.png`), fullPage: true });
       if (route === '/discover/natal-chart') {
         await page.screenshot({ path: testInfo.outputPath(`natal-chart-v41-${width}.png`), fullPage: true });
