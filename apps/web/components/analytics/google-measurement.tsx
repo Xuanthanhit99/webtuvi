@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import Script from 'next/script';
 import { usePathname } from 'next/navigation';
 
@@ -51,22 +51,28 @@ function sendPageView(pathname: string) {
   });
 }
 
+const CONSENT_CHANGE_EVENT = 'menhvi:google-consent-change';
+
+function readConsent(): ConsentChoice | null {
+  if (typeof window === 'undefined') return null;
+  const saved = window.localStorage.getItem(CONSENT_KEY);
+  return saved === 'granted' || saved === 'denied' ? saved : null;
+}
+
+function subscribeToConsent(onStoreChange: () => void) {
+  window.addEventListener('storage', onStoreChange);
+  window.addEventListener(CONSENT_CHANGE_EVENT, onStoreChange);
+  return () => {
+    window.removeEventListener('storage', onStoreChange);
+    window.removeEventListener(CONSENT_CHANGE_EVENT, onStoreChange);
+  };
+}
+
 export function GoogleMeasurement() {
   const gaMeasurementId = getGaMeasurementId();
   const pathname = usePathname();
   const lastTrackedPath = useRef<string | null>(null);
-  const [consent, setConsent] = useState<ConsentChoice | null>(() => {
-    if (typeof window === 'undefined') return null;
-    const saved = window.localStorage.getItem(CONSENT_KEY);
-    return saved === 'granted' || saved === 'denied' ? saved : null;
-  });
-
-  useEffect(() => {
-    const saved = window.localStorage.getItem(CONSENT_KEY);
-    if (saved === 'granted' || saved === 'denied') {
-      setConsent(saved);
-    }
-  }, []);
+  const consent = useSyncExternalStore(subscribeToConsent, readConsent, () => null);
 
   useEffect(() => {
     if (consent) updateConsent(consent);
@@ -85,7 +91,7 @@ export function GoogleMeasurement() {
       sendPageView(pathname);
       lastTrackedPath.current = pathname;
     }
-    setConsent(choice);
+    window.dispatchEvent(new Event(CONSENT_CHANGE_EVENT));
   };
 
   return (
