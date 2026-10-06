@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { ArrowRight, BriefcaseBusiness, Compass, Heart, Star, UserRound } from 'lucide-react';
 import type { TodayOverviewSignal } from './today-overview';
-import { FEATURE_BADGE_ASSET, type DiscoveryModuleKey } from './production-assets';
+import { FEATURE_ART_ASSET, FEATURE_BADGE_ASSET, HOME_BACKGROUND, type DiscoveryModuleKey } from './production-assets';
 
 const INTENTS = [
   { key: 'love', label: 'Tình yêu', icon: Heart, title: 'Tarot', href: '/discover/tarot', cta: 'Bắt đầu trải nghiệm', reason: 'Một câu hỏi cụ thể giúp bạn nhìn lại cảm xúc và điều đang hiện diện trong mối quan hệ.' },
@@ -48,8 +48,9 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
 
   return (
     <>
-      <section aria-labelledby="home-v5-heading" className="relative overflow-hidden rounded-[22px] border border-white/[0.07] bg-[#080b10]">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_82%_35%,rgba(196,160,98,0.10),transparent_28%),linear-gradient(115deg,rgba(5,7,10,0.98)_0%,rgba(7,10,14,0.92)_58%,rgba(10,13,17,0.78)_100%)]" aria-hidden="true" />
+      <section aria-labelledby="home-v5-heading" className="relative overflow-hidden rounded-[22px] border border-white/[0.08] bg-[#080b10] shadow-[0_28px_90px_rgba(0,0,0,0.32)]">
+        <Image src={HOME_BACKGROUND.hero} alt="" fill priority sizes="(min-width: 1024px) 1200px, 100vw" className="pointer-events-none object-cover object-[68%_center] opacity-75" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,10,0.98)_0%,rgba(5,7,10,0.91)_38%,rgba(5,7,10,0.48)_67%,rgba(5,7,10,0.20)_100%),linear-gradient(0deg,rgba(5,7,10,0.70),transparent_48%)]" aria-hidden="true" />
         <div className="relative grid min-h-[430px] items-center gap-8 p-5 min-[430px]:p-7 tablet:p-10 desktop:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.72fr)] desktop:p-12">
           <div className="max-w-[760px]">
             <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#a98e61]">{isGuest ? 'Hiểu mình sâu hơn · Sống an yên hơn' : greeting}</p>
@@ -71,8 +72,10 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
             </div>
           </div>
           <div className="hidden self-stretch border-l border-white/[0.06] pl-10 desktop:flex desktop:flex-col desktop:justify-between">
-            <div className="relative flex min-h-[150px] items-center justify-center overflow-hidden rounded-[18px] border border-[#c8aa72]/15 bg-[radial-gradient(circle,rgba(200,170,114,0.12),transparent_68%)]">
-              <Image src={FEATURE_BADGE_ASSET[selectedMeta.key]} alt="" width={176} height={176} className="h-36 w-36 object-contain opacity-90" aria-hidden="true" />
+            <div className="relative min-h-[220px] overflow-hidden rounded-[18px] border border-[#c8aa72]/20 bg-[#080b10]/70 shadow-[0_20px_60px_rgba(0,0,0,0.30)]">
+              <Image src={FEATURE_ART_ASSET[selectedMeta.key]} alt="" fill sizes="360px" className="object-cover object-center opacity-95" aria-hidden="true" />
+              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(5,7,10,0.70),transparent_55%)]" aria-hidden="true" />
+              <Image src={FEATURE_BADGE_ASSET[selectedMeta.key]} alt="" width={76} height={76} className="absolute bottom-4 left-4 h-[76px] w-[76px] object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]" aria-hidden="true" />
             </div>
             <p className="mt-7 max-w-[280px] font-display text-heading-md italic leading-relaxed text-[#d7c6a8]">“Mỗi câu hỏi đúng cũng là một bước chuyển.”</p>
             <div className="mt-8"><p className="text-caption uppercase tracking-[0.18em] text-[#777b84]">Mệnh Vi gợi ý lúc này</p><p className="mt-2 font-display text-heading-lg text-[#eee8dc]">{selected.title}</p><p className="mt-3 text-body-sm leading-6 text-[#999b9f]">{selected.reason}</p></div>
@@ -86,7 +89,10 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
       </section>
 
       <section aria-labelledby="recommend-v5-heading" className="grid overflow-hidden rounded-[18px] border border-white/[0.07] bg-[#090d13] desktop:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
-        <div className="relative min-h-[270px] p-6 tablet:p-8"><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#a98e61]">Gợi ý chính · {selected.label}</p><h2 id="recommend-v5-heading" className="mt-3 font-display text-[clamp(2rem,3vw,3rem)] font-medium text-[#eee8dc]">{selected.title}</h2><p className="mt-4 max-w-xl text-body-md leading-7 text-[#aaa8a3]">{selected.reason}</p><Link href={selected.href} className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#e4c895] px-6 text-body-sm font-semibold text-[#15110b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e4c895]">{selected.cta}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div>
+        <div className="relative min-h-[320px] overflow-hidden p-6 tablet:p-8">
+          <Image src={FEATURE_ART_ASSET[selectedMeta.key]} alt="" fill sizes="(min-width: 1024px) 720px, 100vw" className="pointer-events-none object-cover object-[72%_center] opacity-45" aria-hidden="true" />
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,#090d13_0%,rgba(9,13,19,0.94)_48%,rgba(9,13,19,0.32)_100%)]" aria-hidden="true" />
+          <div className="relative z-10"><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#a98e61]">Gợi ý chính · {selected.label}</p><h2 id="recommend-v5-heading" className="mt-3 font-display text-[clamp(2rem,3vw,3rem)] font-medium text-[#eee8dc]">{selected.title}</h2><p className="mt-4 max-w-xl text-body-md leading-7 text-[#aaa8a3]">{selected.reason}</p><Link href={selected.href} className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#e4c895] px-6 text-body-sm font-semibold text-[#15110b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e4c895]">{selected.cta}<ArrowRight className="h-4 w-4" aria-hidden="true" /></Link></div></div>
         <div className="border-t border-white/[0.06] p-6 desktop:border-l desktop:border-t-0 desktop:p-8"><p className="text-caption uppercase tracking-[0.18em] text-[#777b84]">Hai góc nhìn khác</p><div className="mt-5 space-y-3">{alternatives.map((title) => { const meta = SYSTEM_META[title]; return <Link key={title} href={meta.href} className="flex min-h-16 items-center justify-between rounded-[13px] border border-white/[0.07] px-4 text-body-sm text-[#ddd8cf] hover:border-[#c8aa72]/30"><span className="flex items-center gap-3"><Image src={FEATURE_BADGE_ASSET[meta.key]} alt="" width={36} height={36} className="h-9 w-9 object-contain opacity-80" aria-hidden="true" />{title}</span><ArrowRight className="h-4 w-4 text-[#777b84]" /></Link>; })}</div></div>
       </section>
 
