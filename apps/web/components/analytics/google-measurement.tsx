@@ -62,6 +62,13 @@ export function GoogleMeasurement() {
   });
 
   useEffect(() => {
+    const saved = window.localStorage.getItem(CONSENT_KEY);
+    if (saved === 'granted' || saved === 'denied') {
+      setConsent(saved);
+    }
+  }, []);
+
+  useEffect(() => {
     if (consent) updateConsent(consent);
   }, [consent]);
 
