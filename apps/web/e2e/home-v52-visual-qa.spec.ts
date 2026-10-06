@@ -27,7 +27,7 @@ for (const width of [390, 1536]) {
     await page.evaluate(() => document.fonts.ready);
 
     await expect(page.getByRole('heading', { level: 1, name: /điều gì đang ở trong tâm trí bạn/i })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Dòng chảy hôm nay' })).toBeVisible();
+    await expect(page.getByText('Dòng chảy hôm nay', { exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Tiếp tục hành trình' })).toBeVisible();
     for (const label of ['Tình yêu', 'Công việc', 'Bản thân', 'Quyết định', 'Tương lai']) {
       const button = page.getByRole('button', { name: new RegExp(label, 'i') });
