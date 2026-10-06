@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion, MotionConfig } from 'framer-motion';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { ChevronLeft, Eye, Library, LoaderCircle, MoonStar, Sparkles } from 'lucide-react';
+import { ChevronLeft, Eye, LoaderCircle, MoonStar } from 'lucide-react';
 import type { TarotReadingDto, TarotReadingTypeValue, TarotSelectionSessionDto } from '@beaconvie/types';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
@@ -45,7 +45,7 @@ const INTENTIONS = [
   { id: 'DECISION', label: 'Quyết định', helper: 'Giữ câu hỏi đủ gọn để nhìn thấy bước kế tiếp.' },
 ] as const;
 
-type Phase = 'landing' | 'intention' | 'spread' | 'focus' | 'select' | 'revealed';
+type Phase = 'intention' | 'spread' | 'focus' | 'select' | 'revealed';
 
 const TAROT_PANEL =
   'relative overflow-hidden rounded-md border border-[rgba(213,173,98,0.34)] bg-[#07111D] shadow-[0_24px_80px_rgba(0,0,0,0.34)]';
@@ -63,7 +63,7 @@ function drawLimitBanner(error: unknown): { message: string; showUpgrade: boolea
 
 export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDto) => void }) {
   const queryClient = useQueryClient();
-  const [phase, setPhase] = useState<Phase>('landing');
+  const [phase, setPhase] = useState<Phase>('intention');
   const [type, setType] = useState<TarotReadingTypeValue>('DAILY_DRAW');
   const [intention, setIntention] = useState<(typeof INTENTIONS)[number]['id']>('GENERAL');
   const [question, setQuestion] = useState('');
@@ -169,7 +169,7 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
   }
 
   function reset() {
-    setPhase('landing');
+    setPhase('intention');
     setSelectionSession(null);
     setSelectedSlots([]);
     setResult(null);
@@ -205,9 +205,9 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
   return (
     <MotionConfig reducedMotion="user">
     <div className={`${TAROT_PANEL} ${TAROT_STARS}`}>
-      {phase !== 'landing' && (
+      {phase !== 'intention' && (
         <div className="relative flex items-center justify-between gap-3 border-b border-[rgba(213,173,98,0.18)] bg-[#101827]/70 px-4 py-3">
-          <Button variant="ghost" size="sm" onClick={() => setPhase(phase === 'spread' ? 'landing' : phase === 'intention' ? 'spread' : 'intention')}>
+          <Button variant="ghost" size="sm" onClick={() => setPhase('intention')}>
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             Quay lại
           </Button>
@@ -215,46 +215,11 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
         </div>
       )}
 
-      {phase === 'landing' && (
-        <section className="relative grid gap-6 p-4 tablet:grid-cols-[0.9fr_1.1fr] tablet:p-6">
-          <div className="flex flex-col justify-center gap-4 py-4">
-            <div className="flex items-center gap-2 text-caption font-semibold uppercase text-insight">
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              Tarot
-            </div>
-            <div>
-              <h2 className="font-display text-heading-lg text-text-primary tablet:text-display-md">Điều gì đang gọi bạn?</h2>
-              <p className="mt-3 max-w-md text-body-md text-text-secondary">
-                Hãy để Tarot soi sáng những khúc mắc trong lòng bằng bộ 78 lá thật, được rút và lưu từ hệ thống.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button onClick={() => setPhase('spread')}>
-                <Sparkles className="h-4 w-4" aria-hidden="true" />
-                Bắt đầu trải bài
-              </Button>
-              <a href="#tarot-library" className="inline-flex h-11 items-center gap-2 rounded-md border border-insight/35 px-4 text-body-md font-semibold text-text-primary transition hover:border-insight hover:bg-insight/5">
-                <Library className="h-4 w-4" aria-hidden="true" />
-                Thư viện 78 lá
-              </a>
-            </div>
-          </div>
-          <div className="relative min-h-80">
-            <div className="absolute inset-x-8 bottom-4 h-20 rounded-[50%] border border-insight/20 opacity-70" aria-hidden="true" />
-            <div className="relative flex h-full scale-[0.82] items-center justify-center tablet:scale-100">
-              <div className="-mr-12 rotate-[-18deg] opacity-80"><TarotCardVisual id="hero-star" name="Ngôi Sao" size="md" imageSrc="/assets/tarot-card/17-the-star.webp" /></div>
-              <div className="z-[1] rotate-[6deg]"><TarotCardVisual id="hero-back" name="Mặt sau lá Tarot" size="lg" revealed={false} backImageSrc={TAROT_CARD_BACK_SRC} /></div>
-              <div className="-ml-14 mt-10 rotate-[17deg] opacity-85"><TarotCardVisual id="hero-cups" name="Át Cốc" size="md" imageSrc="/assets/tarot-card/cups-ace.webp" /></div>
-            </div>
-          </div>
-        </section>
-      )}
-
       {phase === 'intention' && (
         <section className="relative grid gap-6 p-4 tablet:grid-cols-[0.85fr_1.15fr] tablet:p-6">
           <div>
-            <h2 className="font-display text-heading-lg text-insight">Đặt câu hỏi của bạn</h2>
-            <p className="mt-2 text-body-sm text-text-secondary">Chọn một chủ đề để định hướng suy ngẫm, rồi viết câu hỏi nếu bạn muốn. Câu hỏi có thể để trống.</p>
+            <h2 className="font-display text-heading-lg text-insight">Điều gì bạn muốn soi chiếu?</h2>
+            <p className="mt-2 text-body-sm text-text-secondary">Chọn điều đang khiến bạn bận lòng, rồi viết câu hỏi nếu bạn muốn. Tarot sẽ giữ câu hỏi này xuyên suốt trải bài.</p>
           </div>
           <div className="flex flex-col gap-4">
           <div className="grid gap-3 tablet:grid-cols-2">
@@ -284,9 +249,8 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
               className="w-full resize-none rounded-md border border-[rgba(213,173,98,0.28)] bg-[#0A1622] px-3 py-2 text-body-md text-text-primary placeholder:text-text-tertiary focus:border-insight/45 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight"
             />
           </FormField>
-          <Button onClick={beginFocus} loading={draw.isPending} className="self-start">
-            <MoonStar className="h-4 w-4" aria-hidden="true" />
-            Tập trung và xáo bài
+          <Button onClick={() => setPhase('spread')} className="self-start">
+            Tiếp tục chọn trải bài
           </Button>
           </div>
         </section>
@@ -336,7 +300,10 @@ export function TarotDrawPanel({ onDrawn }: { onDrawn?: (reading: TarotReadingDt
             </div>
           )}
 
-          <Button onClick={() => setPhase('intention')} className="self-center">Tiếp tục</Button>
+          <Button onClick={beginFocus} loading={draw.isPending} className="self-center">
+            <MoonStar className="h-4 w-4" aria-hidden="true" />
+            Tập trung và xáo bài
+          </Button>
         </section>
       )}
 

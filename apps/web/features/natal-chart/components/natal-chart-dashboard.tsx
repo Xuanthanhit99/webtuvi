@@ -48,14 +48,14 @@ export function NatalChartDashboard() {
         <div className="relative grid items-center gap-8 tablet:grid-cols-[1.05fr_0.95fr]">
           <div className="flex flex-col gap-5">
             <div>
-              <p className="text-caption font-semibold uppercase text-[#8ddbd0]">Bản đồ sao</p>
-              <h1 className="mt-3 max-w-xl font-serif text-heading-xl text-text-primary tablet:text-display-sm">Bầu trời tại khoảnh khắc bạn sinh ra</h1>
+              <p className="text-caption font-semibold uppercase text-[#8ddbd0]">Bước 01 · Dữ liệu sinh</p>
+              <h1 className="mt-3 max-w-xl font-serif text-heading-xl text-text-primary tablet:text-display-sm">Thông tin sinh → Lập bản đồ sao</h1>
               <p className="mt-4 max-w-2xl text-body-md text-text-secondary">
-                Một lát cắt của bầu trời vào đúng ngày, giờ và nơi bạn sinh ra — với vị trí hành tinh, cung mọc, các nhà và góc hợp được tính từ dữ liệu thật.
+                Nhập ngày, giờ và nơi sinh để dựng bầu trời tại khoảnh khắc bạn sinh ra. Kết quả đi từ Big Three đến vòng bản đồ, hành tinh, các nhà, góc hợp và luận giải sâu.
               </p>
             </div>
             <a href="#natal-chart-form" className="self-start inline-flex h-11 items-center justify-center gap-2 rounded-md bg-insight px-4 text-body-md font-semibold text-canvas transition duration-fast hover:-translate-y-0.5 hover:bg-[#E6C980] active:translate-y-0 active:bg-[#C59B4F] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-insight motion-reduce:transform-none">
-              Lập bản đồ sao của bạn
+              Nhập thông tin sinh
             </a>
           </div>
           <div className="relative mx-auto aspect-[4/3] w-full max-w-[520px] overflow-hidden rounded-xl border border-[#d5ad62]/20 bg-[#07111d]">
@@ -74,12 +74,12 @@ export function NatalChartDashboard() {
         </div>
       </section>
 
-      <MvSection eyebrow="Dữ liệu sinh" title="Tạo bản đồ sao">
+      <MvSection eyebrow="Bước 01 · Dữ liệu sinh" title="Lập bản đồ sao">
         <div id="natal-chart-form" />
         <BirthInputForm />
       </MvSection>
 
-      <MvSection eyebrow="Dòng thời gian" title="Bản đồ đã lưu">
+      <MvSection eyebrow="Lịch sử" title="Bản đồ sao của bạn">
         <NatalChartHistoryList filters={{}} onSelect={selectItem} />
       </MvSection>
     </MvPage>

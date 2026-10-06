@@ -57,20 +57,25 @@ describe('Named throttler Redis key isolation (e2e, real Redis)', () => {
     // `@UseGuards(JwtAuthGuard)`, confirmed by the 401 this test got back the first time it ran).
     // /health/live is the one route in this codebase confirmed by source inspection to carry no
     // guards of any kind (see health.controller.ts).
-    const before = (
-      await Promise.all(NAMED_THROTTLERS.map((b) => keysForBucket(b)))
-    ).flat().length;
+    const before = new Set(
+      (
+        await Promise.all(NAMED_THROTTLERS.map((b) => keysForBucket(b)))
+      ).flat(),
+    );
 
     await request(app.getHttpServer()).get('/health/live').expect(200);
 
     const after = (
       await Promise.all(NAMED_THROTTLERS.map((b) => keysForBucket(b)))
-    ).flat().length;
+    ).flat();
 
     // No @UseGuards(...ThrottlerGuard...) at all on this route — only the library's own baseline
     // `default` bucket could apply, and even that never runs without an explicit guard in this
     // codebase (no global APP_GUARD for ThrottlerGuard — see csrf.module.ts vs. app.module.ts) —
-    // so it must add zero new named rate-limit keys.
-    expect(after).toBe(before);
+    // so it must add zero NEW named rate-limit keys. Other tests may legitimately create/delete
+    // unrelated named keys while this request is running, so compare key identity rather than
+    // assuming the total Redis key count is stable.
+    const newNamedKeys = after.filter((key) => !before.has(key));
+    expect(newNamedKeys).toEqual([]);
   });
 });

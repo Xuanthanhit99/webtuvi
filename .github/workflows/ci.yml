@@ -188,10 +188,154 @@ jobs:
           WEB_PID=$!
           for i in $(seq 1 30); do curl -sf http://localhost:4000/health/live && break; sleep 1; done
           for i in $(seq 1 30); do curl -sf http://localhost:3000 > /dev/null && break; sleep 1; done
-          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
+          PLAYWRIGHT_BASE_URL=http://localhost:3000 pnpm --filter @beaconvie/web exec playwright test e2e/production-readiness.spec.ts e2e/natal-chart-v41-visual-qa.spec.ts e2e/numerology-v41-visual-qa.spec.ts e2e/home-v52-visual-qa.spec.ts e2e/discover-v41-visual-qa.spec.ts e2e/tarot-v42-visual-qa.spec.ts e2e/tu-vi-visual-qa.spec.ts e2e/tu-vi-seo-visual-qa.spec.ts
           EXIT_CODE=$?
           kill $API_PID $WEB_PID 2>/dev/null || true
           exit $EXIT_CODE
+
+      - name: Collect Thần số học V4.1 visual QA screenshots
+        if: always()
+        run: |
+          mkdir -p numerology-visual-qa
+          mapfile -t ENTRY_MOBILE < <(find apps/web/test-results -type f -name 'numerology-v41-entry-390.png' | sort)
+          mapfile -t ENTRY_DESKTOP < <(find apps/web/test-results -type f -name 'numerology-v41-entry-1536.png' | sort)
+          mapfile -t RESULT_MOBILE < <(find apps/web/test-results -type f -name 'numerology-v41-result-390.png' | sort)
+          mapfile -t RESULT_DESKTOP < <(find apps/web/test-results -type f -name 'numerology-v41-result-1536.png' | sort)
+          if [ "${#ENTRY_MOBILE[@]}" -ne 1 ] || [ "${#ENTRY_DESKTOP[@]}" -ne 1 ] || [ "${#RESULT_MOBILE[@]}" -ne 1 ] || [ "${#RESULT_DESKTOP[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Thần số học V4.1 entry and result screenshot at both 390px and 1536px."
+            exit 1
+          fi
+          cp "${ENTRY_MOBILE[0]}" numerology-visual-qa/numerology-v41-entry-mobile-390.png
+          cp "${ENTRY_DESKTOP[0]}" numerology-visual-qa/numerology-v41-entry-desktop-1536.png
+          cp "${RESULT_MOBILE[0]}" numerology-visual-qa/numerology-v41-result-mobile-390.png
+          cp "${RESULT_DESKTOP[0]}" numerology-visual-qa/numerology-v41-result-desktop-1536.png
+          printf 'PR head commit: %s\nWorkflow checkout SHA: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}" "$GITHUB_SHA" > numerology-visual-qa/README.txt
+
+      - name: Upload Thần số học V4.1 visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: numerology-v41-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: numerology-visual-qa/
+          if-no-files-found: error
+          retention-days: 14
+
+      # Bản đồ sao V4.1 visual evidence is captured by the authenticated production-readiness
+      # gate at both canonical fidelity viewports. Keep a dedicated artifact for human review.
+      - name: Collect Bản đồ sao V4.1 visual QA screenshots
+        if: always()
+        run: |
+          mkdir -p natal-chart-visual-qa
+          mapfile -t NATAL_MOBILE < <(find apps/web/test-results -type f -name 'natal-chart-v41-390.png' | sort)
+          mapfile -t NATAL_DESKTOP < <(find apps/web/test-results -type f -name 'natal-chart-v41-1536.png' | sort)
+          mapfile -t NATAL_RESULT_MOBILE < <(find apps/web/test-results -type f -name 'natal-chart-v41-result-390.png' | sort)
+          mapfile -t NATAL_RESULT_DESKTOP < <(find apps/web/test-results -type f -name 'natal-chart-v41-result-1536.png' | sort)
+          if [ "${#NATAL_MOBILE[@]}" -ne 1 ] || [ "${#NATAL_DESKTOP[@]}" -ne 1 ] || [ "${#NATAL_RESULT_MOBILE[@]}" -ne 1 ] || [ "${#NATAL_RESULT_DESKTOP[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Bản đồ sao V4.1 entry and result screenshot at both 390px and 1536px."
+            exit 1
+          fi
+          cp "${NATAL_MOBILE[0]}" natal-chart-visual-qa/natal-chart-v41-mobile-390.png
+          cp "${NATAL_DESKTOP[0]}" natal-chart-visual-qa/natal-chart-v41-desktop-1536.png
+          cp "${NATAL_RESULT_MOBILE[0]}" natal-chart-visual-qa/natal-chart-v41-result-mobile-390.png
+          cp "${NATAL_RESULT_DESKTOP[0]}" natal-chart-visual-qa/natal-chart-v41-result-desktop-1536.png
+          {
+            printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
+            printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
+            printf 'Mobile 390px: %s\n' "${NATAL_MOBILE[0]}"
+            printf 'Desktop 1536px: %s\n' "${NATAL_DESKTOP[0]}"
+          } > natal-chart-visual-qa/README.txt
+
+      - name: Upload Bản đồ sao V4.1 visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: natal-chart-v41-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: natal-chart-visual-qa/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Collect Home V5.2 visual QA screenshots
+        if: always()
+        run: |
+          mkdir -p home-visual-qa
+          mapfile -t HOME_MOBILE < <(find apps/web/test-results -type f -name 'home-v52-390.png' | sort)
+          mapfile -t HOME_DESKTOP < <(find apps/web/test-results -type f -name 'home-v52-1536.png' | sort)
+          if [ "${#HOME_MOBILE[@]}" -ne 1 ] || [ "${#HOME_DESKTOP[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Home V5.2 screenshot at 390px and 1536px."
+            exit 1
+          fi
+          cp "${HOME_MOBILE[0]}" home-visual-qa/home-v52-mobile-390.png
+          cp "${HOME_DESKTOP[0]}" home-visual-qa/home-v52-desktop-1536.png
+          {
+            printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
+            printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
+            printf 'Mobile 390px: %s\n' "${HOME_MOBILE[0]}"
+            printf 'Desktop 1536px: %s\n' "${HOME_DESKTOP[0]}"
+          } > home-visual-qa/README.txt
+
+      - name: Upload Home V5.2 visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-v52-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: home-visual-qa/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Collect Discover V4.1 visual QA screenshots
+        if: always()
+        run: |
+          mkdir -p discover-visual-qa
+          mapfile -t DISCOVER_MOBILE < <(find apps/web/test-results -type f -name 'discover-v41-390.png' | sort)
+          mapfile -t DISCOVER_DESKTOP < <(find apps/web/test-results -type f -name 'discover-v41-1536.png' | sort)
+          if [ "${#DISCOVER_MOBILE[@]}" -ne 1 ] || [ "${#DISCOVER_DESKTOP[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Discover V4.1 screenshot at 390px and 1536px."
+            exit 1
+          fi
+          cp "${DISCOVER_MOBILE[0]}" discover-visual-qa/discover-v41-mobile-390.png
+          cp "${DISCOVER_DESKTOP[0]}" discover-visual-qa/discover-v41-desktop-1536.png
+          {
+            printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
+            printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
+            printf 'Mobile 390px: %s\n' "${DISCOVER_MOBILE[0]}"
+            printf 'Desktop 1536px: %s\n' "${DISCOVER_DESKTOP[0]}"
+          } > discover-visual-qa/README.txt
+
+      - name: Upload Discover V4.1 visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: discover-v41-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: discover-visual-qa/
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Collect Tarot V4.2 visual QA screenshots
+        if: always()
+        run: |
+          mkdir -p tarot-visual-qa
+          mapfile -t TAROT_MOBILE < <(find apps/web/test-results -type f -name 'tarot-v42-390.png' | sort)
+          mapfile -t TAROT_DESKTOP < <(find apps/web/test-results -type f -name 'tarot-v42-1536.png' | sort)
+          if [ "${#TAROT_MOBILE[@]}" -ne 1 ] || [ "${#TAROT_DESKTOP[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one Tarot V4.2 screenshot at 390px and 1536px."
+            exit 1
+          fi
+          cp "${TAROT_MOBILE[0]}" tarot-visual-qa/tarot-v42-mobile-390.png
+          cp "${TAROT_DESKTOP[0]}" tarot-visual-qa/tarot-v42-desktop-1536.png
+          {
+            printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
+            printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
+            printf 'Mobile 390px: %s\n' "${TAROT_MOBILE[0]}"
+            printf 'Desktop 1536px: %s\n' "${TAROT_DESKTOP[0]}"
+          } > tarot-visual-qa/README.txt
+
+      - name: Upload Tarot V4.2 visual QA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarot-v42-visual-qa-${{ github.event.pull_request.head.sha || github.sha }}
+          path: tarot-visual-qa/
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Collect Tử Vi visual QA screenshots
         if: always()
@@ -207,18 +351,18 @@ jobs:
             parent="$(basename "$(dirname "$shot")")"
             if [[ "$parent" == *"390px"* ]]; then
               MOBILE_SHOT="$shot"
-            elif [[ "$parent" == *"1440px"* ]]; then
+            elif [[ "$parent" == *"1536px"* ]]; then
               DESKTOP_SHOT="$shot"
             fi
           done
 
           if [ -z "$MOBILE_SHOT" ] || [ -z "$DESKTOP_SHOT" ]; then
-            echo "::error::Expected authenticated Tử Vi screenshots at both 390px and 1440px."
+            echo "::error::Expected authenticated Tử Vi screenshots at both 390px and 1536px."
             exit 1
           fi
 
           cp "$MOBILE_SHOT" visual-qa/tu-vi-authenticated-mobile-390.png
-          cp "$DESKTOP_SHOT" visual-qa/tu-vi-authenticated-desktop-1440.png
+          cp "$DESKTOP_SHOT" visual-qa/tu-vi-authenticated-desktop-1536.png
 
           mapfile -t TUVI_SEO_SHOTS < <(find apps/web/test-results -type f -name 'tu-vi-seo-*-mobile-390.png' | sort)
           printf 'Tử Vi SEO mobile screenshots found: %s\n' "${#TUVI_SEO_SHOTS[@]}"
@@ -230,20 +374,20 @@ jobs:
             cp "$shot" "visual-qa/$(basename "$shot")"
           done
           mapfile -t RESULT_MOBILE < <(find apps/web/test-results -type f -name 'tu-vi-result-390.png' | sort)
-          mapfile -t RESULT_DESKTOP < <(find apps/web/test-results -type f -name 'tu-vi-result-1440.png' | sort)
+          mapfile -t RESULT_DESKTOP < <(find apps/web/test-results -type f -name 'tu-vi-result-1536.png' | sort)
           mapfile -t PALACE_MOBILE < <(find apps/web/test-results -type f -name 'tu-vi-palace-mobile-390.png' | sort)
           if [ "${#RESULT_MOBILE[@]}" -ne 1 ] || [ "${#RESULT_DESKTOP[@]}" -ne 1 ] || [ "${#PALACE_MOBILE[@]}" -ne 1 ]; then
             echo "::error::Expected exactly three Tử Vi result visual QA screenshots."
             exit 1
           fi
           cp "${RESULT_MOBILE[0]}" visual-qa/tu-vi-result-390.png
-          cp "${RESULT_DESKTOP[0]}" visual-qa/tu-vi-result-1440.png
+          cp "${RESULT_DESKTOP[0]}" visual-qa/tu-vi-result-1536.png
           cp "${PALACE_MOBILE[0]}" visual-qa/tu-vi-palace-mobile-390.png
           {
             printf 'PR head commit: %s\n' "${{ github.event.pull_request.head.sha || github.sha }}"
             printf 'Workflow checkout SHA: %s\n' "$GITHUB_SHA"
             printf 'Mobile 390px: %s\n' "$MOBILE_SHOT"
-            printf 'Desktop 1440px: %s\n' "$DESKTOP_SHOT"
+            printf 'Desktop 1536px: %s\n' "$DESKTOP_SHOT"
           } > visual-qa/README.txt
 
       - name: Upload Tử Vi visual QA artifact
@@ -254,3 +398,5 @@ jobs:
           path: visual-qa/
           if-no-files-found: error
           retention-days: 14
+
+# CI retrigger: Numerology V4.1 exact-head visual gate.
