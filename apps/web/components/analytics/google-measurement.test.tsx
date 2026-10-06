@@ -45,6 +45,26 @@ describe('GoogleMeasurement', () => {
     expect(loaders).toHaveLength(1);
   });
 
+  it('hydrates persisted granted consent without showing the banner', async () => {
+    window.localStorage.setItem('menhvi_google_consent_v1', 'granted');
+
+    render(<GoogleMeasurement />);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('complementary', { name: 'Quyền riêng tư và đo lường' })).not.toBeInTheDocument();
+      expect(window.gtag).toHaveBeenCalledWith(
+        'consent',
+        'update',
+        expect.objectContaining({ analytics_storage: 'granted' }),
+      );
+      expect(
+        (window.gtag as jest.Mock).mock.calls.filter(
+          ([command, eventName]) => command === 'event' && eventName === 'page_view',
+        ),
+      ).toHaveLength(1);
+    });
+  });
+
   it('does not send a page view until analytics consent is granted', async () => {
     render(<GoogleMeasurement />);
 
