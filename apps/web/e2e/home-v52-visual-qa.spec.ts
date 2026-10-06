@@ -17,6 +17,8 @@ for (const width of [390, 1536]) {
     page.on('pageerror', (error) => errors.push(error.message));
     await page.addInitScript(() => window.localStorage.setItem('menhvi_google_consent_v1', 'granted'));
     await page.goto('/dashboard', { waitUntil: 'networkidle' });
+    expect(await page.evaluate(() => window.localStorage.getItem('menhvi_google_consent_v1'))).toBe('granted');
+    await expect(page.getByRole('complementary', { name: 'Quyền riêng tư và đo lường' })).toBeHidden();
     await page.evaluate(() => document.fonts.ready);
 
     await expect(page.getByRole('heading', { level: 1, name: /điều gì đang ở trong tâm trí bạn/i })).toBeVisible();
