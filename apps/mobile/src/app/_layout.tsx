@@ -33,6 +33,7 @@ export default function RootLayout() {
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg } }}>
               <Stack.Screen name="(tabs)" />
               <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="discover" />
             </Stack>
           </AuthProvider>
         </QueryClientProvider>

@@ -10,11 +10,11 @@ import { FEATURE_ART_ASSET, FEATURE_BADGE_ASSET, type DiscoveryModuleKey } from 
  *  apps/web/features/dashboard/components/home/feature-grid.tsx's guest fallback strings, not
  *  invented — real chart-derived descriptions require the authenticated data this pass can't
  *  reach yet (see use-home-data.ts). */
-const MODULES: Array<{ key: DiscoveryModuleKey; title: string; description: string; href: '/(tabs)/tu-vi' | '/(tabs)/tarot' | '/(tabs)/discover' }> = [
+const MODULES: { key: DiscoveryModuleKey; title: string; description: string; href: '/(tabs)/tu-vi' | '/(tabs)/tarot' | '/discover/natal-chart' | '/discover/numerology' }[] = [
   { key: 'tu_vi', title: 'Lá số Tử Vi', description: 'Bản đồ vận mệnh theo Tử Vi Đẩu Số.', href: '/(tabs)/tu-vi' },
   { key: 'tarot', title: 'Tarot', description: 'Một lá bài cho câu hỏi của bạn.', href: '/(tabs)/tarot' },
-  { key: 'natal_chart', title: 'Bản đồ sao', description: 'Cần ngày, giờ và nơi sinh để lập bản đồ.', href: '/(tabs)/discover' },
-  { key: 'numerology', title: 'Thần số học', description: 'Các con số cốt lõi từ tên và ngày sinh.', href: '/(tabs)/discover' },
+  { key: 'natal_chart', title: 'Bản đồ sao', description: 'Cần ngày, giờ và nơi sinh để lập bản đồ.', href: '/discover/natal-chart' },
+  { key: 'numerology', title: 'Thần số học', description: 'Các con số cốt lõi từ tên và ngày sinh.', href: '/discover/numerology' },
 ];
 
 export function FeatureGrid() {
