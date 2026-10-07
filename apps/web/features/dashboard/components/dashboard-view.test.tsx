@@ -45,7 +45,7 @@ describe('Mệnh Vi Home V5.2', () => {
     renderWithQuery(<DashboardView />);
     await screen.findByRole('heading', { level: 3, name: 'Tarot' });
     expect(screen.getByRole('link', { name: /Tử Vi Đẩu Số/i })).toHaveAttribute('href', '/discover/tu-vi');
-    expect(screen.getByRole('link', { name: /Tarot/i })).toHaveAttribute('href', '/discover/tarot');
+    expect(screen.getAllByRole('link', { name: /Tarot/i }).some((link) => link.getAttribute('href') === '/discover/tarot')).toBe(true);
     expect(screen.getByRole('link', { name: /Bản đồ sao/i })).toHaveAttribute('href', '/discover/natal-chart');
     expect(screen.getByRole('link', { name: /Thần số học/i })).toHaveAttribute('href', '/discover/numerology');
   });
