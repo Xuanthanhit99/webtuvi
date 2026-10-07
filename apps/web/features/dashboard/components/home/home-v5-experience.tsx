@@ -84,7 +84,15 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
             const cta = title === 'Tử Vi' ? 'Lập lá số ngay' : title === 'Tarot' ? 'Rút bài Tarot' : title === 'Bản đồ sao' ? 'Xem bản đồ sao' : 'Khám phá ngay';
             return (
               <Link key={title} href={meta.href} className="group relative min-h-[350px] overflow-hidden rounded-[8px] border border-[#c8aa72]/20 bg-[#090d12]">
-                <Image src={FEATURE_ART_ASSET[meta.key]} alt="" fill sizes="(min-width:1280px) 25vw,50vw" className="object-cover transition duration-500 group-hover:scale-[1.02]" />
+                {title === 'Tarot' ? (
+                  <div className="absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_50%_24%,#5a3d24_0%,#17100c_44%,#080a0c_100%)]">
+                    <Image src="/assets/tarot-card/09-the-hermit.webp" alt="" width={170} height={290} className="absolute left-[8%] top-6 w-[38%] -rotate-[10deg] rounded-[5px] shadow-2xl" />
+                    <Image src="/assets/tarot-card/17-the-star.webp" alt="" width={170} height={290} className="absolute left-[31%] top-2 z-10 w-[40%] rounded-[5px] shadow-2xl" />
+                    <Image src="/assets/tarot-card/10-wheel-of-fortune.webp" alt="" width={170} height={290} className="absolute right-[7%] top-7 w-[38%] rotate-[10deg] rounded-[5px] shadow-2xl" />
+                  </div>
+                ) : (
+                  <Image src={FEATURE_ART_ASSET[meta.key]} alt="" fill sizes="(min-width:1280px) 25vw,50vw" className="object-cover transition duration-500 group-hover:scale-[1.02]" />
+                )}
                 <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(5,7,9,.98)_0%,rgba(5,7,9,.55)_48%,rgba(5,7,9,.05)_78%)]" />
                 <div className="absolute inset-x-0 bottom-0 p-6">
                   <h3 className="font-display text-[2rem] text-[#f1e9dc]">{title === 'Tử Vi' ? 'Tử Vi Đẩu Số' : title}</h3>
