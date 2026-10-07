@@ -26,16 +26,23 @@ for (const width of [390, 1536]) {
     await expect(page.getByRole('complementary', { name: 'Quyền riêng tư và đo lường' })).toBeHidden();
     await page.evaluate(() => document.fonts.ready);
 
-    await expect(page.getByRole('heading', { level: 1, name: /điều gì đang ở trong tâm trí bạn/i })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: /Khám phá bản thân,.*hiểu rõ hành trình của bạn/i })).toBeVisible();
     await expect(page.getByText('Dòng chảy hôm nay', { exact: true })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Tiếp tục hành trình' })).toBeVisible();
-    for (const label of ['Tình yêu', 'Công việc', 'Bản thân', 'Quyết định', 'Tương lai']) {
-      const button = page.getByRole('button', { name: new RegExp(label, 'i') });
-      await expect(button).toBeVisible();
-      expect((await button.boundingBox())?.height ?? 0, `${label} touch target`).toBeGreaterThanOrEqual(44);
+    await expect(page.getByRole('heading', { level: 2, name: 'Điều đang diễn ra với bạn' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 2, name: 'Hành trình khám phá' })).toBeVisible();
+
+    const systemRoutes = [
+      { name: /Tử Vi Đẩu Số/i, href: '/discover/tu-vi' },
+      { name: /Tarot/i, href: '/discover/tarot' },
+      { name: /Bản đồ sao/i, href: '/discover/natal-chart' },
+      { name: /Thần số học/i, href: '/discover/numerology' },
+    ];
+    for (const system of systemRoutes) {
+      const links = page.getByRole('link', { name: system.name });
+      await expect(links.first()).toBeVisible();
+      const hrefs = await links.evaluateAll((items) => items.map((item) => item.getAttribute('href')));
+      expect(hrefs).toContain(system.href);
     }
-    await page.getByRole('button', { name: /Công việc/i }).click();
-    await expect(page.getByRole('link', { name: /Xem vận trình/i }).filter({ hasText: 'Xem vận trình' })).toHaveAttribute('href', '/discover/tu-vi');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
     expect(errors).toEqual([]);
