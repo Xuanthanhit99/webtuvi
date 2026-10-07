@@ -46,8 +46,8 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
   return (
     <div className="space-y-6 desktop:space-y-8">
       <section aria-labelledby="home-v5-heading" className="relative min-h-[660px] overflow-hidden rounded-[2px] border border-[#c8aa72]/15 bg-[#070a0d] shadow-[0_30px_90px_rgba(0,0,0,.35)]">
-        <Image src={HOME_BACKGROUND.hero} alt="" fill priority sizes="(min-width:1280px) 1312px, 100vw" className="object-cover object-center" aria-hidden="true" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,9,.88)_0%,rgba(5,7,9,.55)_36%,rgba(5,7,9,.10)_68%,rgba(5,7,9,.52)_100%),linear-gradient(0deg,rgba(4,6,8,.72),transparent_42%)]" />
+        <div aria-hidden="true" className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url("https://images.unsplash.com/photo-1733764227004-d7bfc59aa35a?auto=format&fit=crop&fm=jpg&q=82&w=2400")` }} />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,6,8,.82)_0%,rgba(4,6,8,.48)_38%,rgba(4,6,8,.08)_67%,rgba(4,6,8,.48)_100%),linear-gradient(0deg,rgba(3,5,7,.68),transparent_46%)]" />
         <div className="relative grid min-h-[660px] desktop:grid-cols-[minmax(0,1fr)_360px]">
           <div className="flex max-w-[900px] flex-col justify-center px-7 py-12 tablet:px-12 desktop:px-[84px]">
             <p className="font-display text-[clamp(5rem,6.8vw,7.6rem)] leading-none text-[#e8bd72]">Mệnh Vi</p>
