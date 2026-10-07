@@ -24,7 +24,7 @@ const SYSTEM_META: Record<SystemTitle, { key: DiscoveryModuleKey; href: string }
   'Thần số học': { key: 'numerology', href: '/discover/numerology' },
 };
 
-const SYSTEM_ORDER: readonly SystemTitle[] = ['Tarot', 'Tử Vi', 'Bản đồ sao', 'Thần số học'];
+const SYSTEM_ORDER: readonly SystemTitle[] = ['Tử Vi', 'Tarot', 'Bản đồ sao', 'Thần số học'];
 
 const SYSTEM_COPY: Record<SystemTitle, { eyebrow: string; description: string }> = {
   'Tử Vi': { eyebrow: 'Lá số & vận trình', description: 'Đọc cấu trúc 12 cung, Đại Vận và Tiểu Hạn từ dữ liệu sinh của bạn.' },
@@ -60,89 +60,105 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
   const selectedMeta = SYSTEM_META[selected.title as SystemTitle];
   const alternatives = SYSTEM_ORDER.filter((title) => title !== selected.title).slice(0, 2);
 
+  const flowSignals = [
+    { label: 'Năng lượng chung', value: signals[0]?.value ?? 'Thích hợp cho việc nhìn lại và lên kế hoạch mới.', href: signals[0]?.href ?? '/discover' },
+    { label: 'Tài lộc', value: signals[1]?.value ?? 'Cơ hội nhỏ từ những kết nối cũ.', href: signals[1]?.href ?? '/discover/tu-vi' },
+    { label: 'Tình cảm', value: signals[2]?.value ?? 'Dành thời gian lắng nghe nhiều hơn.', href: signals[2]?.href ?? '/discover/tarot' },
+    { label: 'Lời khuyên', value: signals[3]?.value ?? 'Giữ cân bằng giữa lý trí và cảm xúc.', href: signals[3]?.href ?? '/discover' },
+  ];
+
   return (
-    <>
-      <section aria-labelledby="home-v5-heading" className="relative overflow-hidden rounded-[22px] border border-white/[0.08] bg-[#080b10] shadow-[0_28px_90px_rgba(0,0,0,0.32)]">
-        <Image src={HOME_BACKGROUND.hero} alt="" fill priority sizes="(min-width: 1024px) 1200px, 100vw" className="pointer-events-none object-cover object-[68%_center] opacity-75" aria-hidden="true" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,10,0.98)_0%,rgba(5,7,10,0.91)_38%,rgba(5,7,10,0.48)_67%,rgba(5,7,10,0.20)_100%),linear-gradient(0deg,rgba(5,7,10,0.70),transparent_48%)]" aria-hidden="true" />
-        <div className="relative grid min-h-[430px] items-center gap-8 p-5 min-[430px]:p-7 tablet:p-10 desktop:grid-cols-[minmax(0,1.08fr)_minmax(320px,0.72fr)] desktop:p-12">
-          <div className="max-w-[760px]">
-            <p className="text-caption font-semibold uppercase tracking-[0.24em] text-[#a98e61]">{isGuest ? 'Hiểu mình sâu hơn · Sống an yên hơn' : greeting}</p>
-            <h1 id="home-v5-heading" className="mt-4 max-w-[700px] font-display text-[clamp(2.5rem,5vw,4.8rem)] font-medium leading-[1.02] tracking-[-0.02em] text-[#eee8dc]">
-              {isGuest ? 'Điều gì đang ở trong tâm trí bạn?' : <>{userName}, điều gì đang ở trong tâm trí bạn?</>}
+    <div className="space-y-4 desktop:space-y-5">
+      <section aria-labelledby="home-v5-heading" className="relative min-h-[520px] overflow-hidden rounded-[4px] border border-[#c8aa72]/15 bg-[#070a0d] shadow-[0_30px_90px_rgba(0,0,0,.35)]">
+        <Image src={HOME_BACKGROUND.hero} alt="" fill priority sizes="(min-width:1280px) 1312px, 100vw" className="object-cover object-center" aria-hidden="true" />
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,9,.88)_0%,rgba(5,7,9,.55)_36%,rgba(5,7,9,.10)_68%,rgba(5,7,9,.52)_100%),linear-gradient(0deg,rgba(4,6,8,.72),transparent_42%)]" />
+        <div className="relative grid min-h-[520px] desktop:grid-cols-[minmax(0,1fr)_292px]">
+          <div className="flex max-w-[760px] flex-col justify-center px-7 py-12 tablet:px-12 desktop:px-16">
+            <p className="font-display text-[clamp(3.8rem,6vw,6.2rem)] leading-none text-[#e8bd72]">Mệnh Vi</p>
+            <h1 id="home-v5-heading" className="mt-3 max-w-[620px] font-display text-[clamp(2rem,3vw,3.15rem)] font-medium leading-[1.08] text-[#f2eee5]">
+              Khám phá bản thân,<br />hiểu rõ hành trình của bạn
             </h1>
-            <p className="mt-5 max-w-xl text-body-md leading-7 text-[#aaa8a3]">Mệnh Vi lắng nghe câu hỏi của bạn và mở con đường phù hợp từ Tarot, Tử Vi, Bản đồ sao và Thần số học.</p>
-            <div className="mt-8 flex min-h-14 items-center rounded-full border border-[#c8aa72]/45 bg-[#0c1016]/85 p-1.5">
-              <span className="pl-4 text-[#c8aa72]" aria-hidden="true">✦</span><span className="min-w-0 flex-1 px-3 text-body-sm text-[#85868a]">Điều gì đang ở trong tâm trí bạn?</span>
-              <Link href={selected.href} aria-label={selected.cta} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#e4c895] text-[#15110b] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#e4c895]"><ArrowRight className="h-5 w-5" aria-hidden="true" /></Link>
-            </div>
-            <div aria-label="Chọn điều bạn đang quan tâm" className="mt-4 flex flex-wrap gap-2">
-              {INTENTS.map((intent) => { const Icon = intent.icon; const active = intent.key === selected.key; return (
-                <button key={intent.key} type="button" aria-pressed={active} onClick={() => setSelectedKey(intent.key)}
-                  className={active ? 'inline-flex min-h-11 items-center gap-2 rounded-full border border-[#c8aa72]/60 bg-[#c8aa72]/10 px-4 text-caption text-[#eee8dc] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c8aa72]' : 'inline-flex min-h-11 items-center gap-2 rounded-full border border-white/[0.09] px-4 text-caption text-[#aaa8a3] hover:border-[#c8aa72]/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c8aa72]'}>
-                  <Icon className="h-4 w-4" aria-hidden="true" />{intent.label}
-                </button>
-              ); })}
+            <p className="mt-5 text-body-md text-[#d6d0c5]">Tử Vi · Tarot · Bản đồ sao · Thần số học</p>
+            <p className="mt-1 max-w-xl text-body-sm text-[#aaa59c]">Bốn hệ thống, một hành trình thấu hiểu chính mình.</p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link href="/discover" className="inline-flex min-h-12 items-center gap-2 rounded-full bg-[#e4bd70] px-7 text-body-sm font-semibold text-[#17110a]">Bắt đầu khám phá <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/about" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#d6b06b]/45 bg-black/25 px-7 text-body-sm font-semibold text-[#ead9ba]">Tìm hiểu thêm</Link>
             </div>
           </div>
-          <div className="hidden self-stretch border-l border-white/[0.06] pl-10 desktop:flex desktop:flex-col desktop:justify-between">
-            <div className="relative min-h-[220px] overflow-hidden rounded-[18px] border border-[#c8aa72]/20 bg-[#080b10]/70 shadow-[0_20px_60px_rgba(0,0,0,0.30)]">
-              <Image src={FEATURE_ART_ASSET[selectedMeta.key]} alt="" fill sizes="360px" className="object-cover object-center opacity-95" aria-hidden="true" />
-              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(5,7,10,0.70),transparent_55%)]" aria-hidden="true" />
-              <Image src={FEATURE_BADGE_ASSET[selectedMeta.key]} alt="" width={76} height={76} className="absolute bottom-4 left-4 h-[76px] w-[76px] object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.55)]" aria-hidden="true" />
+          <aside className="m-4 self-center rounded-[12px] border border-[#c8aa72]/25 bg-[#080b0e]/90 p-5 backdrop-blur-md desktop:m-5">
+            <h2 className="font-display text-heading-md text-[#e5c98e]">Dòng chảy hôm nay</h2>
+            <p className="mt-1 text-caption text-[#88857f]">{greeting.replace(',', '')}{!isGuest ? ` · ${userName}` : ''}</p>
+            <div className="mt-4 divide-y divide-white/[0.07]">
+              {loading ? <div className="h-48 animate-pulse rounded-lg bg-white/[0.04]" /> : flowSignals.map((signal) => (
+                <Link key={signal.label} href={signal.href} className="group flex min-h-[72px] gap-3 py-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-[#c8aa72]/25 bg-[#c8aa72]/10 text-[#e4bd70]">✦</span>
+                  <span><b className="block text-caption text-[#eee8dc]">{signal.label}</b><span className="mt-1 line-clamp-2 block text-[12px] leading-4 text-[#9f9b94]">{signal.value}</span></span>
+                </Link>
+              ))}
             </div>
-            <p className="mt-7 max-w-[280px] font-display text-heading-md italic leading-relaxed text-[#d7c6a8]">“Mỗi câu hỏi đúng cũng là một bước chuyển.”</p>
-            <div className="mt-8"><p className="text-caption uppercase tracking-[0.18em] text-[#777b84]">Mệnh Vi gợi ý lúc này</p><p className="mt-2 font-display text-heading-lg text-[#eee8dc]">{selected.title}</p><p className="mt-3 text-body-sm leading-6 text-[#999b9f]">{selected.reason}</p></div>
-          </div>
+          </aside>
         </div>
       </section>
 
       <section aria-labelledby="systems-v5-heading">
-        <div className="mb-5 flex items-end justify-between gap-4">
-          <div><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#a98e61]">Bốn hệ · Một hành trình</p><h2 id="systems-v5-heading" className="mt-2 font-display text-heading-lg font-medium text-[#eee8dc]">Chọn góc nhìn dành cho bạn</h2></div>
-          <Link href="/discover" className="hidden min-h-11 items-center gap-2 text-caption font-semibold text-[#c8aa72] tablet:inline-flex">Khám phá tất cả <ArrowRight className="h-4 w-4" /></Link>
-        </div>
-        <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
-          {SYSTEM_ORDER.map((title) => { const meta = SYSTEM_META[title]; const copy = SYSTEM_COPY[title]; return (
-            <Link key={title} href={meta.href} className="group relative min-h-[330px] overflow-hidden rounded-[18px] border border-white/[0.08] bg-[#090d13] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c8aa72]">
-              <Image src={FEATURE_ART_ASSET[meta.key]} alt="" fill sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.025]" aria-hidden="true" />
-              <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(5,7,10,0.98)_0%,rgba(5,7,10,0.70)_38%,rgba(5,7,10,0.08)_75%)]" />
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#d0b47e]">{copy.eyebrow}</p>
-                <h3 className="mt-2 font-display text-heading-md text-[#f0eadf]">{title}</h3>
-                <p className="mt-2 text-caption leading-5 text-[#b5b1aa]">{copy.description}</p>
-                <span className="mt-4 inline-flex items-center gap-2 text-caption font-semibold text-[#e4c895]">Mở trải nghiệm <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
-              </div>
-            </Link>
-          ); })}
+        <h2 id="systems-v5-heading" className="sr-only">Bốn hệ thống Mệnh Vi</h2>
+        <div className="grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">
+          {SYSTEM_ORDER.map((title) => {
+            const meta = SYSTEM_META[title]; const copy = SYSTEM_COPY[title];
+            const cta = title === 'Tử Vi' ? 'Lập lá số ngay' : title === 'Tarot' ? 'Rút bài Tarot' : title === 'Bản đồ sao' ? 'Xem bản đồ sao' : 'Khám phá ngay';
+            return (
+              <Link key={title} href={meta.href} className="group relative min-h-[238px] overflow-hidden rounded-[8px] border border-[#c8aa72]/20 bg-[#090d12]">
+                <Image src={FEATURE_ART_ASSET[meta.key]} alt="" fill sizes="(min-width:1280px) 25vw,50vw" className="object-cover transition duration-500 group-hover:scale-[1.02]" />
+                <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(5,7,9,.98)_0%,rgba(5,7,9,.55)_48%,rgba(5,7,9,.05)_78%)]" />
+                <div className="absolute inset-x-0 bottom-0 p-4">
+                  <h3 className="font-display text-[1.55rem] text-[#f1e9dc]">{title === 'Tử Vi' ? 'Tử Vi Đẩu Số' : title}</h3>
+                  <p className="mt-1 max-w-[240px] text-caption leading-5 text-[#d1cbc0]">{copy.description}</p>
+                  <span className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-full bg-[#e4bd70] px-4 text-[12px] font-semibold text-[#17110a]">{cta} <ArrowRight className="h-3.5 w-3.5" /></span>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
-      <section aria-labelledby="flow-v5-heading" className="overflow-hidden rounded-[18px] border border-white/[0.07] bg-[#090d13]/90">
-        <div className="grid desktop:grid-cols-[0.72fr_1.28fr]">
-          <div className="relative min-h-[220px] overflow-hidden border-b border-white/[0.06] p-6 desktop:border-b-0 desktop:border-r desktop:p-8">
-            <Image src={HOME_BACKGROUND.journeyBanner} alt="" fill sizes="420px" className="object-cover opacity-65" aria-hidden="true" />
-            <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(7,10,14,0.96),rgba(7,10,14,0.50))]" />
-            <div className="relative"><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#c8aa72]">Dòng chảy hôm nay</p><h2 id="flow-v5-heading" className="mt-3 max-w-sm font-display text-heading-lg font-medium text-[#eee8dc]">{isGuest ? 'Bắt đầu để tạo dòng chảy của riêng bạn.' : 'Những tín hiệu từ chính hành trình của bạn.'}</h2><p className="mt-3 max-w-sm text-caption leading-6 text-[#aaa8a3]">{isGuest ? 'Đăng nhập để mở tín hiệu cá nhân.' : 'Dữ liệu đến từ những hồ sơ và lần khám phá bạn đã thực sự tạo.'}</p></div>
+      <section aria-labelledby="signals-v5-heading" className="grid gap-3 desktop:grid-cols-[1.2fr_.8fr]">
+        <div className="rounded-[8px] border border-white/[0.06] bg-[#080c10] p-5">
+          <div className="flex items-end justify-between gap-4">
+            <div><h2 id="signals-v5-heading" className="font-display text-heading-md text-[#eee8dc]">Điều đang diễn ra với bạn</h2><p className="mt-1 text-caption text-[#8f8c86]">Dựa trên ngày hôm nay, đây là những chủ đề có thể liên quan đến bạn.</p></div>
+            <Link href="/discover" className="hidden items-center gap-2 text-caption font-semibold text-[#e4bd70] tablet:inline-flex">Xem tất cả <ArrowRight className="h-4 w-4" /></Link>
           </div>
-          <div className="p-5 tablet:p-6">{loading ? <div className="h-28 animate-pulse rounded-[14px] bg-white/[0.04]" /> : signals.length > 0 ? <div className="grid gap-3 tablet:grid-cols-2">{signals.map((signal) => <Signal key={signal.label} signal={signal} />)}</div> : <div className="flex min-h-[180px] items-center rounded-[14px] border border-white/[0.06] p-5 text-body-sm text-[#999b9f]">Chưa có dữ liệu cá nhân. Bắt đầu một trải nghiệm để tạo dòng chảy của riêng bạn.</div>}</div>
+          <div className="mt-4 grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">
+            {flowSignals.map((signal, index) => (
+              <Link key={signal.label} href={signal.href} className="group overflow-hidden rounded-[7px] border border-white/[0.08] bg-[#0b0f13]">
+                <div className="relative aspect-[1.35] overflow-hidden"><Image src={ARTICLE_COVER_ASSET[SYSTEM_META[SYSTEM_ORDER[index]].key]} alt="" fill sizes="220px" className="object-cover transition group-hover:scale-[1.025]" /></div>
+                <div className="p-3"><p className="line-clamp-2 text-caption leading-5 text-[#e2ddd3]">{signal.value}</p><span className="mt-3 inline-block rounded-full border border-[#c8aa72]/25 px-2.5 py-1 text-[10px] text-[#d2b77f]">{signal.label}</span></div>
+              </Link>
+            ))}
+          </div>
+        </div>
+        <div className="relative min-h-[300px] overflow-hidden rounded-[8px] border border-[#c8aa72]/15 bg-[#0a0d10]">
+          <Image src={HOME_BACKGROUND.journeyBanner} alt="" fill sizes="520px" className="object-cover opacity-80" />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,9,.93),rgba(5,7,9,.25))]" />
+          <div className="relative max-w-[330px] p-5">
+            <h2 className="font-display text-heading-md text-[#ead6ad]">Hành trình khám phá</h2>
+            <p className="mt-1 text-caption leading-5 text-[#b0aaa0]">Mỗi câu hỏi là một bước tiến gần hơn đến phiên bản tốt hơn của chính bạn.</p>
+            <div className="mt-4 space-y-2 text-caption text-[#e2ddd3]">
+              {['Tôi là ai?','Điều gì đang chờ đợi tôi?','Tình yêu của tôi sẽ ra sao?','Sự nghiệp và tài chính thế nào?','Làm thế nào để cân bằng cuộc sống?'].map((q) => <Link key={q} href="/discover" className="flex min-h-9 items-center gap-3"><span className="text-[#e4bd70]">✦</span>{q}</Link>)}
+            </div>
+          </div>
         </div>
       </section>
 
-      <section aria-labelledby="recommend-v5-heading" className="relative min-h-[340px] overflow-hidden rounded-[18px] border border-white/[0.07] bg-[#090d13]">
-        <Image src={FEATURE_ART_ASSET[selectedMeta.key]} alt="" fill sizes="100vw" className="object-cover object-[70%_center] opacity-75" aria-hidden="true" />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,#090d13_0%,rgba(9,13,19,0.94)_42%,rgba(9,13,19,0.22)_78%)]" />
-        <div className="relative max-w-2xl p-7 tablet:p-9"><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#d0b47e]">Gợi ý chính · {selected.label}</p><h2 id="recommend-v5-heading" className="mt-3 font-display text-[clamp(2.2rem,3.5vw,3.5rem)] font-medium text-[#eee8dc]">{selected.title}</h2><p className="mt-4 text-body-md leading-7 text-[#c0bbb3]">{selected.reason}</p><Link href={selected.href} className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-[#e4c895] px-6 text-body-sm font-semibold text-[#15110b]">{selected.cta}<ArrowRight className="h-4 w-4" /></Link></div>
+      {!isGuest && continuity && (
+        <section aria-labelledby="continue-v5-heading" className="rounded-[8px] border border-white/[0.07] bg-[#090d12] px-5 py-4">
+          <div className="flex items-center justify-between gap-4"><div><p className="text-[11px] uppercase tracking-[.18em] text-[#a98e61]">Tiếp tục hành trình</p><h2 id="continue-v5-heading" className="mt-1 font-display text-body-lg text-[#eee8dc]">{continuity.title}</h2><p className="mt-1 text-caption text-[#8e8b85]">{continuity.description}</p></div><Link href={continuity.href} className="inline-flex min-h-11 items-center gap-2 text-caption font-semibold text-[#e4bd70]">Tiếp tục <ArrowRight className="h-4 w-4" /></Link></div>
+        </section>
+      )}
+
+      <section aria-labelledby="editorial-v5-heading" className="rounded-[8px] border border-white/[0.06] bg-[#080c10] p-5">
+        <div className="flex items-end justify-between gap-4"><div><h2 id="editorial-v5-heading" className="font-display text-heading-md text-[#eee8dc]">Khám phá thêm</h2><p className="mt-1 text-caption text-[#8f8c86]">Những chủ đề thú vị giúp bạn hiểu sâu hơn về bản thân và thế giới xung quanh.</p></div><Link href="/kien-thuc" className="inline-flex min-h-11 items-center gap-2 text-caption font-semibold text-[#e4bd70]">Xem thêm <ArrowRight className="h-4 w-4" /></Link></div>
+        <div className="mt-4 grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">{EDITORIAL.map((item) => <Link key={item.key} href={item.href} className="group overflow-hidden rounded-[7px] border border-white/[0.07] bg-[#0a0e12]"><div className="relative aspect-[16/9] overflow-hidden"><Image src={ARTICLE_COVER_ASSET[item.key]} alt="" fill sizes="300px" className="object-cover transition group-hover:scale-[1.025]" /></div><div className="p-3"><h3 className="font-display text-body-md text-[#eee8dc]">{item.title}</h3><span className="mt-2 inline-flex items-center gap-2 text-caption text-[#c8aa72]">Đọc tiếp <ArrowRight className="h-3.5 w-3.5" /></span></div></Link>)}</div>
       </section>
-
-      {!isGuest && <section aria-labelledby="continue-v5-heading" className="border-t border-white/[0.07] pt-2"><div className="flex items-center justify-between"><h2 id="continue-v5-heading" className="font-display text-heading-md font-medium text-[#eee8dc]">Tiếp tục hành trình</h2><Link href="/discover" className="inline-flex min-h-11 items-center gap-2 text-caption font-semibold text-[#c8aa72]">Khám phá thêm <ArrowRight className="h-4 w-4" /></Link></div><div className="mt-3">{continuity ? <Link href={continuity.href} className="flex min-h-[86px] items-center justify-between gap-4 rounded-[14px] border border-white/[0.07] bg-white/[0.02] p-4 hover:border-[#c8aa72]/30"><div><p className="text-body-sm font-semibold text-[#ddd8cf]">{continuity.title}</p><p className="mt-1 text-caption text-[#85868a]">{continuity.description}</p></div><ArrowRight className="h-4 w-4 shrink-0 text-[#777b84]" /></Link> : <p className="rounded-[14px] border border-white/[0.06] p-4 text-body-sm text-[#85868a]">Chưa có hành trình gần đây.</p>}</div></section>}
-
-      <section aria-labelledby="editorial-v5-heading">
-        <div className="mb-5 flex items-end justify-between gap-4"><div><p className="text-caption font-semibold uppercase tracking-[0.18em] text-[#a98e61]">Khám phá thêm</p><h2 id="editorial-v5-heading" className="mt-2 font-display text-heading-lg font-medium text-[#eee8dc]">Kiến thức để hiểu trước khi luận giải</h2></div><Link href="/kien-thuc" className="hidden min-h-11 items-center gap-2 text-caption font-semibold text-[#c8aa72] tablet:inline-flex">Thư viện Mệnh Vi <ArrowRight className="h-4 w-4" /></Link></div>
-        <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">{EDITORIAL.map((item) => <Link key={item.key} href={item.href} className="group overflow-hidden rounded-[16px] border border-white/[0.07] bg-[#090d13]"><div className="relative aspect-[16/10] overflow-hidden"><Image src={ARTICLE_COVER_ASSET[item.key]} alt="" fill sizes="(min-width:1024px) 25vw, 50vw" className="object-cover transition duration-500 group-hover:scale-[1.03]" /></div><div className="p-4"><h3 className="font-display text-body-md text-[#eee8dc]">{item.title}</h3><span className="mt-3 inline-flex items-center gap-2 text-caption font-semibold text-[#c8aa72]">Đọc tiếp <ArrowRight className="h-4 w-4" /></span></div></Link>)}</div>
-      </section>
-
-      <section aria-label="Góc nhìn sâu hơn" className="flex flex-col gap-5 rounded-[18px] border border-white/[0.07] bg-[linear-gradient(110deg,#0b0f14,#11100e)] p-6 tablet:flex-row tablet:items-center tablet:justify-between tablet:p-8"><div><p className="text-caption uppercase tracking-[0.18em] text-[#a98e61]">Góc nhìn sâu hơn</p><h2 className="mt-2 max-w-2xl font-display text-heading-md font-medium text-[#eee8dc]">Không chỉ là dự đoán — mỗi công cụ là một góc nhìn để hiểu mình rõ hơn.</h2></div><Link href="/discover" className="inline-flex min-h-11 shrink-0 items-center gap-2 text-body-sm font-semibold text-[#c8aa72]">Khám phá Mệnh Vi <ArrowRight className="h-4 w-4" /></Link></section>
-    </>
+    </div>
   );
 }
