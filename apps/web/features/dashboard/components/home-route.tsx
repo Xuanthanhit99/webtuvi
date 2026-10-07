@@ -13,7 +13,7 @@ import { DashboardView } from './dashboard-view';
  */
 export function HomeRoute() {
   return (
-    <AppShell maxWidthClassName="" shellMaxWidthClassName="max-w-[1536px]">
+    <AppShell maxWidthClassName="" shellMaxWidthClassName="max-w-[1536px]" homeVisual>
       <DashboardView />
     </AppShell>
   );
