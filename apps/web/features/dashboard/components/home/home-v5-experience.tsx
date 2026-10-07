@@ -2,18 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import { ArrowRight, BriefcaseBusiness, Compass, Heart, Star, UserRound } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import type { TodayOverviewSignal } from './today-overview';
-import { ARTICLE_COVER_ASSET, FEATURE_ART_ASSET, FEATURE_BADGE_ASSET, HOME_BACKGROUND, type DiscoveryModuleKey } from './production-assets';
-
-const INTENTS = [
-  { key: 'love', label: 'Tình yêu', icon: Heart, title: 'Tarot', href: '/discover/tarot', cta: 'Bắt đầu trải nghiệm', reason: 'Một câu hỏi cụ thể giúp bạn nhìn lại cảm xúc và điều đang hiện diện trong mối quan hệ.' },
-  { key: 'work', label: 'Công việc', icon: BriefcaseBusiness, title: 'Tử Vi', href: '/discover/tu-vi', cta: 'Xem vận trình', reason: 'Đặt công việc vào nhịp Đại Vận và Tiểu Hạn để nhìn bức tranh dài hơn.' },
-  { key: 'self', label: 'Bản thân', icon: UserRound, title: 'Bản đồ sao', href: '/discover/natal-chart', cta: 'Dựng bản đồ sao', reason: 'Bắt đầu từ cấu trúc bản đồ sinh để hiểu khí chất, nhu cầu và cách bạn kết nối.' },
-  { key: 'decision', label: 'Quyết định', icon: Compass, title: 'Tarot', href: '/discover/tarot', cta: 'Đặt câu hỏi', reason: 'Dùng một khoảng dừng có cấu trúc để soi lại điều bạn đang cân nhắc trước khi tự quyết định.' },
-  { key: 'future', label: 'Tương lai', icon: Star, title: 'Tử Vi', href: '/discover/tu-vi', cta: 'Lập lá số', reason: 'Đại Vận và Tiểu Hạn cho bạn một khung thời gian để đọc giai đoạn phía trước.' },
-] as const;
+import { ARTICLE_COVER_ASSET, FEATURE_ART_ASSET, HOME_BACKGROUND, type DiscoveryModuleKey } from './production-assets';
 
 type SystemTitle = 'Tarot' | 'Tử Vi' | 'Bản đồ sao' | 'Thần số học';
 
@@ -42,24 +33,9 @@ const EDITORIAL = [
 
 export type HomeV5ContinuityItem = { title: string; description: string; href: string };
 
-function Signal({ signal }: { signal: TodayOverviewSignal }) {
-  return (
-    <Link href={signal.href} className="group flex min-h-[92px] flex-col justify-between rounded-[14px] border border-white/[0.07] bg-white/[0.025] p-4 transition-colors hover:border-[#c8aa72]/30 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c8aa72]">
-      <span className="text-caption font-medium text-[#c8aa72]">{signal.label}</span>
-      <span className="mt-2 line-clamp-2 text-body-sm leading-relaxed text-[#ddd8cf]">{signal.value}</span>
-      <ArrowRight className="mt-3 h-4 w-4 text-[#777b84] transition-transform group-hover:translate-x-1" aria-hidden="true" />
-    </Link>
-  );
-}
-
 export function HomeV5Experience({ isGuest, greeting, userName, loading, signals, continuity }: {
   isGuest: boolean; greeting: string; userName: string; loading: boolean; signals: TodayOverviewSignal[]; continuity: HomeV5ContinuityItem | null;
 }) {
-  const [selectedKey, setSelectedKey] = useState<(typeof INTENTS)[number]['key']>('love');
-  const selected = useMemo(() => INTENTS.find((item) => item.key === selectedKey) ?? INTENTS[0], [selectedKey]);
-  const selectedMeta = SYSTEM_META[selected.title as SystemTitle];
-  const alternatives = SYSTEM_ORDER.filter((title) => title !== selected.title).slice(0, 2);
-
   const flowSignals = [
     { label: 'Năng lượng chung', value: signals[0]?.value ?? 'Thích hợp cho việc nhìn lại và lên kế hoạch mới.', href: signals[0]?.href ?? '/discover' },
     { label: 'Tài lộc', value: signals[1]?.value ?? 'Cơ hội nhỏ từ những kết nối cũ.', href: signals[1]?.href ?? '/discover/tu-vi' },
@@ -130,7 +106,7 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
           <div className="mt-4 grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">
             {flowSignals.map((signal, index) => (
               <Link key={signal.label} href={signal.href} className="group overflow-hidden rounded-[7px] border border-white/[0.08] bg-[#0b0f13]">
-                <div className="relative aspect-[1.35] overflow-hidden"><Image src={ARTICLE_COVER_ASSET[SYSTEM_META[SYSTEM_ORDER[index]].key]} alt="" fill sizes="220px" className="object-cover transition group-hover:scale-[1.025]" /></div>
+                <div className="relative aspect-[1.35] overflow-hidden"><Image src={ARTICLE_COVER_ASSET[SYSTEM_META[SYSTEM_ORDER[index] ?? 'Tử Vi'].key]} alt="" fill sizes="220px" className="object-cover transition group-hover:scale-[1.025]" /></div>
                 <div className="p-3"><p className="line-clamp-2 text-caption leading-5 text-[#e2ddd3]">{signal.value}</p><span className="mt-3 inline-block rounded-full border border-[#c8aa72]/25 px-2.5 py-1 text-[10px] text-[#d2b77f]">{signal.label}</span></div>
               </Link>
             ))}
