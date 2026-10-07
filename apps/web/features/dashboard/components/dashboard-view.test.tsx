@@ -1,5 +1,4 @@
 import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { renderWithQuery } from '@/test/render-with-query';
 import { DashboardView } from './dashboard-view';
 import { dashboardApi } from '../api/dashboard-api';
@@ -34,28 +33,28 @@ describe('Mệnh Vi Home V5.2', () => {
 
   it('renders the locked Oracle Workspace hierarchy for an authenticated user', async () => {
     renderWithQuery(<DashboardView />);
-    expect(await screen.findByRole('heading', { level: 1, name: /Thành, điều gì đang ở trong tâm trí bạn/i })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: /Khám phá bản thân,.*hiểu rõ hành trình của bạn/i })).toBeInTheDocument();
     expect(screen.getByText('Dòng chảy hôm nay')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 2, name: 'Tarot' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Tiếp tục hành trình' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Tarot' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Điều đang diễn ra với bạn' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Hành trình khám phá' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Khám phá theo từng hệ' })).not.toBeInTheDocument();
   });
 
-  it('changes the recommended path from the selected intent', async () => {
-    const user = userEvent.setup();
+  it('keeps the four real discovery routes in the locked system rail', async () => {
     renderWithQuery(<DashboardView />);
-    await screen.findByRole('heading', { level: 2, name: 'Tarot' });
-    await user.click(screen.getByRole('button', { name: /Công việc/i }));
-    expect(screen.getByRole('button', { name: /Công việc/i })).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('heading', { level: 2, name: 'Tử Vi' })).toBeInTheDocument();
-    expect(screen.getAllByRole('link', { name: /Xem vận trình/i }).some((link) => link.getAttribute('href') === '/discover/tu-vi')).toBe(true);
+    await screen.findByRole('heading', { level: 3, name: 'Tarot' });
+    expect(screen.getByRole('link', { name: /Tử Vi Đẩu Số/i })).toHaveAttribute('href', '/discover/tu-vi');
+    expect(screen.getByRole('link', { name: /Tarot/i })).toHaveAttribute('href', '/discover/tarot');
+    expect(screen.getByRole('link', { name: /Bản đồ sao/i })).toHaveAttribute('href', '/discover/natal-chart');
+    expect(screen.getByRole('link', { name: /Thần số học/i })).toHaveAttribute('href', '/discover/numerology');
   });
 
   it('renders guest Home without fetching private personalized APIs', async () => {
     (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: false, refetch: jest.fn() });
     renderWithQuery(<DashboardView />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'Điều gì đang ở trong tâm trí bạn?' })).toBeInTheDocument();
-    expect(screen.getByText('Đăng nhập để mở tín hiệu cá nhân.')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { level: 1, name: /Khám phá bản thân,.*hiểu rõ hành trình của bạn/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: 'Dòng chảy hôm nay' })).toBeInTheDocument();
     expect(dashboardApi.get).not.toHaveBeenCalled();
     expect(tarotApi.listReadings).not.toHaveBeenCalled();
     await waitFor(() => expect(trackEvent).toHaveBeenCalledWith('home_viewed', { feature: 'home', source: 'guest' }));
@@ -64,7 +63,7 @@ describe('Mệnh Vi Home V5.2', () => {
   it('keeps the real current Tử Vi cycle in today flow', async () => {
     (tuViApi.listCharts as jest.Mock).mockResolvedValue({ items: [{ id: 'chart-1', palaces: { menh: 'Tý' }, currentDaiVan: { index: 3, ageStart: 24, ageEnd: 33, role: 'Quan Lộc', position: 'Ngọ' }, currentTieuHan: { tuoi: 27, lunarYear: 2026, palace: 'Mão' }, createdAt: '2026-08-01T00:00:00.000Z' }], total: 1, page: 1, pageSize: 1 });
     renderWithQuery(<DashboardView />);
-    expect(await screen.findByText('27 tuổi (Âm lịch 2026) · Cung Mão')).toBeInTheDocument();
+    expect((await screen.findAllByText('27 tuổi (Âm lịch 2026) · Cung Mão')).length).toBeGreaterThanOrEqual(1);
   });
 
   it('keeps the most recent real reading as continuity', async () => {
@@ -74,10 +73,11 @@ describe('Mệnh Vi Home V5.2', () => {
     expect(await screen.findByText('Bản đồ sao gần nhất')).toBeInTheDocument();
   });
 
-  it('uses honest empty state when no personal signals exist', async () => {
+  it('uses neutral non-personal fallback copy when no personal signals exist', async () => {
     renderWithQuery(<DashboardView />);
-    expect(await screen.findByText(/Chưa có dữ liệu cá nhân/)).toBeInTheDocument();
-    expect(screen.getByText('Chưa có hành trình gần đây.')).toBeInTheDocument();
+    expect(await screen.findByText('Thích hợp cho việc nhìn lại và lên kế hoạch mới.')).toBeInTheDocument();
+    expect(screen.getByText('Cơ hội nhỏ từ những kết nối cũ.')).toBeInTheDocument();
+    expect(screen.queryByText('Chưa có hành trình gần đây.')).not.toBeInTheDocument();
   });
 });
 
@@ -85,6 +85,6 @@ it('renders public V5.2 content while authentication is unresolved without fetch
   jest.clearAllMocks();
   (useAuth as jest.Mock).mockReturnValue({ user: null, isLoading: true });
   renderWithQuery(<DashboardView />);
-  expect(screen.getByRole('heading', { level: 1, name: 'Điều gì đang ở trong tâm trí bạn?' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1, name: /Khám phá bản thân,.*hiểu rõ hành trình của bạn/i })).toBeInTheDocument();
   expect(dashboardApi.get).not.toHaveBeenCalled();
 });
