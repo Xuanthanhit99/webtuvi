@@ -44,14 +44,14 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
   ];
 
   return (
-    <div className="space-y-4 desktop:space-y-5">
-      <section aria-labelledby="home-v5-heading" className="relative min-h-[520px] overflow-hidden rounded-[4px] border border-[#c8aa72]/15 bg-[#070a0d] shadow-[0_30px_90px_rgba(0,0,0,.35)]">
+    <div className="space-y-5 desktop:space-y-7">
+      <section aria-labelledby="home-v5-heading" className="relative min-h-[590px] overflow-hidden rounded-[2px] border border-[#c8aa72]/15 bg-[#070a0d] shadow-[0_30px_90px_rgba(0,0,0,.35)]">
         <Image src={HOME_BACKGROUND.hero} alt="" fill priority sizes="(min-width:1280px) 1312px, 100vw" className="object-cover object-center" aria-hidden="true" />
         <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,9,.88)_0%,rgba(5,7,9,.55)_36%,rgba(5,7,9,.10)_68%,rgba(5,7,9,.52)_100%),linear-gradient(0deg,rgba(4,6,8,.72),transparent_42%)]" />
-        <div className="relative grid min-h-[520px] desktop:grid-cols-[minmax(0,1fr)_292px]">
-          <div className="flex max-w-[760px] flex-col justify-center px-7 py-12 tablet:px-12 desktop:px-16">
-            <p className="font-display text-[clamp(3.8rem,6vw,6.2rem)] leading-none text-[#e8bd72]">Mệnh Vi</p>
-            <h1 id="home-v5-heading" className="mt-3 max-w-[620px] font-display text-[clamp(2rem,3vw,3.15rem)] font-medium leading-[1.08] text-[#f2eee5]">
+        <div className="relative grid min-h-[590px] desktop:grid-cols-[minmax(0,1fr)_330px]">
+          <div className="flex max-w-[820px] flex-col justify-center px-7 py-12 tablet:px-12 desktop:px-[72px]">
+            <p className="font-display text-[clamp(4.6rem,6.4vw,7rem)] leading-none text-[#e8bd72]">Mệnh Vi</p>
+            <h1 id="home-v5-heading" className="mt-3 max-w-[620px] font-display text-[clamp(2.35rem,3.25vw,3.65rem)] font-medium leading-[1.08] text-[#f2eee5]">
               Khám phá bản thân,<br />hiểu rõ hành trình của bạn
             </h1>
             <p className="mt-5 text-body-md text-[#d6d0c5]">Tử Vi · Tarot · Bản đồ sao · Thần số học</p>
@@ -61,7 +61,7 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
               <Link href="/about" className="inline-flex min-h-12 items-center gap-2 rounded-full border border-[#d6b06b]/45 bg-black/25 px-7 text-body-sm font-semibold text-[#ead9ba]">Tìm hiểu thêm</Link>
             </div>
           </div>
-          <aside className="m-4 self-center rounded-[12px] border border-[#c8aa72]/25 bg-[#080b0e]/90 p-5 backdrop-blur-md desktop:m-5">
+          <aside className="m-5 self-center rounded-[10px] border border-[#c8aa72]/25 bg-[#080b0e]/90 p-5 backdrop-blur-md desktop:m-5">
             <h2 className="font-display text-heading-md text-[#e5c98e]">Dòng chảy hôm nay</h2>
             <p className="mt-1 text-caption text-[#88857f]">{greeting.replace(',', '')}{!isGuest ? ` · ${userName}` : ''}</p>
             <div className="mt-4 divide-y divide-white/[0.07]">
@@ -78,16 +78,16 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
 
       <section aria-labelledby="systems-v5-heading">
         <h2 id="systems-v5-heading" className="sr-only">Bốn hệ thống Mệnh Vi</h2>
-        <div className="grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">
+        <div className="grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
           {SYSTEM_ORDER.map((title) => {
             const meta = SYSTEM_META[title]; const copy = SYSTEM_COPY[title];
             const cta = title === 'Tử Vi' ? 'Lập lá số ngay' : title === 'Tarot' ? 'Rút bài Tarot' : title === 'Bản đồ sao' ? 'Xem bản đồ sao' : 'Khám phá ngay';
             return (
-              <Link key={title} href={meta.href} className="group relative min-h-[238px] overflow-hidden rounded-[8px] border border-[#c8aa72]/20 bg-[#090d12]">
+              <Link key={title} href={meta.href} className="group relative min-h-[310px] overflow-hidden rounded-[8px] border border-[#c8aa72]/20 bg-[#090d12]">
                 <Image src={FEATURE_ART_ASSET[meta.key]} alt="" fill sizes="(min-width:1280px) 25vw,50vw" className="object-cover transition duration-500 group-hover:scale-[1.02]" />
                 <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(5,7,9,.98)_0%,rgba(5,7,9,.55)_48%,rgba(5,7,9,.05)_78%)]" />
-                <div className="absolute inset-x-0 bottom-0 p-4">
-                  <h3 className="font-display text-[1.55rem] text-[#f1e9dc]">{title === 'Tử Vi' ? 'Tử Vi Đẩu Số' : title}</h3>
+                <div className="absolute inset-x-0 bottom-0 p-5">
+                  <h3 className="font-display text-[1.8rem] text-[#f1e9dc]">{title === 'Tử Vi' ? 'Tử Vi Đẩu Số' : title}</h3>
                   <p className="mt-1 max-w-[240px] text-caption leading-5 text-[#d1cbc0]">{copy.description}</p>
                   <span className="mt-3 inline-flex min-h-9 items-center gap-2 rounded-full bg-[#e4bd70] px-4 text-[12px] font-semibold text-[#17110a]">{cta} <ArrowRight className="h-3.5 w-3.5" /></span>
                 </div>
@@ -97,13 +97,13 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
         </div>
       </section>
 
-      <section aria-labelledby="signals-v5-heading" className="grid gap-3 desktop:grid-cols-[1.2fr_.8fr]">
-        <div className="rounded-[8px] border border-white/[0.06] bg-[#080c10] p-5">
+      <section aria-labelledby="signals-v5-heading" className="grid gap-4 desktop:grid-cols-[1.55fr_1fr]">
+        <div className="rounded-[8px] border border-white/[0.06] bg-[#080c10] p-6">
           <div className="flex items-end justify-between gap-4">
             <div><h2 id="signals-v5-heading" className="font-display text-heading-md text-[#eee8dc]">Điều đang diễn ra với bạn</h2><p className="mt-1 text-caption text-[#8f8c86]">Dựa trên ngày hôm nay, đây là những chủ đề có thể liên quan đến bạn.</p></div>
             <Link href="/discover" className="hidden items-center gap-2 text-caption font-semibold text-[#e4bd70] tablet:inline-flex">Xem tất cả <ArrowRight className="h-4 w-4" /></Link>
           </div>
-          <div className="mt-4 grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">
+          <div className="mt-5 grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">
             {flowSignals.map((signal, index) => (
               <Link key={signal.label} href={signal.href} className="group overflow-hidden rounded-[7px] border border-white/[0.08] bg-[#0b0f13]">
                 <div className="relative aspect-[1.35] overflow-hidden"><Image src={ARTICLE_COVER_ASSET[SYSTEM_META[SYSTEM_ORDER[index] ?? 'Tử Vi'].key]} alt="" fill sizes="220px" className="object-cover transition group-hover:scale-[1.025]" /></div>
@@ -112,10 +112,10 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
             ))}
           </div>
         </div>
-        <div className="relative min-h-[300px] overflow-hidden rounded-[8px] border border-[#c8aa72]/15 bg-[#0a0d10]">
+        <div className="relative min-h-[390px] overflow-hidden rounded-[8px] border border-[#c8aa72]/15 bg-[#0a0d10]">
           <Image src={HOME_BACKGROUND.journeyBanner} alt="" fill sizes="520px" className="object-cover opacity-80" />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(5,7,9,.93),rgba(5,7,9,.25))]" />
-          <div className="relative max-w-[330px] p-5">
+          <div className="relative max-w-[380px] p-7">
             <h2 className="font-display text-heading-md text-[#ead6ad]">Hành trình khám phá</h2>
             <p className="mt-1 text-caption leading-5 text-[#b0aaa0]">Mỗi câu hỏi là một bước tiến gần hơn đến phiên bản tốt hơn của chính bạn.</p>
             <div className="mt-4 space-y-2 text-caption text-[#e2ddd3]">
@@ -131,9 +131,9 @@ export function HomeV5Experience({ isGuest, greeting, userName, loading, signals
         </section>
       )}
 
-      <section aria-labelledby="editorial-v5-heading" className="rounded-[8px] border border-white/[0.06] bg-[#080c10] p-5">
+      <section aria-labelledby="editorial-v5-heading" className="rounded-[8px] border border-white/[0.06] bg-[#080c10] p-6">
         <div className="flex items-end justify-between gap-4"><div><h2 id="editorial-v5-heading" className="font-display text-heading-md text-[#eee8dc]">Khám phá thêm</h2><p className="mt-1 text-caption text-[#8f8c86]">Những chủ đề thú vị giúp bạn hiểu sâu hơn về bản thân và thế giới xung quanh.</p></div><Link href="/kien-thuc" className="inline-flex min-h-11 items-center gap-2 text-caption font-semibold text-[#e4bd70]">Xem thêm <ArrowRight className="h-4 w-4" /></Link></div>
-        <div className="mt-4 grid gap-3 tablet:grid-cols-2 desktop:grid-cols-4">{EDITORIAL.map((item) => <Link key={item.key} href={item.href} className="group overflow-hidden rounded-[7px] border border-white/[0.07] bg-[#0a0e12]"><div className="relative aspect-[16/9] overflow-hidden"><Image src={ARTICLE_COVER_ASSET[item.key]} alt="" fill sizes="300px" className="object-cover transition group-hover:scale-[1.025]" /></div><div className="p-3"><h3 className="font-display text-body-md text-[#eee8dc]">{item.title}</h3><span className="mt-2 inline-flex items-center gap-2 text-caption text-[#c8aa72]">Đọc tiếp <ArrowRight className="h-3.5 w-3.5" /></span></div></Link>)}</div>
+        <div className="mt-5 grid gap-4 tablet:grid-cols-2 desktop:grid-cols-4">{EDITORIAL.map((item) => <Link key={item.key} href={item.href} className="group overflow-hidden rounded-[7px] border border-white/[0.07] bg-[#0a0e12]"><div className="relative aspect-[1.65] overflow-hidden"><Image src={ARTICLE_COVER_ASSET[item.key]} alt="" fill sizes="300px" className="object-cover transition group-hover:scale-[1.025]" /></div><div className="p-3"><h3 className="font-display text-body-md text-[#eee8dc]">{item.title}</h3><span className="mt-2 inline-flex items-center gap-2 text-caption text-[#c8aa72]">Đọc tiếp <ArrowRight className="h-3.5 w-3.5" /></span></div></Link>)}</div>
       </section>
     </div>
   );
