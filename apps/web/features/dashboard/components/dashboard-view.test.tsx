@@ -44,10 +44,10 @@ describe('Mệnh Vi Home V5.2', () => {
   it('keeps the four real discovery routes in the locked system rail', async () => {
     renderWithQuery(<DashboardView />);
     await screen.findByRole('heading', { level: 3, name: 'Tarot' });
-    expect(screen.getByRole('link', { name: /Tử Vi Đẩu Số/i })).toHaveAttribute('href', '/discover/tu-vi');
+    expect(screen.getAllByRole('link', { name: /Tử Vi Đẩu Số/i }).some((link) => link.getAttribute('href') === '/discover/tu-vi')).toBe(true);
     expect(screen.getAllByRole('link', { name: /Tarot/i }).some((link) => link.getAttribute('href') === '/discover/tarot')).toBe(true);
-    expect(screen.getByRole('link', { name: /Bản đồ sao/i })).toHaveAttribute('href', '/discover/natal-chart');
-    expect(screen.getByRole('link', { name: /Thần số học/i })).toHaveAttribute('href', '/discover/numerology');
+    expect(screen.getAllByRole('link', { name: /Bản đồ sao/i }).some((link) => link.getAttribute('href') === '/discover/natal-chart')).toBe(true);
+    expect(screen.getAllByRole('link', { name: /Thần số học/i }).some((link) => link.getAttribute('href') === '/discover/numerology')).toBe(true);
   });
 
   it('renders guest Home without fetching private personalized APIs', async () => {
