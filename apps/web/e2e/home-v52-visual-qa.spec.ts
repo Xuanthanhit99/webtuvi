@@ -21,7 +21,8 @@ for (const width of [390, 1536]) {
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.addInitScript(() => window.localStorage.setItem('menhvi_google_consent_v1', 'granted'));
-    await page.goto('/dashboard', { waitUntil: 'networkidle' });
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+    await expect(page.getByRole('heading', { level: 1, name: /Khám phá bản thân,.*hiểu rõ hành trình của bạn/i })).toBeVisible({ timeout: 30_000 });
     expect(await page.evaluate(() => window.localStorage.getItem('menhvi_google_consent_v1'))).toBe('granted');
     await expect(page.getByRole('complementary', { name: 'Quyền riêng tư và đo lường' })).toBeHidden();
     await page.evaluate(() => document.fonts.ready);
