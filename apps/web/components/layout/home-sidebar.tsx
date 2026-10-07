@@ -26,17 +26,17 @@ export function HomeSidebar() {
   const pathname = usePathname();
   const item = ({ label, href, icon: Icon }: (typeof PRIMARY)[number] | (typeof SECONDARY)[number]) => {
     const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
-    return <li key={href}><Link href={href} aria-current={active ? 'page' : undefined} className={cn('flex min-h-10 items-center gap-3 border-l-2 px-4 text-[13px] transition', active ? 'border-[#d6ad63] bg-[#d6ad63]/[0.08] text-[#e9c77e]' : 'border-transparent text-white/55 hover:bg-white/[0.035] hover:text-white/85')}><Icon className="h-4 w-4" aria-hidden="true" /><span>{label}</span></Link></li>;
+    return <li key={href}><Link href={href} aria-current={active ? 'page' : undefined} className={cn('flex min-h-11 items-center gap-3.5 border-l-2 px-4 text-[14px] transition', active ? 'border-[#d6ad63] bg-[#d6ad63]/[0.08] text-[#e9c77e]' : 'border-transparent text-white/55 hover:bg-white/[0.035] hover:text-white/85')}><Icon className="h-[18px] w-[18px]" aria-hidden="true" /><span>{label}</span></Link></li>;
   };
-  return <nav aria-label="Điều hướng chính" className="relative hidden w-[204px] shrink-0 overflow-hidden border-r border-[#c7a563]/15 bg-[#06080a] tablet:flex tablet:w-16 tablet:flex-col desktop:w-[204px]">
+  return <nav aria-label="Điều hướng chính" className="relative hidden w-[204px] shrink-0 overflow-hidden border-r border-[#c7a563]/15 bg-[#06080a] tablet:flex tablet:w-16 tablet:flex-col desktop:w-[224px]">
     <div className="px-4 pb-5 pt-6 tablet:px-2 desktop:px-5"><Link href="/" aria-label="Mệnh Vi" className="flex items-center gap-2"><Logo withWordmark={false} /><span className="hidden text-[11px] font-semibold tracking-[.18em] text-[#e6c781] desktop:inline">TUVITAROT.VN</span></Link></div>
     <ul className="space-y-0.5 tablet:[&_span]:hidden desktop:[&_span]:inline">{PRIMARY.map(item)}</ul>
     <div className="mx-4 my-4 border-t border-white/[0.07]" />
     <ul className="space-y-0.5 tablet:[&_span]:hidden desktop:[&_span]:inline">{SECONDARY.map(item)}</ul>
-    <div className="relative mt-auto hidden min-h-[235px] overflow-hidden desktop:block">
+    <div className="relative mt-auto hidden min-h-[285px] overflow-hidden desktop:block">
       <div className="absolute inset-0 bg-cover bg-center opacity-60" style={{ backgroundImage: `url("${HOME_BACKGROUND.journeyBanner}")` }} />
       <div className="absolute inset-0 bg-gradient-to-b from-[#06080a] via-[#06080a]/45 to-[#06080a]/80" />
-      <div className="relative flex h-full min-h-[235px] items-end p-5"><p className="font-display text-[13px] leading-6 tracking-[.08em] text-[#dfc58f]">MỌI HÀNH TRÌNH<br />ĐỀU BẮT ĐẦU TỪ<br />SỰ THẤU HIỂU CHÍNH MÌNH</p></div>
+      <div className="relative flex h-full min-h-[285px] items-end p-5"><p className="font-display text-[14px] leading-6 tracking-[.08em] text-[#dfc58f]">MỌI HÀNH TRÌNH<br />ĐỀU BẮT ĐẦU TỪ<br />SỰ THẤU HIỂU CHÍNH MÌNH</p></div>
     </div>
   </nav>;
 }
