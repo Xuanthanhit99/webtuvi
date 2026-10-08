@@ -35,9 +35,14 @@ export function LoginForm({ onSuccess }: { onSuccess?: () => void } = {}) {
       const user = await authApi.login(values);
       await invalidateAuth();
       await refetchAuth();
-      if (onSuccess) { onSuccess(); return; }
       const next = safeNextPath(searchParams.get('next'));
-      router.push(user.onboardingCompletedAt ? next : authReturnUrl('/onboarding', next));
+      if (!user.onboardingCompletedAt) {
+        onSuccess?.();
+        router.push(authReturnUrl('/onboarding', next));
+        return;
+      }
+      if (onSuccess) { onSuccess(); return; }
+      router.push(next);
     } catch (error) {
       setFormError(accountError(error, 'login'));
     }
