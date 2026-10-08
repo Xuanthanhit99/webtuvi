@@ -13,6 +13,8 @@ jest.mock('@/components/ui/toast', () => ({ toast: { success: jest.fn(), error: 
 
 jest.mock('next/navigation', () => ({ useRouter: () => ({ push: mockPush }) }));
 
+jest.mock('@/providers/auth-modal-provider', () => ({ useAuthModal: () => ({ openAuth: jest.fn() }) }));
+
 jest.mock('@/providers/auth-provider', () => ({
   useAuth: jest.fn(),
   useInvalidateAuth: () => mockInvalidate,
