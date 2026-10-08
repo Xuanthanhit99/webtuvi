@@ -19,7 +19,11 @@ async function expectMobileBottomClearance(page: Page, bottomInset: number): Pro
   const nav = page.getByRole('navigation', { name: 'Điều hướng chính', exact: true }).filter({ visible: true });
   await expect(nav).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await expect.poll(() => page.evaluate(() => Math.abs(document.documentElement.scrollHeight - innerHeight - scrollY))).toBeLessThanOrEqual(1);
+  await expect.poll(() => page.evaluate(() => {
+    const scroller = document.scrollingElement;
+    if (!scroller) return Number.POSITIVE_INFINITY;
+    return Math.abs(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop);
+  }), 'Scrolling element must reach the actual document bottom').toBeLessThanOrEqual(1);
   const navBox = await nav.boundingBox();
   expect(navBox).not.toBeNull();
   const contentBox = await page.locator('#main-content > div').boundingBox();
