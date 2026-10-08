@@ -1,0 +1,32 @@
+'use client';
+
+import { createContext, useContext, useState } from 'react';
+import { Dialog } from '@/components/ui/dialog';
+import { LoginForm } from '@/features/auth/components/login-form';
+import { RegisterForm } from '@/features/auth/components/register-form';
+
+type AuthModalContextValue = { openAuth: (reason?: string) => void };
+const AuthModalContext = createContext<AuthModalContextValue | null>(null);
+
+export function AuthModalProvider({ children }: { children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const [register, setRegister] = useState(false);
+  const [reason, setReason] = useState('Đăng nhập để tiếp tục hành trình của bạn.');
+  function openAuth(message?: string) { setReason(message || 'Đăng nhập để tiếp tục hành trình của bạn.'); setOpen(true); }
+  return <AuthModalContext.Provider value={{ openAuth }}>
+    {children}
+    <Dialog open={open} onClose={() => setOpen(false)} title={register ? 'Đăng ký Mệnh Vi' : 'Đăng nhập Mệnh Vi'} description={reason}>
+      <div className="mb-4 flex gap-4">
+        <button type="button" aria-pressed={!register} onClick={() => setRegister(false)}>Đăng nhập</button>
+        <button type="button" aria-pressed={register} onClick={() => setRegister(true)}>Đăng ký</button>
+      </div>
+      {register ? <RegisterForm onSuccess={() => setOpen(false)} /> : <LoginForm onSuccess={() => setOpen(false)} />}
+    </Dialog>
+  </AuthModalContext.Provider>;
+}
+
+export function useAuthModal() {
+  const context = useContext(AuthModalContext);
+  if (!context) throw new Error('AuthModalProvider missing');
+  return context;
+}
