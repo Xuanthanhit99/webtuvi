@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, useCallback, t
 import type { UserDto } from '@beaconvie/types';
 import { getStoredSession, setStoredSession, clearStoredSession, getCachedUser, setCachedUser, type StoredSession } from '@/lib/auth/session-client';
 import { authApi, type LoginPayload, type RegisterPayload } from '@/lib/auth/auth-api';
-import { ApiError } from '@/lib/api-client';
+import { API_URL, ApiError } from '@/lib/api-client';
 import { queryClient } from '@/lib/query-client';
 
 export type AuthStatus = 'loading' | 'guest' | 'authenticated';
@@ -83,8 +83,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // connection loss. Fall back to the last successfully-fetched profile so Home can still
         // render real (if possibly stale) data instead of guest content or a fabricated user.
         const cached = await getCachedUser();
+        if (cancelled) return;
         setUser(cached);
-        setStatus('authenticated');
+        setStatus(cached ? 'authenticated' : 'guest');
       }
     })();
     return () => {
@@ -111,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session) {
       // Best-effort server-side revocation — proceed with clearing local state regardless of
       // whether this succeeds (e.g. offline logout should still log the device out locally).
-      await fetch(`${process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000'}/auth/mobile/logout`, {
+      await fetch(`${API_URL}/auth/mobile/logout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken: session.refreshToken }),

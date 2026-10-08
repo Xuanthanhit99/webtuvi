@@ -89,6 +89,20 @@ describe('AuthProvider — real bootstrap', () => {
     });
   });
 
+  it('does not claim authenticated when offline and no cached profile exists', async () => {
+    mockedSessionClient.getStoredSession.mockResolvedValue({ accessToken: 'a', refreshToken: 'b' });
+    mockedSessionClient.getCachedUser.mockResolvedValue(null);
+    mockedAuthApi.me.mockRejectedValue(new ApiError('Temporary', 'AUTH_REFRESH_TEMPORARY', 503));
+
+    const { getByTestId } = await render(<AuthProvider><Probe /></AuthProvider>);
+    await waitFor(() => {
+      const state = readProbe(getByTestId);
+      expect(state.status).toBe('guest');
+      expect(state.user).toBeNull();
+    });
+    expect(mockedSessionClient.clearStoredSession).not.toHaveBeenCalled();
+  });
+
   it('keeps the user authenticated (using the cached profile) on a network error at boot — offline is not logged out', async () => {
     mockedSessionClient.getStoredSession.mockResolvedValue({ accessToken: 'a', refreshToken: 'b' });
     mockedSessionClient.getCachedUser.mockResolvedValue(makeUser({ email: 'cached@example.com' }));
