@@ -14,6 +14,7 @@ import { trackGoogleFunnelEvent } from '@/components/analytics/google-measuremen
 import { tuViApi } from '../api/tu-vi-api';
 import { TuViChartView } from './tu-vi-chart-view';
 import { useAuthModal } from '@/providers/auth-modal-provider';
+import { useAuth } from '@/providers/auth-provider';
 
 type FieldName = 'birthDate' | 'birthTime' | null;
 
@@ -36,6 +37,7 @@ function fieldErrorFor(error: ApiError): { field: FieldName; message: string } {
 export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto) => void }) {
   const queryClient = useQueryClient();
   const { openAuth } = useAuthModal();
+  const { user, isLoading: authLoading } = useAuth();
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
   const [sex, setSex] = useState<'Nam' | 'Nữ' | ''>('');
@@ -81,6 +83,11 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
     if (!sex) return setSexError('Vui lòng chọn Nam hoặc Nữ theo hệ quy tắc của lá số.');
     trackEvent('tu_vi_started', { feature: 'tu_vi' });
     trackGoogleFunnelEvent('tool_start', 'tu_vi');
+    if (authLoading) return;
+    if (!user) {
+      openAuth('Đăng nhập để lập và lưu lá số. Dữ liệu sinh bạn đã nhập vẫn được giữ lại.');
+      return;
+    }
     calculate.mutate();
   }
 
