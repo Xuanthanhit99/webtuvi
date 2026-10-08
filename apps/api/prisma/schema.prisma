@@ -1842,6 +1842,16 @@ model TarotReadingCard {
 /// shuffled deck order it drew from. This is what makes Phase 2's "engine must be reproducible"
 /// requirement independently verifiable after the fact, not just true at draw-time (see
 /// tarot-discovery.md "Draw engine").
+/// One-use claim for encrypted Tarot selection tokens. The unique digest is claimed in the
+/// same transaction that persists a reading, so rollback also releases the claim.
+model TarotSelectionClaim {
+  tokenHash  String   @id
+  readingId String?  @unique
+  createdAt DateTime @default(now())
+
+  @@map("tarot_selection_claims")
+}
+
 model TarotReadingSession {
   id              String       @id @default(cuid())
   readingId       String       @unique
