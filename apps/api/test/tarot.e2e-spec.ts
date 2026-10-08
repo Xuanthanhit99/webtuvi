@@ -50,6 +50,11 @@ describe('Tarot (e2e)', () => {
     await app.close();
   });
 
+  it('requires a session for deck reference data under the current controller contract', async () => {
+    const res = await request(app.getHttpServer()).get('/tarot/deck').expect(401);
+    expect(res.body.data).toBeNull();
+  });
+
   describe('Deck (Phase 1/5)', () => {
     it('lists the full real 78-card deck — no placeholders', async () => {
       const headers = await registerAndGetHeaders(app, uniqueEmail('deck'));
