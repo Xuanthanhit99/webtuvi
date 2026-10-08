@@ -44,8 +44,8 @@ export function RegisterForm({ onSuccess }: { onSuccess?: () => void } = {}) {
       trackGoogleFunnelEvent('sign_up');
       await invalidateAuth();
       await refetchAuth();
-      if (onSuccess) { onSuccess(); return; }
       const next = safeNextPath(searchParams.get('next'));
+      onSuccess?.();
       router.push(authReturnUrl('/onboarding', next));
     } catch (error) {
       if (error instanceof ApiError && error.code === 'EMAIL_ALREADY_EXISTS') {
