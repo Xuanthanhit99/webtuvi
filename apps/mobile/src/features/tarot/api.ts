@@ -1,4 +1,6 @@
-import type { ListReadingsResultDto, TarotCardDto, TarotReadingDto, TarotReadingHistoryDto, TarotReadingTypeValue, TarotSelectionSessionDto } from '@beaconvie/types';
+import type { ListReadingsResultDto, TarotCardDto, TarotReadingDto, TarotReadingHistoryDto, TarotReadingTypeValue } from '@beaconvie/types';
+type TarotSelectionSessionDto = { token: string; deckSize: number; expiresAt: string };
+
 import { api } from '@/lib/api-client';
 
 export const tarotApi = {
