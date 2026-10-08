@@ -94,7 +94,7 @@ describe('AuthProvider — real bootstrap', () => {
     mockedSessionClient.getCachedUser.mockResolvedValue(null);
     mockedAuthApi.me.mockRejectedValue(new ApiError('Temporary', 'AUTH_REFRESH_TEMPORARY', 503));
 
-    const { getByTestId } = render(<AuthProvider><Probe /></AuthProvider>);
+    const { getByTestId } = await render(<AuthProvider><Probe /></AuthProvider>);
     await waitFor(() => {
       const state = readProbe(getByTestId);
       expect(state.status).toBe('guest');
