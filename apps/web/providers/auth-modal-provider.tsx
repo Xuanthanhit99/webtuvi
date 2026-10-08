@@ -1,6 +1,8 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { safeNextPath } from '@/lib/safe-next-path';
 import { Dialog } from '@/components/ui/dialog';
 import { useAuth } from '@/providers/auth-provider';
 import { LoginForm } from '@/features/auth/components/login-form';
@@ -11,6 +13,10 @@ const AuthModalContext = createContext<AuthModalContextValue | null>(null);
 
 export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // Carry the originating discovery route through onboarding without accepting external redirects.
+  const destination = safeNextPath(`${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`);
   const [open, setOpen] = useState(false);
   const [register, setRegister] = useState(false);
   const [reason, setReason] = useState('Đăng nhập để tiếp tục hành trình của bạn.');
@@ -30,7 +36,7 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
         <button type="button" aria-pressed={!register} onClick={() => setRegister(false)}>Đăng nhập</button>
         <button type="button" aria-pressed={register} onClick={() => setRegister(true)}>Đăng ký</button>
       </div>
-      {register ? <RegisterForm onSuccess={() => setOpen(false)} /> : <LoginForm onSuccess={() => setOpen(false)} />}
+      {register ? <RegisterForm onSuccess={() => setOpen(false)} returnTo={destination} /> : <LoginForm onSuccess={() => setOpen(false)} returnTo={destination} />}
     </Dialog>
   </AuthModalContext.Provider>;
 }
