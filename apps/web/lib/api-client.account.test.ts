@@ -30,3 +30,38 @@ it('does not treat a refresh network failure as proof of logout', async () => {
   expect(expired).not.toHaveBeenCalled();
   window.removeEventListener('menhvi:session-expired', expired);
 });
+
+it('does not announce session expiration when guest refresh is temporarily unavailable', async () => {
+  const expired = jest.fn();
+  window.addEventListener('menhvi:session-expired', expired);
+  global.fetch = jest.fn().mockResolvedValueOnce(response(401, {})).mockRejectedValueOnce(new TypeError('network'));
+  await expect(apiFetch('/tarot/deck')).rejects.toMatchObject({ status: 503, code: 'SESSION_RESTORE_UNAVAILABLE' });
+  expect(expired).not.toHaveBeenCalled();
+  window.removeEventListener('menhvi:session-expired', expired);
+});
+
+it.each(['/tarot/deck', '/numerology/meanings'])('allows public GET %s without refreshing or showing expired session', async (path) => {
+  const expired = jest.fn();
+  window.addEventListener('menhvi:session-expired', expired);
+  global.fetch = jest.fn().mockResolvedValue(response(200, { data: [] }));
+  await expect(apiFetch(path)).resolves.toEqual([]);
+  expect(global.fetch).toHaveBeenCalledTimes(1);
+  expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining(path), expect.objectContaining({ credentials: 'include' }));
+  expect(expired).not.toHaveBeenCalled();
+  window.removeEventListener('menhvi:session-expired', expired);
+});
+
+it.each([
+  ['/tarot/selection-session', { type: 'SINGLE_CARD' }],
+  ['/numerology/calculate', { fullBirthName: 'Nguyen Van An', birthDate: '1990-01-01' }],
+  ['/natal-charts', { birthDate: '1990-01-01', locationToken: 'test-token' }],
+  ['/tu-vi/charts', { birthDate: '1990-01-01', birthTime: '12:00', sex: 'Nam' }],
+])('rejects unauthorized protected mutation %s without silently succeeding', async (path, body) => {
+  global.fetch = jest.fn().mockImplementation((url: string) => {
+    if (url.endsWith('/auth/csrf-token')) return Promise.resolve(response(200, {}));
+    if (url.endsWith('/auth/refresh')) return Promise.resolve(response(401, {}));
+    return Promise.resolve(response(401, { error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } }));
+  });
+  await expect(apiFetch(path, { method: 'POST', body })).rejects.toMatchObject({ status: 401 });
+  expect(global.fetch).toHaveBeenCalledWith(expect.stringContaining(path), expect.objectContaining({ credentials: 'include', method: 'POST' }));
+});
