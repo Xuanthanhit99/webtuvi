@@ -22,7 +22,7 @@ import { trackGoogleFunnelEvent } from '@/components/analytics/google-measuremen
 
 const PASSWORD_RULES = 'Từ 8 đến 128 ký tự, có ít nhất một chữ số hoặc ký hiệu.';
 
-export function RegisterForm({ onSuccess }: { onSuccess?: () => void } = {}) {
+export function RegisterForm({ onSuccess, returnTo }: { onSuccess?: () => void; returnTo?: string } = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const invalidateAuth = useInvalidateAuth();
@@ -44,7 +44,7 @@ export function RegisterForm({ onSuccess }: { onSuccess?: () => void } = {}) {
       trackGoogleFunnelEvent('sign_up');
       await invalidateAuth();
       await refetchAuth();
-      const next = safeNextPath(searchParams.get('next'));
+      const next = safeNextPath(returnTo ?? searchParams.get('next'));
       onSuccess?.();
       router.push(authReturnUrl('/onboarding', next));
     } catch (error) {
