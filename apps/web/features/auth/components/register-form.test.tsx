@@ -99,6 +99,17 @@ describe('RegisterForm password rules', () => {
     expect(authApi.register).not.toHaveBeenCalled();
   });
 
+  it('modal registration closes and still routes to onboarding', async () => {
+    (authApi.register as jest.Mock).mockResolvedValue({ onboardingCompletedAt: null });
+    const onSuccess = jest.fn();
+    const user = userEvent.setup();
+    renderWithQuery(<AuthProvider><RegisterForm onSuccess={onSuccess} /></AuthProvider>);
+    await fillValidForm(user);
+    await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+    expect(mockPush).toHaveBeenCalledWith('/onboarding');
+  });
+
   it('submits successfully with valid data', async () => {
     (authApi.register as jest.Mock).mockResolvedValue({ onboardingCompletedAt: null });
     const user = userEvent.setup();
