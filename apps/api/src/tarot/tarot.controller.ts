@@ -6,7 +6,7 @@ import { DiscoveryThrottlerGuard } from '../common/guards/discovery-throttler.gu
 import { CurrentUser, AuthenticatedUser } from '../common/decorators/current-user.decorator';
 import { TarotDeckService } from './deck/tarot-deck.service';
 import { TarotRecordService, type ListReadingsResult } from './record/tarot-record.service';
-import { DrawReadingDto } from './dto/draw-reading.dto';
+import { CreateTarotSelectionSessionDto, DrawReadingDto } from './dto/draw-reading.dto';
 import { ListReadingsQueryDto } from './dto/list-readings.dto';
 import { ListDeckQueryDto } from './dto/list-deck.dto';
 import type { TarotCardDto, TarotReadingDto, TarotReadingHistoryDto } from './tarot.mappers';
@@ -36,6 +36,12 @@ export class TarotController {
   @ApiOperation({ summary: 'Get one card by slug' })
   getCard(@Param('slug') slug: string): Promise<TarotCardDto> {
     return this.deck.getBySlug(slug);
+  }
+
+  @Post('selection-session')
+  @ApiOperation({ summary: 'Create an expiring, owner-bound 78-card selection session' })
+  createSelectionSession(@CurrentUser() user: AuthenticatedUser, @Body() dto: CreateTarotSelectionSessionDto) {
+    return this.records.createSelectionSession(user.id, dto.type);
   }
 
   @Post('draw')
