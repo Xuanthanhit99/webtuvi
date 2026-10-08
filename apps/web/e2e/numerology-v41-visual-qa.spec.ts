@@ -108,7 +108,7 @@ for (const width of [390, 1536]) {
 
     await page.addInitScript(() => window.localStorage.setItem('menhvi_google_consent_v1', 'granted'));
     await page.goto('/');
-    await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('link', { name: /Kết quả của tôi/i })).toBeVisible({ timeout: 15_000 });
 
     await page.goto('/discover/numerology', { waitUntil: 'domcontentloaded' });
     await expect(page.getByRole('heading', { name: 'Những con số kể câu chuyện riêng của bạn' })).toBeVisible({ timeout: 15_000 });

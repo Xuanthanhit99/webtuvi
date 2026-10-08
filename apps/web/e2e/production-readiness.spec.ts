@@ -191,7 +191,11 @@ for (const width of [390, 1536]) {
     await page.addInitScript(() => window.localStorage.setItem('menhvi_google_consent_v1', 'granted'));
     for (const route of publicRoutes) {
       await page.goto(route);
-      await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible();
+      if (route === '/') {
+        await expect(page.getByRole('link', { name: /Kết quả của tôi/i })).toBeVisible();
+      } else {
+        await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible();
+      }
       await expect(page.getByRole('link', { name: 'Bắt đầu miễn phí', exact: true })).toHaveCount(0);
       await expect(page.locator('h1')).toHaveCount(1);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
