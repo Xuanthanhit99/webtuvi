@@ -43,7 +43,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const expire = () => {
       if (!data) return;
       void clearAccountCache(queryClient).then(() => {
-        window.location.assign(authReturnUrl('/login', `${window.location.pathname}${window.location.search}${window.location.hash}`));
+        void queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
       });
     };
     window.addEventListener('menhvi:session-expired', expire);
