@@ -84,6 +84,16 @@ describe('LoginForm', () => {
     else expect(mockPush).not.toHaveBeenCalled();
   });
 
+  it('keeps a validated tool return destination through onboarding', async () => {
+    (authApi.login as jest.Mock).mockResolvedValue({ onboardingCompletedAt: null });
+    const user = userEvent.setup();
+    renderWithQuery(<AuthProvider><LoginForm onSuccess={jest.fn()} returnTo="/tu-vi" /></AuthProvider>);
+    await user.type(screen.getByLabelText('Email'), 'alex@example.com');
+    await user.type(screen.getByLabelText('Mật khẩu', { exact: true }), 'Sup3r$ecretPass');
+    await user.click(screen.getByRole('button', { name: 'Đăng nhập' }));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/onboarding?next=%2Ftu-vi'));
+  });
+
   it('renders a friendly error message when the API rejects the credentials', async () => {
     (authApi.login as jest.Mock).mockRejectedValue(
       new ApiError('Mật khẩu xác nhận chưa khớp this account.', 'WRONG_PASSWORD', 401),
