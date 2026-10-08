@@ -43,6 +43,11 @@ describe('Numerology (e2e)', () => {
   });
 
   describe('Unauthenticated access', () => {
+    it('requires a session for meanings reference data under the current controller contract', async () => {
+      const res = await request(app.getHttpServer()).get('/numerology/meanings').expect(401);
+      expect(res.body.data).toBeNull();
+    });
+
     it('rejects an unauthenticated request for readings (JwtAuthGuard)', async () => {
       await request(app.getHttpServer()).get('/numerology/readings').expect(401);
     });
