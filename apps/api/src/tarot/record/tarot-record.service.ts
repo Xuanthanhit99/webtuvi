@@ -77,7 +77,22 @@ export class TarotRecordService {
     private readonly analyticsService: AnalyticsService,
   ) {}
 
+  async createSelectionSession(userId: string, type: TarotReadingType): Promise<{ token: string; deckSize: number; expiresAt: string }> {
+    const cardIds = (await this.prisma.tarotCard.findMany({ orderBy: { slug: 'asc' }, select: { id: true } })).map((card) => card.id);
+    if (cardIds.length !== 78) throw new BadRequestException({ code: 'TAROT_DECK_INCOMPLETE' });
+    const shuffled = drawCards({ cardIds, count: 78 });
+    const expiresAt = new Date(Date.now() + 600000);
+    const session = await this.prisma.tarotSelectionSession.create({
+      data: { userId, type, seed: shuffled.seed, shuffledCardIds: shuffled.shuffledCardIds, expiresAt },
+    });
+    return { token: session.id, deckSize: 78, expiresAt: expiresAt.toISOString() };
+  }
+
   async draw(userId: string, dto: DrawReadingDto): Promise<TarotReadingDto> {
+    const usingSelection = dto.selectionToken !== undefined || dto.selectedPositions !== undefined;
+    if (usingSelection && (!dto.selectionToken || !dto.selectedPositions)) {
+      throw new BadRequestException({ code: 'TAROT_SELECTION_REQUIRED' });
+    }
     if (dto.type === 'DAILY_DRAW') {
       await this.assertNoDailyDrawToday(userId);
     } else {
@@ -95,9 +110,32 @@ export class TarotRecordService {
     const allCards = await this.prisma.tarotCard.findMany({ orderBy: { slug: 'asc' }, select: { id: true } });
     const cardIds = allCards.map((c) => c.id);
 
-    const draw = drawCards({ cardIds, count: spread.cardCount });
+    const selection = usingSelection
+      ? await this.prisma.tarotSelectionSession.findFirst({
+          where: { id: dto.selectionToken!, userId, type: dto.type, consumedAt: null, expiresAt: { gt: new Date() } },
+        })
+      : null;
+    if (usingSelection && !selection) throw new BadRequestException({ code: 'TAROT_SELECTION_INVALID' });
+    const chosen = dto.selectedPositions ?? [];
+    if (usingSelection && (chosen.length !== spread.cardCount || new Set(chosen).size !== chosen.length ||
+      chosen.some((position) => !Number.isInteger(position) || position < 0 || position >= 78))) {
+      throw new BadRequestException({ code: 'TAROT_SELECTION_POSITIONS_INVALID' });
+    }
+    const draw = selection ? drawCards({ cardIds, count: 78, seed: selection.seed }) : drawCards({ cardIds, count: spread.cardCount });
+    if (selection && JSON.stringify(draw.shuffledCardIds) !== JSON.stringify(selection.shuffledCardIds)) {
+      throw new BadRequestException({ code: 'TAROT_SELECTION_DECK_CHANGED' });
+    }
+    const selectedCards = selection ? chosen.map((position) => draw.drawnCards[position]!) : draw.drawnCards;
 
     const reading = await this.prisma.$transaction(async (tx) => {
+      if (selection) {
+        // Conditional UPDATE is atomic; rollback restores the claim if persistence fails.
+        const claim = await tx.tarotSelectionSession.updateMany({
+          where: { id: selection.id, userId, type: dto.type, consumedAt: null, expiresAt: { gt: new Date() } },
+          data: { consumedAt: new Date() },
+        });
+        if (claim.count !== 1) throw new BadRequestException({ code: 'TAROT_SELECTION_CONSUMED' });
+      }
       const created = await tx.tarotReading.create({
         // Sprint 6 scope decision (see sprint-6-progress.md): defaults to COMPANION_VISIBLE, not
         // the DB column's own conservative PRIVATE default — Module 12 treats the Companion-chat
@@ -106,7 +144,7 @@ export class TarotRecordService {
         data: { userId, type: dto.type, spreadId: spread.id, question: dto.question ?? null, visibility: 'COMPANION_VISIBLE' },
       });
       await tx.tarotReadingCard.createMany({
-        data: draw.drawnCards.map((dc, index) => ({
+        data: selectedCards.map((dc, index) => ({
           readingId: created.id,
           cardId: dc.cardId,
           position: index,
@@ -114,6 +152,7 @@ export class TarotRecordService {
           isReversed: dc.isReversed,
         })),
       });
+      if (selection) await tx.tarotSelectionSession.update({ where: { id: selection.id }, data: { readingId: created.id } });
       await tx.tarotReadingSession.create({
         data: { readingId: created.id, seed: draw.seed, algorithm: draw.algorithm, shuffledCardIds: draw.shuffledCardIds },
       });
@@ -123,7 +162,7 @@ export class TarotRecordService {
       return created;
     });
 
-    this.logger.log(`Tarot reading drawn id=${reading.id} type=${dto.type} cards=${draw.drawnCards.length}`);
+    this.logger.log(`Tarot reading drawn id=${reading.id} type=${dto.type} cards=${selectedCards.length}`);
     void this.analyticsService.trackServerEvent({
       event: 'tarot_completed',
       userId,

@@ -74,6 +74,7 @@ model User {
   reviews                  Review[]
   goals                    Goal[]
   tarotReadings            TarotReading[]
+  tarotSelectionSessions   TarotSelectionSession[]
   paymentOrders            PaymentOrder[]
   premiumEntitlements      PremiumEntitlement[]
   numerologyReadings       NumerologyReading[]
@@ -1808,6 +1809,7 @@ model TarotReading {
   cards   TarotReadingCard[]
   session TarotReadingSession?
   history TarotReadingHistory[]
+  selectionSession TarotSelectionSession?
 
   @@index([userId, status, createdAt])
   @@index([userId, type, createdAt])
@@ -1842,6 +1844,24 @@ model TarotReadingCard {
 /// shuffled deck order it drew from. This is what makes Phase 2's "engine must be reproducible"
 /// requirement independently verifiable after the fact, not just true at draw-time (see
 /// tarot-discovery.md "Draw engine").
+/// Server-owned, one-use selection token. The full shuffled deck is never sent to clients.
+model TarotSelectionSession {
+  id              String       @id @default(cuid())
+  userId          String
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            TarotReadingType
+  seed            String
+  shuffledCardIds Json
+  expiresAt       DateTime
+  consumedAt      DateTime?
+  readingId       String?      @unique
+  reading         TarotReading? @relation(fields: [readingId], references: [id], onDelete: SetNull)
+  createdAt       DateTime     @default(now())
+
+  @@index([userId, expiresAt])
+  @@map("tarot_selection_sessions")
+}
+
 model TarotReadingSession {
   id              String       @id @default(cuid())
   readingId       String       @unique
