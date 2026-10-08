@@ -11,9 +11,11 @@ import { toast } from '@/components/ui/toast';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
 import { resetAnonymousId } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
+import { useAuthModal } from '@/providers/auth-modal-provider';
 
 export function AppHeader() {
   const { user } = useAuth();
+  const { openAuth } = useAuthModal();
   const invalidateAuth = useInvalidateAuth();
   const router = useRouter();
 
@@ -56,7 +58,11 @@ export function AppHeader() {
         )}
         {/* Notifications only exist for an account; guests (and crawlers) get no bell or dialog. */}
         {user && <NotificationBell />}
-        {user && <ProfileMenu displayName={user.displayName} onLogout={handleLogout} />}
+        {user ? <ProfileMenu displayName={user.displayName} onLogout={handleLogout} /> : (
+          <button type="button" onClick={() => openAuth()} className="min-h-11 rounded-lg border border-[rgba(213,173,98,0.45)] px-4 text-body-sm font-medium text-insight transition-colors hover:bg-surface" aria-label="Đăng nhập hoặc đăng ký">
+            Đăng nhập / Đăng ký
+          </button>
+        )}
       </div>
     </header>
   );
