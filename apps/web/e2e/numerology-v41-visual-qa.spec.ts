@@ -18,10 +18,12 @@ async function expectInteractive(control: Locator): Promise<void> {
 async function expectMobileBottomClearance(page: Page, bottomInset: number): Promise<void> {
   const nav = page.getByRole('navigation', { name: 'Điều hướng chính', exact: true }).filter({ visible: true });
   await expect(nav).toBeVisible();
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  // Safe-area emulation may resize the document after scrolling. Follow the
+  // live maximum scroll position before asserting bottom-nav clearance.
   await expect.poll(() => page.evaluate(() => {
     const scroller = document.scrollingElement;
     if (!scroller) return Number.POSITIVE_INFINITY;
+    scroller.scrollTop = scroller.scrollHeight;
     return Math.abs(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop);
   }), 'Scrolling element must reach the actual document bottom').toBeLessThanOrEqual(1);
   const navBox = await nav.boundingBox();
