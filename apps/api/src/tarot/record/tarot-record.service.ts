@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import type { Prisma, TarotReadingStatus, TarotReadingType } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -96,7 +97,13 @@ export class TarotRecordService {
       throw new BadRequestException({ code: 'TAROT_SELECTION_INVALID', message: 'Số lá đã chọn không khớp kiểu trải bài.' });
     }
 
-    const reading = await this.prisma.$transaction(async (tx) => {
+    // Persist a unique digest rather than the bearer token itself. PostgreSQL's primary key
+    // serializes concurrent claims; a failed transaction rolls the claim back as well.
+    const tokenHash = createHash('sha256').update(dto.selectionToken).digest('hex');
+    let reading: Awaited<ReturnType<typeof this.prisma.tarotReading.create>>;
+    try {
+      reading = await this.prisma.$transaction(async (tx) => {
+        await tx.tarotSelectionClaim.create({ data: { tokenHash } });
       const created = await tx.tarotReading.create({
         // Sprint 6 scope decision (see sprint-6-progress.md): defaults to COMPANION_VISIBLE, not
         // the DB column's own conservative PRIVATE default — Module 12 treats the Companion-chat
@@ -119,8 +126,15 @@ export class TarotRecordService {
       await tx.tarotReadingHistory.create({
         data: { readingId: created.id, action: 'CREATED', detail: `${dto.type.replace('_', ' ').toLowerCase()} reading drawn.` },
       });
+      await tx.tarotSelectionClaim.update({ where: { tokenHash }, data: { readingId: created.id } });
       return created;
-    });
+      });
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
+        throw new BadRequestException({ code: 'TAROT_SELECTION_CONSUMED', message: 'Phiên chọn bài đã được sử dụng.' });
+      }
+      throw error;
+    }
 
     this.logger.log(`Tarot reading drawn id=${reading.id} type=${dto.type} cards=${draw.drawnCards.length}`);
     void this.analyticsService.trackServerEvent({
