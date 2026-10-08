@@ -1,6 +1,10 @@
 import { getStoredSession, setStoredSession, clearStoredSession } from './auth/session-client';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000';
+// EAS profiles set the production URL explicitly. Never use localhost in release builds.
+export const API_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || (__DEV__ ? 'http://localhost:4000' : 'https://api.tuvitarot.vn');
+if (!__DEV__ && !API_URL.startsWith('https://')) {
+  throw new Error('Mobile production API must use HTTPS.');
+}
 
 interface EnvelopeSuccess<T> {
   data: T;
@@ -70,10 +74,17 @@ async function refreshSession(): Promise<RefreshOutcome> {
         return 'network-error';
       }
 
-      if (!response.ok) return 'invalid';
+      if (response.status === 401 || response.status === 403) return 'invalid';
+      if (!response.ok) return 'network-error';
 
       const json = (await response.json().catch(() => null)) as EnvelopeSuccess<{ accessToken: string; refreshToken: string }> | null;
-      if (!json?.data) return 'invalid';
+      if (
+        !json?.data ||
+        typeof json.data.accessToken !== 'string' ||
+        !json.data.accessToken ||
+        typeof json.data.refreshToken !== 'string' ||
+        !json.data.refreshToken
+      ) return 'network-error';
 
       await setStoredSession({ accessToken: json.data.accessToken, refreshToken: json.data.refreshToken });
       return 'refreshed';
@@ -107,9 +118,11 @@ export async function apiFetch<T>(path: string, options: ApiRequestOptions = {})
     if (outcome === 'invalid') {
       await clearStoredSession();
     }
-    // 'network-error': leave the stored session untouched — this request still fails (falls
-    // through to the ApiError below), but the credential itself is neither confirmed nor
-    // disproven, so auth-provider.tsx's bootstrap can still treat the user as authenticated.
+    if (outcome === 'network-error') {
+      // A 401 from the original call does not prove refresh token invalidity.
+      // Surface a recoverable error so auth bootstrap can use its cached profile.
+      throw new ApiError('Không thể xác minh phiên lúc này. Vui lòng thử lại.', 'AUTH_REFRESH_TEMPORARY', 503);
+    }
   }
 
   if (response.status === 204) {
