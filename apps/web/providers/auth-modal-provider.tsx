@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { LoginForm } from '@/features/auth/components/login-form';
 import { RegisterForm } from '@/features/auth/components/register-form';
@@ -12,6 +12,11 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [register, setRegister] = useState(false);
   const [reason, setReason] = useState('Đăng nhập để tiếp tục hành trình của bạn.');
+  useEffect(() => {
+    const onExpired = () => openAuth('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    window.addEventListener('menhvi:session-expired', onExpired);
+    return () => window.removeEventListener('menhvi:session-expired', onExpired);
+  }, []);
   function openAuth(message?: string) { setReason(message || 'Đăng nhập để tiếp tục hành trình của bạn.'); setOpen(true); }
   return <AuthModalContext.Provider value={{ openAuth }}>
     {children}
