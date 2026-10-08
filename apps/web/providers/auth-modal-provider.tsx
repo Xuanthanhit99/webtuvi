@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Dialog } from '@/components/ui/dialog';
+import { useAuth } from '@/providers/auth-provider';
 import { LoginForm } from '@/features/auth/components/login-form';
 import { RegisterForm } from '@/features/auth/components/register-form';
 
@@ -9,14 +10,18 @@ type AuthModalContextValue = { openAuth: (reason?: string) => void };
 const AuthModalContext = createContext<AuthModalContextValue | null>(null);
 
 export function AuthModalProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [register, setRegister] = useState(false);
   const [reason, setReason] = useState('Đăng nhập để tiếp tục hành trình của bạn.');
   useEffect(() => {
-    const onExpired = () => openAuth('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    const onExpired = () => {
+      // Guest-facing API 401s are not expired authenticated sessions.
+      if (user) openAuth('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    };
     window.addEventListener('menhvi:session-expired', onExpired);
     return () => window.removeEventListener('menhvi:session-expired', onExpired);
-  }, []);
+  }, [user]);
   function openAuth(message?: string) { setReason(message || 'Đăng nhập để tiếp tục hành trình của bạn.'); setOpen(true); }
   return <AuthModalContext.Provider value={{ openAuth }}>
     {children}
