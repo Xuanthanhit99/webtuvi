@@ -68,6 +68,22 @@ describe('LoginForm', () => {
     await waitFor(() => expect(authApi.login).toHaveBeenCalledTimes(1));
   });
 
+  it.each([
+    [null, '/onboarding'],
+    ['2026-01-01', null],
+  ])('modal login honors onboarding state %s', async (onboardingCompletedAt, destination) => {
+    (authApi.login as jest.Mock).mockResolvedValue({ onboardingCompletedAt });
+    const onSuccess = jest.fn();
+    const user = userEvent.setup();
+    renderWithQuery(<AuthProvider><LoginForm onSuccess={onSuccess} /></AuthProvider>);
+    await user.type(screen.getByLabelText('Email'), 'alex@example.com');
+    await user.type(screen.getByLabelText('Mật khẩu', { exact: true }), 'Sup3r$ecretPass');
+    await user.click(screen.getByRole('button', { name: 'Đăng nhập' }));
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+    if (destination) expect(mockPush).toHaveBeenCalledWith(destination);
+    else expect(mockPush).not.toHaveBeenCalled();
+  });
+
   it('renders a friendly error message when the API rejects the credentials', async () => {
     (authApi.login as jest.Mock).mockRejectedValue(
       new ApiError('Mật khẩu xác nhận chưa khớp this account.', 'WRONG_PASSWORD', 401),
