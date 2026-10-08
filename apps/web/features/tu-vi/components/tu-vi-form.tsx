@@ -13,6 +13,7 @@ import { trackEvent } from '@/lib/analytics';
 import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 import { tuViApi } from '../api/tu-vi-api';
 import { TuViChartView } from './tu-vi-chart-view';
+import { useAuthModal } from '@/providers/auth-modal-provider';
 
 type FieldName = 'birthDate' | 'birthTime' | null;
 
@@ -34,6 +35,7 @@ function fieldErrorFor(error: ApiError): { field: FieldName; message: string } {
 
 export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto) => void }) {
   const queryClient = useQueryClient();
+  const { openAuth } = useAuthModal();
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
   const [sex, setSex] = useState<'Nam' | 'Nữ' | ''>('');
@@ -54,6 +56,10 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
     },
     onError: (error: unknown) => {
       if (error instanceof ApiError) {
+        if (error.status === 401) {
+          openAuth('Đăng nhập để lập và lưu lá số. Dữ liệu sinh bạn đã nhập vẫn được giữ lại.');
+          return;
+        }
         if (error.code === 'PREMIUM_REQUIRED' || error.code === 'TU_VI_DAILY_LIMIT_REACHED') {
           setLimitBanner({ message: error.code === 'PREMIUM_REQUIRED' ? 'Bạn đã dùng hết lượt miễn phí. Nâng cấp Premium để tiếp tục.' : 'Bạn đã đạt giới hạn lập lá số hôm nay. Vui lòng quay lại sau.', showUpgrade: error.code === 'PREMIUM_REQUIRED' });
           return;
