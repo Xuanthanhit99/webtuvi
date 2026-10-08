@@ -107,6 +107,44 @@ describe('apiFetch', () => {
     expect(mockedSessionClient.clearStoredSession).not.toHaveBeenCalled();
   });
 
+
+  it.each([429, 500, 503])('keeps session when refresh responds %i', async (status) => {
+    mockedSessionClient.getStoredSession.mockResolvedValue({ accessToken: 'expired', refreshToken: 'still-valid' });
+    (global.fetch as jest.Mock)
+      .mockReturnValueOnce(jsonResponse(401, errorEnvelope('SESSION_EXPIRED')))
+      .mockReturnValueOnce(jsonResponse(status, errorEnvelope('TEMPORARY_ERROR')));
+
+    await expect(apiFetch('/dashboard')).rejects.toMatchObject({
+      code: 'AUTH_REFRESH_TEMPORARY',
+      status: 503,
+    });
+    expect(mockedSessionClient.clearStoredSession).not.toHaveBeenCalled();
+    expect(mockedSessionClient.setStoredSession).not.toHaveBeenCalled();
+  });
+
+  it.each([null, {}, { accessToken: '', refreshToken: 'token' }, { accessToken: 'access' }])(
+    'keeps session when refresh response is malformed: %p',
+    async (payload) => {
+      mockedSessionClient.getStoredSession.mockResolvedValue({ accessToken: 'expired', refreshToken: 'still-valid' });
+      (global.fetch as jest.Mock)
+        .mockReturnValueOnce(jsonResponse(401, errorEnvelope('SESSION_EXPIRED')))
+        .mockReturnValueOnce(jsonResponse(200, envelope(payload)));
+
+      await expect(apiFetch('/dashboard')).rejects.toMatchObject({ code: 'AUTH_REFRESH_TEMPORARY' });
+      expect(mockedSessionClient.clearStoredSession).not.toHaveBeenCalled();
+    },
+  );
+
+  it('keeps the session when refresh is offline and returns a recoverable error', async () => {
+    mockedSessionClient.getStoredSession.mockResolvedValue({ accessToken: 'expired', refreshToken: 'still-valid' });
+    (global.fetch as jest.Mock)
+      .mockReturnValueOnce(jsonResponse(401, errorEnvelope('SESSION_EXPIRED')))
+      .mockRejectedValueOnce(new Error('offline'));
+
+    await expect(apiFetch('/dashboard')).rejects.toMatchObject({ code: 'AUTH_REFRESH_TEMPORARY' });
+    expect(mockedSessionClient.clearStoredSession).not.toHaveBeenCalled();
+  });
+
   it('does not attempt a refresh when /auth/mobile/refresh itself returns 401 (no infinite loop)', async () => {
     mockedSessionClient.getStoredSession.mockResolvedValue({ accessToken: 'x', refreshToken: 'y' });
     (global.fetch as jest.Mock).mockReturnValue(jsonResponse(401, errorEnvelope('SESSION_EXPIRED')));
