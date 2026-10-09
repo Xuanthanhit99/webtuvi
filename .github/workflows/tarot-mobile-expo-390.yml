@@ -52,6 +52,7 @@ jobs:
             tail -n 120 tarot-mobile-evidence/expo.log
             exit 1
           fi
+      # QA checkpoint: verify exact card-label matching and result/history flows at 390px.
       - name: Capture Tarot selection, result and functional QA with explicit fixtures
         run: pnpm --filter @beaconvie/web exec node scripts/tarot-mobile-selection-qa.cjs
       - name: Capture actual Tarot route at 390px
