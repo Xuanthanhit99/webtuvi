@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p tarot-mobile-evidence
-          (pnpm --filter @beaconvie/mobile exec expo start --web --host 127.0.0.1 --port 19006 --non-interactive > tarot-mobile-evidence/expo.log 2>&1) &
+          (pnpm --filter @beaconvie/mobile exec expo start --web --host localhost --port 19006 > tarot-mobile-evidence/expo.log 2>&1) &
           echo $! > tarot-mobile-evidence/expo.pid
           READY=0
           for i in $(seq 1 90); do
