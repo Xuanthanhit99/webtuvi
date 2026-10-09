@@ -15,7 +15,7 @@ test.describe('Tử Vi guest auth return', () => {
   }
 
   async function checkReturn(page: Page) {
-    await expect(page).toHaveURL(/\/tu-vi(?:[?#]|$)/);
+    await expect(page).toHaveURL(/\/discover\/tu-vi(?:[?#]|$)/);
     await expect(page.getByLabel(/Ngày sinh dương lịch/i)).toHaveValue('1984-02-02');
     await expect(page.getByLabel(/Giờ sinh chính xác/i)).toHaveValue('00:30');
     await expect(page.getByLabel('Nam')).toBeChecked();
