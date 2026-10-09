@@ -18,12 +18,17 @@ async function expectInteractive(control: Locator): Promise<void> {
 async function expectMobileBottomClearance(page: Page, bottomInset: number): Promise<void> {
   const nav = page.getByRole('navigation', { name: 'Điều hướng chính', exact: true }).filter({ visible: true });
   await expect(nav).toBeVisible();
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await expect.poll(() => page.evaluate(() => {
+  // Safe-area changes can resize the scrolling element after the first scroll.
+  // Recompute the actual bottom and scroll the same element on every poll.
+  await expect.poll(async () => page.evaluate(() => {
     const scroller = document.scrollingElement;
-    if (!scroller) return Number.POSITIVE_INFINITY;
-    return Math.abs(scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop);
-  }), 'Scrolling element must reach the actual document bottom').toBeLessThanOrEqual(1);
+    if (!scroller) return { scrollHeight: 0, clientHeight: 0, scrollTop: 0, remaining: Number.POSITIVE_INFINITY };
+    scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight;
+    const scrollHeight = scroller.scrollHeight;
+    const clientHeight = scroller.clientHeight;
+    const scrollTop = scroller.scrollTop;
+    return { scrollHeight, clientHeight, scrollTop, remaining: Math.abs(scrollHeight - clientHeight - scrollTop) };
+  }), { message: 'Scrolling element must reach the actual document bottom', timeout: 10_000 }).toMatchObject({ remaining: 0 });
   const navBox = await nav.boundingBox();
   expect(navBox).not.toBeNull();
   const contentBox = await page.locator('#main-content > div').boundingBox();
