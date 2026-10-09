@@ -1,0 +1,97 @@
+name: Tarot Android Native Evidence
+
+# Deliberately manual and isolated from PR/push CI to limit Actions cost.
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: 'Reachable API base URL (no credentials)'
+        required: true
+        default: 'https://tuvitarot.vn/api'
+      web_url:
+        description: 'Tarot card artwork origin'
+        required: true
+        default: 'https://tuvitarot.vn'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tarot-android-native-evidence
+  cancel-in-progress: false
+
+jobs:
+  android-native-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      EXPO_PUBLIC_API_URL: ${{ inputs.api_url }}
+      EXPO_PUBLIC_WEB_URL: ${{ inputs.web_url }}
+      CI: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Native Android smoke and screenshot
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          profile: pixel_6
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: |
+            set -euo pipefail
+            mkdir -p native-evidence
+            adb shell wm size 390x844
+            adb shell wm density 160
+            adb shell settings put global window_animation_scale 0
+            adb shell settings put global transition_animation_scale 0
+            adb shell settings put global animator_duration_scale 0
+            adb reverse tcp:8081 tcp:8081
+            pnpm --filter @beaconvie/mobile exec expo run:android --no-bundler --no-install 2>&1 | tee native-evidence/android-build.log
+            (cd apps/mobile && pnpm exec expo start --localhost --port 8081 --non-interactive > ../../native-evidence/metro.log 2>&1) &
+            for attempt in $(seq 1 90); do
+              if curl -fsS http://127.0.0.1:8081/status | grep -q 'packager-status:running'; then break; fi
+              sleep 2
+            done
+            curl -fsS http://127.0.0.1:8081/status | tee native-evidence/metro-status.txt
+            adb shell am start -a android.intent.action.VIEW -d 'menhvi://tarot' || true
+            sleep 25
+            adb shell uiautomator dump /sdcard/window.xml || true
+            adb pull /sdcard/window.xml native-evidence/window.xml || true
+            adb exec-out screencap -p > native-evidence/tarot-entry-390x844.png
+            adb logcat -d -t 3000 > native-evidence/logcat.txt
+            adb shell dumpsys activity activities > native-evidence/activities.txt
+            test -s native-evidence/tarot-entry-390x844.png
+            # Screenshot is evidence only. Functional API/selection QA is NOT inferred.
+      - name: Record QA limitations
+        if: always()
+        run: |
+          mkdir -p native-evidence
+          cat > native-evidence/QA-STATUS.md <<'EOF'
+          # Tarot Android Native QA
+          This job captures a real emulator screenshot and diagnostic logs.
+          It does NOT prove 1-card/3-card selection, 78-card coverage, API persistence,
+          reveal animation, authentication, or visual-master fidelity.
+          These remain BLOCKED until separate interaction evidence is collected.
+          The 390x844 emulator is configured at 160dpi for pixel-sized evidence.
+          EOF
+      - name: Upload native evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarot-android-native-evidence
+          path: native-evidence/
+          if-no-files-found: warn
+          retention-days: 7
