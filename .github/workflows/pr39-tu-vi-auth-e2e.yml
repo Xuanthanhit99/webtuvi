@@ -1,0 +1,149 @@
+name: PR39 Tử Vi Auth HTTP E2E
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/pr39-tu-vi-auth-e2e.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr39-tu-vi-auth-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  auth-return:
+    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'feat/auth-modal-sitewide'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: beaconvie
+          POSTGRES_PASSWORD: beaconvie_ci_password
+          POSTGRES_DB: beaconvie_ci
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U beaconvie -d beaconvie_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      mailpit:
+        image: axllent/mailpit:latest
+        ports: ['1025:1025', '8025:8025']
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://beaconvie:beaconvie_ci_password@localhost:5432/beaconvie_ci?schema=public
+      REDIS_URL: redis://localhost:6379
+      API_PORT: 4000
+      API_BASE_URL: http://localhost:4000
+      FRONTEND_URL: http://localhost:3000
+      APP_PUBLIC_URL: http://localhost:3000
+      CORS_ORIGINS: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:4000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_PUBLIC_SITE_INDEXABLE: 'false'
+      NEXT_PUBLIC_ANALYTICS_ENABLED: 'false'
+      PLAYWRIGHT_BASE_URL: http://localhost:3000
+      JWT_ACCESS_SECRET: ci-only-access-secret-not-for-production-use-000000
+      JWT_REFRESH_SECRET: ci-only-refresh-secret-not-for-production-use-000000
+      JWT_ACCESS_EXPIRES_IN: 15m
+      JWT_REFRESH_EXPIRES_IN: 30d
+      CSRF_SECRET: ci-only-csrf-secret-not-for-production-use-0000000000
+      AUTH_COOKIE_DOMAIN: localhost
+      AUTH_COOKIE_SECURE: 'false'
+      AUTH_COOKIE_SAME_SITE: lax
+      PASSWORD_RESET_EXPIRES_IN: 1h
+      EMAIL_VERIFICATION_EXPIRES_IN: 24h
+      EMAIL_VERIFICATION_RESEND_COOLDOWN: 2s
+      EMAIL_PROVIDER: mailpit
+      EMAIL_FROM: 'Mệnh Vi CI <no-reply@beaconvie.local>'
+      MAILPIT_HOST: localhost
+      MAILPIT_PORT: 1025
+      AUTH_RATE_LIMIT_MAX: 2000
+      AUTH_RATE_LIMIT_WINDOW_MS: 900000
+      RATE_LIMIT_REDIS_PREFIX: 'beaconvie:throttle:pr39'
+      TRUST_PROXY: 'false'
+      DEFAULT_AI_PROVIDER: mock
+      FALLBACK_PROVIDER: mock
+      AI_TIMEOUT_MS: 5000
+      AI_MAX_RETRIES: 1
+      AI_RATE_LIMIT_MAX: 200
+      AI_RATE_LIMIT_WINDOW_MS: 60000
+      AI_RATE_LIMIT_IP_MAX: 500
+      AI_MAX_CONCURRENT_GENERATIONS_PER_USER: 1
+      AI_CONCURRENCY_LOCK_TTL_MS: 120000
+      AI_DAILY_REQUEST_LIMIT: 1000
+      AI_DAILY_TOKEN_LIMIT: 200000
+      AI_MONTHLY_TOKEN_LIMIT: 2000000
+      DISCOVERY_RATE_LIMIT_MAX: 500
+      DISCOVERY_RATE_LIMIT_WINDOW_MS: 60000
+      DISCOVERY_RATE_LIMIT_IP_MAX: 1000
+      PAYOS_CLIENT_ID: test-only-payos-client-id-not-for-production
+      PAYOS_API_KEY: test-only-payos-api-key-not-for-production
+      PAYOS_CHECKSUM_KEY: test-only-payos-checksum-key-not-for-production-xxxxx
+      PAYOS_BASE_URL: https://api-merchant.payos.vn
+      PAYOS_MOCK_CHECKOUT: 'true'
+      PAYMENTS_ENABLED: 'true'
+      PREMIUM_PRICE_VND: 79000
+      PREMIUM_DURATION_DAYS: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client and migrate isolated CI database
+        run: |
+          pnpm --filter @beaconvie/api prisma:generate
+          pnpm --filter @beaconvie/api exec prisma migrate deploy
+          pnpm --filter @beaconvie/api prisma:seed:reference
+      - name: Build API
+        run: pnpm build:api
+      - name: Install Chromium
+        run: pnpm --filter @beaconvie/web exec playwright install --with-deps chromium
+      - name: Start HTTP servers and run registration E2E
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p pr39-logs
+          node apps/api/dist/src/main.js > pr39-logs/api.log 2>&1 &
+          API_PID=$!
+          pnpm --filter @beaconvie/web dev > pr39-logs/web.log 2>&1 &
+          WEB_PID=$!
+          trap 'kill "$API_PID" "$WEB_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:4000/health/live > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://localhost:4000/health/live
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:3000/discover/tu-vi > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://localhost:3000/discover/tu-vi > /dev/null
+          pnpm --filter @beaconvie/web exec playwright test tu-vi-auth-return.spec.ts --grep 'guest registration' --project=chromium --reporter=list
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr39-auth-http-e2e-${{ github.sha }}
+          path: |
+            pr39-logs/
+            apps/web/test-results/
+          if-no-files-found: warn
+          retention-days: 7
