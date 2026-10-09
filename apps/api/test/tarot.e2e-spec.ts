@@ -1,4 +1,6 @@
+import { createHash, randomUUID } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
+import { PrismaService } from '../src/prisma/prisma.service';
 import request from 'supertest';
 import { createTestApp, csrfHeaders, extractCookie } from './utils/test-app';
 
@@ -53,6 +55,44 @@ describe('Tarot (e2e)', () => {
   it('requires a session for deck reference data under the current controller contract', async () => {
     const res = await request(app.getHttpServer()).get('/tarot/deck').expect(401);
     expect(res.body.data).toBeNull();
+  });
+
+  describe('PostgreSQL selection claim concurrency', () => {
+    it('accepts exactly one of two simultaneous draws using the same selection token', async () => {
+      const prisma = app.get(PrismaService);
+      const headers = await registerAndGetHeaders(app, uniqueEmail('selection-race'));
+      const session = await request(app.getHttpServer())
+        .post('/tarot/selection-session').set(headers).send({ type: 'SINGLE_CARD' }).expect(201);
+      const token = session.body.data.token as string;
+      const body = { type: 'SINGLE_CARD', selectionToken: token, selectedPositions: [0] };
+      const [a, b] = await Promise.all([
+        request(app.getHttpServer()).post('/tarot/draw').set(headers).send(body),
+        request(app.getHttpServer()).post('/tarot/draw').set(headers).send(body),
+      ]);
+      expect([a.status, b.status].sort()).toEqual([201, 400]);
+      const winner = a.status === 201 ? a : b;
+      const loser = a.status === 400 ? a : b;
+      expect(loser.body.error.code).toBe('TAROT_SELECTION_CONSUMED');
+      const digest = createHash('sha256').update(token).digest('hex');
+      const claim = await prisma.tarotSelectionClaim.findUniqueOrThrow({ where: { tokenHash: digest } });
+      expect(claim.readingId).toBe(winner.body.data.id);
+      expect(await prisma.tarotReading.count({ where: { id: claim.readingId! } })).toBe(1);
+      expect(await prisma.tarotSelectionClaim.count({ where: { tokenHash: digest } })).toBe(1);
+    });
+
+    it('rolls back a claimed token when the reading transaction fails', async () => {
+      const prisma = app.get(PrismaService);
+      const tokenHash = createHash('sha256').update('rollback-' + randomUUID()).digest('hex');
+      await expect(prisma.$transaction(async (tx) => {
+        await tx.tarotSelectionClaim.create({ data: { tokenHash } });
+        throw new Error('injected reading persistence failure');
+      })).rejects.toThrow('injected reading persistence failure');
+      expect(await prisma.tarotSelectionClaim.findUnique({ where: { tokenHash } })).toBeNull();
+      // The same token is claimable again after rollback.
+      await prisma.tarotSelectionClaim.create({ data: { tokenHash } });
+      expect(await prisma.tarotSelectionClaim.count({ where: { tokenHash } })).toBe(1);
+      await prisma.tarotSelectionClaim.delete({ where: { tokenHash } });
+    });
   });
 
   describe('Deck (Phase 1/5)', () => {
