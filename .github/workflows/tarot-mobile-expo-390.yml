@@ -52,7 +52,7 @@ jobs:
             tail -n 120 tarot-mobile-evidence/expo.log
             exit 1
           fi
-      - name: Capture 78-card selection with explicit QA API fixture
+      - name: Capture Tarot selection, result and functional QA with explicit fixtures
         run: pnpm --filter @beaconvie/web exec node scripts/tarot-mobile-selection-qa.cjs
       - name: Capture actual Tarot route at 390px
         shell: bash
@@ -73,6 +73,10 @@ jobs:
           path: |
             tarot-mobile-evidence/tarot-mobile-expo-web-390.png
             tarot-mobile-evidence/tarot-mobile-selection-390-fixture.png
+            tarot-mobile-evidence/tarot-mobile-result-390-fixture.png
+            tarot-mobile-evidence/tarot-mobile-three-card-result-390-fixture.png
+            tarot-mobile-evidence/tarot-mobile-history-result-390-fixture.png
+            tarot-mobile-evidence/functional-qa.json
             tarot-mobile-evidence/selection-qa.json
             tarot-mobile-evidence/expo.log
           if-no-files-found: warn
