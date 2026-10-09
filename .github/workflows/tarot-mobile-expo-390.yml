@@ -1,0 +1,68 @@
+name: Tarot Mobile Expo Web 390 Evidence
+
+on:
+  push:
+    branches:
+      - qa/tarot-mobile-expo-390
+    paths:
+      - .github/workflows/tarot-mobile-expo-390.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture-expo-web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      CI: '1'
+      EXPO_NO_TELEMETRY: '1'
+      EXPO_PUBLIC_API_URL: http://127.0.0.1:4000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.17.0
+          cache: pnpm
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm --filter @beaconvie/web exec playwright install --with-deps chromium
+      - name: Start real Expo Web app
+        shell: bash
+        run: |
+          mkdir -p tarot-mobile-evidence
+          (pnpm --filter @beaconvie/mobile exec expo start --web --host 127.0.0.1 --port 19006 --non-interactive > tarot-mobile-evidence/expo.log 2>&1) &
+          echo $! > tarot-mobile-evidence/expo.pid
+          READY=0
+          for i in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:19006/tarot -o /dev/null; then READY=1; break; fi
+            sleep 2
+          done
+          if [ "$READY" -ne 1 ]; then
+            tail -n 120 tarot-mobile-evidence/expo.log
+            exit 1
+          fi
+      - name: Capture actual Tarot route at 390px
+        shell: bash
+        run: |
+          pnpm --filter @beaconvie/web exec playwright screenshot \
+            --browser chromium \
+            --viewport-size "390,844" \
+            --wait-for-timeout 8000 \
+            --full-page \
+            http://127.0.0.1:19006/tarot \
+            ../../tarot-mobile-evidence/tarot-mobile-expo-web-390.png
+          test -s tarot-mobile-evidence/tarot-mobile-expo-web-390.png
+      - name: Upload screenshot and runtime log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tarot-mobile-expo-web-390
+          path: |
+            tarot-mobile-evidence/tarot-mobile-expo-web-390.png
+            tarot-mobile-evidence/expo.log
+          if-no-files-found: warn
+          retention-days: 7
