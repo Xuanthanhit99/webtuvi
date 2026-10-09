@@ -19,6 +19,27 @@ async function expectMobileBottomClearance(page: Page, bottomInset: number): Pro
   const nav = page.getByRole('navigation', { name: 'Điều hướng chính', exact: true }).filter({ visible: true });
   await expect(nav).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  // Diagnostic-only: preserve the strict bottom clearance assertions and report
+  // actual browser geometry before the existing poll can fail.
+  const geometry = await page.evaluate(() => {
+    const scroller = document.scrollingElement;
+    const nav = [...document.querySelectorAll('nav')].find(el => el.getAttribute('aria-label') === 'Điều hướng chính');
+    const rect = nav?.getBoundingClientRect();
+    return {
+      scrollingElement: scroller?.tagName,
+      documentHeight: document.documentElement.scrollHeight,
+      scrollHeight: scroller?.scrollHeight,
+      clientHeight: scroller?.clientHeight,
+      scrollTop: scroller?.scrollTop,
+      scrollY,
+      viewportHeight: innerHeight,
+      navTop: rect?.top,
+      navBottom: rect?.bottom,
+      navHeight: rect?.height,
+      mainBottom: document.querySelector('#main-content > div')?.getBoundingClientRect().bottom,
+    };
+  });
+  console.log('[numerology-390-scroll-diagnostic]', JSON.stringify(geometry));
   await expect.poll(() => page.evaluate(() => {
     const scroller = document.scrollingElement;
     if (!scroller) return Number.POSITIVE_INFINITY;
