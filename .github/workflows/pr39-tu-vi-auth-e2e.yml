@@ -6,9 +6,13 @@ on:
     branches: [feat/auth-modal-sitewide]
     paths:
       - '.github/workflows/pr39-tu-vi-auth-e2e.yml'
+      - 'apps/web/features/tu-vi/components/tu-vi-form.tsx'
+      - 'apps/web/e2e/tu-vi-auth-return.spec.ts'
   pull_request:
     paths:
       - '.github/workflows/pr39-tu-vi-auth-e2e.yml'
+      - 'apps/web/features/tu-vi/components/tu-vi-form.tsx'
+      - 'apps/web/e2e/tu-vi-auth-return.spec.ts'
 
 permissions:
   contents: read
