@@ -29,7 +29,13 @@ jobs:
           cache: pnpm
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
-      - name: Checkout exact Tarot PR head for Mobile tests\n        run: |\n          git fetch --no-tags origin feat/tarot-mobile-master-integration\n          git checkout FETCH_HEAD -- apps/mobile/src/features/tarot/api.test.ts\n      - name: Run Tarot Mobile API contract tests\n        run: pnpm --filter @beaconvie/mobile test --runInBand src/features/tarot/api.test.ts\n      - name: Install Chromium
+      - name: Checkout exact Tarot PR head for Mobile tests
+        run: |
+          git fetch --no-tags origin feat/tarot-mobile-master-integration
+          git checkout FETCH_HEAD -- apps/mobile/src/features/tarot/api.test.ts
+      - name: Run Tarot Mobile API contract tests
+        run: pnpm --filter @beaconvie/mobile test --runInBand src/features/tarot/api.test.ts
+      - name: Install Chromium
         run: pnpm --filter @beaconvie/web exec playwright install --with-deps chromium
       - name: Start real Expo Web app
         shell: bash
@@ -46,7 +52,9 @@ jobs:
             tail -n 120 tarot-mobile-evidence/expo.log
             exit 1
           fi
-      - name: Capture 78-card selection with explicit QA API fixture\n        run: pnpm --filter @beaconvie/web exec node scripts/tarot-mobile-selection-qa.cjs\n      - name: Capture actual Tarot route at 390px
+      - name: Capture 78-card selection with explicit QA API fixture
+        run: pnpm --filter @beaconvie/web exec node scripts/tarot-mobile-selection-qa.cjs
+      - name: Capture actual Tarot route at 390px
         shell: bash
         run: |
           pnpm --filter @beaconvie/web exec playwright screenshot \
@@ -63,7 +71,9 @@ jobs:
         with:
           name: tarot-mobile-expo-web-390
           path: |
-            tarot-mobile-evidence/tarot-mobile-expo-web-390.png\n            tarot-mobile-evidence/tarot-mobile-selection-390-fixture.png\n            tarot-mobile-evidence/selection-qa.json
+            tarot-mobile-evidence/tarot-mobile-expo-web-390.png
+            tarot-mobile-evidence/tarot-mobile-selection-390-fixture.png
+            tarot-mobile-evidence/selection-qa.json
             tarot-mobile-evidence/expo.log
           if-no-files-found: warn
           retention-days: 7
