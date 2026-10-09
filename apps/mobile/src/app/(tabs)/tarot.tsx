@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image } from 'expo-image';
 import { ActivityIndicator, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { TarotReadingDto, TarotReadingTypeValue } from '@beaconvie/types';
@@ -17,8 +17,8 @@ const TYPES: {value:TarotReadingTypeValue;label:string;count:number}[]=[{value:'
 
 export default function TarotScreen(){
  const [backFailed,setBackFailed]=useState(false); const [type,setType]=useState<TarotReadingTypeValue>('DAILY_DRAW'); const [question,setQuestion]=useState(''); const [positions,setPositions]=useState<number[]>([]); const [token,setToken]=useState(''); const [deckSize,setDeckSize]=useState(0); const [result,setResult]=useState<TarotReadingDto|null>(null); const [history,setHistory]=useState<TarotReadingDto[]>([]); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
- const ritualMotion=useRef(new Animated.Value(1)).current;
- const revealMotion=useRef(new Animated.Value(1)).current;
+ const [ritualMotion]=useState(()=>new Animated.Value(1));
+ const [revealMotion]=useState(()=>new Animated.Value(1));
  useEffect(()=>{if(!token)return;ritualMotion.setValue(0);const animation=Animated.timing(ritualMotion,{toValue:1,duration:850,easing:Easing.out(Easing.cubic),useNativeDriver:true});animation.start();return ()=>animation.stop();},[token,ritualMotion]);
  useEffect(()=>{if(!result)return;revealMotion.setValue(0);const animation=Animated.timing(revealMotion,{toValue:1,duration:650,easing:Easing.out(Easing.cubic),useNativeDriver:true});animation.start();return ()=>animation.stop();},[result,revealMotion]);
  const need=TYPES.find(x=>x.value===type)?.count??1;
