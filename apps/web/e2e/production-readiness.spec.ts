@@ -21,6 +21,24 @@ async function logVisibilityEvidence(page: import('@playwright/test').Page, rout
     return { chain, html: element.outerHTML.slice(0, 600) };
   }).catch((error) => ({ error: String(error) }));
   console.log('[PR39 visibility diagnostic]', JSON.stringify({ route, selector, evidence }));
+  const documentEvidence = await page.evaluate(() => {
+    const inspect = (element: Element | null) => {
+      if (!element) return null;
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return { display: style.display, visibility: style.visibility, opacity: style.opacity,
+        width: rect.width, height: rect.height, clientWidth: element.clientWidth,
+        clientHeight: element.clientHeight, scrollWidth: element.scrollWidth,
+        scrollHeight: element.scrollHeight };
+    };
+    return { readyState: document.readyState, viewport: { innerWidth, innerHeight, devicePixelRatio },
+      html: inspect(document.documentElement), body: inspect(document.body),
+      stylesheets: [...document.querySelectorAll('link[rel="stylesheet"]')].map((link) => ({
+        href: (link as HTMLLinkElement).href, sheetLoaded: Boolean((link as HTMLLinkElement).sheet),
+        media: (link as HTMLLinkElement).media, disabled: (link as HTMLLinkElement).disabled,
+      })), styleSheetCount: document.styleSheets.length };
+  });
+  console.log('[PR39 document diagnostic]', JSON.stringify({ route, documentEvidence }));
 }
 
 const publicRoutes = ['/', '/discover', '/discover/tu-vi', '/discover/tarot', '/discover/natal-chart', '/discover/numerology', '/discover/eastern-horoscope'];
@@ -157,7 +175,10 @@ test('private URLs remain protected, aliases redirect permanently and missing ro
   }
   for (const [alias, target] of Object.entries({ '/tarot': '/discover/tarot', '/tu-vi': '/discover/tu-vi', '/ban-do-sao': '/discover/natal-chart', '/than-so-hoc': '/discover/numerology' })) {
     const response = await request.get(alias, { maxRedirects: 0 });
-    console.log('[PR39 redirect diagnostic]', JSON.stringify({ alias, target, status: response.status(), url: response.url(), headers: response.headers(), bodyPrefix: (await response.text()).slice(0, 320) }));
+    const body = await response.text();
+    const metaRefresh = [...body.matchAll(/<meta[^>]+http-equiv=["']refresh["'][^>]*>/gi)].map((match) => match[0]);
+    const redirectMarkers = [...body.matchAll(/(?:NEXT_REDIRECT|__next-page-redirect|window\\.location|location\\.replace)/g)].slice(0, 8).map((match) => ({ marker: match[0], offset: match.index, context: body.slice(Math.max(0, (match.index ?? 0) - 100), (match.index ?? 0) + 180) }));
+    console.log('[PR39 redirect diagnostic]', JSON.stringify({ alias, target, status: response.status(), url: response.url(), headers: response.headers(), bodyLength: body.length, metaRefresh, redirectMarkers, bodyPrefix: body.slice(0, 320) }));
     expect(response.status()).toBe(308);
     expect(response.headers().location).toBe(target);
   }
