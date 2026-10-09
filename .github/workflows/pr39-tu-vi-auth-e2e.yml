@@ -2,6 +2,10 @@ name: PR39 Tử Vi Auth HTTP E2E
 
 on:
   workflow_dispatch:
+  push:
+    branches: [feat/auth-modal-sitewide]
+    paths:
+      - '.github/workflows/pr39-tu-vi-auth-e2e.yml'
   pull_request:
     paths:
       - '.github/workflows/pr39-tu-vi-auth-e2e.yml'
@@ -15,7 +19,7 @@ concurrency:
 
 jobs:
   auth-return:
-    if: github.event_name == 'workflow_dispatch' || github.head_ref == 'feat/auth-modal-sitewide'
+    if: github.ref_name == 'feat/auth-modal-sitewide' || github.head_ref == 'feat/auth-modal-sitewide'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
