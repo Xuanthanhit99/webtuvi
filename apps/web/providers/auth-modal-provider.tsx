@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, Suspense, useContext, useEffect, useState } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { safeNextPath } from '@/lib/safe-next-path';
 import { Dialog } from '@/components/ui/dialog';
@@ -13,10 +13,6 @@ const AuthModalContext = createContext<AuthModalContextValue | null>(null);
 
 export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  // Carry the originating discovery route through onboarding without accepting external redirects.
-  const destination = safeNextPath(`${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`);
   const [open, setOpen] = useState(false);
   const [register, setRegister] = useState(false);
   const [reason, setReason] = useState('Đăng nhập để tiếp tục hành trình của bạn.');
@@ -31,14 +27,33 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   function openAuth(message?: string) { setReason(message || 'Đăng nhập để tiếp tục hành trình của bạn.'); setOpen(true); }
   return <AuthModalContext.Provider value={{ openAuth }}>
     {children}
-    <Dialog open={open} onClose={() => setOpen(false)} title={register ? 'Đăng ký Mệnh Vi' : 'Đăng nhập Mệnh Vi'} description={reason}>
+    <Suspense fallback={null}>
+      <AuthModalDialog open={open} onClose={() => setOpen(false)} register={register} setRegister={setRegister} reason={reason} />
+    </Suspense>
+  </AuthModalContext.Provider>;
+}
+
+function AuthModalDialog({ open, onClose, register, setRegister, reason }: {
+  open: boolean;
+  onClose: () => void;
+  register: boolean;
+  setRegister: (value: boolean) => void;
+  reason: string;
+}) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // Carry the originating discovery route through onboarding without accepting external redirects.
+  const query = searchParams.toString();
+  const destination = safeNextPath(`${pathname}${query ? `?${query}` : ''}`);
+  return (
+    <Dialog open={open} onClose={onClose} title={register ? 'Đăng ký Mệnh Vi' : 'Đăng nhập Mệnh Vi'} description={reason}>
       <div className="mb-4 flex gap-4">
         <button type="button" aria-pressed={!register} onClick={() => setRegister(false)}>Đăng nhập</button>
         <button type="button" aria-pressed={register} onClick={() => setRegister(true)}>Đăng ký</button>
       </div>
-      {register ? <RegisterForm onSuccess={() => setOpen(false)} returnTo={destination} /> : <LoginForm onSuccess={() => setOpen(false)} returnTo={destination} />}
+      {register ? <RegisterForm onSuccess={onClose} returnTo={destination} /> : <LoginForm onSuccess={onClose} returnTo={destination} />}
     </Dialog>
-  </AuthModalContext.Provider>;
+  );
 }
 
 export function useAuthModal() {
