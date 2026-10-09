@@ -1,7 +1,7 @@
 import type { ListReadingsResultDto, TarotCardDto, TarotReadingDto, TarotReadingHistoryDto, TarotReadingTypeValue } from '@beaconvie/types';
 type TarotSelectionSessionDto = { token: string; deckSize: number; expiresAt: string };
 
-import { api } from '@/lib/api-client';
+import { api, apiFetch } from '@/lib/api-client';
 
 export const tarotApi = {
   listDeck: () => api.get<TarotCardDto[]>('/tarot/deck'),
@@ -14,5 +14,5 @@ export const tarotApi = {
   retryInterpretation: (id: string) => api.post<TarotReadingDto>(`/tarot/readings/${id}/interpret`),
   archive: (id: string) => api.post<TarotReadingDto>(`/tarot/readings/${id}/archive`),
   restore: (id: string) => api.post<TarotReadingDto>(`/tarot/readings/${id}/restore`),
-  remove: (id: string) => api.delete<TarotReadingDto>(`/tarot/readings/${id}`),
+  remove: (id: string) => apiFetch<TarotReadingDto>(`/tarot/readings/${id}`, { method: 'DELETE' }),
 };
