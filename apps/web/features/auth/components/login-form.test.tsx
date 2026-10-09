@@ -91,7 +91,7 @@ describe('LoginForm', () => {
     await user.type(screen.getByLabelText('Email'), 'alex@example.com');
     await user.type(screen.getByLabelText('Mật khẩu', { exact: true }), 'Sup3r$ecretPass');
     await user.click(screen.getByRole('button', { name: 'Đăng nhập' }));
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/onboarding?next=%2Ftu-vi'));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/onboarding?next=%2Fdiscover%2Ftu-vi'));
   });
 
   it('renders a friendly error message when the API rejects the credentials', async () => {
