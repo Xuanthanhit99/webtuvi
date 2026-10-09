@@ -56,7 +56,7 @@ describe('RegisterForm password rules', () => {
     renderWithQuery(<AuthProvider><RegisterForm onSuccess={jest.fn()} returnTo="/tu-vi" /></AuthProvider>);
     await fillValidForm(user);
     await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/onboarding?next=%2Ftu-vi'));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/onboarding?next=%2Fdiscover%2Ftu-vi'));
   });
 
   it('rejects a password shorter than 8 characters', async () => {
