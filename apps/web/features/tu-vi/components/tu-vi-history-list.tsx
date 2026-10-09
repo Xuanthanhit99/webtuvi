@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useAuth } from '@/providers/auth-provider';
+import { useAuthModal } from '@/providers/auth-modal-provider';
 import { useQuery } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,9 +16,13 @@ import { CHART_STATUS_BADGE_VARIANT, CHART_STATUS_LABELS } from '../labels';
 const FREE_HISTORY_LIMIT = 20;
 
 export function TuViHistoryList({ filters, onSelect }: { filters: ListTuViChartsFilters; onSelect: (id: string) => void }) {
-  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['tu-vi', 'charts', filters], queryFn: () => tuViApi.listCharts(filters) });
+  const { user, isLoading: authLoading } = useAuth();
+  const { openAuth } = useAuthModal();
+  const { data, isLoading, isError, refetch } = useQuery({ queryKey: ['tu-vi', 'charts', filters, user?.id], queryFn: () => tuViApi.listCharts(filters), enabled: !!user });
   const { data: premiumStatus } = usePremiumStatus();
 
+  if (authLoading) return <Skeleton className="h-40 w-full" />;
+  if (!user) return <div className="rounded-xl border border-border-subtle bg-surface p-6 text-center"><p className="mb-4 text-text-secondary">Đăng nhập để xem lịch sử lá số của bạn.</p><button type="button" onClick={() => openAuth('Đăng nhập để xem lại các lá số đã lưu.')} className="min-h-11 rounded-lg border border-insight px-5 text-insight">Đăng nhập để xem lịch sử</button></div>;
   if (isLoading) return <Skeleton className="h-40 w-full" />;
   if (isError) return <ErrorState description="Chưa thể tải lịch sử lá số Tử Vi." onRetry={() => refetch()} />;
   if (!data || data.items.length === 0) {

@@ -1,6 +1,46 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+
+// Diagnostic-only evidence: never change styles, routing, or the assertions under test.
+async function logVisibilityEvidence(page: import('@playwright/test').Page, route: string, selector: string) {
+  const evidence = await page.locator(selector).first().evaluate((element) => {
+    const chain: Array<Record<string, unknown>> = [];
+    for (let node: Element | null = element; node && chain.length < 12; node = node.parentElement) {
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      chain.push({
+        tag: node.tagName, id: node.id, className: typeof node.className === 'string' ? node.className.slice(0, 180) : '',
+        display: style.display, visibility: style.visibility, opacity: style.opacity,
+        contentVisibility: style.contentVisibility, animationName: style.animationName,
+        animationDuration: style.animationDuration, transform: style.transform,
+        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height },
+        hiddenAttribute: node.hasAttribute('hidden'), ariaHidden: node.getAttribute('aria-hidden'),
+      });
+    }
+    return { chain, html: element.outerHTML.slice(0, 600) };
+  }).catch((error) => ({ error: String(error) }));
+  console.log('[PR39 visibility diagnostic]', JSON.stringify({ route, selector, evidence }));
+  const documentEvidence = await page.evaluate(() => {
+    const inspect = (element: Element | null) => {
+      if (!element) return null;
+      const style = getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      return { display: style.display, visibility: style.visibility, opacity: style.opacity,
+        width: rect.width, height: rect.height, clientWidth: element.clientWidth,
+        clientHeight: element.clientHeight, scrollWidth: element.scrollWidth,
+        scrollHeight: element.scrollHeight };
+    };
+    return { readyState: document.readyState, viewport: { innerWidth, innerHeight, devicePixelRatio },
+      html: inspect(document.documentElement), body: inspect(document.body),
+      stylesheets: [...document.querySelectorAll('link[rel="stylesheet"]')].map((link) => ({
+        href: (link as HTMLLinkElement).href, sheetLoaded: Boolean((link as HTMLLinkElement).sheet),
+        media: (link as HTMLLinkElement).media, disabled: (link as HTMLLinkElement).disabled,
+      })), styleSheetCount: document.styleSheets.length };
+  });
+  console.log('[PR39 document diagnostic]', JSON.stringify({ route, documentEvidence }));
+}
+
 const publicRoutes = ['/', '/discover', '/discover/tu-vi', '/discover/tarot', '/discover/natal-chart', '/discover/numerology', '/discover/eastern-horoscope'];
 const supportingRoutes = ['/about', '/contact', '/privacy', '/terms'];
 const knowledgeRoutes = [
@@ -43,6 +83,7 @@ test('crawler receives complete public HTML, unique metadata, canonical URLs and
     const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
     expect(response?.status(), route).toBe(200);
     await expect(page.locator('h1')).toHaveCount(1);
+    if (route === '/') await logVisibilityEvidence(page, route, 'h1');
     await expect(page.locator('h1')).toBeVisible();
     await expect(page.locator('main')).toHaveCount(1);
     expect((await page.locator('main').innerText()).length).toBeGreaterThan(supportingRoutes.includes(route) ? 100 : 300);
@@ -111,6 +152,7 @@ test('programmatic Tử Vi pages are crawlable and linked from the Tử Vi hub',
     expect(schemas.some((schema) => schema['@type'] === 'Article')).toBe(true);
     expect(schemas.some((schema) => schema['@type'] === 'BreadcrumbList')).toBe(true);
     if (route.includes('/sao/')) {
+      await logVisibilityEvidence(page, route, 'dt');
       await expect(page.getByText('Dữ liệu quyết định vị trí')).toBeVisible();
       await expect(page.getByRole('link', { name: /Đọc phương pháp an sao và nguồn kiểm chứng/ })).toHaveCount(1);
     }
@@ -133,6 +175,10 @@ test('private URLs remain protected, aliases redirect permanently and missing ro
   }
   for (const [alias, target] of Object.entries({ '/tarot': '/discover/tarot', '/tu-vi': '/discover/tu-vi', '/ban-do-sao': '/discover/natal-chart', '/than-so-hoc': '/discover/numerology' })) {
     const response = await request.get(alias, { maxRedirects: 0 });
+    const body = await response.text();
+    const metaRefresh = [...body.matchAll(/<meta[^>]+http-equiv=["']refresh["'][^>]*>/gi)].map((match) => match[0]);
+    const redirectMarkers = [...body.matchAll(/(?:NEXT_REDIRECT|__next-page-redirect|window\\.location|location\\.replace)/g)].slice(0, 8).map((match) => ({ marker: match[0], offset: match.index, context: body.slice(Math.max(0, (match.index ?? 0) - 100), (match.index ?? 0) + 180) }));
+    console.log('[PR39 redirect diagnostic]', JSON.stringify({ alias, target, status: response.status(), url: response.url(), headers: response.headers(), bodyLength: body.length, metaRefresh, redirectMarkers, bodyPrefix: body.slice(0, 320) }));
     expect(response.status()).toBe(308);
     expect(response.headers().location).toBe(target);
   }

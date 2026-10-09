@@ -1,8 +1,11 @@
 import { authReturnUrl, safeNextPath } from './safe-next-path';
 
 describe('safeNextPath', () => {
-  it.each(['/', '/premium', '/discover', '/discover/tarot', '/discover/tarot?item=123', '/settings#security'])('preserves %s', (path) => {
+  it.each(['/', '/premium', '/discover', '/discover/tarot', '/discover/tarot?item=123', '/discover/tu-vi', '/tarot', '/ban-do-sao', '/than-so-hoc', '/settings#security'])('preserves %s', (path) => {
     expect(safeNextPath(path)).toBe(path);
+  });
+  it.each(['/tu-vi', '/tu-vi?source=auth', '/tu-vi#tu-vi-form'])('canonicalizes legacy Tử Vi route %s', (path) => {
+    expect(safeNextPath(path)).toBe(path.replace(/^\/tu-vi/, '/discover/tu-vi'));
   });
   it.each([
     'https://example.invalid', 'http://example.invalid', '//example.invalid', '/\\example.invalid', '\\\\example.invalid',
@@ -13,12 +16,13 @@ describe('safeNextPath', () => {
     '/discover/%2e%2e/%2e%2e/login',
   ])('rejects %p', (path) => expect(safeNextPath(path)).toBe('/'));
 
-  it('propagates only safe intent through login and onboarding', () => {
-    const intent = '/discover/tarot?item=123#reading';
-    for (const route of ['/login', '/onboarding'] as const) {
-      const url = new URL(authReturnUrl(route, intent), 'https://internal.invalid');
-      expect(safeNextPath(url.searchParams.get('next'))).toBe(intent);
-      expect(authReturnUrl(route, '/\\example.invalid')).toBe(route);
+  it('propagates canonical Tử Vi intent through login and onboarding', () => {
+    for (const intent of ['/tu-vi', '/discover/tu-vi']) {
+      for (const route of ['/login', '/onboarding'] as const) {
+        const url = new URL(authReturnUrl(route, intent), 'https://internal.invalid');
+        expect(safeNextPath(url.searchParams.get('next'))).toBe('/discover/tu-vi');
+        expect(authReturnUrl(route, '/\\example.invalid')).toBe(route);
+      }
     }
   });
 });

@@ -1,6 +1,8 @@
 import { APP_ROUTES, isPublicDiscoveryRoute } from './route-guard';
 
 const INTERNAL_ORIGIN = 'https://internal.invalid';
+// Legacy entry point remains safe, but auth returns to the canonical Tử Vi tool.
+const PUBLIC_TOOL_ROUTES = ['/tu-vi', '/tarot', '/ban-do-sao', '/than-so-hoc'] as const;
 
 /** Validate before URL normalization, including encoded authority/control characters.
  * Auth endpoints and arbitrary non-app destinations are not return destinations. */
@@ -9,7 +11,7 @@ export function safeNextPath(value: unknown): string {
   let decoded = value;
   try {
     for (let depth = 0; depth < 8; depth++) {
-      if (/[\\\s]/u.test(decoded) || Array.from(decoded).some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127) || !decoded.startsWith('/') || decoded.startsWith('//')) return '/';
+      if (/[\\\s]/u.test(decoded) || Array.from(decoded).some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)) return '/';
       const next = decodeURIComponent(decoded);
       if (next === decoded) break;
       if (depth === 7) return '/';
@@ -17,9 +19,10 @@ export function safeNextPath(value: unknown): string {
     }
     const url = new URL(value, INTERNAL_ORIGIN);
     const normalized = new URL(decoded, INTERNAL_ORIGIN);
-    const isAppPath = (path: string) => path === '/' || isPublicDiscoveryRoute(path) || APP_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
+    const isAppPath = (path: string) => path === '/' || PUBLIC_TOOL_ROUTES.includes(path as (typeof PUBLIC_TOOL_ROUTES)[number]) || isPublicDiscoveryRoute(path) || APP_ROUTES.some((route) => path === route || path.startsWith(`${route}/`));
     if (url.origin !== INTERNAL_ORIGIN || normalized.origin !== INTERNAL_ORIGIN || !isAppPath(url.pathname) || !isAppPath(normalized.pathname)) return '/';
-    return `${url.pathname}${url.search}${url.hash}`;
+    const canonicalPath = url.pathname === '/tu-vi' ? '/discover/tu-vi' : url.pathname;
+    return `${canonicalPath}${url.search}${url.hash}`;
   } catch {
     return '/';
   }

@@ -16,7 +16,7 @@ import { Alert } from '@/components/ui/alert';
 import { useAuth, useInvalidateAuth } from '@/providers/auth-provider';
 import { accountError } from '../account-error';
 
-export function LoginForm() {
+export function LoginForm({ onSuccess, returnTo }: { onSuccess?: () => void; returnTo?: string } = {}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const invalidateAuth = useInvalidateAuth();
@@ -35,8 +35,14 @@ export function LoginForm() {
       const user = await authApi.login(values);
       await invalidateAuth();
       await refetchAuth();
-      const next = safeNextPath(searchParams.get('next'));
-      router.push(user.onboardingCompletedAt ? next : authReturnUrl('/onboarding', next));
+      const next = safeNextPath(returnTo ?? searchParams.get('next'));
+      if (!user.onboardingCompletedAt) {
+        onSuccess?.();
+        router.push(authReturnUrl('/onboarding', next));
+        return;
+      }
+      if (onSuccess) { onSuccess(); return; }
+      router.push(next);
     } catch (error) {
       setFormError(accountError(error, 'login'));
     }

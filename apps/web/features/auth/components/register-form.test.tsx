@@ -50,6 +50,15 @@ describe('RegisterForm password rules', () => {
     mockNext = '';
   });
 
+  it('keeps a validated tool return destination through registration onboarding', async () => {
+    (authApi.register as jest.Mock).mockResolvedValue({ onboardingCompletedAt: null });
+    const user = userEvent.setup();
+    renderWithQuery(<AuthProvider><RegisterForm onSuccess={jest.fn()} returnTo="/tu-vi" /></AuthProvider>);
+    await fillValidForm(user);
+    await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/onboarding?next=%2Fdiscover%2Ftu-vi'));
+  });
+
   it('rejects a password shorter than 8 characters', async () => {
     const user = userEvent.setup();
     renderRegisterForm();
@@ -97,6 +106,17 @@ describe('RegisterForm password rules', () => {
 
     expect(await screen.findByText(/Bạn cần đồng ý với Điều khoản/i)).toBeInTheDocument();
     expect(authApi.register).not.toHaveBeenCalled();
+  });
+
+  it('modal registration closes and still routes to onboarding', async () => {
+    (authApi.register as jest.Mock).mockResolvedValue({ onboardingCompletedAt: null });
+    const onSuccess = jest.fn();
+    const user = userEvent.setup();
+    renderWithQuery(<AuthProvider><RegisterForm onSuccess={onSuccess} /></AuthProvider>);
+    await fillValidForm(user);
+    await user.click(screen.getByRole('button', { name: 'Tạo tài khoản' }));
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledTimes(1));
+    expect(mockPush).toHaveBeenCalledWith('/onboarding');
   });
 
   it('submits successfully with valid data', async () => {

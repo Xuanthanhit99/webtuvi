@@ -13,8 +13,22 @@ import { trackEvent } from '@/lib/analytics';
 import { trackGoogleFunnelEvent } from '@/components/analytics/google-measurement';
 import { tuViApi } from '../api/tu-vi-api';
 import { TuViChartView } from './tu-vi-chart-view';
+import { useAuthModal } from '@/providers/auth-modal-provider';
+import { useAuth } from '@/providers/auth-provider';
+import { saveEphemeralDraft, takeEphemeralDraft, clearEphemeralDraft } from '@/lib/ephemeral-form-draft';
 
 type FieldName = 'birthDate' | 'birthTime' | null;
+
+type PendingDraft = { birthDate: string; birthTime: string; sex: 'Nam' | 'Nữ' };
+const DRAFT_KEY = 'menhvi:tu-vi:pending-auth';
+const DRAFT_TTL = 10 * 60 * 1000;
+function isPendingDraft(value: unknown): value is PendingDraft {
+  if (!value || typeof value !== 'object') return false;
+  const data = value as Record<string, unknown>;
+  if (typeof data.birthDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(data.birthDate)) return false;
+  if (typeof data.birthTime !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(data.birthTime)) return false;
+  return data.sex === 'Nam' || data.sex === 'Nữ';
+}
 
 const ERROR_MESSAGES: Record<string, string> = {
   TUVI_INVALID_DATE_FORMAT: 'Ngày sinh phải đúng định dạng ngày, tháng và năm.',
@@ -34,9 +48,12 @@ function fieldErrorFor(error: ApiError): { field: FieldName; message: string } {
 
 export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto) => void }) {
   const queryClient = useQueryClient();
-  const [birthDate, setBirthDate] = useState('');
-  const [birthTime, setBirthTime] = useState('');
-  const [sex, setSex] = useState<'Nam' | 'Nữ' | ''>('');
+  const { openAuth } = useAuthModal();
+  const { user, isLoading: authLoading } = useAuth();
+  const [initialDraft] = useState(() => takeEphemeralDraft(DRAFT_KEY, isPendingDraft));
+  const [birthDate, setBirthDate] = useState(initialDraft?.birthDate ?? '');
+  const [birthTime, setBirthTime] = useState(initialDraft?.birthTime ?? '');
+  const [sex, setSex] = useState<'Nam' | 'Nữ' | ''>(initialDraft?.sex ?? '');
   const [result, setResult] = useState<TuViChartDto | null>(null);
   const [fieldError, setFieldError] = useState<{ field: FieldName; message: string } | null>(null);
   const [sexError, setSexError] = useState<string | null>(null);
@@ -45,6 +62,7 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
   const calculate = useMutation({
     mutationFn: () => tuViApi.calculate({ birthDate, birthTime, sex: sex as 'Nam' | 'Nữ' }),
     onSuccess: (chart) => {
+      clearEphemeralDraft(DRAFT_KEY);
       setResult(chart);
       trackGoogleFunnelEvent('tool_complete', 'tu_vi');
       trackGoogleFunnelEvent('save_result', 'tu_vi');
@@ -54,6 +72,11 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
     },
     onError: (error: unknown) => {
       if (error instanceof ApiError) {
+        if (error.status === 401) {
+          if (isPendingDraft({ birthDate, birthTime, sex })) saveEphemeralDraft(DRAFT_KEY, { birthDate, birthTime, sex }, DRAFT_TTL);
+          openAuth('Đăng nhập để lập và lưu lá số. Dữ liệu sinh bạn đã nhập vẫn được giữ lại.');
+          return;
+        }
         if (error.code === 'PREMIUM_REQUIRED' || error.code === 'TU_VI_DAILY_LIMIT_REACHED') {
           setLimitBanner({ message: error.code === 'PREMIUM_REQUIRED' ? 'Bạn đã dùng hết lượt miễn phí. Nâng cấp Premium để tiếp tục.' : 'Bạn đã đạt giới hạn lập lá số hôm nay. Vui lòng quay lại sau.', showUpgrade: error.code === 'PREMIUM_REQUIRED' });
           return;
@@ -75,6 +98,12 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
     if (!sex) return setSexError('Vui lòng chọn Nam hoặc Nữ theo hệ quy tắc của lá số.');
     trackEvent('tu_vi_started', { feature: 'tu_vi' });
     trackGoogleFunnelEvent('tool_start', 'tu_vi');
+    if (authLoading) return;
+    if (!user) {
+      if (isPendingDraft({ birthDate, birthTime, sex })) saveEphemeralDraft(DRAFT_KEY, { birthDate, birthTime, sex }, DRAFT_TTL);
+          openAuth('Đăng nhập để lập và lưu lá số. Dữ liệu sinh bạn đã nhập vẫn được giữ lại.');
+      return;
+    }
     calculate.mutate();
   }
 
