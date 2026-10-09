@@ -11,7 +11,7 @@ export function safeNextPath(value: unknown): string {
   let decoded = value;
   try {
     for (let depth = 0; depth < 8; depth++) {
-      if (/[\\\s]/u.test(decoded) || Array.from(decoded).some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127) return '/';
+      if (/[\\\s]/u.test(decoded) || Array.from(decoded).some((char) => char.charCodeAt(0) < 32 || char.charCodeAt(0) === 127)) return '/';
       const next = decodeURIComponent(decoded);
       if (next === decoded) break;
       if (depth === 7) return '/';
