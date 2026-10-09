@@ -25,8 +25,8 @@ const DRAFT_TTL = 10 * 60 * 1000;
 function isPendingDraft(value: unknown): value is PendingDraft {
   if (!value || typeof value !== 'object') return false;
   const data = value as Record<string, unknown>;
-  if (typeof data.birthDate !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(data.birthDate)) return false;
-  if (typeof data.birthTime !== 'string' || !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(data.birthTime)) return false;
+  if (typeof data.birthDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(data.birthDate)) return false;
+  if (typeof data.birthTime !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(data.birthTime)) return false;
   return data.sex === 'Nam' || data.sex === 'Nữ';
 }
 
