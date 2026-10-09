@@ -54,7 +54,7 @@ jobs:
             --viewport-size "390,844" \
             --wait-for-timeout 8000 \
             --full-page \
-            http://127.0.0.1:19006/tarot \
+            http://localhost:19006/tarot \
             ../../tarot-mobile-evidence/tarot-mobile-expo-web-390.png
           test -s tarot-mobile-evidence/tarot-mobile-expo-web-390.png
       - name: Upload screenshot and runtime log
