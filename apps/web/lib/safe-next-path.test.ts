@@ -1,7 +1,7 @@
 import { authReturnUrl, safeNextPath } from './safe-next-path';
 
 describe('safeNextPath', () => {
-  it.each(['/', '/premium', '/discover', '/discover/tarot', '/discover/tarot?item=123', '/settings#security'])('preserves %s', (path) => {
+  it.each(['/', '/premium', '/discover', '/discover/tarot', '/discover/tarot?item=123', '/tu-vi', '/tarot', '/ban-do-sao', '/than-so-hoc', '/settings#security'])('preserves %s', (path) => {
     expect(safeNextPath(path)).toBe(path);
   });
   it.each([
@@ -14,7 +14,7 @@ describe('safeNextPath', () => {
   ])('rejects %p', (path) => expect(safeNextPath(path)).toBe('/'));
 
   it('propagates only safe intent through login and onboarding', () => {
-    const intent = '/discover/tarot?item=123#reading';
+    const intent = '/tu-vi';
     for (const route of ['/login', '/onboarding'] as const) {
       const url = new URL(authReturnUrl(route, intent), 'https://internal.invalid');
       expect(safeNextPath(url.searchParams.get('next'))).toBe(intent);
