@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import Script from 'next/script';
 import { Playfair_Display, Be_Vietnam_Pro, IBM_Plex_Mono } from 'next/font/google';
 import { QueryProvider } from '@/providers/query-provider';
@@ -81,9 +82,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GoogleMeasurement />
         <QueryProvider>
           <AuthProvider>
-            <AuthModalProvider>
-              {children}
-            </AuthModalProvider>
+            <Suspense fallback={null}>
+              <AuthModalProvider>
+                {children}
+              </AuthModalProvider>
+            </Suspense>
             <Toaster />
           </AuthProvider>
         </QueryProvider>
