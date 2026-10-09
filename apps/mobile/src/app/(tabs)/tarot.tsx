@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Image } from 'expo-image';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Animated, Easing, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import type { TarotReadingDto, TarotReadingTypeValue } from '@beaconvie/types';
 import { AppHeader } from '@/components/app-header';
 import { GoldButton, SecondaryButton } from '@/components/buttons';
@@ -17,14 +17,18 @@ const TYPES: {value:TarotReadingTypeValue;label:string;count:number}[]=[{value:'
 
 export default function TarotScreen(){
  const [backFailed,setBackFailed]=useState(false); const [type,setType]=useState<TarotReadingTypeValue>('DAILY_DRAW'); const [question,setQuestion]=useState(''); const [positions,setPositions]=useState<number[]>([]); const [token,setToken]=useState(''); const [deckSize,setDeckSize]=useState(0); const [result,setResult]=useState<TarotReadingDto|null>(null); const [history,setHistory]=useState<TarotReadingDto[]>([]); const [busy,setBusy]=useState(false); const [error,setError]=useState('');
+ const ritualMotion=useRef(new Animated.Value(1)).current;
+ const revealMotion=useRef(new Animated.Value(1)).current;
+ useEffect(()=>{if(!token)return;ritualMotion.setValue(0);const animation=Animated.timing(ritualMotion,{toValue:1,duration:850,easing:Easing.out(Easing.cubic),useNativeDriver:true});animation.start();return ()=>animation.stop();},[token,ritualMotion]);
+ useEffect(()=>{if(!result)return;revealMotion.setValue(0);const animation=Animated.timing(revealMotion,{toValue:1,duration:650,easing:Easing.out(Easing.cubic),useNativeDriver:true});animation.start();return ()=>animation.stop();},[result,revealMotion]);
  const need=TYPES.find(x=>x.value===type)?.count??1;
  async function prepare(){setBusy(true);setError('');setResult(null);setPositions([]);try{const x=await tarotApi.createSelectionSession(type);setToken(x.token);setDeckSize(x.deckSize);}catch(e){setError(discoveryError(e,'Chưa thể chuẩn bị bộ bài.').message);}finally{setBusy(false);}}
  async function pick(i:number){if(!token||positions.includes(i)||busy||positions.length>=need)return;const next=[...positions,i];setPositions(next);if(next.length===need){setBusy(true);try{setResult(await tarotApi.draw(type,token,next,type==='DAILY_DRAW'?undefined:question.trim()||undefined));setToken('');}catch(e){setToken('');setPositions([]);setError(discoveryError(e,'Chưa thể rút bài lúc này.').message+' Vui lòng xáo bài để thử lại.');}finally{setBusy(false);}}}
  return <Screen><AppHeader/><ScrollView contentContainerStyle={s.page} keyboardShouldPersistTaps="handled"><Text style={s.eyebrow}>TAROT · 78 LÁ</Text><Text style={s.title}>Một khoảng lặng để soi chiếu</Text><Text style={s.copy}>Chọn kiểu trải, giữ câu hỏi trong lòng rồi tự tay chọn vị trí trong bộ bài. Kết quả được rút và lưu bởi API Mệnh Vi.</Text>
- {result?<View style={{gap:spacing.md}}><TarotReadingResult reading={result} onRetry={async()=>{setBusy(true);try{setResult(await tarotApi.retryInterpretation(result.id));}finally{setBusy(false);}}}/><SecondaryButton label="Rút trải bài khác" onPress={()=>{setResult(null);setPositions([]);}}/></View>:<>
+ {result?<Animated.View style={{gap:spacing.md,opacity:revealMotion,transform:[{scale:revealMotion.interpolate({inputRange:[0,1],outputRange:[0.94,1]})}]}}><TarotReadingResult reading={result} onRetry={async()=>{setBusy(true);try{setResult(await tarotApi.retryInterpretation(result.id));}finally{setBusy(false);}}}/><SecondaryButton label="Rút trải bài khác" onPress={()=>{setResult(null);setPositions([]);}}/></Animated.View>:<>
  <View style={s.types}>{TYPES.map(x=><Pressable key={x.value} onPress={()=>{setType(x.value);setToken('');setPositions([]);setError('');}} style={[s.type,type===x.value&&s.typeOn]}><Text style={[s.typeText,type===x.value&&s.typeTextOn]}>{x.label}</Text></Pressable>)}</View>
  {type!=='DAILY_DRAW'?<TextInput value={question} onChangeText={setQuestion} maxLength={500} multiline placeholder="Câu hỏi của bạn (không bắt buộc)" placeholderTextColor={color.textMuted} style={[s.input,{minHeight:84,textAlignVertical:'top'}]}/>:null}
- {!token?<GoldButton label="Xáo bài và bắt đầu" onPress={prepare}/>:<MysticCard style={s.card}>
+ {!token?<GoldButton label="Xáo bài và bắt đầu" onPress={prepare}/>:<Animated.View style={{opacity:ritualMotion,transform:[{translateY:ritualMotion.interpolate({inputRange:[0,1],outputRange:[18,0]})}]}}><MysticCard style={s.card}>
  <Text style={s.eyebrow}>MỆNH VI · NGHI THỨC TAROT</Text>
  <Text style={s.selectionTitle}>Chọn lá bài úp</Text>
  <Text accessibilityRole="text" accessibilityLiveRegion="polite" style={s.selectionCount}>Đã chọn {positions.length} / {need}</Text>
@@ -40,7 +44,7 @@ export default function TarotScreen(){
  </Pressable>)}
  </ScrollView>
  <Text style={s.copy}>{busy?'Đã nhận lựa chọn của bạn. Đang mở bài…':'Danh tính và chiều lá bài được giữ kín cho đến khi bạn chọn đủ số lá.'}</Text>
- </MysticCard>}
+ </MysticCard></Animated.View>}
  </>}
  {busy?<ActivityIndicator color={color.gold}/>:null}{error?<Text style={s.error}>{error}</Text>:null}
  <View style={{gap:spacing.sm,marginTop:spacing.md}}><Text style={s.cardTitle}>Lịch sử Tarot</Text><SecondaryButton label="Tải lịch sử" onPress={async()=>{setBusy(true);setError('');try{const d=await tarotApi.listReadings();setHistory(d.items);}catch(e){setError(discoveryError(e,'Chưa thể tải lịch sử Tarot.').message);}finally{setBusy(false)}}}/>{history.map(x=><Pressable key={x.id} onPress={async()=>{setBusy(true);try{setResult(await tarotApi.getReading(x.id));}finally{setBusy(false)}}}><MysticCard style={s.card}><Text style={s.value}>{x.cards.map(y=>y.card.nameVi||y.card.name).join(' · ')}</Text><Text style={s.copy}>{x.question?`“${x.question}”`:'Trải bài đã lưu'}</Text></MysticCard></Pressable>)}</View>
