@@ -80,7 +80,7 @@ const path = require('node:path');
     status: 409, contentType: 'application/json',
     body: JSON.stringify({ data: null, error: { code: 'TAROT_SELECTION_SESSION_USED', message: 'Token đã sử dụng' }, meta: {}, requestId: 'qa-error' })
   }));
-  await page.getByLabel('Lá úp 2').click();
+  await page.getByLabel('Lá úp 2', { exact: true }).click();
   await page.getByText(/Vui lòng xáo bài để thử lại/).waitFor({ timeout: 15000 });
   await page.getByText('Xáo bài và bắt đầu').waitFor();
   const retryVisible = await page.getByText('Xáo bài và bắt đầu').isVisible();
