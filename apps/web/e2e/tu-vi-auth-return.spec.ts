@@ -26,13 +26,13 @@ async function createAccount(api: APIRequestContext, label: string): Promise<QaA
 async function completeOnboardingViaApi(api: APIRequestContext) {
   const csrfResponse = await api.get('/auth/csrf-token');
   expect(csrfResponse.ok(), 'CSRF token endpoint must be available').toBeTruthy();
-  const { csrfToken } = await csrfResponse.json() as { csrfToken: string };
-  const headers = { 'x-csrf-token': csrfToken };
+  const csrfBody = await csrfResponse.json() as { data: { csrfToken: string } };
+  const headers = { 'x-csrf-token': csrfBody.data.csrfToken };
 
   let response = await api.get('/onboarding');
   expect(response.ok(), 'new account onboarding state must load').toBeTruthy();
   response = await api.post('/onboarding/message', { data: { content: 'I want to explore my birth chart.' }, headers });
-  expect(response.ok(), 'first onboarding message must succeed').toBeTruthy();
+  expect(response.ok(), `first onboarding message must succeed (HTTP ${response.status()}; ${await response.text()})`).toBeTruthy();
   response = await api.post('/onboarding/message', { data: { content: 'I am ready to continue.' }, headers });
   expect(response.ok(), 'second onboarding message must succeed').toBeTruthy();
   response = await api.post('/onboarding/memory/consent', { data: { accepted: false }, headers });
@@ -45,7 +45,7 @@ async function completeOnboardingViaApi(api: APIRequestContext) {
   const state = await api.get('/onboarding');
   expect(state.ok()).toBeTruthy();
   const body = await state.json();
-  expect(body.completedAt, 'completed account must have completedAt').toBeTruthy();
+  expect(body.data?.completedAt, 'completed account must have completedAt').toBeTruthy();
 }
 
 async function enterBirthDetails(page: Page) {
