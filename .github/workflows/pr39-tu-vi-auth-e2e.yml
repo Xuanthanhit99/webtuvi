@@ -89,7 +89,6 @@ jobs:
       AI_MAX_RETRIES: 1
       AI_RATE_LIMIT_MAX: 200
       AI_RATE_LIMIT_WINDOW_MS: 60000
-      AI_RATE_LIMIT_IP_MAX: 500
       AI_MAX_CONCURRENT_GENERATIONS_PER_USER: 1
       AI_CONCURRENCY_LOCK_TTL_MS: 120000
       AI_DAILY_REQUEST_LIMIT: 1000
@@ -113,8 +112,12 @@ jobs:
         with:
           node-version: 22.17.0
           cache: pnpm
-      - name: Install
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Typecheck Web and API
+        run: |
+          pnpm --filter @beaconvie/web typecheck
+          pnpm --filter @beaconvie/api typecheck
       - name: Generate Prisma client and migrate isolated CI database
         run: |
           pnpm --filter @beaconvie/api prisma:generate
@@ -124,7 +127,7 @@ jobs:
         run: pnpm build:api
       - name: Install Chromium
         run: pnpm --filter @beaconvie/web exec playwright install --with-deps chromium
-      - name: Start HTTP servers and run registration E2E
+      - name: Start HTTP servers, verify discovery, and run all required E2E
         shell: bash
         run: |
           set -euo pipefail
@@ -144,7 +147,10 @@ jobs:
             sleep 2
           done
           curl -fsS http://localhost:3000/discover/tu-vi > /dev/null
-          pnpm --filter @beaconvie/web exec playwright test tu-vi-auth-return.spec.ts --grep 'guest registration' --project=chromium --reporter=list
+          pnpm --filter @beaconvie/web exec playwright test tu-vi-auth-return.spec.ts --list --project=chromium | tee pr39-logs/playwright-list.log
+          grep -Eq 'Total: 3 tests? in 1 file' pr39-logs/playwright-list.log
+          PLAYWRIGHT_JSON_OUTPUT_NAME="$GITHUB_WORKSPACE/pr39-logs/playwright-report.json" pnpm --filter @beaconvie/web exec playwright test tu-vi-auth-return.spec.ts --project=chromium --reporter=list,json
+          node -e "const r=require('./pr39-logs/playwright-report.json'); if (r.stats.failed || r.stats.skipped || r.stats.timedOut || r.stats.didNotRun) { console.error(r.stats); process.exit(1); } if (r.stats.expected !== 3) { console.error('Expected exactly 3 passed tests', r.stats); process.exit(1); } console.log('PR39 gate PASS: exactly 3 tests passed; no skipped/failed tests')"
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
