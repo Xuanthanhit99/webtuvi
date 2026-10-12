@@ -114,13 +114,14 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Generate Prisma client
+        run: pnpm --filter @beaconvie/api prisma:generate
       - name: Typecheck Web and API
         run: |
           pnpm --filter @beaconvie/web typecheck
           pnpm --filter @beaconvie/api typecheck
-      - name: Generate Prisma client and migrate isolated CI database
+      - name: Migrate and seed isolated CI database
         run: |
-          pnpm --filter @beaconvie/api prisma:generate
           pnpm --filter @beaconvie/api exec prisma migrate deploy
           pnpm --filter @beaconvie/api prisma:seed:reference
       - name: Build API
