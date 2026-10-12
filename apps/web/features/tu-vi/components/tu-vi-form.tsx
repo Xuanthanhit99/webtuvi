@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { CalendarDays, Clock3, Orbit, ShieldCheck, UserRound } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -50,10 +50,18 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
   const queryClient = useQueryClient();
   const { openAuth } = useAuthModal();
   const { user, isLoading: authLoading } = useAuth();
-  const [initialDraft] = useState(() => takeEphemeralDraft(DRAFT_KEY, isPendingDraft));
-  const [birthDate, setBirthDate] = useState(initialDraft?.birthDate ?? '');
-  const [birthTime, setBirthTime] = useState(initialDraft?.birthTime ?? '');
-  const [sex, setSex] = useState<'Nam' | 'Nữ' | ''>(initialDraft?.sex ?? '');
+  const [birthDate, setBirthDate] = useState('');
+  const [birthTime, setBirthTime] = useState('');
+  const [sex, setSex] = useState<'Nam' | 'Nữ' | ''>('');
+
+  useEffect(() => {
+    if (authLoading || !user?.onboardingCompletedAt) return;
+    const draft = takeEphemeralDraft(DRAFT_KEY, isPendingDraft);
+    if (!draft) return;
+    setBirthDate(draft.birthDate);
+    setBirthTime(draft.birthTime);
+    setSex(draft.sex);
+  }, [authLoading, user?.onboardingCompletedAt]);
   const [result, setResult] = useState<TuViChartDto | null>(null);
   const [fieldError, setFieldError] = useState<{ field: FieldName; message: string } | null>(null);
   const [sexError, setSexError] = useState<string | null>(null);

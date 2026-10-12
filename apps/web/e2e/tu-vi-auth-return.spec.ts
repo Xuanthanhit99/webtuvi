@@ -65,26 +65,56 @@ async function login(page: Page, account: QaAccount) {
 
 async function completeOnboardingInUi(page: Page) {
   await expect(page).toHaveURL(/\/onboarding\?next=/);
-  for (let step = 0; step < 12; step++) {
-    const finish = page.getByRole('button', { name: 'Bắt đầu khám phá' });
-    if (await finish.isVisible().catch(() => false)) {
-      await finish.click();
-      return;
-    }
-    const memory = page.getByRole('button', { name: 'Chưa lưu' });
-    const discovery = page.getByRole('button', { name: 'Để sau' });
-    const reply = page.getByLabel('Câu trả lời của bạn');
-    if (await memory.isVisible().catch(() => false)) await memory.click();
-    else if (await discovery.isVisible().catch(() => false)) await discovery.click();
-    else if (await reply.isVisible().catch(() => false)) {
-      await reply.fill('Tôi muốn khám phá lá số Tử Vi.');
-      await page.getByRole('button', { name: 'Gửi', exact: true }).click();
-    } else {
-      await expect.poll(async () => (await finish.isVisible()) || (await memory.isVisible()) || (await discovery.isVisible()) || (await reply.isVisible()), { timeout: 10_000 }).toBeTruthy();
-    }
+
+  const banner = page.getByRole('complementary', {
+    name: /Quyền riêng tư và đo lường/,
+  });
+
+  if (await banner.isVisible().catch(() => false)) {
+    await banner.getByRole('button', { name: 'Từ chối' }).click();
+    await expect(banner).toHaveCount(0);
   }
-  await expect(page.getByRole('button', { name: 'Bắt đầu khám phá' })).toBeVisible();
-  await page.getByRole('button', { name: 'Bắt đầu khám phá' }).click();
+
+  const answer = page.getByRole('textbox', {
+    name: 'Câu trả lời của bạn',
+  });
+  const send = page.getByRole('button', {
+    name: 'Gửi',
+    exact: true,
+  });
+
+  await expect(page.getByText(/Gần đây bạn đang nghĩ về điều gì/i)).toBeVisible();
+  await answer.fill('Tôi muốn khám phá lá số Tử Vi.');
+  await expect(send).toBeEnabled();
+  await send.click();
+
+  await expect(page.getByText(/Với bạn, điều khó nhất/i)).toBeVisible();
+  await answer.fill('Tôi muốn hiểu rõ hơn về bản thân.');
+  await expect(send).toBeEnabled();
+  await send.click();
+
+  await expect(page.getByText(/Bạn có muốn lưu điều này thành ký ức/i)).toBeVisible();
+  const memory = page.getByRole('button', {
+    name: 'Chưa lưu',
+    exact: true,
+  });
+  await expect(memory).toBeEnabled();
+  await memory.click();
+
+  await expect(page.getByText(/Bạn muốn khám phá Tarot/i)).toBeVisible();
+  const discovery = page.getByRole('button', {
+    name: 'Để sau',
+    exact: true,
+  });
+  await expect(discovery).toBeEnabled();
+  await discovery.click();
+
+  const finish = page.getByRole('button', {
+    name: 'Bắt đầu khám phá',
+    exact: true,
+  });
+  await expect(finish).toBeEnabled();
+  await finish.click();
 }
 
 async function expectBirthDetailsRestored(page: Page) {
