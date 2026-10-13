@@ -1,0 +1,41 @@
+
+name: Mobile V1 Jest
+
+on:
+  pull_request:
+    paths:
+      - 'apps/mobile/**'
+      - 'packages/types/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/mobile-v1-jest.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-v1-jest-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mobile-unit:
+    name: Mobile lint, types and Jest
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.17.0'
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Mobile lint
+        run: pnpm --filter @beaconvie/mobile lint
+      - name: Mobile typecheck
+        run: pnpm --filter @beaconvie/mobile typecheck
+      - name: Mobile Jest
+        env:
+          EXPO_PUBLIC_API_URL: https://api.tuvitarot.vn
+        run: pnpm --filter @beaconvie/mobile test -- --ci --runInBand --watch=false
