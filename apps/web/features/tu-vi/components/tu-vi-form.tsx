@@ -56,11 +56,16 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
 
   useEffect(() => {
     if (authLoading || !user?.onboardingCompletedAt) return;
-    const draft = takeEphemeralDraft(DRAFT_KEY, isPendingDraft);
-    if (!draft) return;
-    setBirthDate(draft.birthDate);
-    setBirthTime(draft.birthTime);
-    setSex(draft.sex);
+    // Draft restoration is an external sessionStorage synchronization. Schedule the
+    // state update outside the synchronous effect body and cancel on cleanup.
+    const timer = window.setTimeout(() => {
+      const draft = takeEphemeralDraft(DRAFT_KEY, isPendingDraft);
+      if (!draft) return;
+      setBirthDate(draft.birthDate);
+      setBirthTime(draft.birthTime);
+      setSex(draft.sex);
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [authLoading, user?.id, user?.onboardingCompletedAt]);
   const [result, setResult] = useState<TuViChartDto | null>(null);
   const [fieldError, setFieldError] = useState<{ field: FieldName; message: string } | null>(null);
