@@ -62,8 +62,8 @@ export default function TarotScreen() {
     setBusy(true); setError(''); setReading(null); setPositions([]); setToken(null);
     try {
       const session = await tarotApi.selectionSession(type);
-      if (!session.selectionToken) throw new Error('Không nhận được phiên xáo bài.');
-      setToken(session.selectionToken);
+      if (!session.token) throw new Error('Không nhận được phiên xáo bài.');
+      setToken(session.token);
     } catch (cause) { setError(errorMessage(cause)); }
     finally { setBusy(false); }
   };
@@ -155,8 +155,13 @@ export default function TarotScreen() {
             {reading && (
               <View style={styles.panel}>
                 <Text style={styles.section}>Kết quả trải bài</Text>
-                <Text style={styles.muted}>{describe(reading.cards) || 'Đang tải thông tin lá bài'}</Text>
-                <Text style={styles.result}>{describe(reading.interpretation) || 'Luận giải đang được xử lý.'}</Text>
+                {reading.cards.map((entry) => (
+                  <View key={`${entry.position}-${entry.card.slug ?? entry.card.id}`} style={styles.historyItem}>
+                    <Text style={styles.optionTitle}>{entry.positionLabel || `Lá ${entry.position + 1}`} · {entry.card.nameVi || entry.card.name}</Text>
+                    <Text style={styles.muted}>{entry.isReversed ? 'Ngược' : 'Xuôi'}</Text>
+                  </View>
+                ))}
+                <Text style={styles.result}>{reading.interpretation || 'Luận giải đang được xử lý.'}</Text>
                 <View style={styles.actions}>
                   {!reading.interpretation && <Pressable onPress={() => void action('interpret', reading.id)}><Text style={styles.link}>Luận giải lại</Text></Pressable>}
                   {reading.status === 'ARCHIVED' || reading.status === 'DELETED' ?
