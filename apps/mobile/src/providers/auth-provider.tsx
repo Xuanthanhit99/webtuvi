@@ -70,11 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStatus('authenticated');
       } catch (error) {
         if (cancelled) return;
-        if (error instanceof ApiError && error.status === 401) {
-          // apiFetch already tried one refresh-and-retry internally; a 401 reaching here means
-          // that refresh concluded the credential is genuinely invalid, and api-client.ts has
-          // already cleared it from storage in that case (not merely offline — see its
-          // 'invalid' vs 'network-error' distinction).
+        if (error instanceof ApiError && error.status === 401 && !(await getStoredSession())) {
+          // A 401 only means logout when refresh conclusively invalidated the session.
+          // If refresh failed transiently, apiFetch retains the stored token pair.
           setStatus('guest');
           return;
         }
