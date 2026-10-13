@@ -123,37 +123,41 @@ async function expectBirthDetailsRestored(page: Page) {
   await expect(page.getByLabel(/Giờ sinh chính xác/i)).toHaveValue('00:30');
   await expect(page.getByLabel('Nam')).toBeChecked();
   await expect(page.getByText('Đang lập lá số')).toHaveCount(0);
-  expect(await page.evaluate(() => sessionStorage.getItem('menhvi:tu-vi:pending-auth'))).toBeNull();
+  await expect.poll(
+    () => page.evaluate(() => sessionStorage.getItem('menhvi:tu-vi:pending-auth')),
+    { message: 'Temporary birth draft must be consumed after authentication', timeout: 10_000 },
+  ).toBeNull();
+}
+
+async function createCompletedQaAccount(): Promise<QaAccount> {
+  const api = await request.newContext({ baseURL: apiBase, extraHTTPHeaders: { 'user-agent': 'pr39-playwright-qa' } });
+  try {
+    const account = await createAccount(api, 'completed');
+    await completeOnboardingViaApi(api);
+    return account;
+  } finally {
+    await api.dispose();
+  }
+}
+
+async function createIncompleteQaAccount(): Promise<QaAccount> {
+  const api = await request.newContext({ baseURL: apiBase, extraHTTPHeaders: { 'user-agent': 'pr39-playwright-qa' } });
+  try {
+    return await createAccount(api, 'incomplete');
+  } finally {
+    await api.dispose();
+  }
 }
 
 test.describe('PR39 Tử Vi auth return — isolated CI accounts', () => {
   test.setTimeout(120_000);
-  let completedAccount: QaAccount;
-  let incompleteAccount: QaAccount;
-
-  test.beforeAll(async () => {
-    const api = await request.newContext({ baseURL: apiBase, extraHTTPHeaders: { 'user-agent': 'pr39-playwright-qa' } });
-    try {
-      completedAccount = await createAccount(api, 'completed');
-      await completeOnboardingViaApi(api);
-      // The API context above owns the completed account session; create a second independent
-      // account in a fresh context so its onboarding remains untouched.
-      const secondApi = await request.newContext({ baseURL: apiBase, extraHTTPHeaders: { 'user-agent': 'pr39-playwright-qa' } });
-      try {
-        incompleteAccount = await createAccount(secondApi, 'incomplete');
-      } finally {
-        await secondApi.dispose();
-      }
-    } finally {
-      await api.dispose();
-    }
-  });
 
   test('existing account with completed onboarding returns to Tử Vi without auto-calculation', async ({ page }) => {
     const calculationPosts: string[] = [];
     page.on('request', req => {
       if (req.method() === 'POST' && /\/tu-vi\/calculate(?:[?#]|$)/.test(new URL(req.url()).pathname)) calculationPosts.push(req.url());
     });
+    const completedAccount = await createCompletedQaAccount();
     await enterBirthDetails(page);
     await login(page, completedAccount);
     await expectBirthDetailsRestored(page);
@@ -165,6 +169,7 @@ test.describe('PR39 Tử Vi auth return — isolated CI accounts', () => {
     page.on('request', req => {
       if (req.method() === 'POST' && /\/tu-vi\/calculate(?:[?#]|$)/.test(new URL(req.url()).pathname)) calculationPosts.push(req.url());
     });
+    const incompleteAccount = await createIncompleteQaAccount();
     await enterBirthDetails(page);
     await login(page, incompleteAccount);
     await completeOnboardingInUi(page);
