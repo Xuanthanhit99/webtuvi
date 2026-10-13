@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AppHeader } from '@/components/app-header';
 import { Screen } from '@/components/screen';
 import { useAuth } from '@/providers/auth-provider';
 import { color, font, fontSize, radius, spacing } from '@/theme/tokens';
+import { tarotArtworkUri, TAROT_BACK_URI } from '@/features/tarot/tarot-artwork';
 import { tarotApi, requiredCardCount, type TarotReading, type TarotSpread, type TarotStatus } from '@/features/tarot/tarot-api';
 
 const SPREADS: { type: TarotSpread; label: string; subtitle: string }[] = [
@@ -141,7 +142,8 @@ export default function TarotScreen() {
                       <Pressable key={index} accessibilityRole="button" accessibilityLabel={`Lá úp vị trí ${index + 1}`}
                         accessibilityState={{ selected: positions.includes(index) }}
                         style={[styles.cardBack, positions.includes(index) && styles.chosen]} onPress={() => choose(index)}>
-                        <Text style={styles.cardGlyph}>{positions.includes(index) ? '✦' : '✧'}</Text>
+                        <Image source={{ uri: TAROT_BACK_URI }} style={styles.cardImage} resizeMode="cover" />
+                        {positions.includes(index) && <Text style={styles.selectionMark}>✦</Text>}
                       </Pressable>
                     ))}
                   </View>
@@ -157,6 +159,7 @@ export default function TarotScreen() {
                 <Text style={styles.section}>Kết quả trải bài</Text>
                 {reading.cards.map((entry) => (
                   <View key={`${entry.position}-${entry.card.slug ?? entry.card.id}`} style={styles.historyItem}>
+                    {tarotArtworkUri(entry.card) && <Image source={{ uri: tarotArtworkUri(entry.card)! }} style={[styles.revealedImage, entry.isReversed && styles.reversedImage]} resizeMode="contain" />}
                     <Text style={styles.optionTitle}>{entry.positionLabel || `Lá ${entry.position + 1}`} · {entry.card.nameVi || entry.card.name}</Text>
                     <Text style={styles.muted}>{entry.isReversed ? 'Ngược' : 'Xuôi'}</Text>
                   </View>
@@ -212,7 +215,10 @@ const styles = StyleSheet.create({
   deck: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, justifyContent: 'center' },
   cardBack: { width: 30, height: 46, borderWidth: 1, borderColor: color.goldMuted, borderRadius: 4, backgroundColor: '#17112A', alignItems: 'center', justifyContent: 'center' },
   chosen: { borderColor: color.goldLight, backgroundColor: '#57416B' },
-  cardGlyph: { color: color.goldLight, fontSize: 15 },
+  cardImage: { width: '100%', height: '100%', borderRadius: 3 },
+  selectionMark: { position: 'absolute', color: color.goldLight, fontSize: 20, backgroundColor: 'rgba(7,11,18,0.8)' },
+  revealedImage: { width: 130, height: 210, alignSelf: 'center' },
+  reversedImage: { transform: [{ rotate: '180deg' }] },
   result: { color: color.textPrimary, fontFamily: font.body, fontSize: fontSize.bodyMd, lineHeight: 24 },
   actions: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   link: { color: color.textSecondary, fontFamily: font.bodyMedium },
