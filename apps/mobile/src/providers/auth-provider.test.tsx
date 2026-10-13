@@ -77,6 +77,7 @@ describe('AuthProvider — real bootstrap', () => {
   it('treats a 401 from /auth/me as guest — the credential is genuinely invalid, not offline', async () => {
     mockedSessionClient.getStoredSession.mockResolvedValue({ accessToken: 'a', refreshToken: 'b' });
     mockedAuthApi.me.mockRejectedValue(new ApiError('Session expired', 'SESSION_EXPIRED', 401));
+    mockedSessionClient.getStoredSession.mockResolvedValueOnce({ accessToken: 'a', refreshToken: 'b' }).mockResolvedValueOnce(null);
 
     const { getByTestId } = await render(
       <AuthProvider>
@@ -86,6 +87,19 @@ describe('AuthProvider — real bootstrap', () => {
 
     await waitFor(() => {
       expect(readProbe(getByTestId).status).toBe('guest');
+    });
+  });
+
+  it('retains cached authenticated state when refresh is transiently unavailable after 401', async () => {
+    mockedSessionClient.getStoredSession.mockResolvedValue({ accessToken: 'expired', refreshToken: 'still-valid' });
+    mockedSessionClient.getCachedUser.mockResolvedValue(makeUser({ email: 'cached@example.com' }));
+    mockedAuthApi.me.mockRejectedValue(new ApiError('Unauthorized', 'SESSION_EXPIRED', 401));
+
+    const { getByTestId } = await render(<AuthProvider><Probe /></AuthProvider>);
+    await waitFor(() => {
+      const state = readProbe(getByTestId);
+      expect(state.status).toBe('authenticated');
+      expect(state.user.email).toBe('cached@example.com');
     });
   });
 
