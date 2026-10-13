@@ -1,6 +1,16 @@
 import { getStoredSession, setStoredSession, clearStoredSession } from './auth/session-client';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000';
+export const API_URL = (() => {
+  const configured = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/$/, '');
+  if (configured) {
+    if (!/^https:\/\//i.test(configured) && !(__DEV__ && /^http:\/\//i.test(configured))) {
+      throw new Error('EXPO_PUBLIC_API_URL must use HTTPS outside development');
+    }
+    return configured;
+  }
+  if (__DEV__) return 'http://localhost:4000';
+  throw new Error('EXPO_PUBLIC_API_URL is required for mobile production builds');
+})();
 
 interface EnvelopeSuccess<T> {
   data: T;
@@ -70,10 +80,13 @@ async function refreshSession(): Promise<RefreshOutcome> {
         return 'network-error';
       }
 
-      if (!response.ok) return 'invalid';
+      // Only an explicit authentication rejection proves the refresh credential is invalid.
+      // 429/5xx and other unexpected statuses must preserve the local session.
+      if (response.status === 401 || response.status === 403) return 'invalid';
+      if (!response.ok) return 'network-error';
 
       const json = (await response.json().catch(() => null)) as EnvelopeSuccess<{ accessToken: string; refreshToken: string }> | null;
-      if (!json?.data) return 'invalid';
+      if (!json?.data?.accessToken || !json.data.refreshToken) return 'network-error';
 
       await setStoredSession({ accessToken: json.data.accessToken, refreshToken: json.data.refreshToken });
       return 'refreshed';
