@@ -52,6 +52,11 @@ describe('Tarot (e2e)', () => {
     await app.close();
   });
 
+  it('requires a session for deck reference data under the current controller contract', async () => {
+    const res = await request(app.getHttpServer()).get('/tarot/deck').expect(401);
+    expect(res.body.data).toBeNull();
+  });
+
   describe('PostgreSQL selection claim concurrency', () => {
     it('accepts exactly one of two simultaneous draws using the same selection token', async () => {
       const prisma = app.get(PrismaService);

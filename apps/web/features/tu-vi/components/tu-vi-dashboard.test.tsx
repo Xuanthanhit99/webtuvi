@@ -13,6 +13,9 @@ jest.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(mockSearchParamsValue),
 }));
 
+jest.mock('@/providers/auth-modal-provider', () => ({ useAuthModal: () => ({ openAuth: jest.fn() }) }));
+jest.mock('@/providers/auth-provider', () => ({ useAuth: () => ({ user: { id: 'u1' }, isLoading: false }) }));
+
 jest.mock('../api/tu-vi-api', () => ({
   tuViApi: {
     calculate: jest.fn(),

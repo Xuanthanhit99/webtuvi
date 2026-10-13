@@ -3,6 +3,7 @@ import Script from 'next/script';
 import { Playfair_Display, Be_Vietnam_Pro, IBM_Plex_Mono } from 'next/font/google';
 import { QueryProvider } from '@/providers/query-provider';
 import { AuthProvider } from '@/providers/auth-provider';
+import { AuthModalProvider } from '@/providers/auth-modal-provider';
 import { Toaster } from '@/components/ui/toast';
 import { GoogleMeasurement } from '@/components/analytics/google-measurement';
 import { SITE_NAME, SITE_URL, DEFAULT_DESCRIPTION, isIndexingEnabled } from '@/lib/seo';
@@ -80,7 +81,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <GoogleMeasurement />
         <QueryProvider>
           <AuthProvider>
-            {children}
+            <AuthModalProvider>
+              {children}
+            </AuthModalProvider>
             <Toaster />
           </AuthProvider>
         </QueryProvider>

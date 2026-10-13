@@ -32,9 +32,21 @@ export function useSelectDiscovery() {
 }
 
 export function useCompleteOnboarding() {
-  return useMutation({ mutationFn: onboardingApi.complete });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: onboardingApi.complete,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'], refetchType: 'all' });
+    },
+  });
 }
 
 export function useSkipOnboarding() {
-  return useMutation({ mutationFn: onboardingApi.skip });
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: onboardingApi.skip,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['auth', 'me'], refetchType: 'all' });
+    },
+  });
 }
