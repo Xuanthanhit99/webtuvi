@@ -22,20 +22,27 @@ jobs:
     name: Mobile lint, types and Jest
     runs-on: ubuntu-latest
     timeout-minutes: 15
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: pnpm/action-setup@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22.17.0'
           cache: pnpm
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
       - name: Mobile lint
         run: pnpm --filter @beaconvie/mobile lint
+
       - name: Mobile typecheck
         run: pnpm --filter @beaconvie/mobile typecheck
-            - name: Mobile Jest
+
+      - name: Mobile Jest
         env:
           EXPO_PUBLIC_API_URL: https://api.tuvitarot.vn
         run: pnpm --filter @beaconvie/mobile exec jest --ci --runInBand --watch=false
