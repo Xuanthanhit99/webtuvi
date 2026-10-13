@@ -4,7 +4,7 @@ export type TarotSpread = 'DAILY_DRAW' | 'SINGLE_CARD' | 'THREE_CARD';
 export type TarotStatus = 'ACTIVE' | 'ARCHIVED' | 'DELETED';
 
 export interface TarotSelectionSession {
-  selectionToken: string;
+  token: string;
   expiresAt?: string;
   [key: string]: unknown;
 }
@@ -23,8 +23,10 @@ export interface TarotReading {
   type: TarotSpread;
   status?: TarotStatus;
   createdAt?: string;
-  cards?: unknown[];
-  interpretation?: unknown;
+  cards: { position: number; positionLabel: string | null; isReversed: boolean; card: TarotCard }[];
+  interpretation: string | null;
+  spreadName?: string;
+  question?: string | null;
   [key: string]: unknown;
 }
 
