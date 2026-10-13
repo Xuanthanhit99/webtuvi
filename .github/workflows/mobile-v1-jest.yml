@@ -35,7 +35,7 @@ jobs:
         run: pnpm --filter @beaconvie/mobile lint
       - name: Mobile typecheck
         run: pnpm --filter @beaconvie/mobile typecheck
-      - name: Mobile Jest
+            - name: Mobile Jest
         env:
           EXPO_PUBLIC_API_URL: https://api.tuvitarot.vn
-        run: pnpm --filter @beaconvie/mobile test -- --ci --runInBand --watch=false
+        run: pnpm --filter @beaconvie/mobile exec jest --ci --runInBand --watch=false
