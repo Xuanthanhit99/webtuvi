@@ -52,7 +52,10 @@ export default function TarotScreen() {
   }, []);
 
   useEffect(() => {
-    if (status === 'authenticated') void loadReadings(filter);
+    if (status === 'authenticated') {
+      const request = Promise.resolve().then(() => loadReadings(filter));
+      void request;
+    }
   }, [status, filter, loadReadings]);
 
   const shuffle = async () => {
