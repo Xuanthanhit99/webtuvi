@@ -61,7 +61,7 @@ export function TuViForm({ onCalculated }: { onCalculated?: (chart: TuViChartDto
     setBirthDate(draft.birthDate);
     setBirthTime(draft.birthTime);
     setSex(draft.sex);
-  }, [authLoading, user?.onboardingCompletedAt]);
+  }, [authLoading, user?.id, user?.onboardingCompletedAt]);
   const [result, setResult] = useState<TuViChartDto | null>(null);
   const [fieldError, setFieldError] = useState<{ field: FieldName; message: string } | null>(null);
   const [sexError, setSexError] = useState<string | null>(null);
