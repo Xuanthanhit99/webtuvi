@@ -21,8 +21,9 @@ describe('Tarot server-backed selection contract', () => {
   });
 
   it('requests a server-side shuffle without exposing the deck order', async () => {
-    post.mockResolvedValueOnce({ selectionToken: 'server-token' });
-    await tarotApi.selectionSession('THREE_CARD');
+    post.mockResolvedValueOnce({ token: 'server-token' });
+    const session = await tarotApi.selectionSession('THREE_CARD');
+    expect(session.token).toBe('server-token');
     expect(post).toHaveBeenCalledWith('/tarot/selection-session', { type: 'THREE_CARD' });
   });
 
