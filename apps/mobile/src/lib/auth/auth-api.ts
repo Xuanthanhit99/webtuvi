@@ -26,4 +26,6 @@ export const authApi = {
   me: () => api.get<UserDto>('/auth/me'),
   forgotPassword: (email: string) => api.post<{ message: string }>('/auth/forgot-password', { email }),
   resendVerification: (email: string) => api.post<{ message: string }>('/auth/resend-verification', { email }),
+  resetPassword: (payload: { token: string; password: string; confirmPassword: string }) => api.post<{ message: string }>('/auth/reset-password', payload),
+  verifyEmail: (token: string) => api.post<{ message: string }>('/auth/verify-email', { token }),
 };

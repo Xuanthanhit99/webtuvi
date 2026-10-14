@@ -1,0 +1,5 @@
+import { Alert, StyleSheet, Text, View } from 'react-native';
+import { SecondaryButton } from '@/components/buttons';
+import { color,font,fontSize,spacing } from '@/theme/tokens';
+export function ModuleActions({status,busy,onInterpret,onArchive,onRestore,onDelete}:{status:string;busy:boolean;onInterpret:()=>void;onArchive:()=>void;onRestore:()=>void;onDelete:()=>void}){return <View style={s.root}><Text style={s.status}>Trạng thái: {status==='ACTIVE'?'Đang hoạt động':status==='ARCHIVED'?'Đã lưu trữ':'Đã xóa'}</Text><SecondaryButton label={busy?'Đang xử lý…':'Tạo lại diễn giải'} onPress={onInterpret}/>{status==='ACTIVE'?<SecondaryButton label="Lưu trữ" onPress={onArchive}/>:status==='ARCHIVED'?<SecondaryButton label="Khôi phục" onPress={onRestore}/>:null}{status!=='DELETED'?<SecondaryButton label="Xóa hồ sơ" onPress={()=>Alert.alert('Xóa hồ sơ?','Hồ sơ sẽ chuyển sang trạng thái đã xóa.',[{text:'Hủy',style:'cancel'},{text:'Xóa',style:'destructive',onPress:onDelete}])}/>:null}</View>}
+const s=StyleSheet.create({root:{gap:spacing.sm},status:{fontFamily:font.body,fontSize:fontSize.caption,color:color.textSecondary}});

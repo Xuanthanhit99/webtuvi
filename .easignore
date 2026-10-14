@@ -1,0 +1,50 @@
+# EAS Build archive for the native mobile app.
+# Keep the monorepo root manifests/lockfile, apps/mobile, and shared workspace packages.
+
+# Dependencies and package-manager caches
+**/node_modules/
+.pnpm-store/
+**/.pnpm-store/
+
+# Non-mobile applications are not required to build Expo native
+apps/api/
+apps/web/
+
+# Repository-only material
+.git/
+.github/
+docs/
+work/
+
+# Build/test outputs and caches
+**/.next/
+**/dist/
+**/build/
+**/out/
+**/coverage/
+**/playwright-report/
+**/test-results/
+**/.expo/
+**/.turbo/
+**/*.tsbuildinfo
+*.log
+
+# Local/editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local secrets and database artifacts
+.env
+.env.local
+.env.test
+.env.*.local
+**/*.sqlite
+**/*.sqlite3
+**/*.dump
+pgdata/
+
+# Ad-hoc archives and captures
+**/*.zip
+/test-fail.txt
