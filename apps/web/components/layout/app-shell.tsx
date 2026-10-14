@@ -1,6 +1,8 @@
 import { Sidebar } from './sidebar';
 import { MobileNavigation } from './mobile-navigation';
 import { AppHeader } from './app-header';
+import { HomeSidebar } from './home-sidebar';
+import { HomeHeader } from './home-header';
 import { VerifyEmailBanner } from './verify-email-banner';
 import { cn } from '@/lib/cn';
 
@@ -8,6 +10,7 @@ export function AppShell({
   children,
   maxWidthClassName = 'max-w-content',
   shellMaxWidthClassName,
+  homeVisual = false,
 }: {
   children: React.ReactNode;
   /** Every `(app)/*` page shares the sitewide `max-w-content` (1240px) cap on the content
@@ -20,11 +23,13 @@ export function AppShell({
       other `(app)/*` page keeps its existing edge-to-edge sidebar/full-width behavior unchanged;
       Home passes 'max-w-[1536px]' to freeze its own growth past that width. */
   shellMaxWidthClassName?: string;
+  /** Home-only visual shell matching the locked V5 master. Shared app chrome stays untouched. */
+  homeVisual?: boolean;
 }) {
   return (
     <div className="min-h-dvh bg-canvas">
       <div className={cn('mx-auto flex min-h-dvh', shellMaxWidthClassName)}>
-        <Sidebar />
+        {homeVisual ? <HomeSidebar /> : <Sidebar />}
         {/* Sprint 18B.12 final pre-live QA: `min-w-0` is required here — this div is a flex item of
             the row above, and flex items default to `min-width: auto`, meaning a sufficiently wide
             descendant (e.g. PremiumMatrix's `min-w-[420px]` comparison table, which correctly manages
@@ -33,7 +38,7 @@ export function AppShell({
             the descendant scroll within its own box. Reproduced live at 375px on `/premium` (79px of
             page-level horizontal overflow) before this fix; confirmed gone after. */}
         <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
-          <AppHeader />
+          {homeVisual ? <HomeHeader /> : <AppHeader />}
           <VerifyEmailBanner />
           {/* Accessibility + Product Polish (2026-08-19): pb-24 clears MobileNavigation's fixed
               bottom bar, which is now phone-only (<768px, see mobile-navigation.tsx) — tablet no
@@ -44,7 +49,7 @@ export function AppShell({
               of the reserved space growing with it. Now explicit: nav's own ~57px content height
               + the device inset + 40px of real breathing room, so page content (including the
               Home footer) is never tucked behind the nav on any device. */}
-          <main id="main-content" className="flex-1 px-4 pb-[calc(57px+env(safe-area-inset-bottom)+40px)] pt-6 tablet:px-8 tablet:pb-10">
+          <main id="main-content" className={cn('flex-1 px-4 pb-[calc(57px+env(safe-area-inset-bottom)+40px)] tablet:px-8 tablet:pb-10', homeVisual ? 'pt-3 desktop:px-5 desktop:pt-0' : 'pt-6')}>
             <div className={cn('mx-auto w-full', maxWidthClassName)}>{children}</div>
           </main>
           <MobileNavigation />

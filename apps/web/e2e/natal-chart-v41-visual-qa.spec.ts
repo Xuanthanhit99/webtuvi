@@ -38,7 +38,7 @@ for (const width of [390, 1536]) {
     // the actual Natal form rather than letting locator.fill() absorb the whole test timeout.
     await page.addInitScript(() => window.localStorage.setItem('menhvi_google_consent_v1', 'granted'));
     await page.goto('/');
-    await expect(page.getByRole('button', { name: 'Menu tài khoản' })).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('link', { name: /Kết quả của tôi/i })).toBeVisible({ timeout: 15_000 });
 
     await page.goto('/discover/natal-chart', { waitUntil: 'domcontentloaded' });
     const dateOfBirth = page.locator('#natal-chart-birthdate');
