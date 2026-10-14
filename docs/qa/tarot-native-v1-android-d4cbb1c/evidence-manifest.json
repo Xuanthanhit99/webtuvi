@@ -1,0 +1,107 @@
+[
+  {
+    "file": "01-expo-launch-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "032cb31aceef74b5d54aff0cf04e9ea19775a12915d5e7e23bf0aa8ca6fa3f1e",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "02-expo-error-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "6180c8c91e7673250f1d2cf568677b006599add3c76771bf122b8d22eb00e9e3",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "03-before-reload-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "9d0299fd3aea4c5e834e3897c009b7e5830415cc765b556b145461990c604ff2",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "04-after-reload-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "9d0299fd3aea4c5e834e3897c009b7e5830415cc765b556b145461990c604ff2",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "05-lan-launch-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "cec9fb60058dfceba7d359294fb5376aa3ea07a1a42ecf6810f4db5b3559b339",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "06-native-runtime-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "5c20cb6e0e16cec78fb3322a16c615f3c7b8406fbef9ac6e77d2e96a77dcec44",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "07-app-start-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "245162ad8470ef66693d30709ef6b2ca281041a685445b223f3ae90596cc7121",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "08-app-runtime-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "66cdf52c6bd9e8b419b5c2aaf5e79af327aecdd836d62d7fd026b9e2e0af4d11",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "09-home-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "b1ac812c8bb4baef4c01835f628bbcdd233bf3bbfe1e455541adaea8cf0e596d",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "10-tarot-guest-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "2b09dfd51e2b69d910641dd3198982200b47efc61b555bc02feaa4b33c171380",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "11-tarot-guest-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "1e3a7931d76b06df10aa1ec3c1c8e846f42695665c101eae2ba0e4eb3b0e3475",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "12-native-navigation-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "d9fd388872148044858bdace2343cf2a4c72a25ead6efd8897cdf6ee648f96cd",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "13-tarot-guest-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "c02daa3c850b2f0984ebadd2b2b513a4fce97039ddc2efa154810600ed467d21",
+    "excludedFromTarotEvidence": true
+  },
+  {
+    "file": "14-expo-target-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "b8c90fbd2379ae8455296772074639af2d77891d681a83f3d5dd07748486f76d",
+    "excludedFromTarotEvidence": false
+  },
+  {
+    "file": "15-tarot-after-menu-390.png",
+    "width": 390,
+    "height": 844,
+    "sha256": "aa592ec00ac2e26d791cf44a4922679e3920ad01f91014f0f6962a611a885b85",
+    "excludedFromTarotEvidence": false
+  }
+]

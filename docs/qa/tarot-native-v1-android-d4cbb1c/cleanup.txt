@@ -1,0 +1,24 @@
+adb shell am force-stop host.exp.exponent
+Exit: 0
+
+adb shell wm size reset
+Exit: 0
+
+adb shell wm density reset
+Exit: 0
+
+adb reverse --remove tcp:8082
+adb.exe: error: listener 'tcp:8082' not found
+Exit: 1
+
+adb reverse --remove tcp:4000
+adb.exe: error: listener 'tcp:4000' not found
+Exit: 1
+
+adb shell wm size
+Physical size: 1080x2400
+Exit: 0
+
+adb shell wm density
+Physical density: 420
+Exit: 0

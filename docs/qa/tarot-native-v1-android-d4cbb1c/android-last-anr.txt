@@ -1,0 +1,131 @@
+ACTIVITY MANAGER LAST ANR (dumpsys activity lastanr)
+  ANR time: Oct 14, 2026 3:02:59 PM
+  Reason: Input dispatching timed out (443b8a3 host.exp.exponent/host.exp.exponent.experience.ExperienceActivity (server) is not responding. Waited 5007ms for FocusEvent(hasFocus=true)).
+
+  * Task{d694799 #30 type=standard A=10210:host.exp.exponent U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=1}
+    mLastPausedActivity: ActivityRecord{74b58e0 u0 host.exp.exponent/.experience.ExperienceActivity t30}
+    mLastNonFullscreenBounds=Rect(97, 239 - 294, 629)
+    isSleeping=false
+    topResumedActivity=ActivityRecord{74b58e0 u0 host.exp.exponent/.experience.ExperienceActivity t30}
+
+  mLastHomeActivityStartResult=0
+  mLastStarter:
+    mCurrentUser=0
+    mLastStartReason=startActivityAsUser
+    mLastStartActivityTimeMs=Oct 14, 2026 3:02:38 PM
+    mLastStartActivityResult=0
+    mStartActivity:
+      packageName=host.exp.exponent processName=host.exp.exponent
+      launchedFromUid=2000 launchedFromPackage=com.android.shell launchedFromFeature=null userId=0
+      app=ProcessRecord{492b77 15924:host.exp.exponent/u0a210}
+      Intent { act=android.intent.action.VIEW dat=exp://172.23.9.20:8082 flg=0x10400000 pkg=host.exp.exponent cmp=host.exp.exponent/.LauncherActivity }
+      rootOfTask=false task=Task{d392187 #29 type=standard A=10210:host.exp.exponent}
+      taskAffinity=10210:host.exp.exponent
+      mActivityComponent=host.exp.exponent/.LauncherActivity
+      baseDir=/data/app/~~HZFXEFtanqZBM02y86zkhw==/host.exp.exponent-c_TzUYv-YwuanVqfsUzKWw==/base.apk
+      dataDir=/data/user/0/host.exp.exponent
+      stateNotNeeded=false componentSpecified=false mActivityType=standard
+      compat={160dpi} theme=0x7f140307
+      mLastReportedConfigurations:
+        mGlobalConfig={1.0 310mcc260mnc [en_US] ldltr sw390dp w390dp h844dp 160dpi nrml long port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 390, 844) mAppBounds=Rect(0, 0 - 390, 844) mMaxBounds=Rect(0, 0 - 390, 844) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.129 fontWeightAdjustment=0}
+        mOverrideConfig={1.0 310mcc260mnc [en_US] ldltr sw390dp w390dp h844dp 160dpi nrml long port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 390, 844) mAppBounds=Rect(0, 0 - 390, 844) mMaxBounds=Rect(0, 0 - 390, 844) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.3 fontWeightAdjustment=0}
+      mLastReportedActivityWindowInfo=ActivityWindowInfo{isEmbedded=false, taskBounds=Rect(0, 0 - 390, 844), taskFragmentBounds=Rect(0, 0 - 390, 844)}
+      CurrentConfiguration={1.0 310mcc260mnc [en_US] ldltr sw390dp w390dp h844dp 160dpi nrml long port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 390, 844) mAppBounds=Rect(0, 0 - 390, 844) mMaxBounds=Rect(0, 0 - 390, 844) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.3 fontWeightAdjustment=0}
+      RequestedOverrideConfiguration={0.0 ?mcc0mnc ?localeList ?layoutDir ?swdp ?wdp ?hdp ?density ?lsize ?long ?ldr ?wideColorGamut ?orien ?uimode ?night ?touch ?keyb/?/? ?nav/? winConfig={ mBounds=Rect(0, 0 - 390, 844) mAppBounds=Rect(0, 0 - 0, 0) mMaxBounds=Rect(0, 0 - 0, 0) mDisplayRotation=undefined mWindowingMode=undefined mActivityType=undefined mAlwaysOnTop=undefined mRotation=undefined} ?fontWeightAdjustment}
+      ResolvedOverrideConfiguration={0.0 ?mcc0mnc ?localeList ?layoutDir ?swdp w390dp h844dp ?density nrml long ?ldr ?wideColorGamut port ?uimode ?night ?touch ?keyb/?/? ?nav/? winConfig={ mBounds=Rect(0, 0 - 390, 844) mAppBounds=Rect(0, 0 - 390, 844) mMaxBounds=Rect(0, 0 - 0, 0) mDisplayRotation=undefined mWindowingMode=undefined mActivityType=undefined mAlwaysOnTop=undefined mRotation=undefined} s.3 ?fontWeightAdjustment}
+      taskDescription: label="null" icon=null iconResource=/0 iconFilename=null primaryColor=ff212121
+        backgroundColor=ff303030 statusBarColor=ff000000 navigationBarColor=808080
+       backgroundColorFloating=ff424242
+      launchFailed=false launchCount=1 lastLaunchTime=-21s240ms
+      mHaveState=false mIcicle=null
+      state=DESTROYING delayedResume=false finishing=true
+      keysPaused=true inHistory=true idle=true
+      occludesParent=false noDisplay=false immersive=false launchMode=2
+      mActivityType=standard
+      mImeInsetsFrozenUntilStartInput=true
+      windows=[Window{68bc873 u0 host.exp.exponent/host.exp.exponent.LauncherActivity}]
+      windowType=2
+      mOccludesParent=false
+      overrideOrientation=SCREEN_ORIENTATION_UNSPECIFIED
+      requestedOrientation=SCREEN_ORIENTATION_UNSPECIFIED
+      mVisibleRequested=false mVisible=false mClientVisible=false reportedDrawn=false reportedVisible=false
+      paused=true
+      resizeMode=RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION
+      mLastReportedMultiWindowMode=false mLastReportedPictureInPictureMode=false
+      supportsSizeChanges=SIZE_CHANGES_UNSUPPORTED_METADATA
+      configChanges=0x3
+      neverSandboxDisplayApis=false
+      alwaysSandboxDisplayApis=false
+      areBoundsLetterboxed=true
+        letterboxReason=UNKNOWN_REASON
+        activityAspectRatio=2.1641026
+      shouldShowLetterboxUi=false
+      mCameraCompatControlState=hidden
+      mCameraCompatControlEnabled=true
+    mIntent=Intent { act=android.intent.action.VIEW dat=exp://172.23.9.20:8082/... flg=0x10400000 pkg=host.exp.exponent cmp=host.exp.exponent/.LauncherActivity }
+    mLaunchMode=LAUNCH_SINGLE_TASK    mLaunchFlags=0x10000000 mDoResume=true mAddingToTask=true mInTaskFragment=null
+  packageName=host.exp.exponent processName=host.exp.exponent
+  launchedFromUid=10210 launchedFromPackage=host.exp.exponent launchedFromFeature=null userId=0
+  app=ProcessRecord{492b77 15924:host.exp.exponent/u0a210}
+  Intent { flg=0x1c080000 cmp=host.exp.exponent/.experience.ExperienceActivity (has extras) }
+  rootOfTask=true task=Task{d694799 #30 type=standard A=10210:host.exp.exponent}
+  taskAffinity=10210:host.exp.exponent
+  mActivityComponent=host.exp.exponent/.experience.ExperienceActivity
+  baseDir=/data/app/~~HZFXEFtanqZBM02y86zkhw==/host.exp.exponent-c_TzUYv-YwuanVqfsUzKWw==/base.apk
+  dataDir=/data/user/0/host.exp.exponent
+  stateNotNeeded=false componentSpecified=true mActivityType=standard
+  compat={160dpi} theme=0x7f140303
+  mLastReportedConfigurations:
+    mGlobalConfig={1.0 310mcc260mnc [en_US] ldltr sw390dp w390dp h844dp 160dpi nrml long port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 390, 844) mAppBounds=Rect(0, 0 - 390, 844) mMaxBounds=Rect(0, 0 - 390, 844) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.129 fontWeightAdjustment=0}
+    mOverrideConfig={1.0 310mcc260mnc [en_US] ldltr sw390dp w390dp h844dp 160dpi nrml long port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 390, 844) mAppBounds=Rect(0, 0 - 390, 844) mMaxBounds=Rect(0, 0 - 390, 844) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.3 fontWeightAdjustment=0}
+  mLastReportedActivityWindowInfo=ActivityWindowInfo{isEmbedded=false, taskBounds=Rect(0, 0 - 390, 844), taskFragmentBounds=Rect(0, 0 - 390, 844)}
+  CurrentConfiguration={1.0 310mcc260mnc [en_US] ldltr sw390dp w390dp h844dp 160dpi nrml long port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 390, 844) mAppBounds=Rect(0, 0 - 390, 844) mMaxBounds=Rect(0, 0 - 390, 844) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.3 s.3 fontWeightAdjustment=0}
+  RequestedOverrideConfiguration={0.0 ?mcc0mnc ?localeList ?layoutDir ?swdp ?wdp ?hdp ?density ?lsize ?long ?ldr ?wideColorGamut ?orien ?uimode ?night ?touch ?keyb/?/? ?nav/? winConfig={ mBounds=Rect(0, 0 - 0, 0) mAppBounds=null mMaxBounds=Rect(0, 0 - 0, 0) mDisplayRotation=undefined mWindowingMode=undefined mActivityType=standard mAlwaysOnTop=undefined mRotation=undefined} ?fontWeightAdjustment}
+  ResolvedOverrideConfiguration={0.0 ?mcc0mnc ?localeList ?layoutDir ?swdp ?wdp ?hdp ?density ?lsize ?long ?ldr ?wideColorGamut ?orien ?uimode ?night ?touch ?keyb/?/? ?nav/? winConfig={ mBounds=Rect(0, 0 - 0, 0) mAppBounds=null mMaxBounds=Rect(0, 0 - 0, 0) mDisplayRotation=undefined mWindowingMode=undefined mActivityType=undefined mAlwaysOnTop=undefined mRotation=undefined} s.3 ?fontWeightAdjustment}
+  taskDescription: label="null" icon=null iconResource=/0 iconFilename=null primaryColor=ff1b73b4
+    backgroundColor=ffffffff statusBarColor=0 navigationBarColor=808080
+   backgroundColorFloating=ffffffff
+  launchFailed=false launchCount=0 lastLaunchTime=-13m10s205ms
+  mHaveState=false mIcicle=null
+  state=RESUMED delayedResume=false finishing=false
+  keysPaused=false inHistory=true idle=false
+  occludesParent=true noDisplay=false immersive=false launchMode=0
+  mActivityType=standard
+  mImeInsetsFrozenUntilStartInput=true
+  windows=[Window{427a822 u0 host.exp.exponent/host.exp.exponent.experience.ExperienceActivity}, Window{443b8a3 u0 host.exp.exponent/host.exp.exponent.experience.ExperienceActivity}]
+  windowType=2
+  mOccludesParent=true
+  overrideOrientation=SCREEN_ORIENTATION_PORTRAIT
+  requestedOrientation=SCREEN_ORIENTATION_PORTRAIT
+  mVisibleRequested=true mVisible=true mClientVisible=true reportedDrawn=true reportedVisible=true
+  mNumInterestingWindows=2 mNumDrawnWindows=2 allDrawn=true lastAllDrawn=false)
+  startingData=null firstWindowDrawn=true mIsExiting=false
+  nowVisible=true lastVisibleTime=-5s570ms
+  resizeMode=RESIZE_MODE_RESIZEABLE_VIA_SDK_VERSION
+  mLastReportedMultiWindowMode=false mLastReportedPictureInPictureMode=false
+  supportsPictureInPicture=true
+  supportsEnterPipOnTaskSwitch: true
+  mPauseSchedulePendingForPip=false
+  supportsSizeChanges=SIZE_CHANGES_UNSUPPORTED_METADATA
+  configChanges=0xfb3
+  neverSandboxDisplayApis=false
+  alwaysSandboxDisplayApis=false
+  areBoundsLetterboxed=false
+  mCameraCompatControlState=hidden
+  mCameraCompatControlEnabled=true
+
+  ResumedActivity: ActivityRecord{74b58e0 u0 host.exp.exponent/.experience.ExperienceActivity t30}
+  LockTaskController:
+    mLockTaskModeState=NONE
+    mLockTaskModeTasks=
+    mLockTaskPackages (userId:packages)=
+
+  KeyguardController:
+    mKeyguardShowing=false
+    mAodShowing=false
+    mKeyguardGoingAway=false
+   KeyguardShowing=false AodShowing=false KeyguardGoingAway=false DismissalRequested=false  Occluded=false DismissingKeyguardActivity=null TurnScreenOnActivity=null at display=0
+    mDismissalRequested=false
+
+-------------------------------------------------------------------------------
+
