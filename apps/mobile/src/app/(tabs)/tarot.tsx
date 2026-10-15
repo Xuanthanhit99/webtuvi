@@ -282,7 +282,16 @@ export default function TarotScreen() {
             {reading && (
               <View style={styles.panel}>
                 <Text style={styles.section}>Kết quả trải bài</Text>
-                {reading.cards.map((entry, index) => (
+                {reading.cards.map((entry, index) => {
+                  const meaning = entry.isReversed ? entry.card.reversedMeaning : entry.card.uprightMeaning;
+                  const keywords = entry.isReversed ? entry.card.reversedKeywords : entry.card.uprightKeywords;
+                  const sections = [
+                    { title: 'Tình cảm', content: entry.card.loveMeaning },
+                    { title: 'Sự nghiệp', content: entry.card.careerMeaning },
+                    { title: 'Tài chính', content: entry.card.financeMeaning },
+                    { title: 'Bản thân', content: entry.card.selfMeaning },
+                  ];
+                  return (
                   <TarotMotion
                     key={`${reading.id}-${entry.position}-${entry.card.slug ?? entry.card.id}`}
                     mode="reveal"
@@ -302,9 +311,40 @@ export default function TarotScreen() {
                         {entry.card.nameVi || entry.card.name}
                       </Text>
                       <Text style={styles.muted}>{entry.isReversed ? 'Ngược' : 'Xuôi'}</Text>
+                      {meaning?.trim() ? (
+                        <View style={styles.meaningSection}>
+                          <Text style={styles.detailHeading}>Ý nghĩa lá bài</Text>
+                          <Text style={styles.result}>{meaning}</Text>
+                        </View>
+                      ) : null}
+                      {Array.isArray(keywords) && keywords.length > 0 ? (
+                        <View style={styles.meaningSection}>
+                          <Text style={styles.detailHeading}>Từ khóa</Text>
+                          <Text style={styles.muted}>{keywords.join(' · ')}</Text>
+                        </View>
+                      ) : null}
+                      {sections.map((section) =>
+                        section.content?.trim() ? (
+                          <View key={section.title} style={styles.meaningSection}>
+                            <Text style={styles.detailHeading}>{section.title}</Text>
+                            <Text style={styles.result}>{section.content}</Text>
+                          </View>
+                        ) : null,
+                      )}
+                      {Array.isArray(entry.card.reflectionPrompts) &&
+                        entry.card.reflectionPrompts.length > 0 ? (
+                          <View style={styles.meaningSection}>
+                            <Text style={styles.detailHeading}>Gợi mở suy ngẫm</Text>
+                            {entry.card.reflectionPrompts.map((prompt, promptIndex) => (
+                              <Text key={promptIndex} style={styles.muted}>• {prompt}</Text>
+                            ))}
+                          </View>
+                        ) : null}
                     </View>
                   </TarotMotion>
-                ))}
+                  );
+                })}
+                <Text style={styles.section}>Luận giải tổng hợp</Text>
                 <TarotMotion
                   key={`${reading.id}-interpretation`}
                   mode="reveal"
@@ -491,6 +531,8 @@ const styles = StyleSheet.create({
   },
   revealedImage: { width: 130, height: 210, alignSelf: 'center' },
   reversedImage: { transform: [{ rotate: '180deg' }] },
+  meaningSection: { gap: spacing.sm, paddingTop: spacing.sm },
+  detailHeading: { color: color.goldLight, fontFamily: font.bodySemibold, fontSize: fontSize.bodySm },
   result: {
     color: color.textPrimary,
     fontFamily: font.body,
