@@ -15,6 +15,15 @@ export interface TarotCard {
   name?: string;
   nameVi?: string;
   imageUrl?: string;
+  uprightKeywords?: string[];
+  reversedKeywords?: string[];
+  uprightMeaning?: string;
+  reversedMeaning?: string;
+  loveMeaning?: string;
+  careerMeaning?: string;
+  financeMeaning?: string;
+  selfMeaning?: string;
+  reflectionPrompts?: string[];
   [key: string]: unknown;
 }
 
