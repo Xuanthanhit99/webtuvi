@@ -19,6 +19,13 @@ jest.mock('./tarot-api', () => ({
 jest.mock('@/providers/auth-provider', () => ({ useAuth: () => ({ status: 'authenticated' }) }));
 jest.mock('expo-router', () => ({ useRouter: () => ({ push: jest.fn() }) }));
 jest.mock('@/components/app-header', () => ({ AppHeader: () => null }));
+// Motion is verified independently in tarot-motion.test.tsx. Keep this screen suite
+// focused on API/state transitions rather than mounting 78 animated card wrappers.
+jest.mock('@/features/tarot/tarot-motion', () => ({
+  TarotMotion: ({ children }: { children: React.ReactNode }) => children,
+  TarotShuffle: () => null,
+  useReducedMotion: () => true,
+}));
 jest.mock('@/components/screen', () => ({
   Screen: ({ children }: { children: React.ReactNode }) => children,
 }));
