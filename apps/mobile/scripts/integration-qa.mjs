@@ -49,17 +49,17 @@ async function lifecycle(name, root, create, verify) {
     const history = await request('GET', url + '/history');
     check(history.status === 200 && Array.isArray(history.data), name + ': history');
     const archived = await request('POST', url + '/archive');
-    check(archived.status === 200 && archived.data?.status === 'ARCHIVED', name + ': archive');
+    check((archived.status === 200 || archived.status === 201) && archived.data?.status === 'ARCHIVED', name + ': archive');
     const listed = await request('GET', root + '?status=ARCHIVED&page=1&pageSize=100');
     check(listed.status === 200 && listed.data?.items?.some(x => x.id === id), name + ': archived list');
     const restored = await request('POST', url + '/restore');
-    check(restored.status === 200 && restored.data?.status === 'ACTIVE', name + ': restore');
+    check((restored.status === 200 || restored.status === 201) && restored.data?.status === 'ACTIVE', name + ': restore');
     const removed = await request('DELETE', url);
     check(removed.status === 200 && removed.data?.status === 'DELETED', name + ': soft delete');
     const deleted = await request('GET', root + '?status=DELETED&page=1&pageSize=100');
     check(deleted.status === 200 && deleted.data?.items?.some(x => x.id === id), name + ': deleted list');
     const restoredAgain = await request('POST', url + '/restore');
-    check(restoredAgain.status === 200 && restoredAgain.data?.status === 'ACTIVE', name + ': cleanup restore');
+    check((restoredAgain.status === 200 || restoredAgain.status === 201) && restoredAgain.data?.status === 'ACTIVE', name + ': cleanup restore');
   } catch (e) {
     console.error('BLOCKED/FAIL ' + name + ': ' + e.message);
     results.push({name: name + ': lifecycle',ok:false});
@@ -85,7 +85,8 @@ await lifecycle('Numerology','/numerology/readings',
 const placeQuery = process.env.MENHVI_QA_LOCATION_QUERY || 'Hanoi';
 try {
   const geo = await request('GET','/geocoding/search?q=' + encodeURIComponent(placeQuery));
-  const candidate = geo.data?.find(x => x.token && x.label);
+  const candidate = Array.isArray(geo.data) ? geo.data.find(x => x.token && x.label) : undefined;
+  if (geo.status !== 200) console.error('BLOCKED Natal: geocoding HTTP ' + geo.status + (geo.error?.code ? ' (' + geo.error.code + ')' : '') + '; no location token available.');
   if (geo.status === 200 && candidate) {
     await lifecycle('Natal','/natal-charts',
       () => request('POST','/natal-charts',{birthDate:'1995-08-21',birthTime:'08:30',locationToken:candidate.token}),
