@@ -56,8 +56,22 @@ function TuViContent() {
   }, [isRealUser]);
 
   useEffect(() => {
-    if (isRealUser) void refresh('ACTIVE');
-  }, [isRealUser, refresh]);
+    if (!isRealUser) return;
+    let cancelled = false;
+    const loadInitial = async () => {
+      try {
+        const result = await tuViApi.list({ status:'ACTIVE', page:1, pageSize:10 });
+        if (cancelled) return;
+        setItems(result.items);
+        setTotal(result.total);
+        setPage(1);
+      } catch (cause) {
+        if (!cancelled) setError(message(cause));
+      }
+    };
+    void loadInitial();
+    return () => { cancelled = true; };
+  }, [isRealUser]);
 
   async function run(task: () => Promise<TuViChartDto>) {
     if (busy) return;
