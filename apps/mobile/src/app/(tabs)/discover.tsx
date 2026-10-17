@@ -27,8 +27,13 @@ const sectionNames: Record<string,string> = {
   challenges:'Thử thách',keyAspects:'Góc chiếu nổi bật',
 };
 export default function DiscoverScreen() {
-  const router = useRouter();
   const { status, user, devFixture } = useAuth();
+  return <DiscoverContent key={`${user?.id ?? 'guest'}:${status}:${devFixture}`} />;
+}
+
+function DiscoverContent() {
+  const router = useRouter();
+  const { status, devFixture } = useAuth();
   const allowed = status === 'authenticated' && (!__DEV__ || devFixture === 'off');
   const [mode,setMode] = useState<Mode>('natal');
   const [date,setDate] = useState('');
@@ -69,15 +74,21 @@ export default function DiscoverScreen() {
   },[allowed,mode]);
 
   useEffect(() => {
-    setNatal(null);setNumbers(null);setHistory(null);setItems([]);setTotal(0);setError('');setFilter('ACTIVE');
     if (allowed) void refresh('ACTIVE');
-  },[allowed,user?.id,refresh]);
+  },[allowed,refresh]);
 
   async function action(task: () => Promise<void>) {
     if (busy) return;
     setBusy(true);setError('');setNotice('');
     try { await task(); } catch(e) {setError(errorText(e));}
     finally {setBusy(false);}
+  }
+  function changeMode(nextMode: Mode) {
+    if (nextMode === mode) return;
+    setMode(nextMode);
+    setNatal(null); setNumbers(null); setHistory(null);
+    setItems([]); setTotal(0); setPage(1); setFilter('ACTIVE');
+    setError(''); setNotice('');
   }
   function calculate() {
     if (!validDate(date)) {setError('Ngày sinh phải có dạng YYYY-MM-DD hợp lệ.');return;}
@@ -139,8 +150,8 @@ export default function DiscoverScreen() {
     <Text style={styles.eyebrow}>MỆNH VI · KHÁM PHÁ</Text>
     <Text style={styles.title}>Khám phá bản thân</Text>
     <View style={styles.row}>
-      <Pressable accessibilityRole="button" accessibilityState={{selected:mode==='natal'}} style={[styles.tab,mode==='natal'&&styles.selected]} onPress={()=>setMode('natal')}><Text style={styles.text}>Bản đồ sao</Text></Pressable>
-      <Pressable accessibilityRole="button" accessibilityState={{selected:mode==='numbers'}} style={[styles.tab,mode==='numbers'&&styles.selected]} onPress={()=>setMode('numbers')}><Text style={styles.text}>Thần số học</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityState={{selected:mode==='natal'}} style={[styles.tab,mode==='natal'&&styles.selected]} onPress={()=>changeMode('natal')}><Text style={styles.text}>Bản đồ sao</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityState={{selected:mode==='numbers'}} style={[styles.tab,mode==='numbers'&&styles.selected]} onPress={()=>changeMode('numbers')}><Text style={styles.text}>Thần số học</Text></Pressable>
     </View>
     {!allowed ? <View style={styles.card}><Text style={styles.muted}>Đăng nhập để lập và lưu kết quả bằng API thật.</Text><Pressable onPress={()=>router.push('/(auth)/login')} style={styles.button}><Text style={styles.buttonText}>Đăng nhập</Text></Pressable></View> : <>
       <View style={styles.card}>
