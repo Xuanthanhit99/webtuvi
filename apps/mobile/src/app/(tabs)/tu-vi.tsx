@@ -21,8 +21,13 @@ function validDate(value: string) {
 function message(error: unknown) { return error instanceof Error ? error.message : 'Không thể kết nối máy chủ.'; }
 
 export default function TuViScreen() {
-  const router = useRouter();
   const { status, user, devFixture } = useAuth();
+  return <TuViContent key={`${user?.id ?? 'guest'}:${status}:${devFixture}`} />;
+}
+
+function TuViContent() {
+  const router = useRouter();
+  const { status, devFixture } = useAuth();
   const [birthDate, setBirthDate] = useState('');
   const [birthTime, setBirthTime] = useState('');
   const [sex, setSex] = useState<'Nam' | 'Nữ'>('Nam');
@@ -51,9 +56,8 @@ export default function TuViScreen() {
   }, [isRealUser]);
 
   useEffect(() => {
-    setChart(null); setHistory(null); setItems([]); setTotal(0); setSelected(null); setError('');
     if (isRealUser) void refresh('ACTIVE');
-  }, [user?.id, isRealUser, refresh]);
+  }, [isRealUser, refresh]);
 
   async function run(task: () => Promise<TuViChartDto>) {
     if (busy) return;
