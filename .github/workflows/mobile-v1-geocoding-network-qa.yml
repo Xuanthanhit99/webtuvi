@@ -1,0 +1,86 @@
+name: Mobile V1 Geocoding Network QA
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - '.github/workflows/mobile-v1-geocoding-network-qa.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-v1-geocoding-network-qa
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    name: Diagnose Nominatim connectivity
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check DNS and HTTPS with Node.js
+        shell: bash
+        run: |
+          node --version
+          node <<'NODE'
+          const dns = require('node:dns').promises;
+          const https = require('node:https');
+          const host = 'nominatim.openstreetmap.org';
+          const timeoutMs = 12000;
+
+          async function probe(url, label) {
+            return new Promise(resolve => {
+              const req = https.get(url, {
+                timeout: timeoutMs,
+                headers: {
+                  'User-Agent': 'TuViTarot/1.0 (natal-chart-geocoding)',
+                  Accept: 'application/json'
+                }
+              }, res => {
+                let bytes = 0;
+                let body = '';
+                res.on('data', chunk => {
+                  bytes += chunk.length;
+                  if (body.length < 100000) body += chunk.toString();
+                });
+                res.on('end', () => {
+                  let count = null;
+                  try {
+                    const parsed = JSON.parse(body);
+                    if (Array.isArray(parsed)) count = parsed.length;
+                  } catch {}
+                  console.log(JSON.stringify({probe:label,status:res.statusCode,bytes,candidates:count}));
+                  resolve(res.statusCode === 200 && count !== null);
+                });
+              });
+              req.on('timeout', () => req.destroy(new Error('timeout')));
+              req.on('error', err => {
+                console.log(JSON.stringify({probe:label,error:err.code || err.message}));
+                resolve(false);
+              });
+            });
+          }
+
+          (async () => {
+            try {
+              const addresses = await dns.lookup(host, {all:true});
+              console.log(JSON.stringify({dns:'ok',families:[...new Set(addresses.map(a=>a.family))]}));
+            } catch (err) {
+              console.log(JSON.stringify({dns:'failed',error:err.code || err.message}));
+              process.exitCode = 1;
+              return;
+            }
+            const url = new URL('https://' + host + '/search');
+            url.searchParams.set('q','Hanoi');
+            url.searchParams.set('format','jsonv2');
+            url.searchParams.set('addressdetails','1');
+            url.searchParams.set('limit','5');
+            const ok = await probe(url,'nominatim-search');
+            if (!ok) process.exitCode = 1;
+          })().catch(err => {
+            console.error('Unexpected diagnostic error:', err.code || err.message);
+            process.exitCode = 1;
+          });
+          NODE

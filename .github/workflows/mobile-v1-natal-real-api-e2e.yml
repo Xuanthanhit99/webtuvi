@@ -1,0 +1,73 @@
+name: Mobile Natal Real API E2E
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  natal-real-api:
+    name: Authenticated Natal token and persistence
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      QA_API_BASE_URL: ${{ vars.NATAL_QA_API_BASE_URL }}
+      QA_ACCESS_TOKEN: ${{ secrets.NATAL_QA_ACCESS_TOKEN }}
+    steps:
+      - name: Real geocoding, create, read and cleanup
+        shell: bash
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const base = (process.env.QA_API_BASE_URL || '').replace(/\/$/, '');
+          const token = process.env.QA_ACCESS_TOKEN || '';
+          if (!base || !token) throw new Error('NATAL_QA_API_BASE_URL and NATAL_QA_ACCESS_TOKEN must be configured');
+          const url = new URL(base);
+          if (url.protocol !== 'https:' || /(^|\.)(tuvitarot\.vn|railway\.app)$/.test(url.hostname)) {
+            throw new Error('Refusing production or non-HTTPS API. Use an isolated QA backend.');
+          }
+          let chartId;
+          async function request(path, method='GET', body) {
+            const response = await fetch(base + path, {
+              method,
+              headers: { Authorization: 'Bearer ' + token, Accept: 'application/json',
+                ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
+              ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+              signal: AbortSignal.timeout(20000),
+            });
+            const payload = await response.json().catch(() => null);
+            if (!response.ok || !payload || payload.error) {
+              throw new Error(method + ' ' + path.split('?')[0] + ': HTTP ' + response.status + ' ' + (payload?.error?.code || 'invalid envelope'));
+            }
+            return payload.data;
+          }
+          (async () => {
+            try {
+              const locations = await request('/geocoding/search?q=Hanoi');
+              assert.ok(Array.isArray(locations) && locations.length > 0, 'Backend returned no locations');
+              const place = locations.find(x => typeof x.token === 'string' && x.token.length > 0);
+              assert.ok(place, 'Backend did not issue a real locationToken');
+              console.log('Geocoding: backend issued a locationToken (value withheld)');
+              const chart = await request('/natal-charts','POST',{
+                birthDate:'1995-08-21', locationToken:place.token,
+              });
+              assert.ok(chart && typeof chart.id === 'string', 'Create did not return chart ID');
+              chartId = chart.id;
+              const stored = await request('/natal-charts/' + encodeURIComponent(chartId));
+              assert.equal(stored.id, chartId, 'Read-back ID differs');
+              assert.equal(stored.birthDate, '1995-08-21', 'Read-back birth date differs');
+              console.log('Natal create/read-back: PASS');
+            } finally {
+              if (chartId) {
+                try {
+                  await request('/natal-charts/' + encodeURIComponent(chartId),'DELETE');
+                  console.log('Natal cleanup: DELETE acknowledged (verify soft-delete retention policy)');
+                } catch (err) {
+                  console.error('Natal cleanup FAILED:', err.message);
+                  process.exitCode = 1;
+                }
+              }
+            }
+          })().catch(err => { console.error('Natal E2E FAILED:', err.message); process.exitCode = 1; });
+          NODE

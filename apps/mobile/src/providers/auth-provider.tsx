@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, useCallback, t
 import type { UserDto } from '@beaconvie/types';
 import { getStoredSession, setStoredSession, clearStoredSession, getCachedUser, setCachedUser, type StoredSession } from '@/lib/auth/session-client';
 import { authApi, type LoginPayload, type RegisterPayload } from '@/lib/auth/auth-api';
-import { ApiError } from '@/lib/api-client';
+import { API_URL, ApiError } from '@/lib/api-client';
 import { queryClient } from '@/lib/query-client';
 
 export type AuthStatus = 'loading' | 'guest' | 'authenticated';
@@ -70,11 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setStatus('authenticated');
       } catch (error) {
         if (cancelled) return;
-        if (error instanceof ApiError && error.status === 401) {
-          // apiFetch already tried one refresh-and-retry internally; a 401 reaching here means
-          // that refresh concluded the credential is genuinely invalid, and api-client.ts has
-          // already cleared it from storage in that case (not merely offline — see its
-          // 'invalid' vs 'network-error' distinction).
+        if (error instanceof ApiError && error.status === 401 && !(await getStoredSession())) {
+          // A 401 only means logout when refresh conclusively invalidated the session.
+          // If refresh failed transiently, apiFetch retains the stored token pair.
           setStatus('guest');
           return;
         }
@@ -111,7 +109,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (session) {
       // Best-effort server-side revocation — proceed with clearing local state regardless of
       // whether this succeeds (e.g. offline logout should still log the device out locally).
-      await fetch(`${process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000'}/auth/mobile/logout`, {
+      await fetch(`${API_URL}/auth/mobile/logout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken: session.refreshToken }),
