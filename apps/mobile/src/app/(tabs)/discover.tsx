@@ -74,8 +74,28 @@ function DiscoverContent() {
   },[allowed,mode]);
 
   useEffect(() => {
-    if (allowed) void refresh('ACTIVE');
-  },[allowed,refresh]);
+    if (!allowed) return;
+    let cancelled = false;
+    const loadInitial = async () => {
+      try {
+        const data = mode === 'natal'
+          ? await natalChartApi.list({status:'ACTIVE',page:1,pageSize:10})
+          : await numerologyApi.list({status:'ACTIVE',page:1,pageSize:10});
+        if (cancelled) return;
+        setItems(data.items.map(c => ({
+          id:c.id,
+          title:'birthPlaceLabel' in c ? c.birthPlaceLabel : c.birthNameInput,
+          date:c.birthDate,
+        })));
+        setTotal(data.total);
+        setPage(1);
+      } catch (cause) {
+        if (!cancelled) setError(errorText(cause));
+      }
+    };
+    void loadInitial();
+    return () => { cancelled = true; };
+  },[allowed,mode]);
 
   async function action(task: () => Promise<void>) {
     if (busy) return;
